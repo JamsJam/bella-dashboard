@@ -38,7 +38,7 @@ jobs:
             set -e
             echo
             echo "============================"
-            echo "[ Creation du dossier ]"
+            echo  "[ Creation du dossier ]"
             echo "============================"
             echo
             mkdir -p /var/www/${{ secrets.APP_USER }}/test-${{ secrets.APP_DOMAIN }}/${{ steps.hash.outputs.hash }}
