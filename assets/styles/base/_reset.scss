@@ -1,0 +1,48 @@
+@use "../abstract/" as *;
+
+*,*::after,*::before{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+
+}
+
+:root{
+    font-size: 16px;
+}
+
+html,body{
+  min-height: 100dvh;
+  min-width: 100dvw;
+}
+body{
+
+  a{
+    text-decoration: none;
+  }
+    
+    & h1, & h2, & h3, & h4, & h5, & h6{
+
+      font-family: $font-title;
+    }
+    
+    & p,& a,& span,& strong {
+      font-family: $font-text;
+    }
+    
+
+    &.admin {
+      // @extend %flex-row-start-start;
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      background-color: $admin-nuance-b-30;
+
+      & h1,& h2,& h3,& h4,& h5,& h6,& p,& a,& span,& strong, label, button {
+        font-family: $admin-font;
+        color: $admin-nuance-w-100;
+      }
+
+
+
+    }
+}

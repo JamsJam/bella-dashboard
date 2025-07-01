@@ -1,0 +1,21 @@
+parameters:
+    level: 6
+    paths:
+        - bin/
+        - config/
+        - public/
+        - src/
+
+
+
+    ignoreErrors:
+        # Ignore les $id jamais assignés par Doctrine
+        - '#Property App\\Entity\\.*::\$id \(int\|null\) is never assigned int#'
+
+        # Ignore les tableaux sans types internes (array values)
+        - '#Property App\\Entity\\Project::\$technologies type has no value type specified in iterable type array#'
+        - '#Property App\\Entity\\Project::\$images type has no value type specified in iterable type array#'
+        - '#Method App\\Entity\\Project::getTechnologies\(\) return type has no value type specified in iterable type array#'
+        - '#Method App\\Entity\\Project::setTechnologies\(\) has parameter \$technologies with no value type specified in iterable type array#'
+        - '#Method App\\Entity\\Project::getImages\(\) return type has no value type specified in iterable type array#'
+        - '#Method App\\Entity\\Project::setImages\(\) has parameter \$images with no value type specified in iterable type array#'

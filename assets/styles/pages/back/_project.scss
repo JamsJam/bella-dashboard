@@ -1,0 +1,55 @@
+@use "../../abstract" as *;
+
+// .admin 
+
+turbo-frame#projects-frame{
+            grid-area: 2 / 1 / 3 / 2;
+            // overflow-y: scroll;
+            overflow-x: hidden;
+            
+    .project{
+        width: 100%;
+        height: 100%;
+        
+        border-radius: 20px;
+        background-color: $admin-nuance-b-15;
+        box-shadow: 0 4px 4px 0 hsla(0,0%,0%, 0.31) ;
+        
+
+        padding-inline: 4rem;
+        padding-block: 2rem;
+
+        overflow-y: scroll;
+        overflow-x: hidden;
+
+
+        turbo-frame#projects-actions{
+            @extend %flex-row-end-center;
+            
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        
+        turbo-frame#projects-form{
+
+            max-width: 1024px;
+            height: 100px;
+            background-color: tan;
+
+            form{
+                @extend %flex-column-start-stretch;
+                gap:2rem;
+                margin-top: 2rem;
+
+                .button__componnent{
+                    align-self: center;
+                }
+            }
+
+        }
+
+
+
+    }
+}

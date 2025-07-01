@@ -1,0 +1,9 @@
+//? =============== Animations
+
+@mixin stagger-animation($base-delay: 0.1s, $step: 0.1s) {
+  @for $i from 1 through 10 {
+    &:nth-child(#{$i}) {
+      animation-delay: ($base-delay + $step * ($i - 1));
+    }
+  }
+}

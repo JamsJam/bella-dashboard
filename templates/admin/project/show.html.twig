@@ -1,0 +1,66 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Project{% endblock %}
+
+{% block body %}
+    <h1>Project</h1>
+
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ project.id }}</td>
+            </tr>
+            <tr>
+                <th>CreatedAt</th>
+                <td>{{ project.createdAt ? project.createdAt|date('Y-m-d H:i:s') : '' }}</td>
+            </tr>
+            <tr>
+                <th>EditedAt</th>
+                <td>{{ project.editedAt ? project.editedAt|date('Y-m-d H:i:s') : '' }}</td>
+            </tr>
+            <tr>
+                <th>Title</th>
+                <td>{{ project.title }}</td>
+            </tr>
+            <tr>
+                <th>Description</th>
+                <td>{{ project.description }}</td>
+            </tr>
+            <tr>
+                <th>Technologies</th>
+                <td>{{ project.technologies ? project.technologies|json_encode : '' }}</td>
+            </tr>
+            <tr>
+                <th>Images</th>
+                <td>{{ project.images ? project.images|json_encode : '' }}</td>
+            </tr>
+            <tr>
+                <th>Projectlink</th>
+                <td>{{ project.projectlink }}</td>
+            </tr>
+            <tr>
+                <th>IsOnline</th>
+                <td>{{ project.isOnline ? 'Yes' : 'No' }}</td>
+            </tr>
+            <tr>
+                <th>IsGitpublic</th>
+                <td>{{ project.isGitpublic ? 'Yes' : 'No' }}</td>
+            </tr>
+            <tr>
+                <th>Gitlink</th>
+                <td>{{ project.gitlink }}</td>
+            </tr>
+            <tr>
+                <th>Casestudy</th>
+                <td>{{ project.casestudy }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_admin_project_index') }}">back to list</a>
+
+    <a href="{{ path('app_admin_project_edit', {'id': project.id}) }}">edit</a>
+
+    {{ include('admin/project/_delete_form.html.twig') }}
+{% endblock %}

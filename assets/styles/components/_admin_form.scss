@@ -1,0 +1,129 @@
+@use "../abstract/" as *;
+
+input,textarea{
+    
+    width: 100%;
+    font-size: 1.5rem;
+}
+
+input[type="text"],textarea{
+    border-radius: 0.5rem;
+    padding: 0.5rem 1rem ;
+    outline: none;
+    border: none;
+    font-family: $admin-font;
+    color: $admin-nuance-b-15;
+}
+
+
+label{
+    font-weight: 500;
+    
+}
+
+.form_wrapper{
+    @extend %flex-column-center-start;
+    gap: 1rem;
+}
+
+.form_button___container{
+    @extend %flex-row-center-center;
+    
+}
+
+.form_collection{
+
+    @extend %flex-column-start-start;
+    gap: 1rem;
+
+    &__container{
+        @extend %flex-column-start-start;
+        align-self: stretch;
+        gap:1rem;
+        padding: 2rem;
+        border: dashed $admin-nuance-w-87 2px;
+        border-radius: 0.5rem;
+    }
+
+    &__list{
+
+        @extend %flex-column-start-stretch;
+        gap: 1rem;
+        align-self: stretch;
+        
+        
+        li{
+            list-style: none;
+
+
+            .autocomplete{
+                position:relative;
+
+                &__container{
+
+                    position: absolute;
+                    left: 0;
+                    // bottom: -100%;
+                    width: 100%;
+                    // height: 100%; */
+                    background-color: $admin-nuance-b-20;
+                    border-radius: 10px;
+                    z-index: 1;
+
+                }
+
+                &__option{
+                    list-style: none;
+                    width: 100%;
+                    padding-block: 1rem ;
+                    padding-inline-start: 0.5rem;
+                    padding-inline: 0.5rem ;
+                    background-color: transparent;
+                    color: $admin-nuance-w-100;
+                    font-family: $admin-font;
+
+
+                    &:hover{
+                        background-color: $admin-nuance-b-15;
+                    }
+                }
+            }
+        }
+        
+        input[type="text"],textarea{
+            border-radius: 0.5rem;
+            outline: none;
+            border: none;
+            font-family: $admin-font;
+            font-size: 1rem;
+            color: $admin-nuance-b-15;
+        }
+
+
+    }
+
+    .button__delete{
+        margin-block: 0.25rem;
+        float: inline-end;
+        color: black;
+        background-color: orangered;
+        
+    }
+
+}
+
+.form_splitview{
+    @extend %flex-column-start-start;
+    flex-wrap: wrap;
+    gap:1rem;
+    
+    &__container{
+        @extend %flex-row-space-around-center;
+        align-self: stretch;
+        gap:1rem;
+        padding: 2rem;
+        border: dashed $admin-nuance-w-87 2px;
+        border-radius: 0.5rem;
+    }
+    
+}

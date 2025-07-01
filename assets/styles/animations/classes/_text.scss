@@ -1,0 +1,17 @@
+/* Animation appliquée dynamiquement */
+.animating {
+  animation-fill-mode: forwards;
+}
+
+.fall-in {
+  animation: fall-in 1s ease-out;
+}
+.scale-up{
+  animation: scale-up 0.8s ease-out;
+}
+.slide-in{
+  animation: slide-in 1s ease-out;
+}
+.float-ready {
+  animation: float 3s ease-in-out infinite !important;
+}

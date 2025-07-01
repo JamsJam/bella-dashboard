@@ -1,0 +1,129 @@
+@use "../abstract/" as *;
+
+.admin {
+
+    .button__action {
+        @extend %flex-row-center-center;
+        border-radius: 2rem;
+        padding: 14px 24px;
+        box-shadow: 0 2px 4px 0 hsla(0, 0%, 0%, 0.31);
+
+        background-color: $admin-nuance-w-100;
+        color: $admin-nuance-b-20;
+        -outline: none;
+        border: none;
+
+        transition:
+            background-color 250ms ease-in-out,
+            color 150ms ease-in-out,
+        ;
+
+
+        &:hover {
+
+            color: $admin-nuance-w-100;
+            background-color: $admin-nuance-b-30;
+        }
+
+        &:active {
+
+            color: $admin-nuance-w-100;
+            background-color: $admin-nuance-b-15;
+            border: $admin-nuance-b-30;
+            transition:
+                background-color 100ms ease-in-out,
+                color 50ms ease-in-out,
+            ;
+        }
+
+        &.action--delete {
+            padding: 10px 16px;
+            margin-block: 0.25rem;
+            font-weight: 500;
+            float: inline-end;
+            box-shadow: none;
+
+            background-color: hsl(0, 0%, 100%);
+            color: hsl(0, 0%, 20%);
+            background-color: $danger;
+            // color: $admin-nuance-b-20;
+            color: $admin-nuance-w-100;
+            
+            &:hover {
+                
+                // color: $admin-nuance-w-100;
+                color: $admin-nuance-b-20;
+                background-color: $danger-hover;
+
+                &:active {
+
+                    color: $admin-nuance-w-100;
+                    background-color: $danger-activ;
+
+                    transition:
+                        background-color 100ms ease-in-out,
+                        color 50ms ease-in-out,
+                    ;
+                }
+            }
+        }
+    }
+
+
+    .button__componnent {
+        @extend %flex-row-center-center;
+        background-color: $admin-nuance-w-100;
+        color: $admin-nuance-b-20;
+
+        border-radius: 10px;
+        padding: 8px 40px;
+        font-size: 1.5rem;
+
+        outline: none;
+        border: none;
+
+        box-shadow: 0 2px 4px hsla(0, 0%, 0%, 0.31);
+
+        transition:
+            background-color 250ms ease-in-out,
+            color 150ms ease-in-out,
+        ;
+
+
+        &:hover {
+
+            color: $admin-nuance-w-100;
+            background-color: $admin-nuance-b-30;
+        }
+
+
+    }
+
+
+    // .button__delete{
+    //     @extend %flex-row-center-center;
+    //     background-color: $admin-nuance-w-100;
+    //     color: $admin-nuance-b-20;
+
+    //     border-radius: 10px;
+    //     padding: 8px 40px;
+    //     font-size: 1.5rem;
+
+    //     outline: none;
+    //     border: none;
+
+    //     box-shadow: 0 2px 4px hsla(0, 0%, 0%, 0.31);
+
+    //     transition: 
+    //         background-color 250ms ease-in-out,
+    //         color 150ms ease-in-out,
+    //     ;
+
+
+    //     &:hover{
+
+    //         color: $admin-nuance-w-100;
+    //         background-color: $admin-nuance-b-30;
+    //     }
+    // }
+}

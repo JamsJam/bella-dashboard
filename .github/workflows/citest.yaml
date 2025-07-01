@@ -1,0 +1,59 @@
+name: citest
+
+on:
+  pull_request:
+    branches: [test]
+
+jobs:
+  symfony-tests:
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: test_db
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v3
+
+      - name: ⚙️ Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, intl, pdo_mysql
+          coverage: none
+
+      - name: 📦 Install Composer dependencies
+        run: composer install --no-interaction --prefer-dist
+
+      - name: 🧪 Run Symfony Linters
+        run: |
+          php bin/console lint:yaml .
+          php bin/console lint:twig templates/
+          php bin/console lint:container 
+          
+
+      - name: 🧹 PHP Linter (php-cs-fixer)
+        run: |
+          vendor/bin/php-cs-fixer fix --dry-run --diff
+
+
+
+      - name: 🧪 Run PHPUnit tests
+        env:
+          DATABASE_URL: mysql://root:root@127.0.0.1:3306/test_db
+        run: php bin/phpunit --testdox
+
+      - name: 📂 JS Linter (ESLint via npx)
+        run: |
+          npx eslint ./assets//**/*.js
+
+      # - name: 🎨 SCSS Linter (stylelint via npx)
+      #   run: |
+      #     npx stylelint "assets/styles/**/*.scss"

@@ -1,0 +1,11 @@
+
+@use 'base' as *;
+@use "./pages/back/" as *;
+@forward "./layout/admin-aside" ;
+@forward "./layout/admin-main" ; 
+@forward "./components/_admin_buttons" ; 
+@forward "./components/_admin_form" ; 
+@forward "./components/_dropzone" ;
+@forward "./components/_suneditor" ;
+
+

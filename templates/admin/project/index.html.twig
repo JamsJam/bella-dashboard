@@ -1,0 +1,90 @@
+{% extends 'admin-base.html.twig' %}
+
+{% block title %}Project index{% endblock %}
+
+{% block body %}
+
+{#todo create a dash header component that get path as argument and get the breadscrum and title in yaml route index files  #}
+        <div class="header">
+    {#?==== Titre de la page #}
+
+            <h1>Mes projets</h1>
+   
+
+    {#?==== fil d'arianne #}
+
+            <a href="#">
+                fil d'arianne
+            </a>
+
+    </div>
+    <turbo-frame id="projects-frame" >
+        
+        <section class="project">
+        
+            <header>
+            
+                <turbo-frame id="projects-actions">
+                    {# <div class="project__actions"> #}
+                        <a class="button__action" href=""></a>
+                        <a class="button__action" href="{{ path('app_admin_project_new') }}" data-turbo-frame="projects-frame"
+                        data-turbo-action="replace"
+                        >Ajouter</a> 
+                    {# </div> #}
+                </turbo-frame>
+
+                <form class="search" method="get" action="{{ path(app.request.attributes.get('_route')) }}" role="search" data-turbo-frame="projects-results">
+                    <input type="text" name="q" placeholder="Rechercher…" value="{{ app.request.query.get('q') }}">
+                    <button type="submit">Chercher</button>
+                </form> 
+            </header>
+
+
+
+            <turbo-frame id="projects-results">
+                <ul class="projets__grid">
+                    {# {% for article in articles %}
+                        <li class="projets__cell">
+                            <article class="article">
+                                <div class="article__visualbox">
+                                    <img class="article__image" src="{{ article.imageUrl }}" alt="{{ article.title }}">
+                                </div>
+                                <h2 class="article__titre">{{ article.title }}</h2>
+                                <div class="article__actions">
+                                    <ul>
+                                        <li>Voir</li>
+                                        <li>Modifier</li>
+                                        <li>Supprimer</li>
+                                    </ul>
+                                </div>
+                            </article>
+                        </li>
+                    {% else %}
+                        <li>
+                            <p>Aucun résultat trouvé.</p>
+                        </li>
+                    {% endfor %} #}
+                </ul>
+
+
+
+                {# <footer class="pagination">
+
+                    {% if pageCount > 1 %}
+                    <nav>
+                        <ul class="pagination-list">
+                        {% for page in 1..pageCount %}
+                            <li class="{{ currentPage == page ? 'active' : '' }}">
+                                <a href="{{ path(app.request.attributes.get('_route'), app.request.query.all | merge({'page': page})) }}" data-turbo-frame="projects-results">
+                                    {{ page }}
+                                </a>
+                            </li>
+                        {% endfor %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+                </footer> #}
+            </turbo-frame>
+        </section>
+    </turbo-frame>
+{% endblock %}
