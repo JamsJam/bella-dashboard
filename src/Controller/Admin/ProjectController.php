@@ -2,25 +2,24 @@
 
 namespace App\Controller\Admin;
 
-
 use App\Entity\Project;
 use App\Form\TagInProjectForm;
-use App\Repository\ProjectRepository;
 use App\Form\TechnologiesInProjectForm;
+use App\Repository\ProjectRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
+use Symfony\Component\Form\Extension\Core\Type\CollectionType;
+use Symfony\Component\Form\Extension\Core\Type\FileType;
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\Extension\Core\Type\UrlType;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
-use Symfony\Component\Form\Extension\Core\Type\UrlType;
-use Symfony\Component\Form\Extension\Core\Type\FileType;
-use Symfony\Component\Form\Extension\Core\Type\TextType;
-use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
-use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
-use Symfony\Component\Form\Extension\Core\Type\CollectionType;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 #[Route('/admin/project')]
 final class ProjectController extends AbstractController
@@ -36,33 +35,30 @@ final class ProjectController extends AbstractController
     #[Route('/new', name: 'app_admin_project_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager, ValidatorInterface $validator): Response
     {
-
         $session = $request->getSession();
-        //todo make enumClass
+        // todo make enumClass
         $validatedRule = [
             'generalData',
             'articleData',
-            'default'
+            'default',
         ];
         $step = (int) $request->request->get('step', 1);
 
-
-
-        //? ==== Create form
+        // ? ==== Create form
 
         // $project = $project ?? new Project();
 
-        if ($step === 1) {
+        if (1 === $step) {
             $form = $this->createFormBuilder(null, [
                 // 'validation_groups' => $validatedRule[$step - 1],
-                "allow_extra_fields" => true
+                'allow_extra_fields' => true,
             ])
 
                 ->add('title', TextType::class, [
                     'label' => 'Titre du projet',
-                    "required" => false,
-                    "row_attr" => [
-                        "class" => "form_wrapper"
+                    'required' => false,
+                    'row_attr' => [
+                        'class' => 'form_wrapper',
                     ],
                     'constraints' => [
                         new Length(
@@ -73,16 +69,16 @@ final class ProjectController extends AbstractController
                         ),
                         new NotBlank(
                             message: 'Veuillez renseigner le titre du projet'
-                        )
+                        ),
                     ],
                 ])
                 ->add('description', TextareaType::class, [
-                    "required" => false,
-                    "row_attr" => [
-                        "class" => "form_wrapper",
+                    'required' => false,
+                    'row_attr' => [
+                        'class' => 'form_wrapper',
                         'data-controller' => 'suneditor',
                     ],
-                    "attr" => [
+                    'attr' => [
                         'data-suneditor-target' => 'sample',
                         // "id" => "editContainer"
                     ],
@@ -96,25 +92,23 @@ final class ProjectController extends AbstractController
                         new NotBlank(
                             message: 'Veuillez renseigner la description du projet'
                         ),
-                        
                     ],
-
                 ])
                 ->add('technology', CollectionType::class, [
                     'entry_type' => TechnologiesInProjectForm::class,
                     'entry_options' => [
-                        "label" => false,
+                        'label' => false,
                     ],
                     'label' => false,
                     'allow_add' => true,
                     'allow_delete' => true,
-                    'required' => false
+                    'required' => false,
                 ])
                 ->add('Images', FileType::class, [
-                    "multiple" => true,
+                    'multiple' => true,
                     'row_attr' => [
                         'data-controller' => 'dropzone',
-                        'class' => 'dropzone-container'
+                        'class' => 'dropzone-container',
                     ],
 
                     'attr' => [
@@ -123,14 +117,12 @@ final class ProjectController extends AbstractController
                         'data-action' => 'change->dropzone#onFileInputChange',
                     ],
 
-                    "allow_extra_fields" => true,
-
-
+                    'allow_extra_fields' => true,
                 ])
                 ->add('tags', CollectionType::class, [
                     'entry_type' => TagInProjectForm::class,
                     'entry_options' => [
-                        "label" => false
+                        'label' => false,
                     ],
                     'label' => false,
                     'allow_add' => true,
@@ -139,11 +131,11 @@ final class ProjectController extends AbstractController
                 //  ->add('technologies',CollectionType::class,[])
                 //  ->add('images',CollectionType::class)
                 ->add('isOnline', CheckboxType::class, [
-                    "label" => "...en ligne ?",
-                    "row_attr" => [
-                        "class" => "form_wrapper"
+                    'label' => '...en ligne ?',
+                    'row_attr' => [
+                        'class' => 'form_wrapper',
                     ],
-                    'required' => false
+                    'required' => false,
                 ])
                 // ->add('projectlink', UrlType::class, [
                 //     "row_attr" => [
@@ -151,11 +143,11 @@ final class ProjectController extends AbstractController
                 //     ]
                 // ])
                 ->add('isGitpublic', CheckboxType::class, [
-                    "label" => "...sur Github ?",
-                    "row_attr" => [
-                        "class" => "form_wrapper"
+                    'label' => '...sur Github ?',
+                    'row_attr' => [
+                        'class' => 'form_wrapper',
                     ],
-                    'required' => false
+                    'required' => false,
                 ])
                 // ->add('gitlink', UrlType::class, [
                 //     "row_attr" => [
@@ -165,84 +157,75 @@ final class ProjectController extends AbstractController
 
                 ->getForm();
 
-
-            // $form->handleRequest($request);
-        } elseif ($step === 2) {
-
+        // $form->handleRequest($request);
+        } elseif (2 === $step) {
             $form = $this->createFormBuilder(null, [
                 // 'validation_groups' => $validatedRule[$step - 1]
             ])
                 ->add('casestudy', TextareaType::class, [
-                    "row_attr" => [
-                        "class" => "form_wrapper"
-                    ]
+                    'row_attr' => [
+                        'class' => 'form_wrapper',
+                    ],
                 ])
                 ->getForm();
-            // $form->handleRequest($request);
-        } elseif ($step === 3) {
+        // $form->handleRequest($request);
+        } elseif (3 === $step) {
             $form = $this->createFormBuilder(null, [
                 // 'validation_groups' => $validatedRule[$step - 1]
             ])
-                ->add("metaDescription", TextareaType::class, [
-                    "mapped" => false,
-                    "row_attr" => [
-                        "class" => "form_wrapper"
-                    ]
+                ->add('metaDescription', TextareaType::class, [
+                    'mapped' => false,
+                    'row_attr' => [
+                        'class' => 'form_wrapper',
+                    ],
                 ])
-                ->add("opengraph", CollectionType::class, [
-                    "mapped" => false,
-                    "row_attr" => [
-                        "class" => "form_wrapper"
-                    ]
+                ->add('opengraph', CollectionType::class, [
+                    'mapped' => false,
+                    'row_attr' => [
+                        'class' => 'form_wrapper',
+                    ],
                 ])
 
                 ->getForm();
-        };
-
-
-
+        }
 
         $form->handleRequest($request);
-        
+
         // dd($form->getData());
         if ($form->isSubmitted() && $form->isValid()) {
             $project = $form->getData();
             // dd($project);
-            if ($step === 1) {
-
+            if (1 === $step) {
                 // register data in session
-                $session->set("generalData", $project);
+                $session->set('generalData', $project);
 
-                $step++;
+                ++$step;
+
                 // render form new
                 return $this->redirectToRoute('app_admin_project_new', [
                     'step' => $step,
                 ]);
             }
-            if ($step === 2) {
+            if (2 === $step) {
                 // register data in session
-                $session->set("articleData", $project);
+                $session->set('articleData', $project);
+
                 // render form new
                 return $this->redirectToRoute('app_admin_project_new', [
                     'step' => $step + 1,
                 ]);
             }
-            if ($step === 3) {
-
+            if (3 === $step) {
                 // validate data
                 $projectSEO = $project;
-                //todo validate and file yaml file
+                // todo validate and file yaml file
 
-
-
-                //todo build project object
-                $projectdata[] = $session->get("projectData");
-                $projectdata[] = $session->get("articleData");
-
+                // todo build project object
+                $projectdata[] = $session->get('projectData');
+                $projectdata[] = $session->get('articleData');
 
                 $entityManager->persist($project);
                 $entityManager->flush();
-
 
                 $action = $request->request->get('action');
             }
@@ -253,7 +236,7 @@ final class ProjectController extends AbstractController
         return $this->render('admin/project/new.html.twig', [
             // 'project' => $project,
             'form' => $form,
-            'step' => $step
+            'step' => $step,
         ]);
     }
 
@@ -269,7 +252,7 @@ final class ProjectController extends AbstractController
     public function edit(Request $request, Project $project, EntityManagerInterface $entityManager): Response
     {
         $form = $this->createFormBuilder(null)
-            //? implement form
+            // ? implement form
             ->getForm();
         $form->handleRequest($request);
 
@@ -288,7 +271,7 @@ final class ProjectController extends AbstractController
     #[Route('/{id}', name: 'app_admin_project_delete', methods: ['POST'])]
     public function delete(Request $request, Project $project, EntityManagerInterface $entityManager): Response
     {
-        if ($this->isCsrfTokenValid('delete' . $project->getId(), $request->getPayload()->getString('_token'))) {
+        if ($this->isCsrfTokenValid('delete'.$project->getId(), $request->getPayload()->getString('_token'))) {
             $entityManager->remove($project);
             $entityManager->flush();
         }
