@@ -10,15 +10,15 @@ export default class extends Controller {
 
 
     static targets = [
-        "collectionContainer"
+        'collectionContainer'
 
-    ]
+    ];
 
 
     static values = {
         index    : Number,
         prototype: String,
-    }
+    };
 
     addCollectionElement(event)
     {
@@ -26,7 +26,7 @@ export default class extends Controller {
         item.innerHTML = this.prototypeValue.replace(/__name__/g, this.indexValue);
         this.collectionContainerTarget.appendChild(item);
         this.indexValue++;
-        this.addTagFormDeleteLink(item)
+        this.addTagFormDeleteLink(item);
     }
 
     addTagFormDeleteLink(item) {
@@ -43,7 +43,7 @@ export default class extends Controller {
         });
 
 
-}
+    }
 
 
 }
