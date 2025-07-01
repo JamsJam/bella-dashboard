@@ -56,7 +56,6 @@ jobs:
             echo "[ mise a jour du dossier ]"
             echo "============================"
             echo
-            git clone --depth 1 --branch test https://github.com/${{ github.repository }} .
             git clone --depth 1 --branch test https://x-access-token:${{ secrets.APP_TOKEN }}@github.com/${{ github.repository }}
             echo
             echo "============================"
