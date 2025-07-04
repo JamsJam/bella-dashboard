@@ -3,38 +3,40 @@
 
 
 
-<html lang="fr">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        {# ? === title === #}
-        <title>{% block title %}Welcome!{% endblock %}</title>
-        {# ? === metdescription === #}
-        <meta name="description" content="">
-        {# ? === metakeyword === #}
-        <meta name="keywords" content="">
-        {# ? === opengraph === #}
-        <meta property="og:title" content="Titre de la page">
-        <meta property="og:description" content="Description pour les réseaux sociaux">
-        <meta property="og:type" content="website">
-        <meta property="og:url" content="https://www.exemple.com/page">
-        <meta property="og:image" content="https://www.exemple.com/images/og-image.jpg">
-        {# ? === languages === #}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex">
+    <title>{% block title %} | Bellagp Dashboard{% endblock %}</title>
+    {# ? === languages === #}
         <link rel="alternate" hreflang="fr" href="https://www.exemple.com/fr/">
         <link rel="alternate" hreflang="en" href="https://www.exemple.com/en/">
+    {# ? === favicon === #}
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>sf</text></svg>">
+    {# ? === css global === #}
+    {% block stylesheets %}
+        {# <link rel="stylesheet" href="{{ asset('styles/admin.scss') }}"> #}
+    {% endblock %}
+    {# ? === js === #}
+    {% block javascripts %}
+        {% block importmap %}{{ importmap(['admin']) }}{% endblock %}
+    {% endblock %}
+</head>
+<body class="admin">
 
-        {# ? === favicon === #}
-        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>sf</text></svg>">
-        {# ? === css global === #}
-        {% block stylesheets %}
-            <link rel="stylesheet" href="{{ asset('styles/app.scss') }}">
-        {% endblock %}
-        {# ? === js === #}
-        {% block javascripts %}
-            {% block importmap %}{{ importmap('app') }}{% endblock %}
-        {% endblock %}
-    </head>
-    <body>
-        {% block body %}{% endblock %}
-    </body>
+    {#?===== twig component adminmenu #}
+    <twig:Dashboard:Menu:Menu 
+    routeKey="{{ routeKey }}"
+    />
+
+
+    <turbo-frame id="admin-main">
+        <main>
+            {% block body %}
+                
+            {% endblock %}
+        </main>
+    </turbo-frame>
+</body>
 </html>
