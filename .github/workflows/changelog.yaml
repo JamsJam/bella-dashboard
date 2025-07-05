@@ -55,6 +55,12 @@ jobs:
 
           git commit -m "🔄 Mise à jour automatique du CHANGELOG"
 
+      - name: Ajouter un tag si aucun n'existe
+        run: |
+          if [ -z "$(git tag)" ]; then
+            git tag v0.0.1
+          fi
+          
       - name: Setup Git authentication and push
         run: |
           git remote set-url origin https://x-access-token:${{ secrets.APP_TOKEN }}@github.com/${{ github.repository }}
