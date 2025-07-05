@@ -15,6 +15,9 @@ on:
     types:
       - completed
 
+permissions:
+  contents: write
+
 jobs:
   on-failure:
     runs-on: ubuntu-latest
