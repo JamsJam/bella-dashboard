@@ -7,11 +7,17 @@ on:
       - completed
 
 jobs:
-  post-deploy:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+  on-failure:
     runs-on: ubuntu-latest
-
+    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
     steps:
+      - run: echo 'deploy-test failed'
+  on-success:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - run: echo 'Update the changeLog'
+
       - name: Checkout code
         uses: actions/checkout@v3
 
