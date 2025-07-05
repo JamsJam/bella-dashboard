@@ -38,6 +38,8 @@ jobs:
 
       - name: S'assurer d'être sur la branche test
         run: |
+          git remote set-url origin https://x-access-token:${{ secrets.APP_TOKEN }}@github.com/${{ github.repository }}
+          git fetch origin test
           git checkout test
 
       - name: Générer une entrée dans CHANGELOG.md
@@ -64,7 +66,7 @@ jobs:
             git tag v0.0.1
           fi
 
-          
+
       - name: Setup Git authentication and push
         run: |
           git remote set-url origin https://x-access-token:${{ secrets.APP_TOKEN }}@github.com/${{ github.repository }}
