@@ -2,12 +2,12 @@
 
 namespace App\Entity\Avatar\Eyebrows;
 
-use Doctrine\ORM\Mapping as ORM;
-use App\Entity\Traits\DateFieldsTrait;
 use App\Entity\Traits\ColorFieldsTrait;
-use Doctrine\Common\Collections\Collection;
-use Doctrine\Common\Collections\ArrayCollection;
+use App\Entity\Traits\DateFieldsTrait;
 use App\Repository\Avatar\Eyebrows\EyebrowscolorRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: EyebrowscolorRepository::class)]
 class Eyebrowscolor
@@ -19,8 +19,6 @@ class Eyebrowscolor
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
-
-
 
     /**
      * @var Collection<int, Eyebrows>

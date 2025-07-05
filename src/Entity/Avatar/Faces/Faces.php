@@ -3,20 +3,19 @@
 namespace App\Entity\Avatar\Faces;
 
 use App\Entity\Avatar\Skincolor;
-use Doctrine\ORM\Mapping as ORM;
 use App\Entity\Traits\DateFieldsTrait;
 use App\Repository\Avatar\Faces\FacesRepository;
+use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: FacesRepository::class)]
 class Faces
 {
     use DateFieldsTrait;
-    
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
-
 
     #[ORM\Column(length: 50)]
     private ?string $name = null;
@@ -38,7 +37,6 @@ class Faces
     {
         return $this->id;
     }
-
 
     public function getName(): ?string
     {

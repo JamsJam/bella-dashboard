@@ -1,19 +1,16 @@
 <?php
 
-
 namespace App\Entity\Traits;
 
 use Doctrine\ORM\Mapping as ORM;
 
 trait DateFieldsTrait
 {
-
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\Column]
     private ?\DateTimeImmutable $editedAt = null;
-
 
     public function getCreatedAt(): ?\DateTimeImmutable
     {
@@ -39,5 +36,3 @@ trait DateFieldsTrait
         return $this;
     }
 }
-    
-    

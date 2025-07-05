@@ -2,18 +2,18 @@
 
 namespace App\Entity\Orders;
 
-use App\Entity\Users\Customers;
-use Doctrine\ORM\Mapping as ORM;
 use App\Entity\Traits\DateFieldsTrait;
+use App\Entity\Users\Customers;
 use App\Repository\Orders\OrdersRepository;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: OrdersRepository::class)]
 class Orders
 {
     use DateFieldsTrait;
-    
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]

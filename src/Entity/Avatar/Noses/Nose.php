@@ -3,9 +3,9 @@
 namespace App\Entity\Avatar\Noses;
 
 use App\Entity\Avatar\Skincolor;
-use Doctrine\ORM\Mapping as ORM;
 use App\Entity\Traits\DateFieldsTrait;
 use App\Repository\Avatar\Noses\NoseRepository;
+use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: NoseRepository::class)]
 class Nose
@@ -16,8 +16,6 @@ class Nose
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
-
-
 
     #[ORM\Column(length: 50)]
     private ?string $name = null;
@@ -40,8 +38,6 @@ class Nose
     {
         return $this->id;
     }
-
-
 
     public function getName(): ?string
     {

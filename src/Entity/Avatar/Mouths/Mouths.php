@@ -2,9 +2,9 @@
 
 namespace App\Entity\Avatar\Mouths;
 
-use Doctrine\ORM\Mapping as ORM;
 use App\Entity\Traits\DateFieldsTrait;
 use App\Repository\Avatar\Mouths\MouthsRepository;
+use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: MouthsRepository::class)]
 class Mouths
@@ -15,7 +15,6 @@ class Mouths
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
-
 
     #[ORM\Column(length: 50)]
     private ?string $name = null;
@@ -38,8 +37,6 @@ class Mouths
     {
         return $this->id;
     }
-
-
 
     public function getName(): ?string
     {

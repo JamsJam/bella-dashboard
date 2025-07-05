@@ -2,11 +2,11 @@
 
 namespace App\Entity\Avatar\Hairs;
 
+use App\Entity\Traits\DateFieldsTrait;
+use App\Repository\Avatar\Hairs\HairshapeRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use App\Entity\Traits\DateFieldsTrait;
-use App\Repository\Avatar\Hairs\HairshapeRepository;
 
 #[ORM\Entity(repositoryClass: HairshapeRepository::class)]
 class Hairshape

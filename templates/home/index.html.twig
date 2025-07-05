@@ -8,15 +8,19 @@
     <div class="header">
     {#?==== Titre de la page #}
         {# <turbo-frame id="dash-title"> #}
-            <h1>Titre de la page</h1>
+            <h1>{{metaData.title}}</h1>
         {# </turbo-frame> #}
 
     {#?==== fil d'arianne #}
-        {# <turbo-frame id="dash-arianne"> #}
-            <a href="">
-            je suis un fil d'arianne
-            </a>
-        {# </turbo-frame> #}
+        <turbo-frame id="dash-arianne">
+            {% for scrumItem in metaData.breadcrumb %}
+                
+                <a href="{{path(scrumItem.route)}}">
+                    {{scrumItem.title}} {% if not loop.last %}/{% endif %}
+                    
+                </a> 
+            {% endfor %}
+        </turbo-frame>
     </div>
 
     {# chiffre du mois #}

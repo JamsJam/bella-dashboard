@@ -1,15 +1,12 @@
 <?php
 
-
 namespace App\Entity\Traits;
 
 use Doctrine\ORM\Mapping as ORM;
 
-
 trait UserFieldsTrait
 {
-
-#[ORM\Column(length: 180)]
+    #[ORM\Column(length: 180)]
     private ?string $email = null;
 
     /**
@@ -96,7 +93,4 @@ trait UserFieldsTrait
         // If you store any temporary, sensitive data on the user, clear it here
         // $this->plainPassword = null;
     }
-
 }
-    
-    

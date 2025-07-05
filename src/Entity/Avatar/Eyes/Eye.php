@@ -2,15 +2,15 @@
 
 namespace App\Entity\Avatar\Eyes;
 
-use Doctrine\ORM\Mapping as ORM;
 use App\Entity\Traits\DateFieldsTrait;
 use App\Repository\Avatar\Eyes\EyeRepository;
+use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: EyeRepository::class)]
 class Eye
 {
     use DateFieldsTrait;
-    
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]

@@ -2,22 +2,21 @@
 
 namespace App\Entity\Avatar\Faces;
 
-use Doctrine\ORM\Mapping as ORM;
 use App\Entity\Traits\DateFieldsTrait;
-use Doctrine\Common\Collections\Collection;
-use Doctrine\Common\Collections\ArrayCollection;
 use App\Repository\Avatar\Faces\FaceshapeRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: FaceshapeRepository::class)]
 class Faceshape
 {
     use DateFieldsTrait;
-    
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
-
 
     #[ORM\Column(length: 50)]
     private ?string $name = null;
@@ -38,8 +37,6 @@ class Faceshape
         return $this->id;
     }
 
-
-    
     public function getName(): ?string
     {
         return $this->name;

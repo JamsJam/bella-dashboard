@@ -31,7 +31,6 @@ class Hairscolor
         $this->hairs = new ArrayCollection();
     }
 
-
     public function getId(): ?int
     {
         return $this->id;
@@ -66,6 +65,4 @@ class Hairscolor
 
         return $this;
     }
-
-
 }

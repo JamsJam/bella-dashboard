@@ -18,7 +18,6 @@ class Clothes
     #[ORM\Column]
     private ?int $id = null;
 
-
     #[ORM\Column(length: 50)]
     private ?string $name = null;
 
@@ -75,8 +74,6 @@ class Clothes
     {
         return $this->id;
     }
-
-
 
     public function getName(): ?string
     {

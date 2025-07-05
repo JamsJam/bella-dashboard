@@ -2,22 +2,19 @@
 
 namespace App\Entity\Avatar\Body;
 
-use Doctrine\ORM\Mapping as ORM;
 use App\Entity\Traits\DateFieldsTrait;
 use App\Repository\Avatar\Body\BodysizeRepository;
+use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: BodysizeRepository::class)]
 class Bodysize
 {
-
     use DateFieldsTrait;
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
-
-
 
     #[ORM\Column(length: 5)]
     private ?string $name = null;

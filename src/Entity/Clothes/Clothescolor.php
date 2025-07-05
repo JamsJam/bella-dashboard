@@ -2,12 +2,12 @@
 
 namespace App\Entity\Clothes;
 
-use Doctrine\ORM\Mapping as ORM;
-use App\Entity\Traits\DateFieldsTrait;
 use App\Entity\Traits\ColorFieldsTrait;
-use Doctrine\Common\Collections\Collection;
-use Doctrine\Common\Collections\ArrayCollection;
+use App\Entity\Traits\DateFieldsTrait;
 use App\Repository\Clothes\ClothescolorRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ClothescolorRepository::class)]
 class Clothescolor
@@ -19,7 +19,6 @@ class Clothescolor
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
-
 
     #[ORM\Column(length: 50)]
     private ?string $name = null;
@@ -42,7 +41,6 @@ class Clothescolor
     {
         return $this->id;
     }
-
 
     /**
      * @return Collection<int, Clothes>

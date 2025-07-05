@@ -2,12 +2,12 @@
 
 namespace App\Entity\Category;
 
-use Doctrine\ORM\Mapping as ORM;
-use App\Entity\Traits\DateFieldsTrait;
 use App\Entity\Collections\Collections;
-use Doctrine\Common\Collections\Collection;
+use App\Entity\Traits\DateFieldsTrait;
 use App\Repository\Category\CategoryRepository;
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: CategoryRepository::class)]
 class Category
@@ -18,8 +18,6 @@ class Category
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
-
-
 
     #[ORM\Column(length: 50)]
     private ?string $name = null;
@@ -45,8 +43,6 @@ class Category
     {
         return $this->id;
     }
-
-
 
     public function getName(): ?string
     {

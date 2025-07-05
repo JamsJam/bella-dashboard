@@ -1,6 +1,5 @@
 <?php
 
-
 namespace App\Entity\Traits;
 
 use Doctrine\ORM\Mapping as ORM;
@@ -12,7 +11,6 @@ trait ColorFieldsTrait
 
     #[ORM\Column(length: 6, nullable: true)]
     private ?string $hexa = null;
-
 
     public function getName(): ?string
     {
@@ -38,5 +36,3 @@ trait ColorFieldsTrait
         return $this;
     }
 }
-    
-    

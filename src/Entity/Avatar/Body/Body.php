@@ -2,11 +2,11 @@
 
 namespace App\Entity\Avatar\Body;
 
-use App\Entity\Clothes\Clothes;
 use App\Entity\Avatar\Skincolor;
-use Doctrine\ORM\Mapping as ORM;
+use App\Entity\Clothes\Clothes;
 use App\Entity\Traits\DateFieldsTrait;
 use App\Repository\Avatar\Body\BodyRepository;
+use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: BodyRepository::class)]
 class Body
@@ -17,8 +17,6 @@ class Body
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
-
-
 
     #[ORM\Column(length: 100)]
     private ?string $name = null;
@@ -44,8 +42,6 @@ class Body
     {
         return $this->id;
     }
-
-
 
     public function getName(): ?string
     {

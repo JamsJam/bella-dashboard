@@ -2,13 +2,13 @@
 
 namespace App\Entity\Collections;
 
-use App\Entity\Clothes\Clothes;
-use Doctrine\ORM\Mapping as ORM;
 use App\Entity\Category\Category;
+use App\Entity\Clothes\Clothes;
 use App\Entity\Traits\DateFieldsTrait;
-use Doctrine\Common\Collections\Collection;
-use Doctrine\Common\Collections\ArrayCollection;
 use App\Repository\Collections\CollectionsRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: CollectionsRepository::class)]
 class Collections
@@ -19,7 +19,6 @@ class Collections
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
-
 
     #[ORM\Column(length: 50)]
     private ?string $name = null;
@@ -49,7 +48,6 @@ class Collections
     {
         return $this->id;
     }
-
 
     public function getName(): ?string
     {

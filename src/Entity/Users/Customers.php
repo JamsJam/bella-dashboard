@@ -2,19 +2,19 @@
 
 namespace App\Entity\Users;
 
-use ApiPlatform\Metadata\Get;
-use ApiPlatform\Metadata\Put;
-use ApiPlatform\Metadata\Post;
-use App\Entity\Orders\Orders;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
-use Doctrine\ORM\Mapping as ORM;
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
+use App\Entity\Orders\Orders;
 use App\Entity\Traits\DateFieldsTrait;
 use App\Entity\Traits\UserFieldsTrait;
 use App\Repository\Users\CustomersRepository;
-use Symfony\Component\Security\Core\User\UserInterface;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 #[ApiResource(
     operations: [
@@ -31,7 +31,7 @@ class Customers implements UserInterface, PasswordAuthenticatedUserInterface
 {
     use DateFieldsTrait;
     use UserFieldsTrait;
-    
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -77,6 +77,4 @@ class Customers implements UserInterface, PasswordAuthenticatedUserInterface
 
         return $this;
     }
-
- 
 }

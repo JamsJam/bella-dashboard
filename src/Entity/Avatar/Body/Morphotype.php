@@ -2,18 +2,17 @@
 
 namespace App\Entity\Avatar\Body;
 
-use Doctrine\ORM\Mapping as ORM;
 use ApiPlatform\Metadata\ApiResource;
 use App\Entity\Traits\DateFieldsTrait;
-use Doctrine\Common\Collections\Collection;
-use Doctrine\Common\Collections\ArrayCollection;
 use App\Repository\Avatar\Body\MorphotypeRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: MorphotypeRepository::class)]
 #[ApiResource]
 class Morphotype
 {
-
     use DateFieldsTrait;
 
     #[ORM\Id]
@@ -39,7 +38,6 @@ class Morphotype
     {
         return $this->id;
     }
-
 
     public function getName(): ?string
     {

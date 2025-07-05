@@ -2,44 +2,37 @@
 
 namespace App\DTO\Menu;
 
-class MenuItemDTO
+final class MenuItemDTO
 {
+    private ?string $label = null;
 
-    private ?string $label  = null;
+    private ?string $route = null;
 
-    private ?string $route = null ;
+    private ?string $class = null;
 
-    private ?string $class  = null;
+    private ?string $activClass = null;
 
-    private ?string $activClass = null ;
-    
-    
-    private ?string $ariaLabel = null ;
+    private ?string $ariaLabel = null;
 
-    private ?string $key = null ;
+    private ?string $key = null;
 
     // private ?string $icon = null ;
 
-    private array $roles = [] ;
-    
+    private array $roles = [];
+
     // private array $children = [] ;
 
-
-  
-
     /**
-     * Get the value of label
-     */ 
+     * Get the value of label.
+     */
     public function getLabel()
     {
         return $this->label;
     }
 
     /**
-     * Set the value of label
-     *
-     * @return  self
-     */ 
+     * Set the value of label.
+     */
     public function setLabel($label): self
     {
         $this->label = $label;
@@ -48,18 +41,16 @@ class MenuItemDTO
     }
 
     /**
-     * Get the value of route
-     */ 
+     * Get the value of route.
+     */
     public function getRoute()
     {
         return $this->route;
     }
 
     /**
-     * Set the value of route
-     *
-     * @return  self
-     */ 
+     * Set the value of route.
+     */
     public function setRoute($route): self
     {
         $this->route = $route;
@@ -68,18 +59,16 @@ class MenuItemDTO
     }
 
     /**
-     * Get the value of class
-     */ 
+     * Get the value of class.
+     */
     public function getClass()
     {
         return $this->class;
     }
 
     /**
-     * Set the value of class
-     *
-     * @return  self
-     */ 
+     * Set the value of class.
+     */
     public function setClass($class): self
     {
         $this->class = $class;
@@ -88,18 +77,16 @@ class MenuItemDTO
     }
 
     /**
-     * Get the value of activClass
-     */ 
+     * Get the value of activClass.
+     */
     public function getActivClass()
     {
         return $this->activClass;
     }
 
     /**
-     * Set the value of activClass
-     *
-     * @return  self
-     */ 
+     * Set the value of activClass.
+     */
     public function setActivClass($activClass): self
     {
         $this->activClass = $activClass;
@@ -107,38 +94,35 @@ class MenuItemDTO
         return $this;
     }
 
-        /**
-     * Get the value of ariaLabel
-     */ 
+    /**
+     * Get the value of ariaLabel.
+     */
     public function getAriaLabel()
     {
         return $this->ariaLabel;
     }
 
     /**
-     * Set the value of ariaLabel
-     *
-     * @return  self
-     */ 
+     * Set the value of ariaLabel.
+     */
     public function setAriaLabel($ariaLabel): self
     {
         $this->ariaLabel = $ariaLabel;
 
         return $this;
     }
+
     /**
-     * Get the value of key
-     */ 
+     * Get the value of key.
+     */
     public function getKey()
     {
         return $this->key;
     }
 
     /**
-     * Set the value of key
-     *
-     * @return  self
-     */ 
+     * Set the value of key.
+     */
     public function setKey($key): self
     {
         $this->key = $key;
@@ -148,7 +132,7 @@ class MenuItemDTO
 
     // /**
     //  * Get the value of icon
-    //  */ 
+    //  */
     // public function getIcon()
     // {
     //     return $this->icon;
@@ -158,7 +142,7 @@ class MenuItemDTO
     //  * Set the value of icon
     //  *
     //  * @return  self
-    //  */ 
+    //  */
     // public function setIcon($icon): self
     // {
     //     $this->icon = $icon;
@@ -167,18 +151,16 @@ class MenuItemDTO
     // }
 
     /**
-     * Get the value of roles
-     */ 
+     * Get the value of roles.
+     */
     public function getRoles()
     {
         return $this->roles;
     }
 
     /**
-     * Set the value of roles
-     *
-     * @return  self
-     */ 
+     * Set the value of roles.
+     */
     public function setRoles($roles): self
     {
         $this->roles = $roles;
@@ -188,7 +170,7 @@ class MenuItemDTO
 
     // /**
     //  * Get the value of children
-    //  */ 
+    //  */
     // public function getChildren()
     // {
     //     return $this->children;
@@ -198,13 +180,11 @@ class MenuItemDTO
     //  * Set the value of children
     //  *
     //  * @return  self
-    //  */ 
+    //  */
     // public function setChildren($children): self
     // {
     //     $this->children = $children;
 
     //     return $this;
     // }
-
-
 }

@@ -2,9 +2,9 @@
 
 namespace App\Entity\Avatar\Eyebrows;
 
-use Doctrine\ORM\Mapping as ORM;
 use App\Entity\Traits\DateFieldsTrait;
 use App\Repository\Avatar\Eyebrows\EyebrowsRepository;
+use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: EyebrowsRepository::class)]
 class Eyebrows
@@ -37,7 +37,6 @@ class Eyebrows
     {
         return $this->id;
     }
-
 
     public function getName(): ?string
     {

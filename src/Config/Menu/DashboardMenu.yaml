@@ -1,7 +1,7 @@
 menu:
   - label: "Dashboard"
     route: "app_home"
-    key: "home"
+    key: "Dashboard"
     class: "menu__item"
     activClass: "menu__item--active"
     ariaLabel: "Accès au tableau de bord"

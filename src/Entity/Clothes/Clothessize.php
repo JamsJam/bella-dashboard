@@ -2,11 +2,11 @@
 
 namespace App\Entity\Clothes;
 
-use Doctrine\ORM\Mapping as ORM;
 use App\Entity\Traits\DateFieldsTrait;
-use Doctrine\Common\Collections\Collection;
-use Doctrine\Common\Collections\ArrayCollection;
 use App\Repository\Clothes\ClothessizeRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ClothessizeRepository::class)]
 class Clothessize
@@ -17,7 +17,6 @@ class Clothessize
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
-
 
     #[ORM\Column(length: 5)]
     private ?string $name = null;
@@ -37,7 +36,6 @@ class Clothessize
     {
         return $this->id;
     }
-
 
     public function getName(): ?string
     {

@@ -1,19 +1,19 @@
 <?php
-Namespace App\Validator;
+
+namespace App\Validator;
 
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
-use Symfony\Component\Validator\Exception\ValidationFailedException;
 
-
-class DtoValidator 
+class DtoValidator
 {
-     public function __construct(
-        private ValidatorInterface $validator
-    ) {}
+    public function __construct(
+        private ValidatorInterface $validator,
+    ) {
+    }
 
     /**
-     * Valide un DTO en utilisant les contraintes définies via @Assert
+     * Valide un DTO en utilisant les contraintes définies via @Assert.
      *
      * @throws BadRequestHttpException si des violations sont détectées
      */
@@ -24,8 +24,7 @@ class DtoValidator
         if (count($violations) > 0) {
             $messages = [];
 
-            foreach ($violations as $violation){
-
+            foreach ($violations as $violation) {
                 $messages[] = sprintf(
                     '%s: %s',
                     $violation->getPropertyPath(),
@@ -33,7 +32,7 @@ class DtoValidator
                 );
             }
 
-            throw new BadRequestHttpException(implode("\n", $messages ));
+            throw new BadRequestHttpException(implode("\n", $messages));
         }
     }
 }

@@ -2,12 +2,12 @@
 
 namespace App\Entity\Avatar\Eyes;
 
-use Doctrine\ORM\Mapping as ORM;
-use App\Entity\Traits\DateFieldsTrait;
 use App\Entity\Traits\ColorFieldsTrait;
-use Doctrine\Common\Collections\Collection;
-use Doctrine\Common\Collections\ArrayCollection;
+use App\Entity\Traits\DateFieldsTrait;
 use App\Repository\Avatar\Eyes\EyecolorRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: EyecolorRepository::class)]
 class Eyecolor
@@ -19,8 +19,6 @@ class Eyecolor
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
-
-
 
     /**
      * @var Collection<int, Eye>
@@ -37,7 +35,6 @@ class Eyecolor
     {
         return $this->id;
     }
-
 
     /**
      * @return Collection<int, Eye>

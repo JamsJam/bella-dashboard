@@ -23,7 +23,6 @@ class Skincolor
     #[ORM\Column]
     private ?int $id = null;
 
-
     /**
      * @var Collection<int, Nose>
      */
@@ -53,8 +52,6 @@ class Skincolor
     {
         return $this->id;
     }
-
-
 
     /**
      * @return Collection<int, Nose>

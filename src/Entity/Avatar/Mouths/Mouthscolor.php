@@ -2,13 +2,12 @@
 
 namespace App\Entity\Avatar\Mouths;
 
-use Doctrine\ORM\Mapping as ORM;
-use App\Entity\Avatar\Mouths\Mouths;
-use App\Entity\Traits\DateFieldsTrait;
 use App\Entity\Traits\ColorFieldsTrait;
-use Doctrine\Common\Collections\Collection;
-use Doctrine\Common\Collections\ArrayCollection;
+use App\Entity\Traits\DateFieldsTrait;
 use App\Repository\Avatar\Mouths\MouthscolorRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: MouthscolorRepository::class)]
 class Mouthscolor
@@ -20,7 +19,6 @@ class Mouthscolor
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
-
 
     /**
      * @var Collection<int, Mouths>
@@ -37,9 +35,6 @@ class Mouthscolor
     {
         return $this->id;
     }
-
-
-
 
     /**
      * @return Collection<int, Mouths>
