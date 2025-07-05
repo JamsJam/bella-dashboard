@@ -8,7 +8,6 @@ on:
 
 jobs:
   build:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     name: Build
     runs-on: ubuntu-latest
     steps:
@@ -34,8 +33,9 @@ jobs:
             echo "[ mise a jour du dossier ]"
             echo "============================"
             echo
-            git stash
-            git pull
+            git remote set-url origin https://x-access-token:${{ secrets.APP_TOKEN }}@github.com/${{ github.repository }}
+            git stash || true
+            git pull origin main
             echo
             echo "============================"
             echo "[ creation du .env ]"
