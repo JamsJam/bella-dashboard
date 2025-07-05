@@ -33,6 +33,10 @@ jobs:
           ref: test         
           fetch-depth: 0 
 
+      - name: S'assurer d'être sur la branche test
+        run: |
+          git checkout test
+
       - name: Générer une entrée dans CHANGELOG.md
         run: |
           chmod +x .github/workflows/script/generate_changelog.sh
