@@ -29,6 +29,9 @@ jobs:
 
       - name: Checkout code
         uses: actions/checkout@v3
+        with:
+          ref: test         
+          fetch-depth: 0 
 
       - name: Générer une entrée dans CHANGELOG.md
         run: |
