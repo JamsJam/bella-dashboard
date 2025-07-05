@@ -1,8 +1,8 @@
 import { Controller } from '@hotwired/stimulus';
-import suneditor from 'suneditor'
-import plugins from 'suneditor/src/plugins'
-import lang from 'suneditor/src/lang'
-import fr from 'suneditor/src/lang/fr'
+import suneditor from 'suneditor';
+import plugins from 'suneditor/src/plugins';
+import lang from 'suneditor/src/lang';
+import fr from 'suneditor/src/lang/fr';
 
 
 
@@ -16,7 +16,7 @@ export default class extends Controller {
 
     static targets = [
         'sample'
-    ]
+    ];
 
     initialize() {
         // Called once when the controller is first instantiated (per element)
@@ -47,30 +47,30 @@ export default class extends Controller {
     }
 
     sampleTargetConnected() {
-        this.initEditor()
+        this.initEditor();
     }
 
     initEditor() {
 
         const editor = suneditor.create(this.sampleTarget.getAttribute('id'), {
-            "mode": "classic",
-            "plugins": plugins,
-            "rtl": false,
-            "height": "120px",
-            "katex": "window.katex",
-            "charCounter": true,
-            "charCounterType": "char",
-            "charCounterLabel": "characteres",
-            "maxCharCount": "1000",
-            "className": "wysiwygEditor",
-            "font": [
+            'mode': 'classic',
+            'plugins': plugins,
+            'rtl': false,
+            'height': '120px',
+            'katex': 'window.katex',
+            'charCounter': true,
+            'charCounterType': 'char',
+            'charCounterLabel': 'characteres',
+            'maxCharCount': '1000',
+            'className': 'wysiwygEditor',
+            'font': [
                 'Montserra'
             ],
-            "fontSize": [
-                    8, 9, 10, 11, 12, 14, 16, 18, 20, 22, 24, 26, 28, 36, 48, 72
-                ],
-            "fontSizeUnit": 'px',
-            "formats": [
+            'fontSize': [
+                8, 9, 10, 11, 12, 14, 16, 18, 20, 22, 24, 26, 28, 36, 48, 72
+            ],
+            'fontSizeUnit': 'px',
+            'formats': [
                 'p', 
                 'h1', 
                 'h2', 
@@ -82,67 +82,67 @@ export default class extends Controller {
                 'blockquote', 
                 'pre'
             ],
-            "videoFileInput": false,
-            "tabDisable": false,
-            "paragraphStyles": [
-                "spaced",
+            'videoFileInput': false,
+            'tabDisable': false,
+            'paragraphStyles': [
+                'spaced',
                 {
-                    "name": "Box",
-                    "class": "__se__customClass"
+                    'name': 'Box',
+                    'class': '__se__customClass'
                 }
             ],
-            "textStyles": [
-                "translucent",
+            'textStyles': [
+                'translucent',
                 {
-                    "name": "Emphasis",
-                    "style": "-webkit-text-emphasis: filled;",
-                    "tag": "span"
+                    'name': 'Emphasis',
+                    'style': '-webkit-text-emphasis: filled;',
+                    'tag': 'span'
                 }
             ],
-            "buttonList": [
+            'buttonList': [
                 [
-                    "undo",
-                    "redo",
-                    "font",
-                    "fontSize",
-                    "formatBlock",
-                    "paragraphStyle",
-                    "blockquote",
-                    "bold",
-                    "underline",
-                    "italic",
-                    "strike",
+                    'undo',
+                    'redo',
+                    'font',
+                    'fontSize',
+                    'formatBlock',
+                    'paragraphStyle',
+                    'blockquote',
+                    'bold',
+                    'underline',
+                    'italic',
+                    'strike',
                     // "subscript",
                     // "superscript",
                     // "fontColor",
-                    "hiliteColor",
-                    "textStyle",
-                    "removeFormat",
-                    "outdent",
-                    "indent",
-                    "align",
-                    "horizontalRule",
-                    "list",
-                    "lineHeight",
-                    "table",
-                    "link",
-                    "image",
-                    "video",
+                    'hiliteColor',
+                    'textStyle',
+                    'removeFormat',
+                    'outdent',
+                    'indent',
+                    'align',
+                    'horizontalRule',
+                    'list',
+                    'lineHeight',
+                    'table',
+                    'link',
+                    'image',
+                    'video',
                     // "audio",
                     // "math",
                     // "imageGallery",
-                    "fullScreen",
-                    "showBlocks",
+                    'fullScreen',
+                    'showBlocks',
                     // "codeView",
-                    "preview",
+                    'preview',
                     // "print",
                     // "save",
                     // "template"
                 ]
             ],
-            "lang": lang.fr,
+            'lang': lang.fr,
             // "lang(In nodejs)": "fr"
         });
-        editor.onChange = function (contents, core) { editor.save() }
+        editor.onChange = function (contents, core) { editor.save(); };
     }
 }

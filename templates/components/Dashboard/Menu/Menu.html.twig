@@ -1,0 +1,30 @@
+<aside
+    {{ attributes }}
+    class="adminMenu"
+    data-turbo-prefetch="true"
+    
+    >
+
+    <div class="logo">
+        <img src="" alt="" class="logo">
+    </div>
+    <!-- component HTML -->
+
+    <ul 
+    class="menu__items"
+    >
+        {% for item in this.menu %}
+
+            <twig:Dashboard:Menu:MenuItem 
+                label="{{item.label}}"
+                route="{{item.route}}"
+                class="{{item.class}}"
+                activClass="{{item.activClass}}"
+                key="{{item.key}}"
+                ariaLabel="{{item.ariaLabel}}"
+                routeKey="{{routeKey}}"
+            />
+            
+        {% endfor %}
+    </ul>
+</aside>

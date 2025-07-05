@@ -10,7 +10,7 @@ export default class extends Controller {
         'placeholder',
         'count',
         'clear',
-    ]
+    ];
 
 
     connect() {
@@ -35,23 +35,23 @@ export default class extends Controller {
         const filelist = event.target.files;
         this.previewContainerTarget.innerHTML = '';
 
-        this.updateCount(filelist.length)
+        this.updateCount(filelist.length);
         for (const file of filelist) {
 
             if (file.type.startsWith('image/', 0)) {
                 const reader = new FileReader();
                 reader.addEventListener('load', (fileEvent) => {
-                    this.createPreviewItem(file.name, fileEvent.target.result, null)
-                })
-                reader.readAsDataURL(file)
+                    this.createPreviewItem(file.name, fileEvent.target.result, null);
+                });
+                reader.readAsDataURL(file);
             } else if (file.type === 'application/pdf') {
-                this.createPreviewItem(file.name, null, '📄')
+                this.createPreviewItem(file.name, null, '📄');
             }
             else if (file.type === 'video/mp4' || file.type === 'video/mp4') {
                 this.createPreviewItem(file.name, null, '🎥');
             }
             else if (file.type === 'text/csv') {
-                this.createPreviewItem(file.name, null, '📊')
+                this.createPreviewItem(file.name, null, '📊');
             }
         }
         this.activatePreview();
@@ -60,8 +60,8 @@ export default class extends Controller {
     onClear(){
         this.inputTarget.value = '';
         this.previewContainerTarget.innerHTML = '';
-        this.updateCount(0)
-        this.desactivatePreview()
+        this.updateCount(0);
+        this.desactivatePreview();
 
     }
 
@@ -71,8 +71,8 @@ export default class extends Controller {
      * @returns {void}
      */
     updateCount(count) {
-        console.log(typeof "hello")
-        this.countTarget.innerText = `${count.toString()} fichier${count > 1 ? 's' : ''}`
+        console.log(typeof 'hello');
+        this.countTarget.innerText = `${count.toString()} fichier${count > 1 ? 's' : ''}`;
     }
 
     /**
@@ -102,13 +102,13 @@ export default class extends Controller {
     }
 
     activatePreview(){
-        this.placeholderTarget.classList.add("hide")
-        this.previewContainerTarget.classList.remove("hide")
+        this.placeholderTarget.classList.add('hide');
+        this.previewContainerTarget.classList.remove('hide');
     }
 
     desactivatePreview(){
-        this.placeholderTarget.classList.remove("hide")
-        this.previewContainerTarget.classList.add("hide")
+        this.placeholderTarget.classList.remove('hide');
+        this.previewContainerTarget.classList.add('hide');
     }
 
 

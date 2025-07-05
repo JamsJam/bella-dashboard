@@ -1,0 +1,34 @@
+{% extends 'base.html.twig' %}
+
+
+ {% block title %}Dashboard {{parent()}}{% endblock %}
+
+{% block body %}
+
+    <div class="header">
+    {#?==== Titre de la page #}
+        {# <turbo-frame id="dash-title"> #}
+            <h1>{{metaData.title}}</h1>
+        {# </turbo-frame> #}
+
+    {#?==== fil d'arianne #}
+        <turbo-frame id="dash-arianne">
+            {% for scrumItem in metaData.breadcrumb %}
+                
+                <a href="{{path(scrumItem.route)}}">
+                    {{scrumItem.title}} {% if not loop.last %}/{% endif %}
+                    
+                </a> 
+            {% endfor %}
+        </turbo-frame>
+    </div>
+
+    {# chiffre du mois #}
+    <section>
+    </section>
+
+    {# commentaire #}
+    <section>
+    </section>
+
+{% endblock %}

@@ -55,6 +55,28 @@
 
             }
 
+            &--active{
+                @extend .menu__item;
+
+                background-color: $admin-nuance-w-87;
+                &:hover{
+
+                    cursor: default;
+                }
+
+
+                p{
+
+                    color: $admin-nuance-b-20;
+                    padding-block: 21px;
+                    padding-inline: 4rem;
+                    font-weight: 600;
+                    font-size: 1.5rem;
+                }
+            }
+
+
+
 
 
         }

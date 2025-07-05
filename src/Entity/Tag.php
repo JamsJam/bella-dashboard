@@ -2,20 +2,20 @@
 
 namespace App\Entity;
 
-use Doctrine\ORM\Mapping as ORM;
-use App\Repository\TagRepository;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
-use Doctrine\Common\Collections\Collection;
+use App\Repository\TagRepository;
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: TagRepository::class)]
 #[ApiResource(
-    operations:[
+    operations: [
         new GetCollection(
             normalizationContext: ['groups' => ['tag:collection']],
-            )
+        ),
     ]
 )]
 class Tag

@@ -7,14 +7,14 @@ import { Controller } from '@hotwired/stimulus';
 
 /* stimulusFetch: 'lazy' */
 export default class extends Controller {
-    static targets = ['input','container','autocomplete','option']
+    static targets = ['input','container','autocomplete','option'];
     static values = {
         loading: {type: Boolean, default: false},
         isExpended: {type: Boolean, default: false},
         urlProvider: {type: String, default: null},
         propertyName: {type: String, default: null},
         collectionData: {type: Array, default: []}
-    }
+    };
         
     
 
@@ -36,7 +36,7 @@ export default class extends Controller {
         // this.fooTarget.addEventListener('click', this._fooBar)
 
 
-        this.injectAutocomplete()
+        this.injectAutocomplete();
     }
 
     // Add custom controller actions here
@@ -59,12 +59,12 @@ export default class extends Controller {
      * @description inject le container des options dans le container
      */
     injectAutocomplete(){
-        const autocomplete = document.createElement('ul')
-        autocomplete.classList.add('autocomplete__container')
-        autocomplete.setAttribute('data-autocomplete-target', 'autocomplete')
-        autocomplete.setAttribute('data-action', 'click@window->autocomplete#clickOut')
+        const autocomplete = document.createElement('ul');
+        autocomplete.classList.add('autocomplete__container');
+        autocomplete.setAttribute('data-autocomplete-target', 'autocomplete');
+        autocomplete.setAttribute('data-action', 'click@window->autocomplete#clickOut');
 
-        this.containerTarget.append(autocomplete)
+        this.containerTarget.append(autocomplete);
         
     }
 
@@ -73,27 +73,27 @@ export default class extends Controller {
      * @param {Array} data
      */
     injectOption(data){
-        this.removeAutocompleteChoices()
+        this.removeAutocompleteChoices();
 
         
         if(data.length == 0){
-            const noResultItem = document.createElement('li')
-            noResultItem.classList.add('autocomplete__option')
-            noResultItem.setAttribute('data-autocomplete-target', 'option')
-            noResultItem.textContent =  "Aucune donnée trouvé"
-            this.autocompleteTarget.append(noResultItem)
+            const noResultItem = document.createElement('li');
+            noResultItem.classList.add('autocomplete__option');
+            noResultItem.setAttribute('data-autocomplete-target', 'option');
+            noResultItem.textContent =  'Aucune donnée trouvé';
+            this.autocompleteTarget.append(noResultItem);
 
         } else{
             data.forEach(element => {
-                const autocompleteItem = document.createElement('li')
-                autocompleteItem.classList.add('autocomplete__option')
-                autocompleteItem.setAttribute('data-autocomplete-target', 'option')
-                autocompleteItem.setAttribute('data-action', 'click->autocomplete#onOptionSelect')
+                const autocompleteItem = document.createElement('li');
+                autocompleteItem.classList.add('autocomplete__option');
+                autocompleteItem.setAttribute('data-autocomplete-target', 'option');
+                autocompleteItem.setAttribute('data-action', 'click->autocomplete#onOptionSelect');
                 
                 // autocompleteItem.textContent = element.name
-                autocompleteItem.textContent = element[this.propertyNameValue]
+                autocompleteItem.textContent = element[this.propertyNameValue];
                 
-                this.autocompleteTarget.append(autocompleteItem)
+                this.autocompleteTarget.append(autocompleteItem);
             });
             
         }
@@ -104,14 +104,14 @@ export default class extends Controller {
     removeAutocompleteChoices(){
         this.optionTargets.forEach(option =>{
 
-            option.remove()
-        })
+            option.remove();
+        });
     }
 
     onOptionSelect(event){
         const choice = event.target.textContent;
         this.inputTarget.value = choice;
-        this.removeAutocompleteChoices()
+        this.removeAutocompleteChoices();
     }
 
     searchOnChange (event = null, data = null){
@@ -141,34 +141,34 @@ export default class extends Controller {
         if(!this.isExpendedValue)
             
             // this.injectOption(this.collectionDataValue)
-            this.searchOnChange (event)
+            this.searchOnChange (event);
         
     }
     removeOnFocusout(){
-        this.removeAutocompleteChoices()
+        this.removeAutocompleteChoices();
     }
 
     clickOut(event){
         // console.log(event.target, ! (event.target == this.containerTarget ||  event.target == this.inputTarget ))
         if(! (event.target == this.containerTarget ||  event.target == this.inputTarget )){
-            this.removeAutocompleteChoices()
+            this.removeAutocompleteChoices();
         }
     }
 
     async getCollection(){
         // console.log(window.location.origin )
-        const urlToFetch = window.location.origin + this.urlProviderValue
+        const urlToFetch = window.location.origin + this.urlProviderValue;
         // console.log(urlToFetch )
         this.loadingValue = true;
         try {
             const response = await fetch(urlToFetch);
             if (!response.ok) {
-                throw new Error("Network response was not ok");
+                throw new Error('Network response was not ok');
             }
             const data = await response.json();
             this.collectionDataValue = data.member; // <-- ici on ne garde que les entités
         } catch (error) {
-            console.error("Fetch error: ", error);
+            console.error('Fetch error: ', error);
         } finally {
             this.loadingValue = false;
         }
