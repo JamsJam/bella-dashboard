@@ -107,28 +107,28 @@ jobs:
             php bin/console asset-map:compile
 
 
-      - name: Générer une entré dans CHANGELOG.md
-        run: |
-          chmod +x .github/workflows/script/generate_changelog.sh
-          .github/workflows/script/generate_changelog.sh
+      # - name: Générer une entré dans CHANGELOG.md
+      #   run: |
+      #     chmod +x .github/workflows/script/generate_changelog.sh
+      #     .github/workflows/script/generate_changelog.sh
   
-      - name: Commit & push le nouveau CHANGELOG.md
-        run: |
-          set -e
-          git config --local user.name "github-actions[bot]"
-          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add CHANGELOG.md
+      # - name: Commit & push le nouveau CHANGELOG.md
+      #   run: |
+      #     set -e
+      #     git config --local user.name "github-actions[bot]"
+      #     git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+      #     git add CHANGELOG.md
 
-          if git diff --cached --quiet; then
-            echo "🔹 Aucun changement à committer."
-            exit 0
-          fi
+      #     if git diff --cached --quiet; then
+      #       echo "🔹 Aucun changement à committer."
+      #       exit 0
+      #     fi
 
-          git commit -m "🔄 Mise à jour automatique du CHANGELOG"
+      #     git commit -m "🔄 Mise à jour automatique du CHANGELOG"
           
-      - name: Setup Git authentication
-        run: |
-          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
+      # - name: Setup Git authentication
+      #   run: |
+      #     git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
           
       # - name: Push changes
       #   uses: ad-m/github-push-action@master
@@ -136,11 +136,11 @@ jobs:
       #     github_token: ${{ secrets.GITHUB_TOKEN }}
       #     branch: ${{ github.ref }}
 
-      - name: Push tags (force)
-        run: |
-          git config user.name "GitHub Actions"
-          git config user.email "github-actions@users.noreply.github.com"
-          git push origin test --tags --force
+      # - name: Push tags (force)
+      #   run: |
+      #     git config user.name "GitHub Actions"
+      #     git config user.email "github-actions@users.noreply.github.com"
+      #     git push origin test --tags --force
 
 
       # - name: Envoyer un email avec le lien de test
