@@ -106,7 +106,15 @@ jobs:
             php bin/console sass:build
             php bin/console asset-map:compile
 
-
+      - name: Déclencher le workflow changelog-tasks
+        if: success()
+        run: |
+          curl -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${{ secrets.APP_TOKEN }}" \
+            https://api.github.com/repos/${{ github.repository }}/dispatches \
+            -d '{"event_type":"trigger-changelog"}'
+            
       # - name: Générer une entré dans CHANGELOG.md
       #   run: |
       #     chmod +x .github/workflows/script/generate_changelog.sh
