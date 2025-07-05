@@ -1,0 +1,8 @@
+dashboard_content:
+
+  app_home:
+    - title: "Tableau de bord"
+      routeKey: "Dashboard"
+      breadcrumb:
+        - title: "Accueil"
+          route: "app_home"
