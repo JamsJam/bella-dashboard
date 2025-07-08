@@ -1,0 +1,116 @@
+{% extends 'base.html.twig' %}
+
+
+ {% block title %}Dashboard {{parent()}}{% endblock %}
+
+{% block body %}
+
+    <div class="header">
+        {#?==== Titre de la page #}
+        {# <turbo-frame id="dash-title"> #}
+            <h1>{{metaData.title}}</h1>
+        {# </turbo-frame> #}
+
+        {#?==== fil d'arianne #}
+        <turbo-frame id="dash-arianne" >
+            {% for scrumItem in metaData.breadcrumb %}
+                
+                <a href="{{path(scrumItem.route)}}"
+                    data-turbo-frame="admin-main"
+                    {# target="_top" #}
+                    data-turbo-preload="true"
+                    data-turbo-action="replace"
+                >
+                    {{scrumItem.title}} {% if not loop.last %}/{% endif %}
+                </a> 
+            {% endfor %}
+        </turbo-frame>
+    </div>
+
+        
+    <turbo-frame id="avatar-frame" >
+        <section class="avatar">
+            <header>
+            
+                <turbo-frame id="avatar-navigation" >
+                    <div class="avatar__navigation">
+                        <a 
+                            class="button__action" 
+                            href="{{path('app_avatar_color_index')}}"
+                            data-turbo-frame="admin-main"
+                            {# data-turbo-preload="true" #}
+                            data-turbo-action="replace"
+                        >Couleurs</a>
+                        <a 
+                            class="button__action" 
+                            href="{{path('app_avatar_shape_index')}}"
+                            data-turbo-frame="admin-main"
+                            {# data-turbo-preload="true" #}
+                            data-turbo-action="replace"
+                        >Formes</a>
+                        <a class="button__action" href="">Morphologie</a>
+                        <a class="button__action" href="">Morphotype</a>
+
+                        <a 
+                            class="button__action return" 
+                            href="{{ path(metaData.breadcrumb[metaData.breadcrumb|length - 2].route) }}" 
+                            data-turbo-frame="admin-main"
+                            data-turbo-action="replace"
+                        >Retour</a> 
+                    </div>
+                </turbo-frame>
+            
+                <turbo-frame id="avatar-actions" >
+                    <div class="avatar__navigation">
+                        
+                        <a 
+                            class="button__action" 
+                            href="{{ path('app_admin_project_new') }}" 
+                            data-turbo-frame="avatar-frame"
+                            data-turbo-action="replace"
+                        >Ajouter</a> 
+
+                    </div>
+                </turbo-frame>
+
+
+            </header>
+
+        
+            <turbo-frame id="avatar-container" >
+                {% if type is null %} 
+                    <div class="avatar__choice">
+
+                        {% for key, item in typeChoice %}
+                                <a 
+                                    data-turbo-frame="admin-main"
+                                    href="{{path('app_avatar_index',{type: key})}}"
+                                    data-turbo-action="replace" 
+                                >{{item|capitalize}}</a>
+
+                        {% endfor %}
+
+                    </div>
+                {% else %}
+                    {# {% if parts|length >0 %} #}
+                    
+                    <twig:Grid:Grid
+                        part="{{ type }}" 
+                    />
+                        
+                    {# {% else %}
+                        <div class="partsGrid__empty">
+                        
+                            <p>Aucun Element disponible. Ajouter des elements</p>
+                        </div>
+                    {% endif %} #}
+
+                {% endif %}
+            </turbo-frame>
+
+
+
+        </section>
+    </turbo-frame>
+
+{% endblock %}

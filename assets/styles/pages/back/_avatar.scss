@@ -1,0 +1,98 @@
+@use "../../abstract" as *;
+
+// .admin 
+
+
+    
+    
+    .avatar{
+
+        grid-area: 2 / 1 / 3 / 2;
+        // overflow-y: scroll;
+        overflow-x: hidden;
+
+        width: 100%;
+        height: 100%;
+        
+        border-radius: 20px;
+        background-color: $admin-nuance-b-15;
+        box-shadow: 
+            // 2px -2px 6px 0 rgba(164, 164, 164, 0.31),
+            // inset 4px 4px 4px 0 hsla(0,0%,0%, 0.31),
+            0px 4px 8px 0 hsla(0,0%,0%, 0.21), 
+            ;
+        // box-shadow: inset 0 0px 4px 0;
+        
+
+        padding-inline: 4rem;
+        padding-block: 2rem;
+
+        overflow-y: scroll;
+        overflow-x: hidden;
+
+
+        &__navigation,&__action{
+            @extend %flex-row-end-center;
+            
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        
+        turbo-frame#avatar-form{
+
+            max-width: 1024px;
+            height: 100px;
+            background-color: tan;
+
+            // form{
+            //     @extend %flex-column-start-stretch;
+            //     gap:2rem;
+            //     margin-top: 2rem;
+
+            //     .button__componnent{
+            //         align-self: center;
+            //     }
+            // }
+
+            
+        }
+
+        turbo-frame#avatar-frame,
+        turbo-frame#avatar-container,
+        turbo-frame#avatar-actions,
+        turbo-frame#avatar-navigation{
+            display: contents;
+        }
+        &__choice{
+            // background-color: aqua;
+            width: 100%;
+            display: grid;
+            grid-template-columns: repeat(2, 15rem);
+            justify-items: center;
+            justify-content: center;
+            row-gap: 1rem;
+            column-gap: 1rem;
+
+            padding-block: 1rem;
+
+
+            a{
+                padding-block: 1rem;
+                border-radius: 1rem;
+                background-color: $admin-nuance-b-30;
+                @extend %flex-row-center-center;
+                width: 100%;
+                font-weight: 500;
+                transition: 
+                    background-color 200ms ease-in-out,
+                    color 100ms ease-in-out
+                ;
+                
+                &:hover{
+                    background-color: $admin-nuance-w-100;
+                    color: $admin-nuance-b-30;
+                }
+            }
+        }
+    }

@@ -16,6 +16,43 @@ class EyebrowsRepository extends ServiceEntityRepository
         parent::__construct($registry, Eyebrows::class);
     }
 
+    /**
+    * @return Eyebrows[] Returns an array of Body objects
+    */
+    public function findAllByFilters(
+        array $color,
+        array $shape,
+    ): array
+    {
+        $qb = $this->createQueryBuilder('e');
+
+        if ( !empty($color)) {
+            $qb->leftJoin('e.color', 'c');
+            $or = $qb->expr()->orX(); 
+            foreach ($color as $i => $id) {
+                $param = 'color_'.$i;          
+                $or->add($qb->expr()->eq('c.id', ':'.$param));
+                $qb->setParameter($param, $id);
+
+                $qb->andWhere($or);
+            }
+        }
+
+        if ( !empty($shape)) {
+            $qb->leftJoin('e.shape', 's');
+            $or = $qb->expr()->orX(); 
+            foreach ($shape as $i => $id) {
+                $param = 'shape_'.$i;  
+                $or->add($qb->expr()->eq('s.id', ':'.$param));
+                $qb->setParameter($param, $id);
+
+                $qb->andWhere($or);
+            }
+        }
+
+        return $qb->getQuery()->getArrayResult();
+    }
+
     //    /**
     //     * @return eyebrows[] Returns an array of eyebrows objects
     //     */

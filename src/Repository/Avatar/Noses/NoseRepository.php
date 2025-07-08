@@ -16,6 +16,48 @@ class NoseRepository extends ServiceEntityRepository
         parent::__construct($registry, Nose::class);
     }
 
+        /**
+    //     * @return Nose[] Returns an array of Body objects
+    //     */
+    public function findAllByFilters(
+        array $skincolor,
+        array $shape,
+
+    ): array
+    {
+        $qb = $this->createQueryBuilder('n');
+
+        if ( !empty($skincolor)) {
+            $qb->leftJoin('n.skincolor', 'sc');
+            $or = $qb->expr()->orX(); 
+            foreach ($skincolor as $i => $id) {
+                $param = 'skincolor_'.$i;          
+                $or->add($qb->expr()->eq('sc.id', ':'.$param));
+                $qb->setParameter($param, $id);
+
+                $qb->andWhere($or);
+            }
+        }
+
+        if ( !empty($shape)) {
+            $qb->leftJoin('n.shape', 's');
+            $or = $qb->expr()->orX(); 
+            foreach ($shape as $i => $id) {
+                $param = 'shape_'.$i;  
+                $or->add($qb->expr()->eq('s.id', ':'.$param));
+                $qb->setParameter($param, $id);
+
+                $qb->andWhere($or);
+            }
+        }
+
+        return 
+        $qb
+            ->getQuery()
+            // ->getResult()
+            ->getArrayResult()
+        ;
+    }
     //    /**
     //     * @return Nose[] Returns an array of Nose objects
     //     */

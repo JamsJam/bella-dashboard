@@ -1,0 +1,130 @@
+@use "../abstract/" as *;
+
+body main .grid{
+    
+
+    // background-color: tan;
+    display: grid;
+    grid-template-columns: 15rem 1fr;
+    max-height: 100%;
+    column-gap: 2rem;
+    
+    &__filter{
+        @extend %flex-column-start-stretch;
+        height: max(70dvh, 700px);
+        gap: 2rem;
+        padding-block: 1rem;
+        padding-inline: 1rem;
+        border-radius: 1rem;
+        background-color: $admin-nuance-b-30;
+        box-shadow: inset 0 0px 4px 0 hsla(0,0%,0%, 1);
+        overflow-y: scroll;
+
+        .filter{
+            @extend %flex-column-start-stretch;
+            gap: 0.75rem;
+
+            &__title{
+                background-color: $admin-nuance-b-15;
+                box-shadow: 0px 2px 4px 0 $admin-nuance-b-15;
+                border: 2px solid $admin-nuance-b-15;
+                border-radius: 1rem;
+                outline: unset;
+                text-align: center;
+
+                font-size: 1.5rem;
+                font-weight: 500;
+
+                margin-block-end: 1rem;
+
+                padding-block: 0.75rem;
+
+                // display: block;
+
+                &:hover{
+                    background-color: $admin-nuance-b-20;
+                    border: 2px solid $admin-nuance-b-20;
+                }
+
+                &--open{
+                    background-color: $admin-nuance-b-30;
+                    border: 2px solid $admin-nuance-b-20;
+
+                    &:hover{
+                        background-color: $admin-nuance-b-20;
+                        border: 2px solid $admin-nuance-b-20;
+                    }
+                }
+
+                
+            }
+
+
+            &__items{
+                // padding-inline:1rem;
+                @extend %flex-column-start-stretch;
+                gap: 1rem;
+                input[type='checkbox']{
+                    width: auto;
+                }
+
+                transition: 
+                    max-height 200ms ease 200ms;
+
+                &--close{
+                    overflow: hidden;
+                    max-height: 0;
+                    .filter__item{
+                        transition: 
+                            opacity 200ms ease ;
+                        opacity: 0
+                    }
+                }
+                &--open{
+                    .filter__item{
+                    transition: 
+                        opacity 200ms ease 400ms ;
+                        opacity: 1;
+                    }
+                }
+            }
+            &__item{
+                padding-inline:1rem;
+                @extend %flex-row-start-center;
+                gap: 2rem;
+
+                input[type='checkbox']{
+                    width: auto;
+                }
+            }
+        }
+    }
+    &__result{
+        height: max(700px, 70dvh);
+
+
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+        padding: 2rem;
+        align-content: start;
+        justify-items: center;
+        row-gap: 2rem;
+        border-radius: 1rem;
+        background-color: $admin-nuance-b-30;;
+        // background-color: hsla(0,0%,0%, 1);
+        box-shadow: inset 0 0px 4px 0 hsla(0,0%,0%, 1);
+        padding:  2rem;
+        overflow-y: scroll;
+
+        .card{
+            height: 10rem;
+            width: 7.5rem;
+            border-radius: 1rem;
+            background-color: $admin-nuance-b-20;
+            
+            box-shadow: 0 0px 4px 0 hsla(0,0%,0%, 1);
+        }
+    }
+
+
+}
