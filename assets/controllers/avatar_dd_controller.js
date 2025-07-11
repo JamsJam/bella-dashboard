@@ -7,7 +7,7 @@ import { Controller } from '@hotwired/stimulus';
 
 /* stimulusFetch: 'lazy' */
 export default class extends Controller {
-    static targets = ['input', 'dropzone', 'resume', 'hairTable', 'bodyTable', 'partTable', 'unkownTable']
+    static targets = ['input', 'dropzone', 'resume', 'hairTable', 'bodyTable', 'partTable', 'unkownTable'];
     static values = {
         bufferSize: { type: Number, default: 5 },
         max_parallele_fetch: { type: Number, default: 5 },
@@ -15,17 +15,17 @@ export default class extends Controller {
         token: { type: String, default: '' },
         // requestDetails: { type: Array, default: [] },
         partTranslations: {type: Object, default: {
-                nose: 'Nez',
-                noze: 'Nez',
-                eye: 'Yeux',
-                eyes: 'Yeux',
-                eyebrows: 'Sourcils',
-                eyesbrows: 'Sourcils',
-                mouth: 'Bouche',
-                face: 'Visage'
-            }
+            nose: 'Nez',
+            noze: 'Nez',
+            eye: 'Yeux',
+            eyes: 'Yeux',
+            eyebrows: 'Sourcils',
+            eyesbrows: 'Sourcils',
+            mouth: 'Bouche',
+            face: 'Visage'
         }
-    }
+        }
+    };
 
     //? ------------------------------------------------------------------
     //? Lifecycle
@@ -40,9 +40,9 @@ export default class extends Controller {
     connect() {
         // Called every time the controller is connected to the DOM
 
-        this.inputTarget.addEventListener('change', (e) => this.addFileByChange(e))
-        this.inputTarget.addEventListener('dragover', (e) => this.handleFileDragover(e))
-        this.dropzoneTarget.addEventListener('dragover', (e) => this.handleFileDragover(e))
+        this.inputTarget.addEventListener('change', (e) => this.addFileByChange(e));
+        this.inputTarget.addEventListener('dragover', (e) => this.handleFileDragover(e));
+        this.dropzoneTarget.addEventListener('dragover', (e) => this.handleFileDragover(e));
     }
     disconnect() {
         // Called anytime its element is disconnected from the DOM
@@ -53,40 +53,40 @@ export default class extends Controller {
     //? ------------------------------------------------------------------
 
     addFileByChange(e) {
-        const files = Array.from(e.target.files)
+        const files = Array.from(e.target.files);
 
         files.forEach(file => {
             const isAlreadyStored = this.fileUpload.some(
                 f => f.name === file.name && f.size === file.size && f.lastModified === file.lastModified
-            )
+            );
 
             if (!isAlreadyStored) {
-                this.fileUpload.push(file)
+                this.fileUpload.push(file);
             }
-        })
+        });
 
-        this.inputTarget.value = ''
-        this.reloadResumeTables()
+        this.inputTarget.value = '';
+        this.reloadResumeTables();
     }
 
     addFileByDrop(e) {
-        e.preventDefault()
-        e.dataTransfer.dropEffect = 'copy'
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'copy';
     }
 
     handleFileDragover(e) {
-        e.preventDefault()
+        e.preventDefault();
     }
 
     removeFileOnClick(e){
         const filename = e.target.dataset.name;
-        const newArray = this.fileUpload.filter((file)=>file.name !== filename)
+        const newArray = this.fileUpload.filter((file)=>file.name !== filename);
         this.fileUpload = newArray;
         this.reloadResumeTables();
     } 
 
     removeAllFile(){
-        const newArray = this.fileUpload.filter((file)=>false)
+        const newArray = this.fileUpload.filter((file)=>false);
         this.fileUpload = newArray;
         this.reloadResumeTables();
     }
@@ -99,29 +99,29 @@ export default class extends Controller {
         while (this.queue.length > 0) { // tant que la fil d'attente n'est pas vide
             
             const batch = this.queue.length > this.bufferSizeValue ?  this.queue.splice(0,this.bufferSizeValue) : this.queue.splice(0,this.queue.length);// je recupere dans pool le nombre de file a envoyer selon le buffersize
-            const token = this.tokenValue
+            const token = this.tokenValue;
         
             await Promise.all(batch.map(async (file)=>{
-                    console.log(file)
-                    const fileData = new FormData();
-                    fileData.append('fileData', file);
-                    fileData.append('token', token);
-                    const response =  await fetch(this.urlValue,{
-                        method: "POST",
-                        body:fileData
-                    })
-                    if(!response.ok){
-                        this.requestDetails['error'].push(file.name)
-                    }else{
-                        this.requestDetails['success'].push(file.name)
-                    }
+                console.log(file);
+                const fileData = new FormData();
+                fileData.append('fileData', file);
+                fileData.append('token', token);
+                const response =  await fetch(this.urlValue,{
+                    method: 'POST',
+                    body:fileData
+                });
+                if(!response.ok){
+                    this.requestDetails['error'].push(file.name);
+                }else{
+                    this.requestDetails['success'].push(file.name);
+                }
                     
                     
 
-                }))
+            }));
                 
         }
-        this.removeAllFile()
+        this.removeAllFile();
 
     }
     //? ------------------------------------------------------------------
@@ -129,181 +129,181 @@ export default class extends Controller {
     //? ------------------------------------------------------------------
 
     reloadResumeTables() {
-        this.hasHairTableTarget && this.hairTableTarget.remove()
-        this.hasBodyTableTarget && this.bodyTableTarget.remove()
-        this.hasPartTableTarget && this.partTableTarget.remove()
-        this.hasUnkownTableTarget && this.unkownTableTarget.remove()
-        this.fileUpload.sort((a, b) =>{a.name.localeCompare(b.name)}).forEach(file => {this.resolveTableResumeByName(file)})
+        this.hasHairTableTarget && this.hairTableTarget.remove();
+        this.hasBodyTableTarget && this.bodyTableTarget.remove();
+        this.hasPartTableTarget && this.partTableTarget.remove();
+        this.hasUnkownTableTarget && this.unkownTableTarget.remove();
+        this.fileUpload.sort((a, b) =>{a.name.localeCompare(b.name);}).forEach(file => {this.resolveTableResumeByName(file);});
     }
     resolveTableResumeByName(file) {
 
         if(!this.isValidAvatarTag(file.name)){
-            this.showUnkownTable(file)
+            this.showUnkownTable(file);
         }else{
             
 
-                const fileNameKey = file.name.split('__')[0]
+            const fileNameKey = file.name.split('__')[0];
                 
-                if (fileNameKey === 'hair') {
-                    this.showHairTable(file)
-                } else if (fileNameKey === 'body') {
-                    this.showBodyTable(file)
-                } else if (['nose', 'eye', 'eyebrows', 'mouth', 'face'].includes(fileNameKey)) {
-                    this.showPartTable(file)
-                }else{
-                    this.showUnkownTable(file)
-                }
+            if (fileNameKey === 'hair') {
+                this.showHairTable(file);
+            } else if (fileNameKey === 'body') {
+                this.showBodyTable(file);
+            } else if (['nose', 'eye', 'eyebrows', 'mouth', 'face'].includes(fileNameKey)) {
+                this.showPartTable(file);
+            }else{
+                this.showUnkownTable(file);
+            }
         }
     }
 
     
     showHairTable(file) {
         if (!this.hasHairTableTarget) {
-            const hairTable = document.createElement('div')
-            hairTable.className = 'resume__table--hair'
-            hairTable.setAttribute('data-avatar-dd-target', 'hairTable')
+            const hairTable = document.createElement('div');
+            hairTable.className = 'resume__table--hair';
+            hairTable.setAttribute('data-avatar-dd-target', 'hairTable');
 
             // headers
-            const headers = ['Element', 'Couleur', 'Forme', 'Side', 'Action']
+            const headers = ['Element', 'Couleur', 'Forme', 'Side', 'Action'];
             headers.forEach(text => {
-                const h = document.createElement('p')
-                h.classList.add('resume__header')
-                h.textContent = text
-                hairTable.appendChild(h)
-            })
+                const h = document.createElement('p');
+                h.classList.add('resume__header');
+                h.textContent = text;
+                hairTable.appendChild(h);
+            });
 
-            this.resumeTarget.appendChild(hairTable)
+            this.resumeTarget.appendChild(hairTable);
         }
 
-        const fileInfo = file.name.split('__').slice(0, 4)
+        const fileInfo = file.name.split('__').slice(0, 4);
 
         fileInfo.forEach((text, index) => {
-            const div = document.createElement('p')
+            const div = document.createElement('p');
             if (index === 0) {
-                div.textContent = 'Cheveux'
+                div.textContent = 'Cheveux';
             } else if (index === 3) {
 
-                div.textContent = text.split('.')[0]
+                div.textContent = text.split('.')[0];
             } else {
 
-                div.textContent = text
+                div.textContent = text;
             }
-            this.hairTableTarget.appendChild(div)
-        })
+            this.hairTableTarget.appendChild(div);
+        });
 
-        const deleteBtn = this.createDeleteButton(file.name)
-        this.hairTableTarget.appendChild(deleteBtn)
+        const deleteBtn = this.createDeleteButton(file.name);
+        this.hairTableTarget.appendChild(deleteBtn);
     }
     showBodyTable(file) {
         if (!this.hasBodyTableTarget) {
-            const bodyTable = document.createElement('div')
-            bodyTable.className = 'resume__table--body'
-            bodyTable.setAttribute('data-avatar-dd-target', 'bodyTable')
+            const bodyTable = document.createElement('div');
+            bodyTable.className = 'resume__table--body';
+            bodyTable.setAttribute('data-avatar-dd-target', 'bodyTable');
 
-            const headers = ['Element', 'Couleur', 'Morphotype', 'Morphologie', 'Vetement', 'Action']
+            const headers = ['Element', 'Couleur', 'Morphotype', 'Morphologie', 'Vetement', 'Action'];
             headers.forEach(text => {
-                const h = document.createElement('p')
-                h.classList.add('resume__header')
-                h.textContent = text
-                bodyTable.appendChild(h)
-            })
-            this.resumeTarget.appendChild(bodyTable)
+                const h = document.createElement('p');
+                h.classList.add('resume__header');
+                h.textContent = text;
+                bodyTable.appendChild(h);
+            });
+            this.resumeTarget.appendChild(bodyTable);
         }
 
-        const fileInfo = file.name.split('__').slice(0, 5)
+        const fileInfo = file.name.split('__').slice(0, 5);
         fileInfo.forEach((text, index) => {
-            const div = document.createElement('p')
+            const div = document.createElement('p');
             if (index === 0) {
-                div.textContent = 'Corps'
+                div.textContent = 'Corps';
 
             } else if (index === 4) {
 
-                div.textContent = text.split('.')[0]
+                div.textContent = text.split('.')[0];
             } else {
-                div.textContent = text
+                div.textContent = text;
             }
-            this.bodyTableTarget.appendChild(div)
-        })
+            this.bodyTableTarget.appendChild(div);
+        });
 
-        const deleteBtn = this.createDeleteButton(file.name)
-        this.bodyTableTarget.appendChild(deleteBtn)
+        const deleteBtn = this.createDeleteButton(file.name);
+        this.bodyTableTarget.appendChild(deleteBtn);
     }
     showPartTable(file) {
         if (!this.hasPartTableTarget) {
-            const partTable = document.createElement('div')
-            partTable.className = 'resume__table--part'
-            partTable.setAttribute('data-avatar-dd-target', 'partTable')
+            const partTable = document.createElement('div');
+            partTable.className = 'resume__table--part';
+            partTable.setAttribute('data-avatar-dd-target', 'partTable');
 
-            const headers = ['Element', 'Couleur', 'Style', 'Action']
+            const headers = ['Element', 'Couleur', 'Style', 'Action'];
             headers.forEach(text => {
-                const h = document.createElement('p')
-                h.classList.add('resume__header')
-                h.textContent = text
-                partTable.appendChild(h)
-            })
-            this.resumeTarget.appendChild(partTable)
+                const h = document.createElement('p');
+                h.classList.add('resume__header');
+                h.textContent = text;
+                partTable.appendChild(h);
+            });
+            this.resumeTarget.appendChild(partTable);
         }
 
         
-        const fileInfo = file.name.split('__').slice(0, 3) // key + color + style (if any)
+        const fileInfo = file.name.split('__').slice(0, 3); // key + color + style (if any)
 
         fileInfo.forEach((text, index) => {
-            const div = document.createElement('p')
+            const div = document.createElement('p');
             if (index === 0) {
                 
-                div.textContent = this.partTranslationsValue[text]
+                div.textContent = this.partTranslationsValue[text];
             } else if (index === 2) {
 
-                div.textContent = text.split('.')[0]
+                div.textContent = text.split('.')[0];
             } else {
-                div.textContent = text
+                div.textContent = text;
             }
-            this.partTableTarget.appendChild(div)
-        })
+            this.partTableTarget.appendChild(div);
+        });
 
-        this.partTableTarget.appendChild(this.createDeleteButton(file.name))
+        this.partTableTarget.appendChild(this.createDeleteButton(file.name));
     }
     showUnkownTable(file) {
         if (!this.hasUnkownTableTarget) {
-            const unkownTable = document.createElement('div')
-            unkownTable.className = 'resume__table--unkown'
-            unkownTable.setAttribute('data-avatar-dd-target', 'unkownTable')
+            const unkownTable = document.createElement('div');
+            unkownTable.className = 'resume__table--unkown';
+            unkownTable.setAttribute('data-avatar-dd-target', 'unkownTable');
 
-            const title = ["Fichier non traité"]
+            const title = ['Fichier non traité'];
             title.forEach(text => {
-                const h = document.createElement('p')
-                h.classList.add('resume__header')
-                h.textContent = text
-                unkownTable.appendChild(h)
-            })
-            this.resumeTarget.appendChild(unkownTable)
+                const h = document.createElement('p');
+                h.classList.add('resume__header');
+                h.textContent = text;
+                unkownTable.appendChild(h);
+            });
+            this.resumeTarget.appendChild(unkownTable);
         }
-        const cell = ['Nom du fichier', file.name ]
+        const cell = ['Nom du fichier', file.name ];
         cell.forEach(text => {
-            const filecell = document.createElement('p')
+            const filecell = document.createElement('p');
             // cell.classList.add('resume__header')
-            filecell.textContent = text
-            this.unkownTableTarget.appendChild(filecell)
+            filecell.textContent = text;
+            this.unkownTableTarget.appendChild(filecell);
 
-        })
+        });
         
 
         const filename = file.name;
-        const newArray = this.fileUpload.filter((file)=>file.name !== filename)
+        const newArray = this.fileUpload.filter((file)=>file.name !== filename);
         this.fileUpload = newArray;
 
         // this.reloadResumeTables();
     }
     createDeleteButton(filename) {
-        const deleteBtn = document.createElement('button')
+        const deleteBtn = document.createElement('button');
 
-        deleteBtn.textContent = 'Supprimer'
-        deleteBtn.classList.add('resume__button')
+        deleteBtn.textContent = 'Supprimer';
+        deleteBtn.classList.add('resume__button');
 
-        deleteBtn.dataset.name = filename
-        deleteBtn.dataset.action = 'click->avatar-dd#removeFileOnClick'
+        deleteBtn.dataset.name = filename;
+        deleteBtn.dataset.action = 'click->avatar-dd#removeFileOnClick';
 
-        return deleteBtn
+        return deleteBtn;
     }
 
     isValidAvatarTag(tag) {

@@ -7,10 +7,10 @@ import { Controller } from '@hotwired/stimulus';
 
 /* stimulusFetch: 'lazy' */
 export default class extends Controller {
-    static targets = ['main', 'navlink']
+    static targets = ['main', 'navlink'];
     static value= {
         currentUrl :String
-    }
+    };
 
     initialize() {
         // Called once when the controller is first instantiated (per element)
@@ -26,7 +26,7 @@ export default class extends Controller {
 
         // Here you can add event listeners on the element or target elements,
         // add or remove classes, attributes, dispatch custom events, etc.
-        this.mainTarget.addEventListener('turbo:before-fetch-request', (e)=>this.reloadMenu(e))
+        this.mainTarget.addEventListener('turbo:before-fetch-request', (e)=>this.reloadMenu(e));
         
     }
     
@@ -40,7 +40,7 @@ export default class extends Controller {
         // Here you should remove all event listeners added in "connect()" 
         // this.fooTarget.removeEventListener('click', this._fooBar)
         // this.mainTarget.removeListener("turbo:click", this.reloadMenu())
-        this.mainTarget.removeListener('turbo:before-fetch-request', (e)=>this.reloadMenu(e))
+        this.mainTarget.removeListener('turbo:before-fetch-request', (e)=>this.reloadMenu(e));
     }
 
 
@@ -49,6 +49,6 @@ export default class extends Controller {
     reloadMenu(e){
 
 
-        Turbo.visit(e.detail.url, { frame: 'admin_menu', action: 'replace' })
+        Turbo.visit(e.detail.url, { frame: 'admin_menu', action: 'replace' });
     }
 }

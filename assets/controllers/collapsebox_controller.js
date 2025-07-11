@@ -7,11 +7,11 @@ import { Controller } from '@hotwired/stimulus';
 
 /* stimulusFetch: 'lazy' */
 export default class extends Controller {
-    static targets = ['collapsebox', 'toggler', 'collapseContent']
+    static targets = ['collapsebox', 'toggler', 'collapseContent'];
     static values = {
         isCollapse:{type: Boolean, default:false},
         boxTrueHeight:{type: Number, default:0},
-    }
+    };
 
     initialize() {
         // Called once when the controller is first instantiated (per element)
@@ -27,7 +27,7 @@ export default class extends Controller {
 
         // Here you can add event listeners on the element or target elements,
         // add or remove classes, attributes, dispatch custom events, etc.
-        this.togglerTarget.addEventListener('click', ()=>this.onCollapse())
+        this.togglerTarget.addEventListener('click', ()=>this.onCollapse());
     }
 
     collapseboxTargetConnected(){
@@ -43,11 +43,11 @@ export default class extends Controller {
 
         // Here you should remove all event listeners added in "connect()" 
         // this.fooTarget.removeEventListener('click', this._fooBar)
-        this.togglerTarget.removeEventListener('click', this.onCollapse)
+        this.togglerTarget.removeEventListener('click', this.onCollapse);
     }
 
     onCollapse(){
-        this.toggleCollapse()
+        this.toggleCollapse();
         this.isCollapseValue ? this.expendBox() :  this.collapseBox();
     }
     toggleCollapse(){
@@ -56,11 +56,11 @@ export default class extends Controller {
 
     expendBox(){
         this.collapseboxTarget.style.maxHeight = this.boxTrueHeightValue + 'px';
-        this.collapseboxTarget.classList.replace('filter__items--close','filter__items--open')
+        this.collapseboxTarget.classList.replace('filter__items--close','filter__items--open');
     }
     collapseBox(){
         this.collapseboxTarget.style.maxHeight = 0;
-        this.collapseboxTarget.classList.replace('filter__items--open','filter__items--close')
+        this.collapseboxTarget.classList.replace('filter__items--open','filter__items--close');
     }
 
 }
