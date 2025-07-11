@@ -6,6 +6,7 @@
 parameters:
     menu.yaml.path:  '%kernel.project_dir%/src/config/Menu/DashboardMenu.yaml'
     page_meta.yaml.path:  '%kernel.project_dir%/src/config/Dashboard/PageMetadata.yaml'
+    avatar_directory: '%kernel.project_dir%/public/upload/avatar'
 
 services:
     # default configuration for services in *this* file
@@ -28,3 +29,7 @@ services:
     App\Builder\PageMeta\PageMetaBuilder:
         arguments:
             $pageMetaPath: '%page_meta.yaml.path%'
+
+    App\Registry\Avatar\FilePath\AvatarFilePathRegistry:
+        arguments:
+            $targetDirectory: '%avatar_directory%'

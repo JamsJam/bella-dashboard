@@ -16,6 +16,17 @@ dashboard_content:
           route: "app_home"
         - title: "Avatar"
           route: "app_avatar_index"
+          
+  app_avatar_new:
+    - title: "Ajouter des pieces d'avatar"
+      routeKey: "avatar"
+      breadcrumb:
+        - title: "Dashboard"
+          route: "app_home"
+        - title: "Avatar"
+          route: "app_avatar_index"
+        - title: "Ajouter"
+          route: "app_avatar_new"
 
   app_avatar_color_index:
     - title: "Couleurs des pieces d'avatar"

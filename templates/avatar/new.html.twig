@@ -1,0 +1,97 @@
+{% extends 'base.html.twig' %}
+
+
+ {% block title %}Ajouter des pieces d'avatar {{parent()}}{% endblock %}
+
+{% block body %}
+
+    <div class="header">
+        {#?==== Titre de la page #}
+        {# <turbo-frame id="dash-title"> #}
+            <h1>{{metaData.title}}</h1>
+        {# </turbo-frame> #}
+
+        {#?==== fil d'arianne #}
+        <turbo-frame id="dash-arianne" >
+            {% for scrumItem in metaData.breadcrumb %}
+                
+                <a href="{{path(scrumItem.route)}}"
+                    data-turbo-frame="admin-main"
+                    data-turbo-preload="true"
+                    data-turbo-action="replace"
+                >
+                    {{scrumItem.title}} {% if not loop.last %}/{% endif %}
+                </a> 
+            {% endfor %}
+        </turbo-frame>
+    </div>
+
+        
+    <turbo-frame id="avatar-frame" >
+        <section class="avatar">
+            <header>
+            
+                <turbo-frame id="avatar-navigation" >
+                    <div class="avatar__navigation">
+                        <a 
+                            class="button__action" 
+                            href="{{path('app_avatar_color_index')}}"
+                            data-turbo-frame="admin-main"
+                            data-turbo-action="replace"
+                        >Couleurs</a>
+                        <a 
+                            class="button__action" 
+                            href="{{path('app_avatar_shape_index')}}"
+                            data-turbo-frame="admin-main"
+                            data-turbo-action="replace"
+                        >Formes</a>
+                        <a 
+                            class="button__action return" 
+                            href="{{ path(metaData.breadcrumb[metaData.breadcrumb|length - 2].route) }}" 
+                            data-turbo-frame="admin-main"
+                            data-turbo-action="replace"
+                        >Retour</a> 
+                    </div>
+                </turbo-frame>
+            
+                <turbo-frame id="avatar-actions" >
+                    <div class="avatar__navigation">
+                        
+
+
+                    </div>
+                </turbo-frame>
+
+
+            </header>
+        
+            <turbo-frame id="avatar-container" >
+
+                <div class="avatar__container" {{stimulus_controller('avatar-dd',{
+                        url:path('app_avatar_upload'),
+                        token:csrf_token('add-body-part') 
+                        })}}>
+                    
+                    <div class="avatar__dropzone" {{stimulus_target('avatar-dd',"dropzone")}}>
+                        <input type="file" multiple {{stimulus_target('avatar-dd','input')}}>
+                        <p class="placeholder">Parcourir ou déposer vos images</p>
+                    </div>
+                    <div class="button__container">
+                        <button class="button__action" type="button" {{stimulus_action('avatar-dd','start')}}>Ajouter</button>
+                        <button class="button__action" type="button" {{stimulus_action('avatar-dd','removeAllFile')}};>Annuler</button>
+                    </div>
+
+                    <div class="avatar__resume" {{stimulus_target('avatar-dd','resume')}}>
+                    </div>
+
+                </div>
+            </turbo-frame>
+
+
+
+
+
+        </section>
+    </turbo-frame>
+
+{% endblock %}

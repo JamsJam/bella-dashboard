@@ -1,7 +1,7 @@
 {% extends 'base.html.twig' %}
 
 
- {% block title %}Dashboard {{parent()}}{% endblock %}
+ {% block title %}Toutes les pieces d'avatar {{parent()}}{% endblock %}
 
 {% block body %}
 
@@ -48,9 +48,6 @@
                             {# data-turbo-preload="true" #}
                             data-turbo-action="replace"
                         >Formes</a>
-                        <a class="button__action" href="">Morphologie</a>
-                        <a class="button__action" href="">Morphotype</a>
-
                         <a 
                             class="button__action return" 
                             href="{{ path(metaData.breadcrumb[metaData.breadcrumb|length - 2].route) }}" 
@@ -65,10 +62,10 @@
                         
                         <a 
                             class="button__action" 
-                            href="{{ path('app_admin_project_new') }}" 
-                            data-turbo-frame="avatar-frame"
+                            href="{{ path('app_avatar_new') }}" 
+                            data-turbo-frame="admin-main"
                             data-turbo-action="replace"
-                        >Ajouter</a> 
+                        >Ajouter des parties d'avatar</a> 
 
                     </div>
                 </turbo-frame>
@@ -78,7 +75,7 @@
 
         
             <turbo-frame id="avatar-container" >
-                {% if type is null %} 
+                {% if type is same as null %} 
                     <div class="avatar__choice">
 
                         {% for key, item in typeChoice %}
@@ -89,21 +86,124 @@
                                 >{{item|capitalize}}</a>
 
                         {% endfor %}
+                        <a 
+                            data-turbo-frame="admin-main"
+                            href="{{path('app_avatar_index')}}"
+                            data-turbo-action="replace" 
+                        >{{'morphotype'|capitalize}}</a>
+                        <a 
+                            data-turbo-frame="admin-main"
+                            href="{{path('app_avatar_index')}}"
+                            data-turbo-action="replace" 
+                        >{{'morphologie'|capitalize}}</a>
+                        <a 
+                            data-turbo-frame="admin-main"
+                            href="{{path('app_avatar_index')}}"
+                            data-turbo-action="replace" 
+                        >{{'vérification'|capitalize}}</a>
 
                     </div>
                 {% else %}
-                    {# {% if parts|length >0 %} #}
-                    
-                    <twig:Grid:Grid
-                        part="{{ type }}" 
-                    />
+
+
+
+                    <div class="grid" {{stimulus_controller('grid_filter',{
+                            deleteToken : csrf_token('delete-part-avatar-token'), 
+                            bodypart : type, 
+                            deleteUrl : path('app_avatar_delete')
+                        })}}>
+
+
                         
-                    {# {% else %}
-                        <div class="partsGrid__empty">
+                        {#? ==== filters #}
+                        <div class='grid__filter' >
+                            {# {% 
+                                set filters = {
+                                    'colorFilter'     : colorFilter,
+                                    'shapeFilter'      : shapeFilter,
+                                    'skincolorFilter'   : skincolorFilter,
+                                    'morphologieFilter' : morphologieFilter,
+                                    'morphotypeFilter'  : morphotypeFilter,
+                                    'clothesFilter'    : clothesFilter,
+                                    'collectionFilter'  : collectionFilter,
+                                } 
+                            %} #}
+                            {%
+                                set filterTitles = {
+                                    'colorFilter'      : 'Couleur',
+                                    'skincolorFilter'  : 'Couleur de peau',
+                                    'shapeFilter'      : 'Forme',
+                                    'morphologieFilter': 'Morphologie',
+                                    'morphotypeFilter' : 'Morphotype',
+                                    'clothesFilter'    : 'Type de vêtement',
+                                    'collectionFilter' : 'Collection'
+                                } 
+                            
+                            %}
+
+
+                            {% for name, value in filters %}
+                                {%  if value is not null %}
+                                
+                                    <div class="filter" {{stimulus_controller('collapsebox')}}>
+                                        <button class="filter__title" {{stimulus_target('collapsebox','toggler')}}>{{filterTitles[name]}}</button>
+                                    
+                                        <div class="filter__items filter__items--close" {{stimulus_target('collapsebox','collapsebox')}}>
+
+                                            {#?===== Options  #}
+                                            {% for item in value %}
+                                                
+                                                <div class="filter__item">
+                                                    <input type="checkbox" name="{{name}}"  id="{{filterTitles[name]}}{{loop.index}}" value="{{item.id}}" {{stimulus_target('grid_filter','filterOption')}}>
+                                                    <label for="{{filterTitles[name]}}{{loop.index}}">{{item.name}}</label>
+                                                </div>
+                                                
+                                                {% else %}
+                                                    aucun filtre disponible
+                                            {% endfor %}
+
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
                         
-                            <p>Aucun Element disponible. Ajouter des elements</p>
                         </div>
-                    {% endif %} #}
+
+                        {#? ==== render  #}
+                        {# <ul class='grid__result'> #}
+                            {#todo card
+                                    mode select
+                                    delete button> modal confirm
+                                #}
+                        <turbo-frame id="result-frame" {{stimulus_target('grid_filter','resultFrame')}}>
+                            <div class={{  bodyPartItems|length is same as 0 ? 'grid__result--empty' : 'grid__result' }}
+                                >
+                                {% for item in bodyPartItems %}
+                                        <div class="card card--unselected" {{stimulus_target('grid_filter','card')}}>
+                                            <input type="checkbox" name="{{type}}" id="{{type ~'-'~ item.id}}" value={{item.id}} class='card__selectInput'>
+                                            <div class="card__image">
+                                                {% if type is same as 'hair' %}
+
+                                                <img class="img--front" src="{{item.images.frontImage}}" alt="">
+                                                <img class="img--back" src="{{item.images.backImage}}" alt="">
+                                                {% else %}
+                                                    
+                                                <img src="{{item.image}}" alt="">
+                                                {% endif %}
+                                            </div>
+                                            <p>{{item.name}}</p>
+                                        </div>
+                                {% else %}
+
+                                
+                                    <p>Aucun element disponible pour le moment. Ajouter des elements</p>
+
+                                {% endfor %}
+                            </div>
+                        </turbo-frame>
+                            
+                    </div>
+
 
                 {% endif %}
             </turbo-frame>

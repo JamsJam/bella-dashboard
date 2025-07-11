@@ -20,8 +20,8 @@ class HairsRepository extends ServiceEntityRepository
     * @return Eyebrows[] Returns an array of Body objects
     */
     public function findAllByFilters(
-        array $color,
-        array $shape,
+        array $color = [],
+        array $shape = [],
     ): array
     {
         $qb = $this->createQueryBuilder('h');

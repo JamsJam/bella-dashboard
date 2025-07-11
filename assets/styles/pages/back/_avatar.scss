@@ -61,7 +61,9 @@
         turbo-frame#avatar-frame,
         turbo-frame#avatar-container,
         turbo-frame#avatar-actions,
-        turbo-frame#avatar-navigation{
+        turbo-frame#avatar-navigation,
+        turbo-frame#result-frame
+        {
             display: contents;
         }
         &__choice{
@@ -95,4 +97,94 @@
                 }
             }
         }
+
+        &__dropzone{
+            @extend %flex-row-center-center;
+            border: dashed 0.25rem $admin-nuance-w-87;
+            border-radius: 1rem;
+            padding-block: 4rem;
+            position: relative;
+
+            &:hover{
+                background-color: $admin-nuance-b-30;
+            }
+            &.draghover{
+                background-color: $admin-nuance-b-20;
+
+            }
+
+            .placeholder{
+                pointer-events: none;
+                text-align: center;
+                color: $admin-nuance-w-87;
+                font-weight: 600;
+            }
+
+
+            input[type="file"]{
+                opacity: 0;
+                cursor: pointer;
+                z-index: 1;
+                width: 100%;
+                height: 100%;
+                display: block;
+                position: absolute;
+                top: 0;
+                left: 0;
+            }
+        }
+
+        &__resume{
+            @extend %flex-column-start-stretch;
+            gap: 2rem;
+
+            .resume__table{
+                display: grid ;
+                
+                justify-items: center;
+                align-items: center;
+                /* background-color: wheat; */
+                border-radius: 1rem;
+                padding: 2rem;
+                border: dashed $admin-nuance-w-87 4px;
+                row-gap: 1rem;
+
+                .resume__header{
+                    font-weight: 600;
+                }
+
+                .resume__button{
+                    padding: 0.5rem 1.5rem;
+                    border-radius: 1rem;
+                    border: none;
+                    background: indianred;
+                }
+                // .resume__cell{
+
+                // }
+
+                &--hair{
+                    @extend .resume__table;
+                    grid-template-columns: repeat(5, 1fr);
+                }
+                &--body{
+                    @extend .resume__table;
+                    grid-template-columns: repeat(6, 1fr);
+                }
+                &--part{
+                    @extend .resume__table;
+                    grid-template-columns: repeat(4, 1fr);
+                }
+                &--unkown{
+                    @extend .resume__table;
+                    grid-template-columns: repeat(2, 1fr);
+
+                    .resume__header{
+                        grid-column: 1 / span 2;
+                    }
+                }
+            }
+        }
+
+        
     }

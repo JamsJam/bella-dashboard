@@ -2,6 +2,7 @@
 
 namespace App\Resolver\Avatar;
 
+use App\Entity\Avatar\Body\Bodysize;
 use App\Entity\Avatar\Body\Morphologie;
 use App\Entity\Avatar\Body\Morphotype;
 use App\Entity\Clothes\Clothes;
@@ -79,15 +80,14 @@ final class BodyPartRegistryResolver
     private function getFilterType(?string $part): AvatarFilterEnum
     {
         $bodyPart = BodyPartEnum::from($part);
+ 
         return match ($bodyPart) {
             BodyPartEnum::HAIR,
             BodyPartEnum::EYE,
             BodyPartEnum::EYEBROWS,
-            BodyPartEnum::MOUTH,          => AvatarFilterEnum::COLOR_AND_SHAPE_FILTER,
-
+            BodyPartEnum::MOUTH         => AvatarFilterEnum::COLOR_AND_SHAPE_FILTER,
             BodyPartEnum::NOSE,
             BodyPartEnum::FACE            => AvatarFilterEnum::SKIN_AND_SHAPE_FILTER,
-
             BodyPartEnum::BODY            => AvatarFilterEnum::BODY_FILTER,
             default => throw new \InvalidArgumentException("Invalid color entity type: $bodyPart->value"),
         };
@@ -121,7 +121,7 @@ final class BodyPartRegistryResolver
 
         return [
             'skincolorFilter' => $skinColorFilterEntity,
-            'morphotypeFilter' => Morphotype::class,
+            'morphotypeFilter' => Bodysize::class,
             'morphologieFilter' => Morphologie::class,
             'clothesFilter' => Clothes::class,
             'collectionFilter' => Collections::class,

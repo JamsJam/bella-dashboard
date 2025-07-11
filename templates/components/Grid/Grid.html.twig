@@ -5,29 +5,30 @@
     {#? ==== filters #}
     <div class='grid__filter' >
 
-    {% 
-        set filters = {
-            'colorFilter'     : colorFilter,
-            'shapeFilter'      : shapeFilter,
-            'skincolorFilter'   : skincolorFilter,
-            'morphologieFilter' : morphologieFilter,
-            'morphotypeFilter'  : morphotypeFilter,
-            'clothesFilter'    : clothesFilter,
-            'collectionFilter'  : collectionFilter,
-        } 
-    %}
-    {%
-        set filterTitles = {
-            'colorFilter'      : 'Couleur',
-            'skincolorFilter'  : 'Couleur de peau',
-            'shapeFilter'      : 'Forme',
-            'morphologieFilter': 'Morphologie',
-            'morphotypeFilter' : 'Morphotype',
-            'clothesFilter'    : 'Type de vêtement',
-            'collectionFilter' : 'Collection'
-        } 
-    
-    %}
+
+        {% 
+            set filters = {
+                'colorFilter'     : colorFilter,
+                'shapeFilter'      : shapeFilter,
+                'skincolorFilter'   : skincolorFilter,
+                'morphologieFilter' : morphologieFilter,
+                'morphotypeFilter'  : morphotypeFilter,
+                'clothesFilter'    : clothesFilter,
+                'collectionFilter'  : collectionFilter,
+            } 
+        %}
+        {%
+            set filterTitles = {
+                'colorFilter'      : 'Couleur',
+                'skincolorFilter'  : 'Couleur de peau',
+                'shapeFilter'      : 'Forme',
+                'morphologieFilter': 'Morphologie',
+                'morphotypeFilter' : 'Morphotype',
+                'clothesFilter'    : 'Type de vêtement',
+                'collectionFilter' : 'Collection'
+            } 
+        
+        %}
 
 
     {% for name, value in filters %}
@@ -42,7 +43,7 @@
                     {% for item in filterItems[name] %}
                         
                         <div class="filter__item">
-                            <input type="checkbox" name="{{name}}[]" id="{{filterTitles[name]}}{{loop.index}}">
+                            <input type="checkbox" name="{{name}}[]" {{ live_action('livefilterOnChange',{bodypart }) }} id="{{filterTitles[name]}}{{loop.index}}">
                             <label for="{{filterTitles[name]}}{{loop.index}}">{{item.name}}</label>
                         </div>
                         
@@ -66,17 +67,19 @@
             carte+image
         #}
 
-
-        {# {% for i in 0..50 %}
-
-            <div class="card">
-                <p>* {{ i }}</p>
-            </div>
-        {% endfor %} #}
-
         {% for item in items %}
             <div class="card">
-                {# <p>* {{ i }}</p> #}
+                <div class="card__image">
+                    {% if bodypart is same as 'hair' %}
+
+                    <img class="img--front" src="{{item.images.frontImage}}" alt="">
+                    <img class="img--back" src="{{item.images.backImage}}" alt="">
+                    {% else %}
+                        
+                    <img src="{{item.image}}" alt="">
+                    {% endif %}
+                </div>
+                <p>{{item.name}}</p>
             </div>
         {% else %}
             <div class="partsGrid__empty">

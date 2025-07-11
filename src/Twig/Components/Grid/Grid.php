@@ -2,43 +2,59 @@
 
 namespace App\Twig\Components\Grid;
 
-use App\Resolver\Avatar\BodyPartRegistryResolver;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\UX\LiveComponent\Attribute\AsLiveComponent;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\UX\LiveComponent\Attribute\LiveArg;
+use Symfony\UX\LiveComponent\Attribute\LiveProp;
 use Symfony\UX\LiveComponent\DefaultActionTrait;
+use App\Resolver\Avatar\BodyPartRegistryResolver;
+use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\UX\LiveComponent\Attribute\LiveAction;
+use Symfony\UX\LiveComponent\Attribute\AsLiveComponent;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 #[AsLiveComponent]
-final class Grid
+class Grid extends AbstractController
 {
     use DefaultActionTrait;
     
     public function __construct(
         private BodyPartRegistryResolver $bodyPartRegistryResolver,
         private EntityManagerInterface $entityManager,
+        private RequestStack $requestStack,
     ){}
 
     //? ======== body part
-    public string $part = '';
+    #[LiveProp]
+    public ?string $bodypart = "" ;
 
     //? ======== Entity
     public ?string $itemsEntity = null;
     
     //? ======== filter Entity
-    public array $filterEntity = [];
+    public ?array $filterEntity = null;
 
     //? ======== filter stock ids of filter
+    
+    #[LiveProp(writable: true)]
     public ?array $colorFilter = null;
     
+    #[LiveProp(writable: true)]
     public ?array $shapeFilter = null;
     
+    #[LiveProp(writable: true)]
     public ?array $skincolorFilter = null;
     
+    #[LiveProp(writable: true)]
     public ?array $morphologieFilter = null;
     
+    #[LiveProp(writable: true)]
     public ?array $morphotypeFilter = null;
     
+    #[LiveProp(writable: true)]
     public ?array $clothesFilter = null;
     
+    #[LiveProp(writable: true)]
     public ?array $collectionFilter = null;
 
     //? ===========
@@ -52,11 +68,13 @@ final class Grid
 
 
     
-    public function mount(string $part){
-        $this->part = $part;
-        $this->getItemEntity($this->part);
-        $this->getFiltersEntity($this->part);
+    public function mount(string $bodypart){
+        $route = $this->requestStack->getCurrentRequest()->headers->get('referer');
+        $this->bodypart = $bodypart;
+        $this->getItemEntity($this->bodypart);
+        $this->getFiltersEntity($this->bodypart);
         $this->initFilterProperties();
+        $this->fetchFilterItem($this->filterEntity);
         $this->filterItems(
             $this->itemsEntity,
             $this->colorFilter       ,
@@ -67,7 +85,29 @@ final class Grid
             $this->clothesFilter     ,
             $this->collectionFilter   ,
         );
+        dump($route);
+    }
+    #[LiveAction]
+    public function livefilterOnChange(){
+        $route = $this->requestStack->getCurrentRequest()->headers->get('referer');
+        // dump($route);
+        $this->bodypart = explode('?type=',$route)[1];
+
+        $this->getItemEntity($this->bodypart);
+        $this->getFiltersEntity($this->bodypart);
+        $this->initFilterProperties();
         $this->fetchFilterItem($this->filterEntity);
+        $this->filterItems(
+            $this->itemsEntity,
+            $this->colorFilter       ,
+            $this->skincolorFilter   ,
+            $this->shapeFilter       ,
+            $this->morphologieFilter ,
+            $this->morphotypeFilter  ,
+            $this->clothesFilter     ,
+            $this->collectionFilter   ,
+        );
+        
     }
 
     public function getItemEntity($bodyPart):void
