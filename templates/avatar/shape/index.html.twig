@@ -1,0 +1,147 @@
+{% extends 'base.html.twig' %}
+
+
+ {% block title %}Dashboard {{parent()}}{% endblock %}
+
+{% block body %}
+
+    <div class="header">
+    {#?==== Titre de la page #}
+        {# <turbo-frame id="dash-title"> #}
+            <h1>{{metaData.title}}</h1>
+        {# </turbo-frame> #}
+
+    {#?==== fil d'arianne #}
+        <turbo-frame id="dash-arianne" >
+            {% for scrumItem in metaData.breadcrumb %}
+                
+                <a href="{{path(scrumItem.route)}}"
+                    data-turbo-frame="admin-main"
+                    {# target="_top" #}
+                    data-turbo-preload="true"
+                    data-turbo-action="replace"
+                >
+                    {{scrumItem.title}} {% if not loop.last %}/{% endif %}
+                </a> 
+            {% endfor %}
+        </turbo-frame>
+    </div>
+
+   <turbo-frame id="avatar-frame" >
+        
+        <section class="avatar">
+        
+            <header>
+            
+                <turbo-frame id="avatar-actions" >
+                    {# <div class="project__actions"> #}
+                        <a 
+                            class="button__action" 
+                            href="{{path('app_avatar_index')}}"
+                            data-turbo-frame="admin-main"
+                            {# data-turbo-preload="true" #}
+                            data-turbo-action="replace"
+                        >body part</a>
+                        <a
+                            class="button__action" 
+                            href="{{path('app_avatar_color_index')}}"
+                            data-turbo-frame="admin-main"
+                            {# data-turbo-preload="true" #}
+                            data-turbo-action="replace"
+                        >Couleurs</a>
+                        <a class="button__action" href="">Morphologie</a>
+                        <a class="button__action" href="">Morphotype</a>
+                        <a class="button__action" href="{{ path('app_admin_project_new') }}" data-turbo-frame="avatar-frame"
+                        data-turbo-action="replace"
+                        >Ajouter</a> 
+                        <a 
+                            class="button__action" 
+                            href="{{ path(metaData.breadcrumb[metaData.breadcrumb|length - 2].route) }}" 
+                            data-turbo-frame="admin-main"
+                            data-turbo-action="replace"
+                        >Retour</a> 
+                    {# </div> #}
+                </turbo-frame>
+            
+                <turbo-frame id="avatar-actions" >
+                    {# <div class="project__actions"> #}
+                        <a 
+                            class="button__action" 
+                            href="{{path('app_avatar_index')}}"
+                            data-turbo-frame="admin-main"
+                            {# data-turbo-preload="true" #}
+                            data-turbo-action="replace"
+                        >body part</a>
+                        <a
+                            class="button__action" 
+                            href="{{path('app_avatar_color_index')}}"
+                            data-turbo-frame="admin-main"
+                            {# data-turbo-preload="true" #}
+                            data-turbo-action="replace"
+                        >Couleurs</a>
+                        <a class="button__action" href="">Morphologie</a>
+                        <a class="button__action" href="">Morphotype</a>
+                        <a class="button__action" href="{{ path('app_admin_project_new') }}" data-turbo-frame="avatar-frame"
+                        data-turbo-action="replace"
+                        >Ajouter</a> 
+                        <a 
+                            class="button__action" 
+                            href="{{ path(metaData.breadcrumb[metaData.breadcrumb|length - 2].route) }}" 
+                            data-turbo-frame="admin-main"
+                            data-turbo-action="replace"
+                        >Retour</a> 
+                    {# </div> #}
+                </turbo-frame>
+
+            </header>
+
+
+
+            <turbo-frame id="avatar-results">
+                <ul class="projets__grid">
+                    {# {% for article in articles %}
+                        <li class="projets__cell">
+                            <article class="article">
+                                <div class="article__visualbox">
+                                    <img class="article__image" src="{{ article.imageUrl }}" alt="{{ article.title }}">
+                                </div>
+                                <h2 class="article__titre">{{ article.title }}</h2>
+                                <div class="article__actions">
+                                    <ul>
+                                        <li>Voir</li>
+                                        <li>Modifier</li>
+                                        <li>Supprimer</li>
+                                    </ul>
+                                </div>
+                            </article>
+                        </li>
+                    {% else %}
+                        <li>
+                            <p>Aucun résultat trouvé.</p>
+                        </li>
+                    {% endfor %} #}
+                </ul>
+
+
+
+                {# <footer class="pagination">
+
+                    {% if pageCount > 1 %}
+                    <nav>
+                        <ul class="pagination-list">
+                        {% for page in 1..pageCount %}
+                            <li class="{{ currentPage == page ? 'active' : '' }}">
+                                <a href="{{ path(app.request.attributes.get('_route'), app.request.query.all | merge({'page': page})) }}" data-turbo-frame="avatar-results">
+                                    {{ page }}
+                                </a>
+                            </li>
+                        {% endfor %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+                </footer> #}
+            </turbo-frame>
+        </section>
+    </turbo-frame>
+
+{% endblock %}
