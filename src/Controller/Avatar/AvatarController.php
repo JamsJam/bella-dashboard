@@ -497,6 +497,6 @@ final class AvatarController extends AbstractController
             return new JsonResponse($e->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
         }
 
-        return new JsonResponse('',Response::HTTP_NO_CONTENT);
+        return new JsonResponse('', Response::HTTP_NO_CONTENT);
     }
 }
