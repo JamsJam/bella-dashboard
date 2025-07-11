@@ -16,22 +16,20 @@ class FacesRepository extends ServiceEntityRepository
         parent::__construct($registry, Faces::class);
     }
 
-            /**
-    //     * @return Nose[] Returns an array of Body objects
-    //     */
+    /**
+     * //     * @return Nose[] Returns an array of Body objects
+     * //     */
     public function findAllByFilters(
-        array $skincolor,
-        array $shape,
-
-    ): array
-    {
+        array $skincolor = [],
+        array $shape = [],
+    ): array {
         $qb = $this->createQueryBuilder('f');
 
-        if ( !empty($skincolor)) {
+        if (!empty($skincolor)) {
             $qb->leftJoin('f.skincolor', 'sc');
-            $or = $qb->expr()->orX(); 
+            $or = $qb->expr()->orX();
             foreach ($skincolor as $i => $id) {
-                $param = 'skincolor_'.$i;          
+                $param = 'skincolor_'.$i;
                 $or->add($qb->expr()->eq('sc.id', ':'.$param));
                 $qb->setParameter($param, $id);
 
@@ -39,11 +37,11 @@ class FacesRepository extends ServiceEntityRepository
             }
         }
 
-        if ( !empty($shape)) {
+        if (!empty($shape)) {
             $qb->leftJoin('f.shape', 's');
-            $or = $qb->expr()->orX(); 
+            $or = $qb->expr()->orX();
             foreach ($shape as $i => $id) {
-                $param = 'shape_'.$i;  
+                $param = 'shape_'.$i;
                 $or->add($qb->expr()->eq('s.id', ':'.$param));
                 $qb->setParameter($param, $id);
 
@@ -51,14 +49,14 @@ class FacesRepository extends ServiceEntityRepository
             }
         }
 
-        return 
+        return
         $qb
             ->getQuery()
             // ->getResult()
             ->getArrayResult()
         ;
     }
-    
+
     //    /**
     //     * @return Faces[] Returns an array of Faces objects
     //     */

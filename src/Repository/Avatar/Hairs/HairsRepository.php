@@ -16,21 +16,20 @@ class HairsRepository extends ServiceEntityRepository
         parent::__construct($registry, Hairs::class);
     }
 
-        /**
-    * @return Eyebrows[] Returns an array of Body objects
-    */
+    /**
+     * @return Eyebrows[] Returns an array of Body objects
+     */
     public function findAllByFilters(
         array $color = [],
         array $shape = [],
-    ): array
-    {
+    ): array {
         $qb = $this->createQueryBuilder('h');
 
-        if ( !empty($color)) {
+        if (!empty($color)) {
             $qb->leftJoin('h.color', 'c');
-            $or = $qb->expr()->orX(); 
+            $or = $qb->expr()->orX();
             foreach ($color as $i => $id) {
-                $param = 'color_'.$i;          
+                $param = 'color_'.$i;
                 $or->add($qb->expr()->eq('c.id', ':'.$param));
                 $qb->setParameter($param, $id);
 
@@ -38,11 +37,11 @@ class HairsRepository extends ServiceEntityRepository
             }
         }
 
-        if ( !empty($shape)) {
+        if (!empty($shape)) {
             $qb->leftJoin('h.shape', 's');
-            $or = $qb->expr()->orX(); 
+            $or = $qb->expr()->orX();
             foreach ($shape as $i => $id) {
-                $param = 'shape_'.$i;  
+                $param = 'shape_'.$i;
                 $or->add($qb->expr()->eq('s.id', ':'.$param));
                 $qb->setParameter($param, $id);
 

@@ -2,25 +2,23 @@
 
 namespace App\DTO\Avatar;
 
-final class hairImageDTO 
+final class hairImageDTO
 {
     private ?string $frontImage = null;
-    
+
     private ?string $backImage = null;
 
     /**
-     * Get the value of frontImage
-     */ 
-    public function getFrontImage():?string
+     * Get the value of frontImage.
+     */
+    public function getFrontImage(): ?string
     {
         return $this->frontImage;
     }
 
     /**
-     * Set the value of frontImage
-     *
-     * @return  self
-     */ 
+     * Set the value of frontImage.
+     */
     public function setFrontImage($frontImage): self
     {
         $this->frontImage = $frontImage;
@@ -29,18 +27,16 @@ final class hairImageDTO
     }
 
     /**
-     * Get the value of backImage
-     */ 
-    public function getBackImage():?string
+     * Get the value of backImage.
+     */
+    public function getBackImage(): ?string
     {
         return $this->backImage;
     }
 
     /**
-     * Set the value of backImage
-     *
-     * @return  self
-     */ 
+     * Set the value of backImage.
+     */
     public function setBackImage($backImage): self
     {
         $this->backImage = $backImage;
@@ -48,7 +44,8 @@ final class hairImageDTO
         return $this;
     }
 
-    public function toArray(): array {
+    public function toArray(): array
+    {
         return [
             'frontImage' => $this->getFrontImage(),
             'backImage' => $this->getBackImage(),

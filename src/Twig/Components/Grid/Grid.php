@@ -2,73 +2,70 @@
 
 namespace App\Twig\Components\Grid;
 
+use App\Resolver\Avatar\BodyPartRegistryResolver;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\UX\LiveComponent\Attribute\LiveArg;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\UX\LiveComponent\Attribute\AsLiveComponent;
+use Symfony\UX\LiveComponent\Attribute\LiveAction;
 use Symfony\UX\LiveComponent\Attribute\LiveProp;
 use Symfony\UX\LiveComponent\DefaultActionTrait;
-use App\Resolver\Avatar\BodyPartRegistryResolver;
-use Symfony\Component\HttpFoundation\RequestStack;
-use Symfony\UX\LiveComponent\Attribute\LiveAction;
-use Symfony\UX\LiveComponent\Attribute\AsLiveComponent;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 #[AsLiveComponent]
 class Grid extends AbstractController
 {
     use DefaultActionTrait;
-    
+
     public function __construct(
         private BodyPartRegistryResolver $bodyPartRegistryResolver,
         private EntityManagerInterface $entityManager,
         private RequestStack $requestStack,
-    ){}
+    ) {
+    }
 
-    //? ======== body part
+    // ? ======== body part
     #[LiveProp]
-    public ?string $bodypart = "" ;
+    public ?string $bodypart = '';
 
-    //? ======== Entity
+    // ? ======== Entity
     public ?string $itemsEntity = null;
-    
-    //? ======== filter Entity
+
+    // ? ======== filter Entity
     public ?array $filterEntity = null;
 
-    //? ======== filter stock ids of filter
-    
+    // ? ======== filter stock ids of filter
+
     #[LiveProp(writable: true)]
     public ?array $colorFilter = null;
-    
+
     #[LiveProp(writable: true)]
     public ?array $shapeFilter = null;
-    
+
     #[LiveProp(writable: true)]
     public ?array $skincolorFilter = null;
-    
+
     #[LiveProp(writable: true)]
     public ?array $morphologieFilter = null;
-    
+
     #[LiveProp(writable: true)]
     public ?array $morphotypeFilter = null;
-    
+
     #[LiveProp(writable: true)]
     public ?array $clothesFilter = null;
-    
+
     #[LiveProp(writable: true)]
     public ?array $collectionFilter = null;
 
-    //? ===========
+    // ? ===========
 
-    //item a afficher
+    // item a afficher
     public ?array $items = [];
-    
-    //item de filtre
+
+    // item de filtre
     public ?array $filterItems = [];
 
-
-
-    
-    public function mount(string $bodypart){
+    public function mount(string $bodypart)
+    {
         $route = $this->requestStack->getCurrentRequest()->headers->get('referer');
         $this->bodypart = $bodypart;
         $this->getItemEntity($this->bodypart);
@@ -77,21 +74,23 @@ class Grid extends AbstractController
         $this->fetchFilterItem($this->filterEntity);
         $this->filterItems(
             $this->itemsEntity,
-            $this->colorFilter       ,
-            $this->skincolorFilter   ,
-            $this->shapeFilter       ,
-            $this->morphologieFilter ,
-            $this->morphotypeFilter  ,
-            $this->clothesFilter     ,
-            $this->collectionFilter   ,
+            $this->colorFilter,
+            $this->skincolorFilter,
+            $this->shapeFilter,
+            $this->morphologieFilter,
+            $this->morphotypeFilter,
+            $this->clothesFilter,
+            $this->collectionFilter,
         );
         dump($route);
     }
+
     #[LiveAction]
-    public function livefilterOnChange(){
+    public function livefilterOnChange()
+    {
         $route = $this->requestStack->getCurrentRequest()->headers->get('referer');
         // dump($route);
-        $this->bodypart = explode('?type=',$route)[1];
+        $this->bodypart = explode('?type=', $route)[1];
 
         $this->getItemEntity($this->bodypart);
         $this->getFiltersEntity($this->bodypart);
@@ -99,24 +98,23 @@ class Grid extends AbstractController
         $this->fetchFilterItem($this->filterEntity);
         $this->filterItems(
             $this->itemsEntity,
-            $this->colorFilter       ,
-            $this->skincolorFilter   ,
-            $this->shapeFilter       ,
-            $this->morphologieFilter ,
-            $this->morphotypeFilter  ,
-            $this->clothesFilter     ,
-            $this->collectionFilter   ,
+            $this->colorFilter,
+            $this->skincolorFilter,
+            $this->shapeFilter,
+            $this->morphologieFilter,
+            $this->morphotypeFilter,
+            $this->clothesFilter,
+            $this->collectionFilter,
         );
-        
     }
 
-    public function getItemEntity($bodyPart):void
+    public function getItemEntity($bodyPart): void
     {
-        $itemsEntity = $this->bodyPartRegistryResolver->getEntity('body',$bodyPart);
+        $itemsEntity = $this->bodyPartRegistryResolver->getEntity('body', $bodyPart);
         $this->itemsEntity = $itemsEntity;
     }
 
-    public function getFiltersEntity($bodyPart):void
+    public function getFiltersEntity($bodyPart): void
     {
         $filterEntity = $this->bodyPartRegistryResolver->getFilters($bodyPart);
         $this->filterEntity = $filterEntity;
@@ -127,7 +125,7 @@ class Grid extends AbstractController
     private function initFilterProperties(): void
     {
         foreach (array_keys($this->filterEntity) as $key) {
-            $prop = $key ;
+            $prop = $key;
 
             if (property_exists($this, $prop) && $this->$prop === null) {
                 $this->$prop = [];
@@ -136,17 +134,15 @@ class Grid extends AbstractController
     }
 
     public function filterItems(
-            string $entity,
-            ?array $colorFilter       = null,
-            ?array $skincolorFilter   = null,
-            ?array $shapeFilter       = null,
-            ?array $morphologieFilter = null,
-            ?array $morphotypeFilter  = null,
-            ?array $clothesFilter     = null,
-            ?array $collectionFilter     = null,
-        )
-    {
-
+        string $entity,
+        ?array $colorFilter = null,
+        ?array $skincolorFilter = null,
+        ?array $shapeFilter = null,
+        ?array $morphologieFilter = null,
+        ?array $morphotypeFilter = null,
+        ?array $clothesFilter = null,
+        ?array $collectionFilter = null,
+    ) {
         $arrayOfFilter = array_filter(
             [
                 $colorFilter,
@@ -155,15 +151,13 @@ class Grid extends AbstractController
                 $morphologieFilter,
                 $morphotypeFilter,
                 $clothesFilter,
-                $collectionFilter
+                $collectionFilter,
             ],
-            fn($filter)=>!is_null($filter)
+            fn ($filter) => !is_null($filter)
         );
 
         // findAllByFilters est preszent dans tout les repository des enntité, tout les arguments sont initialisé a null
         $this->items = $this->entityManager->getRepository($entity)->findAllByFilters(...$arrayOfFilter);
-
-
     }
 
     public function fetchFilterItem(array $filterEntites)
@@ -175,5 +169,4 @@ class Grid extends AbstractController
         }
         $this->filterItems = $filterItems;
     }
-
 }
