@@ -8,8 +8,6 @@ body.admin main{
     display: grid;
     grid-template-rows: min-content 1fr;
     row-gap: 2rem;
-    overflow-y: scroll;
-    box-shadow: inset 2px 0px 8px 0 hsla(0, 0%, 0%, 0.21);
     
 
     .header{
@@ -22,6 +20,4 @@ body.admin main{
         }
 
     }
-
-    
 }

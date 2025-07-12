@@ -35,7 +35,7 @@ class Clothes
 
     #[ORM\ManyToOne(inversedBy: 'clothes')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?Collections $collection = null;
+    private ?Collections $Collection = null;
 
     #[ORM\ManyToOne(inversedBy: 'clothes')]
     #[ORM\JoinColumn(nullable: false)]
@@ -137,12 +137,12 @@ class Clothes
 
     public function getCollection(): ?Collections
     {
-        return $this->collection;
+        return $this->Collection;
     }
 
-    public function setCollection(?Collections $collection): static
+    public function setCollection(?Collections $Collection): static
     {
-        $this->collection = $collection;
+        $this->Collection = $Collection;
 
         return $this;
     }

@@ -29,14 +29,6 @@ class Morphotype
     #[ORM\OneToMany(targetEntity: Body::class, mappedBy: 'morphotype', orphanRemoval: true)]
     private Collection $bodies;
 
-    #[ORM\ManyToOne(inversedBy: 'morphotypes')]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?Bodysize $size = null;
-
-    #[ORM\ManyToOne(inversedBy: 'morphotypes')]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?Morphologie $morphologie = null;
-
     public function __construct()
     {
         $this->bodies = new ArrayCollection();
@@ -85,30 +77,6 @@ class Morphotype
                 $body->setMorphotype(null);
             }
         }
-
-        return $this;
-    }
-
-    public function getSize(): ?Bodysize
-    {
-        return $this->size;
-    }
-
-    public function setSize(?Bodysize $size): static
-    {
-        $this->size = $size;
-
-        return $this;
-    }
-
-    public function getMorphologie(): ?Morphologie
-    {
-        return $this->morphologie;
-    }
-
-    public function setMorphologie(?Morphologie $morphologie): static
-    {
-        $this->morphologie = $morphologie;
 
         return $this;
     }

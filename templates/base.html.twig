@@ -23,18 +23,15 @@
         {% block importmap %}{{ importmap(['admin']) }}{% endblock %}
     {% endblock %}
 </head>
-<body class="admin" {{stimulus_controller('menu_reload')}}>
+<body class="admin">
 
     {#?===== twig component adminmenu #}
-    <turbo-frame id="admin_menu" {{stimulus_target('menu_reload', 'menu')}} >
-
-        <twig:Dashboard:Menu:Menu 
-            routeKey="{{ metaData.routeKey }}"
-        />
-    </turbo-frame>
+    <twig:Dashboard:Menu:Menu 
+    routeKey="{{ metaData.routeKey }}"
+    />
 
 
-    <turbo-frame id="admin-main"  {{stimulus_target('menu_reload', 'main')}}>
+    <turbo-frame id="admin-main">
         <main>
             {% block body %}
                 

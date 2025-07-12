@@ -1,20 +1,24 @@
 <li{{ attributes }} class="{{routeKey is same as(key) ? activClass : class}} ">
     <!-- component HTML -->
 
+{% if routeKey is same as(key) %}
 
+    <p 
+    >
+        {{label}}
+    </p>
+{% else %}
     <a 
         href="{{path(route)}}"
         aria-label="{{ariaLabel}}"
         {# title="{{item}}" #}
         data-turbo-frame="admin-main"
-        {# target="admin-main" #}
         data-turbo-preload="true"
         data-turbo-action="replace"
-        {{stimulus_target('menu_reload', 'navlink')}}
     >
         {{label}}
     </a>
-
+{% endif %}
 
 
 </li>

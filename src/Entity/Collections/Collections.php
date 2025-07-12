@@ -26,7 +26,7 @@ class Collections
     #[ORM\Column]
     private ?bool $isOnline = null;
 
-    #[ORM\ManyToOne(inversedBy: 'collections')]
+    #[ORM\ManyToOne(inversedBy: 'Collections')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Category $category = null;
 
@@ -36,7 +36,7 @@ class Collections
     /**
      * @var Collection<int, Clothes>
      */
-    #[ORM\OneToMany(targetEntity: Clothes::class, mappedBy: 'collection', orphanRemoval: true)]
+    #[ORM\OneToMany(targetEntity: Clothes::class, mappedBy: 'Collection', orphanRemoval: true)]
     private Collection $clothes;
 
     public function __construct()
