@@ -16,7 +16,7 @@ menu:
     roles: []
 
   - label: "Avatar"
-    route: "app_avatar_index"
+    route: "app_home"
     key: "avatar"
     class: "menu__item"
     activClass: "menu__item--active"

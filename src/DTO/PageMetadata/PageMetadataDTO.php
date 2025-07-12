@@ -68,25 +68,13 @@ final class PageMetadataDTO
     /**
      * Set the value of breadcrumb.
      *
-     * @param BreadcrumbItemDTO[] $breadcrumb
+     * @param breadcrumbDTO[] $breadcrumb
      *
      * @return self
      */
     public function setBreadcrumb(array $breadcrumb)
     {
         $this->breadcrumb = $breadcrumb;
-
-        return $this;
-    }
-
-    /**
-     * add the value of breadcrumb.
-     *
-     * @return self
-     */
-    public function addBreadcrumb(BreadcrumbItemDTO $breadcrumbItem)
-    {
-        $this->breadcrumb[] = $breadcrumbItem;
 
         return $this;
     }

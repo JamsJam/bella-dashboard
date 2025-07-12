@@ -1,40 +1,40 @@
 <?php
 
-namespace App\Repository\Avatar\Noses;
+namespace App\Repository;
 
-use App\Entity\Avatar\Noses\Nose;
+use App\Entity\Technology;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @extends ServiceEntityRepository<Nose>
+ * @extends ServiceEntityRepository<Technology>
  */
-class NoseRepository extends ServiceEntityRepository
+class TechnologyRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, Nose::class);
+        parent::__construct($registry, Technology::class);
     }
 
     //    /**
-    //     * @return Nose[] Returns an array of Nose objects
+    //     * @return Technology[] Returns an array of Technology objects
     //     */
     //    public function findByExampleField($value): array
     //    {
-    //        return $this->createQueryBuilder('n')
-    //            ->andWhere('n.exampleField = :val')
+    //        return $this->createQueryBuilder('t')
+    //            ->andWhere('t.exampleField = :val')
     //            ->setParameter('val', $value)
-    //            ->orderBy('n.id', 'ASC')
+    //            ->orderBy('t.id', 'ASC')
     //            ->setMaxResults(10)
     //            ->getQuery()
     //            ->getResult()
     //        ;
     //    }
 
-    //    public function findOneBySomeField($value): ?Nose
+    //    public function findOneBySomeField($value): ?Technology
     //    {
-    //        return $this->createQueryBuilder('n')
-    //            ->andWhere('n.exampleField = :val')
+    //        return $this->createQueryBuilder('t')
+    //            ->andWhere('t.exampleField = :val')
     //            ->setParameter('val', $value)
     //            ->getQuery()
     //            ->getOneOrNullResult()
