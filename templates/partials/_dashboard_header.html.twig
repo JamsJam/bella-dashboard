@@ -1,0 +1,21 @@
+    <div class="header">
+        {#?==== Titre de la page #}
+        {# <turbo-frame id="dash-title"> #}
+            <h1>{{metaData.title}}</h1>
+        {# </turbo-frame> #}
+
+        {#?==== fil d'arianne #}
+        <turbo-frame id="dash-arianne" >
+            {% for scrumItem in metaData.breadcrumb %}
+                
+                <a href="{{path(scrumItem.route)}}"
+                    data-turbo-frame="admin-main"
+                    {# target="_top" #}
+                    data-turbo-preload="true"
+                    data-turbo-action="replace"
+                >
+                    {{scrumItem.title}} {% if not loop.last %}/{% endif %}
+                </a> 
+            {% endfor %}
+        </turbo-frame>
+    </div>

@@ -5,28 +5,8 @@
 
 {% block body %}
 
-    <div class="header">
-        {#?==== Titre de la page #}
-        {# <turbo-frame id="dash-title"> #}
-            <h1>{{metaData.title}}</h1>
-        {# </turbo-frame> #}
 
-        {#?==== fil d'arianne #}
-        <turbo-frame id="dash-arianne" >
-            {% for scrumItem in metaData.breadcrumb %}
-                
-                <a href="{{path(scrumItem.route)}}"
-                    data-turbo-frame="admin-main"
-                    {# target="_top" #}
-                    data-turbo-preload="true"
-                    data-turbo-action="replace"
-                >
-                    {{scrumItem.title}} {% if not loop.last %}/{% endif %}
-                </a> 
-            {% endfor %}
-        </turbo-frame>
-    </div>
-
+    {{ include('partials/_dashboard_header.html.twig') }}
         
     <turbo-frame id="avatar-frame" >
         <section class="avatar">
@@ -105,8 +85,6 @@
                     </div>
                 {% else %}
 
-
-
                     <div class="grid" {{stimulus_controller('grid_filter',{
                             deleteToken : csrf_token('delete-part-avatar-token'), 
                             bodypart : type, 
@@ -117,17 +95,7 @@
                         
                         {#? ==== filters #}
                         <div class='grid__filter' >
-                            {# {% 
-                                set filters = {
-                                    'colorFilter'     : colorFilter,
-                                    'shapeFilter'      : shapeFilter,
-                                    'skincolorFilter'   : skincolorFilter,
-                                    'morphologieFilter' : morphologieFilter,
-                                    'morphotypeFilter'  : morphotypeFilter,
-                                    'clothesFilter'    : clothesFilter,
-                                    'collectionFilter'  : collectionFilter,
-                                } 
-                            %} #}
+
                             {%
                                 set filterTitles = {
                                     'colorFilter'      : 'Couleur',

@@ -8,6 +8,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex">
+    <meta name="turbo-prefetch" content="true">
     <title>{% block title %} | Bellagp Dashboard{% endblock %}</title>
     {# ? === languages === #}
         <link rel="alternate" hreflang="fr" href="https://www.exemple.com/fr/">
@@ -23,10 +24,13 @@
         {% block importmap %}{{ importmap(['admin']) }}{% endblock %}
     {% endblock %}
 </head>
-<body class="admin" {{stimulus_controller('menu_reload')}}>
+<body class="admin" {{stimulus_controller('menu_reload')}} data-turbo-prefetch="true">
 
     {#?===== twig component adminmenu #}
-    <turbo-frame id="admin_menu" {{stimulus_target('menu_reload', 'menu')}} >
+    <turbo-frame 
+        data-turbo-preload="true"
+        id="admin_menu" 
+        {{stimulus_target('menu_reload', 'menu')}} >
 
         <twig:Dashboard:Menu:Menu 
             routeKey="{{ metaData.routeKey }}"
@@ -34,7 +38,10 @@
     </turbo-frame>
 
 
-    <turbo-frame id="admin-main"  {{stimulus_target('menu_reload', 'main')}}>
+    <turbo-frame 
+        id="admin-main"  
+        data-turbo-preload="true"
+        {{stimulus_target('menu_reload', 'main')}}>
         <main>
             {% block body %}
                 

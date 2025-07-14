@@ -186,5 +186,169 @@
             }
         }
 
-        
+        .color{
+
+            &__grid{
+                position:relative;
+                display: grid;
+                grid-template-rows: 1fr;
+                max-width: 1024px;
+                margin-inline: auto;
+                row-gap: 1rem;
+                padding: 0.5rem;
+                
+                .grid__row{
+                    display: grid;
+                    grid-template-columns: 50px repeat(3, 1fr);
+                    column-gap: 2rem;
+                    justify-items: center;
+                    align-items: center;
+                    /* max-width: 768px; */
+                    padding-block: 1rem;
+                    padding-inline: 1rem;
+                    border-radius: 1rem;
+                    box-shadow: black 0 2px 4px 0;
+                    background-color: $admin-nuance-b-15;
+                    transition: 
+
+                        background-color 250ms ease-in-out
+                        ;
+                    
+                    &:hover:not(.header){
+                        
+                        background-color: $admin-nuance-b-20;
+                        // cursor: pointer;
+                    }
+
+                    .row{
+
+                        &__visual{
+                            height: 2.5rem;
+                            width: 2.5rem;
+                            border-radius: 50%;
+                            display: block;
+                        }
+
+                        // &__header{}
+
+                        // &__color{}
+
+                        &__action{
+                            @extend %flex-row-center-center;
+                            gap: 1rem;
+
+                            .action{
+
+                                &__edit,&__delete{
+
+                                    background-color: $admin-nuance-b-15;
+                                    border: 0.125rem solid $admin-nuance-b-30;
+                                    box-shadow: black 0 2px 4px 0;
+                                    border-radius: 0.5rem;
+                                    padding-inline: 1rem;
+                                    padding-block: 0.5rem;
+                                    transition: 
+                                        box-shadow 250ms ease,
+                                        background-color 250ms ease-in-out
+                                        ;
+                                    svg{
+                                        height: 1.25rem;
+                                        stroke: $admin-nuance-w-100;
+                                        transition: transform 500ms ease;
+                                        transform: rotateZ(0deg) ;
+                                    }
+
+                    
+                                    &:hover{
+                                        
+                                        background-color: $admin-nuance-b-20;
+                                        border: 0.125rem solid $admin-nuance-b-15;
+                                        cursor: pointer;
+                                        box-shadow: black 0 1px 1px 0;
+
+                                        svg{
+                                            transform: rotateZ(-405deg) ;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+
+                .modal{
+
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        backdrop-filter: blur(4px);
+                        height: 100%;
+                        width: 100%;
+                        padding-inline: 2rem;
+                        @extend %flex-column-start-stretch;
+                        background-color: hsla(0, 0%, 15%, 0.6);
+                        z-index:1;
+                        form{
+                            @extend %flex-column-start-stretch;
+                            gap: 2rem;
+                            background-color: $admin-nuance-b-15;
+                            box-shadow: 0 2px 4px 0 black;
+
+                            padding: 2rem;
+
+                            border-radius: 1rem;
+
+                            .color__field{
+
+                                @extend %flex-row-space-around-stretch;
+                                gap: 1rem;
+                                flex-wrap: wrap;
+
+                                .color__visualizer{
+                                    height: 10rem;
+                                    width: 10rem;
+                                    background: #78662e;
+                                    border: solid 2px black;
+                                    border-radius: 1rem;
+                                    box-shadow: 0 2px 4px 0 black;
+                                }
+
+                                .color__modifier{
+                                    @extend %flex-column-start-stretch;
+                                    gap: 1rem;
+                                    height: 100%;
+
+                                    .color__button{
+                                        position: relative;
+                                        background-color: $admin-nuance-b-20;
+                                        padding: 1rem 1.5rem;
+                                        border-radius: 1rem;
+                                        border: none;
+                                        box-shadow: 0 2px 4px 0 black;
+                                        
+                                        &:hover{
+                                            box-shadow: 0 0px 4px 0 black;
+                                            background-color: $admin-nuance-b-30;
+
+                                        }
+
+
+
+                                        .color__input{
+                                            height: 100%;
+                                            width: 100%;
+                                            position: absolute;
+                                            top: 0;
+                                            left: 0;
+                                            opacity: 0;
+                                        }
+                                    }
+
+                                }
+                            }
+                    }
+                }
+            }
+        }
     }

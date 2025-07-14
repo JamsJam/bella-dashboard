@@ -30,7 +30,7 @@ final class AvatarController extends AbstractController
         BodyPartRegistryResolver $bodyPartRegistryResolver,
     ): Response {
         // ? ==== define type
-        $type = BodyPartEnum::tryFrom($request->query->get('type'));
+        $type =  BodyPartEnum::tryFrom($request->query->get('type'));
         $parts = null;
         if (BodyPartEnum::SKIN === $type) {
             $type = null;

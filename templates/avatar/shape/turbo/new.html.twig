@@ -1,0 +1,69 @@
+{% block new_color_form %}
+
+    <turbo-stream action="replace" targets="#avatar_actions">
+        <template>
+            <div id="avatar_actions" class="avatar__navigation">
+                <a 
+                    data-turbo-frame="admin-main"
+                    href="{{path('app_avatar_color_index',{type: type})}}"
+                    data-turbo-action="replace" 
+                >{{"Retour"|capitalize}}</a>
+            </div>
+        </template>
+    
+    </turbo-stream>
+
+    <turbo-stream action="append" targets="#color__grid">
+        <template>
+            <div class="modal" id="color-form-modal" {{stimulus_controller("color_preview")}}>
+                {{ form_start(form)}}
+                    {{form_row(form.name)}}
+                    
+
+                    <div class="color__field" >
+                        <div class="color__visualizer" {{stimulus_target("color_preview","visualizer")}}>{# color visualizer #}
+                        </div>
+                        <div class="color__modifier">{# color modifier #}
+                            <div>
+                                {{form_row(form.hexa)}}
+                                {# <label for="color_form_hexa" class="required">Hexa</label>
+                                <input type="text" id="color_form_hexa" name="color_form[hexa]" {{stimulus_target("color_preview","text_input") | stimulus_action("color_preview","colorChangeByInputColor","input",)}}> #}
+                            </div>
+                            <div>
+                                <button type="button" class="color__button">
+                                    Choisir une couleurs
+                                    <input class="color__input" type="color" id="color_form_hexa-color" name="color_form[hexa-color]" {{stimulus_target("color_preview","color_input") | stimulus_action("color_preview","colorChangeByColorPicker","input") | stimulus_action("color_preview","colorChangeByInputColor","input")}}>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="button__container">
+                        <button class="button--action" type="submit">Envoyer</button>
+
+                    </div>
+                {{ form_end(form)}}
+            </div>
+        </template>
+    </turbo-stream>
+
+
+
+
+{% endblock %}
+
+{% block delete_new_color_form %}
+        <turbo-stream action="replace" targets="#avatar_actions">
+        <template>
+            <div id="avatar_actions" class="avatar__navigation">
+                <a 
+                    data-turbo-frame="admin-main"
+                    href="{{path('app_avatar_color_index',{type: type})}}"
+                    data-turbo-action="replace" 
+                >{{"Retour"|capitalize}}</a>
+            </div>
+        </template>
+    
+    </turbo-stream>
+    <turbo-stream action="remove" targets="#color-form-modal"></turbo-stream>
+{% endblock %}

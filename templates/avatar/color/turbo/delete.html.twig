@@ -1,0 +1,11 @@
+{% block delete_color %}
+
+	{# <turbo-stream action="refresh" targets="#flash_container">
+        <template>
+        </template>
+	</turbo-stream> #}
+    
+	<turbo-stream action="remove" targets="#row-{{colorId}}"></turbo-stream>
+
+
+{% endblock %}
