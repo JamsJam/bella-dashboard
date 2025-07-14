@@ -278,4 +278,5 @@ final class ColorController extends AbstractController
             'type' => $type,
         ]);
     }
+
 }

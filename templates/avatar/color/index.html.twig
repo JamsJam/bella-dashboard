@@ -47,7 +47,7 @@
                                 data-turbo-frame="_top" 
                                 class="button__action"
                                 >
-                                {{"Ajouter une couleurs"|capitalize}}
+                                {{"Ajouter une couleur de " ~ type|capitalize}}
                             </a>
                         {% endif %}
                     </div>
@@ -87,7 +87,7 @@
                             <span></span>
                             <p>Nom</p>
                             <p>Couleur</p>
-                            <p>Action</p>
+                            <p>Actions</p>
                         </div>
                         {# {% for i in 1..10 %} #}
                         {% for colorItem in colorItems %}

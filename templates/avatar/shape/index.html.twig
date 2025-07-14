@@ -27,7 +27,7 @@
             </turbo-frame>
     </div>
 
-   <turbo-frame id="avatar-frame" >
+    <turbo-frame id="avatar-frame" >
         
         <section class="avatar">
         
@@ -59,9 +59,18 @@
                 </turbo-frame>
             
                 <turbo-frame id="avatar-actions" >
-                    {# <div class="project__actions"> #}
- 
-                    {# </div> #}
+                    <div id="avatar_actions" class="avatar__navigation">
+                        {% if type is not same as null %}
+                            <a 
+                                {# target="color__grid" #}
+                                href="{{path('app_avatar_shape_new',{type: type})}}"
+                                data-turbo-frame="avatar-frame" 
+                                class="button__action"
+                                >
+                                {{"Ajouter une forme de " ~ type|capitalize}}
+                            </a>
+                        {% endif %}
+                    </div>
                 </turbo-frame>
 
  
@@ -75,7 +84,7 @@
                         {% for key, item in shapeChoice %}
                                 <a 
                                     data-turbo-frame="admin-main"
-                                    href="{{path('app_avatar_color_index',{type: key})}}"
+                                    href="{{path('app_avatar_shape_index',{type: key})}}"
                                     data-turbo-action="replace" 
                                 >{{item|capitalize}}</a>
 
@@ -88,9 +97,53 @@
                             >{{'vérification'|capitalize}}</a>
 
                     </div>
+                    {% else %}
+                        
 
+                        <div class="color__grid" id="color__grid" {{stimulus_controller("row_table")}}>
 
-
+                        <div class="grid__row header">
+                            <span></span>
+                            <span></span>
+                            <p>Nom</p>
+                            <p>Actions</p>
+                        </div>
+                        {# {% for i in 1..10 %} #}
+                        {% for shapeItem in shapeItems %}
+                            
+                            <div class="grid__row" id="row-{{shapeItem.id}}" >
+                                
+                                {# <span class="row__visual" style="{{ shapeItem.hexa is same as null ? "" : "background-color:#" ~ shapeItem.hexa}}">
+                                </span> #}
+                                <span ></span>
+                                <span ></span>
+                                
+                                <p>{{shapeItem.name|capitalize}}</p>
+                                
+                                {# {% if shapeItem.hexa is same as null %}
+                                    <p class="row__color">non assigned</p>
+                                {% else %}
+                                    <p class="row__color">{{'#' ~ shapeItem.hexa}}</p>
+                                {% endif %} #}
+                                
+                                <div class="row__action">
+                                    <a class="action__edit" href="{{path('app_avatar_shape_edit',{id:shapeItem.id,type: type})}}" title="Modifier la couleur">
+                                        {{ ux_icon('mdi:edit-outline') }}
+                                    </a>
+                                    <form action="{{path('app_avatar_shape_delete',{id:shapeItem.id, type: type})}}" method="post" >
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete-shape') }}">
+                                        <button 
+                                            type="submit" 
+                                            class="action__delete" 
+                                            onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette forme ? Cette action entraînera la suppression de toutes les pièces d\'avatar portant cette forme.');"
+                                            >
+                                            {{ ux_icon('weui:delete-outlined') }}
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
                 {% endif %}
             </turbo-frame>
         </section>
