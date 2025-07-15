@@ -8,21 +8,17 @@ final class ColorDTO
 
     private ?string $hexa;
 
-    
-
     /**
-     * Get the value of name
-     */ 
+     * Get the value of name.
+     */
     public function getName(): string
     {
         return $this->name;
     }
 
     /**
-     * Set the value of name
-     *
-     * @return  self
-     */ 
+     * Set the value of name.
+     */
     public function setName(?string $name): self
     {
         $this->name = $name;
@@ -31,18 +27,16 @@ final class ColorDTO
     }
 
     /**
-     * Get the value of hexa
-     */ 
+     * Get the value of hexa.
+     */
     public function getHexa(): string
     {
         return $this->hexa;
     }
 
     /**
-     * Set the value of hexa
-     *
-     * @return  self
-     */ 
+     * Set the value of hexa.
+     */
     public function setHexa(?string $hexa): self
     {
         $this->hexa = $hexa;

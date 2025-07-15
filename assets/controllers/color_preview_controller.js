@@ -8,7 +8,7 @@ import { Controller } from '@hotwired/stimulus';
 /* stimulusFetch: 'lazy' */
 export default class extends Controller {
 
-    static targets = ['visualizer','text_input','color_input']
+    static targets = ['visualizer','text_input','color_input'];
     initialize() {
         // Called once when the controller is first instantiated (per element)
 
@@ -38,40 +38,40 @@ export default class extends Controller {
     }
 
     colorChangeByInputColor(e){
-        const color = e.target.value
-        this.updateVisualizer(color)
-        this.updateInputColor(color)
+        const color = e.target.value;
+        this.updateVisualizer(color);
+        this.updateInputColor(color);
 
     }
     colorChangeByColorPicker(e){
-        const color = e.target.value
+        const color = e.target.value;
         // this.updateVisualizer(color)
-        this.updateInputText(color)
+        this.updateInputText(color);
 
     }
 
     updateInputText(color){
         // console.log(color)
-        const hexRegex = /#[0-9A-Fa-f]{6}/
+        const hexRegex = /#[0-9A-Fa-f]{6}/;
         if (!hexRegex.test(color)) {
-            return
+            return;
         }
-        this.text_inputTarget.value = color
+        this.text_inputTarget.value = color;
     }
 
     updateInputColor(color){
         // console.log(color)
-        const hexRegex = /#[0-9A-Fa-f]{6}/
+        const hexRegex = /#[0-9A-Fa-f]{6}/;
         if (!hexRegex.test(color)) {
-            return
+            return;
         }
-        this.color_inputTarget.value = color
+        this.color_inputTarget.value = color;
     }
     updateVisualizer(color){
-        const hexRegex = /#[0-9A-Fa-f]{6}/
+        const hexRegex = /#[0-9A-Fa-f]{6}/;
         if (!hexRegex.test(color)) {
-            return
+            return;
         }
-        this.visualizerTarget.style.backgroundColor = color
+        this.visualizerTarget.style.backgroundColor = color;
     }
 }

@@ -30,7 +30,7 @@ final class AvatarController extends AbstractController
         BodyPartRegistryResolver $bodyPartRegistryResolver,
     ): Response {
         // ? ==== define type
-        $type =  BodyPartEnum::tryFrom($request->query->get('type'));
+        $type = BodyPartEnum::tryFrom($request->query->get('type'));
         $parts = null;
         if (BodyPartEnum::SKIN === $type) {
             $type = null;
@@ -425,7 +425,7 @@ final class AvatarController extends AbstractController
 
                 // ? ------- vetement
                 $clotheEntity = $secondaryFileEntity['clothesFilter'];
-                $clotheName = explode('.',explode( '__', $fileName)[4])[0];
+                $clotheName = explode('.', explode('__', $fileName)[4])[0];
                 $checkClothe = $entityManagerInterface->getRepository($clotheEntity)->findBy(['name' => $clotheName]);
 
                 if (1 === count($checkClothe)) {

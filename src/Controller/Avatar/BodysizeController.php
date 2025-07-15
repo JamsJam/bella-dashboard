@@ -2,47 +2,43 @@
 
 namespace App\Controller\Avatar;
 
-use App\Form\Avatar\BodysizeForm;
-use Symfony\UX\Turbo\TurboBundle;
 use App\Entity\Avatar\Body\Bodysize;
+use App\Form\Avatar\BodysizeForm;
 use App\Form\Avatar\MorphologieForm;
-use App\Entity\Avatar\Body\Morphologie;
+use App\Provider\PageMetadata\PageMetadataProvider;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use App\Provider\PageMetadata\PageMetadataProvider;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\UX\Turbo\TurboBundle;
 
 final class BodysizeController extends AbstractController
 {
-//? --------- index
+    // ? --------- index
     #[Route('/avatar/bodysize', name: 'app_avatar_bodysize')]
     public function index(
         PageMetadataProvider $pageMetadata,
         Request $request,
         EntityManagerInterface $entityManagerInterface,
-    ): Response
-    {
+    ): Response {
         $metaData = $pageMetadata->getPageMetada($request->attributes->get('_route'));
         $bodysizes = $entityManagerInterface->getRepository(Bodysize::class)->findAll();
 
         return $this->render('avatar/bodysize/index.html.twig', [
             'metaData' => $metaData,
-            "bodysizes" =>  $bodysizes
+            'bodysizes' => $bodysizes,
         ]);
     }
 
-//? --------- new
-    #[Route('/avatar/bodysize/new', name: 'app_avatar_bodysize_new', methods:["GET", "POST"])]
+    // ? --------- new
+    #[Route('/avatar/bodysize/new', name: 'app_avatar_bodysize_new', methods: ['GET', 'POST'])]
     public function new(
         Request $request,
-        EntityManagerInterface $entityManagerInterface
-    ):Response
-    {
-
-        $form = $this->createForm(BodysizeForm::class, new Bodysize(),[
-            "action" => $this->generateUrl('app_avatar_bodysize_new',)
+        EntityManagerInterface $entityManagerInterface,
+    ): Response {
+        $form = $this->createForm(BodysizeForm::class, new Bodysize(), [
+            'action' => $this->generateUrl('app_avatar_bodysize_new'),
         ]);
 
         $form->handleRequest($request);
@@ -50,14 +46,12 @@ final class BodysizeController extends AbstractController
         $request->setRequestFormat(TurboBundle::STREAM_FORMAT);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $bodysize = $form->getData();
 
-            
-            $bodysize  =  $form->getData();
-
-            $newBodysize = new Bodysize ;
+            $newBodysize = new Bodysize();
             $today = new \DateTimeImmutable();
             $newBodysize
-                ->setName(strtolower($bodysize ->getName()))
+                ->setName(strtolower($bodysize->getName()))
                 ->setCreatedAt($today)
                 ->setEditedAt($today)
             ;
@@ -69,105 +63,91 @@ final class BodysizeController extends AbstractController
                 'La forme "'.$newBodysize->getName().'" à bien été ajouté'
             );
 
-            
             return $this->renderBlock('avatar/bodysize/turbo/new.html.twig', 'success_add_bodysize', [
                 'bodysize' => $newBodysize,
-
             ]);
         }
 
         return $this->renderBlock('avatar/bodysize/turbo/new.html.twig', 'new_bodysize_form', [
-
             'form' => $form,
-
         ]);
-        
     }
 
-    #[Route('/avatar/bodysize/cancel/new', name: 'app_avatar_bodysize_new_cancel',methods:["GET"])]
+    #[Route('/avatar/bodysize/cancel/new', name: 'app_avatar_bodysize_new_cancel', methods: ['GET'])]
     public function cancel_new(
-        Request $request
-    )
-    {
-
+        Request $request,
+    ) {
         $request->setRequestFormat(TurboBundle::STREAM_FORMAT);
 
         return $this->renderBlock('avatar/bodysize/turbo/new.html.twig', 'delete_new_bodysize_form');
     }
 
-//? --------- edit
-    #[Route('/avatar/bodysize/edit/{id}', name: 'app_avatar_bodysize_edit', methods:["GET","POST"])]
+    // ? --------- edit
+    #[Route('/avatar/bodysize/edit/{id}', name: 'app_avatar_bodysize_edit', methods: ['GET', 'POST'])]
     public function edit(
         int $id,
         Request $request,
-        EntityManagerInterface $entityManagerInterface
-    ):Response
-    {
-
-        $morphology = $entityManagerInterface->getRepository(Bodysize::class)->findOneBy(["id"=>$id]) ;
+        EntityManagerInterface $entityManagerInterface,
+    ): Response {
+        $morphology = $entityManagerInterface->getRepository(Bodysize::class)->findOneBy(['id' => $id]);
 
         $form = $this->createForm(MorphologieForm::class, $morphology);
         $form->handleRequest($request);
 
         $request->setRequestFormat(TurboBundle::STREAM_FORMAT);
 
-        if($form->isSubmitted() && $form->isValid()){
+        if ($form->isSubmitted() && $form->isValid()) {
             $today = new \DateTimeImmutable();
-            
+
             $morphology
                 ->setEditedAt($today)
-                ->setName(strtolower($form->getData()->getName()))  
+                ->setName(strtolower($form->getData()->getName()))
             ;
             $entityManagerInterface->persist($morphology);
             $entityManagerInterface->flush();
 
-            return $this->renderBlock('avatar/bodysize/turbo/edit.html.twig','success_edit_bodysize',[
-                "morphologie" => $morphology,
-                "id" => $id,
-
+            return $this->renderBlock('avatar/bodysize/turbo/edit.html.twig', 'success_edit_bodysize', [
+                'morphologie' => $morphology,
+                'id' => $id,
             ]);
         }
-        return $this->renderBlock('avatar/bodysize/turbo/edit.html.twig','edit_bodysize_form',[
-            "morphologie" => $morphology,
-            "id" => $id,
-            'form' => $form
+
+        return $this->renderBlock('avatar/bodysize/turbo/edit.html.twig', 'edit_bodysize_form', [
+            'morphologie' => $morphology,
+            'id' => $id,
+            'form' => $form,
         ]);
     }
 
-    #[Route('/avatar/bodysize/cancel/edit', name: 'app_avatar_bodysize_edit_cancel',methods:["GET"])]
+    #[Route('/avatar/bodysize/cancel/edit', name: 'app_avatar_bodysize_edit_cancel', methods: ['GET'])]
     public function cancel_edit(
-        Request $request
-    ):Response
-    {
+        Request $request,
+    ): Response {
         $request->setRequestFormat(TurboBundle::STREAM_FORMAT);
 
         return $this->renderBlock('avatar/bodysize/turbo/edit.html.twig', 'delete_edit_color_form');
     }
 
-//? --------- delete
+    // ? --------- delete
     #[Route('/avatar/bodysize/delete/{id}', name: 'app_avatar_bodysize_delete')]
     public function delete(
         int $id,
         Request $request,
-        EntityManagerInterface $entityManagerInterface
-    ){
-
-        if(!$this->isCsrfTokenValid("delete-bodysize",$request->getPayload()->getString('_token'))){
-            return new Response("", RESPONSE::HTTP_BAD_REQUEST);
+        EntityManagerInterface $entityManagerInterface,
+    ) {
+        if (!$this->isCsrfTokenValid('delete-bodysize', $request->getPayload()->getString('_token'))) {
+            return new Response('', Response::HTTP_BAD_REQUEST);
         }
-        
-        
-        $bodysize = $entityManagerInterface->getRepository(Bodysize::class)->findOneBy(['id'=> $id]);
+
+        $bodysize = $entityManagerInterface->getRepository(Bodysize::class)->findOneBy(['id' => $id]);
         $entityManagerInterface->remove($bodysize);
-        
 
         $entityManagerInterface->flush();
 
         $request->setRequestFormat(TurboBundle::STREAM_FORMAT);
-            
+
         return $this->renderBlock('avatar/bodysize/turbo/delete.html.twig', 'delete_bodysize', [
             'bodysizeId' => $id,
-
         ]);
     }
 }

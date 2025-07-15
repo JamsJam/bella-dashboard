@@ -11,7 +11,6 @@ final class MorphotypeController extends AbstractController
     #[Route('/avatar/morphotype', name: 'app_avatar_morphotype')]
     public function index(): Response
     {
-        
         return $this->render('avatar/morphotype/index.html.twig', [
             'controller_name' => 'Avatar/MorphotypeController',
         ]);

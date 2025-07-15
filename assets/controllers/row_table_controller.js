@@ -7,7 +7,7 @@ import { Controller } from '@hotwired/stimulus';
 
 /* stimulusFetch: 'lazy' */
 export default class extends Controller {
-    static targets = ['row']
+    static targets = ['row'];
     static values = {
         selectMode : {type: Boolean, default: false},
         selectedList : {type: Array, default: []},
