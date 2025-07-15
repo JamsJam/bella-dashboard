@@ -50,6 +50,31 @@ dashboard_content:
         - title: "Formes"
           route: "app_avatar_shape_index"
 
+  app_avatar_morphology:
+    - title: "Forme des pieces d'avatar"
+      routeKey: "avatar"
+      breadcrumb:
+        - title: "Dashboard"
+          route: "app_home"
+        - title: "Avatar"
+          route: "app_avatar_index"
+        - title: "Formes"
+          route: "app_avatar_shape_index"
+        - title: "Morphologie"
+          route: "app_avatar_morphology"
+
+  app_avatar_morphotype:
+    - title: "Forme des pieces d'avatar"
+      routeKey: "avatar"
+      breadcrumb:
+        - title: "Dashboard"
+          route: "app_home"
+        - title: "Avatar"
+          route: "app_avatar_index"
+        - title: "Formes"
+          route: "app_avatar_shape_index"
+        - title: "Morpholotypes"
+          route: "app_avatar_morphotype"
 #? ========================= Clothes
 #? ========================= Customers
 #? ========================= Orders
