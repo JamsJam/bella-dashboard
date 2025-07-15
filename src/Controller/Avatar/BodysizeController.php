@@ -2,12 +2,11 @@
 
 namespace App\Controller\Avatar;
 
+use App\Form\Avatar\BodysizeForm;
 use Symfony\UX\Turbo\TurboBundle;
-use App\DTO\Avatar\Color\ColorDTO;
-use App\DTO\Avatar\Shape\ShapeDTO;
+use App\Entity\Avatar\Body\Bodysize;
 use App\Form\Avatar\MorphologieForm;
 use App\Entity\Avatar\Body\Morphologie;
-use App\Form\Avatar\Color\EditColorForm;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -15,10 +14,10 @@ use Symfony\Component\Routing\Attribute\Route;
 use App\Provider\PageMetadata\PageMetadataProvider;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
-final class MorphologyController extends AbstractController
+final class BodysizeController extends AbstractController
 {
 //? --------- index
-    #[Route('/avatar/morphology', name: 'app_avatar_morphology')]
+    #[Route('/avatar/bodysize', name: 'app_avatar_bodysize')]
     public function index(
         PageMetadataProvider $pageMetadata,
         Request $request,
@@ -26,24 +25,24 @@ final class MorphologyController extends AbstractController
     ): Response
     {
         $metaData = $pageMetadata->getPageMetada($request->attributes->get('_route'));
-        $morphologies = $entityManagerInterface->getRepository(Morphologie::class)->findAll();
+        $bodysizes = $entityManagerInterface->getRepository(Bodysize::class)->findAll();
 
-        return $this->render('avatar/morphology/index.html.twig', [
+        return $this->render('avatar/bodysize/index.html.twig', [
             'metaData' => $metaData,
-            "morphologies" =>  $morphologies
+            "bodysizes" =>  $bodysizes
         ]);
     }
 
 //? --------- new
-    #[Route('/avatar/morphology/new', name: 'app_avatar_morphology_new', methods:["GET", "POST"])]
+    #[Route('/avatar/bodysize/new', name: 'app_avatar_bodysize_new', methods:["GET", "POST"])]
     public function new(
         Request $request,
         EntityManagerInterface $entityManagerInterface
     ):Response
     {
 
-        $form = $this->createForm(MorphologieForm::class, new Morphologie(),[
-            "action" => $this->generateUrl('app_avatar_morphology_new',)
+        $form = $this->createForm(BodysizeForm::class, new Bodysize(),[
+            "action" => $this->generateUrl('app_avatar_bodysize_new',)
         ]);
 
         $form->handleRequest($request);
@@ -53,31 +52,31 @@ final class MorphologyController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
 
             
-            $morphology =  $form->getData();
+            $bodysize  =  $form->getData();
 
-            $newMorphology = new Morphologie ;
+            $newBodysize = new Bodysize ;
             $today = new \DateTimeImmutable();
-            $newMorphology
-                ->setName(strtolower($morphology->getName()))
+            $newBodysize
+                ->setName(strtolower($bodysize ->getName()))
                 ->setCreatedAt($today)
                 ->setEditedAt($today)
             ;
-            $entityManagerInterface->persist($newMorphology);
+            $entityManagerInterface->persist($newBodysize);
             $entityManagerInterface->flush();
 
             $this->addFlash(
                 'add-success',
-                'La forme "'.$newMorphology->getName().'" à bien été ajouté'
+                'La forme "'.$newBodysize->getName().'" à bien été ajouté'
             );
 
             
-            return $this->renderBlock('avatar/morphology/turbo/new.html.twig', 'success_add_morphology', [
-                'morphologie' => $newMorphology,
+            return $this->renderBlock('avatar/bodysize/turbo/new.html.twig', 'success_add_bodysize', [
+                'bodysize' => $newBodysize,
 
             ]);
         }
 
-        return $this->renderBlock('avatar/morphology/turbo/new.html.twig', 'new_morphology_form', [
+        return $this->renderBlock('avatar/bodysize/turbo/new.html.twig', 'new_bodysize_form', [
 
             'form' => $form,
 
@@ -85,7 +84,7 @@ final class MorphologyController extends AbstractController
         
     }
 
-    #[Route('/avatar/morphology/cancel/new', name: 'app_avatar_morphology_new_cancel',methods:["GET"])]
+    #[Route('/avatar/bodysize/cancel/new', name: 'app_avatar_bodysize_new_cancel',methods:["GET"])]
     public function cancel_new(
         Request $request
     )
@@ -93,11 +92,11 @@ final class MorphologyController extends AbstractController
 
         $request->setRequestFormat(TurboBundle::STREAM_FORMAT);
 
-        return $this->renderBlock('avatar/morphology/turbo/new.html.twig', 'delete_new_morphology_form');
+        return $this->renderBlock('avatar/bodysize/turbo/new.html.twig', 'delete_new_bodysize_form');
     }
 
 //? --------- edit
-    #[Route('/avatar/morphology/edit/{id}', name: 'app_avatar_morphology_edit', methods:["GET","POST"])]
+    #[Route('/avatar/bodysize/edit/{id}', name: 'app_avatar_bodysize_edit', methods:["GET","POST"])]
     public function edit(
         int $id,
         Request $request,
@@ -105,7 +104,7 @@ final class MorphologyController extends AbstractController
     ):Response
     {
 
-        $morphology = $entityManagerInterface->getRepository(Morphologie::class)->findOneBy(["id"=>$id]) ;
+        $morphology = $entityManagerInterface->getRepository(Bodysize::class)->findOneBy(["id"=>$id]) ;
 
         $form = $this->createForm(MorphologieForm::class, $morphology);
         $form->handleRequest($request);
@@ -122,54 +121,52 @@ final class MorphologyController extends AbstractController
             $entityManagerInterface->persist($morphology);
             $entityManagerInterface->flush();
 
-            return $this->renderBlock('avatar/morphology/turbo/edit.html.twig','success_edit_morphology',[
+            return $this->renderBlock('avatar/bodysize/turbo/edit.html.twig','success_edit_bodysize',[
                 "morphologie" => $morphology,
                 "id" => $id,
 
             ]);
         }
-        return $this->renderBlock('avatar/morphology/turbo/edit.html.twig','edit_morphology_form',[
+        return $this->renderBlock('avatar/bodysize/turbo/edit.html.twig','edit_bodysize_form',[
             "morphologie" => $morphology,
             "id" => $id,
             'form' => $form
         ]);
     }
 
-    #[Route('/avatar/morphology/cancel/edit', name: 'app_avatar_morphology_edit_cancel',methods:["GET"])]
+    #[Route('/avatar/bodysize/cancel/edit', name: 'app_avatar_bodysize_edit_cancel',methods:["GET"])]
     public function cancel_edit(
         Request $request
     ):Response
     {
         $request->setRequestFormat(TurboBundle::STREAM_FORMAT);
 
-        return $this->renderBlock('avatar/morphology/turbo/edit.html.twig', 'delete_edit_color_form');
+        return $this->renderBlock('avatar/bodysize/turbo/edit.html.twig', 'delete_edit_color_form');
     }
 
 //? --------- delete
-    #[Route('/avatar/morphology/delete/{id}', name: 'app_avatar_morphology_delete')]
+    #[Route('/avatar/bodysize/delete/{id}', name: 'app_avatar_bodysize_delete')]
     public function delete(
         int $id,
         Request $request,
         EntityManagerInterface $entityManagerInterface
     ){
-        // dd($request->getPayload()->getString('_token'));
 
-        if(!$this->isCsrfTokenValid("delete-morphology",$request->getPayload()->getString('_token'))){
+        if(!$this->isCsrfTokenValid("delete-bodysize",$request->getPayload()->getString('_token'))){
             return new Response("", RESPONSE::HTTP_BAD_REQUEST);
         }
         
         
-        $color = $entityManagerInterface->getRepository(Morphologie::class)->findOneBy(['id'=> $id]);
-        $entityManagerInterface->remove($color);
+        $bodysize = $entityManagerInterface->getRepository(Bodysize::class)->findOneBy(['id'=> $id]);
+        $entityManagerInterface->remove($bodysize);
         
 
         $entityManagerInterface->flush();
 
-
         $request->setRequestFormat(TurboBundle::STREAM_FORMAT);
             
-        return $this->renderBlock('avatar/morphology/turbo/delete.html.twig', 'delete_morphology', [
-            'morphologieId' => $id,
+        return $this->renderBlock('avatar/bodysize/turbo/delete.html.twig', 'delete_bodysize', [
+            'bodysizeId' => $id,
 
         ]);
     }

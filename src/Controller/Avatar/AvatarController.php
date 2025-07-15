@@ -375,7 +375,7 @@ final class AvatarController extends AbstractController
                 $checkSkincolor = $entityManagerInterface->getRepository($skincolorEntity)->findBy(['name' => $skincolorName]);
 
                 if (1 === count($checkSkincolor)) {
-                    $newBodyPart->setColor($checkSkincolor[0]);
+                    $newBodyPart->setSkincolor($checkSkincolor[0]);
                 } else {
                     $newSkincolor = new $skincolorEntity();
                     $newSkincolor->setName($skincolorName)
@@ -425,20 +425,20 @@ final class AvatarController extends AbstractController
 
                 // ? ------- vetement
                 $clotheEntity = $secondaryFileEntity['clothesFilter'];
-                $clotheName = explode('__', $fileName)[4];
+                $clotheName = explode('.',explode( '__', $fileName)[4])[0];
                 $checkClothe = $entityManagerInterface->getRepository($clotheEntity)->findBy(['name' => $clotheName]);
 
                 if (1 === count($checkClothe)) {
-                    $newBodyPart->setClothes($checkClothe);
+                    $newBodyPart->setClothe($checkClothe);
                 } elseif ('-none-' === $clotheName) {
-                    $newBodyPart->setClothes(null);
+                    $newBodyPart->setClothe(null);
                 } else {
                     return new JsonResponse($clotheName."N'existe pas en base de donnée", Response::HTTP_BAD_REQUEST);
                 }
 
                 // ?------morphotype a partir de bodysize&checkMophology
                 $morphotypeName = $bodysizeName.'-'.$morphologyName;
-                $checkMorphotype = $entityManagerInterface->getRepository(Morphotype::class)->findBy(['size' => $bodysize, 'mophologie' => $morphology]);
+                $checkMorphotype = $entityManagerInterface->getRepository(Morphotype::class)->findBy(['size' => $bodysize, 'morphologie' => $morphology]);
                 if (1 === count($checkMorphotype)) {
                     $newBodyPart->setMorphotype($checkMorphotype[0]);
                 } else {

@@ -71,14 +71,20 @@
                         {% endfor %}
                         <a 
                             data-turbo-frame="admin-main"
-                            href="{{path('app_avatar_morphotype')}}"
-                            data-turbo-action="replace" 
-                        >{{'morphotype'|capitalize}}</a>
-                        <a 
-                            data-turbo-frame="admin-main"
                             href="{{path('app_avatar_morphology')}}"
                             data-turbo-action="replace" 
                         >{{'morphologie'|capitalize}}</a>
+                        <a 
+                            data-turbo-frame="admin-main"
+                            href="{{path('app_avatar_bodysize')}}"
+                            data-turbo-action="replace" 
+                        >{{'taille des corps'|capitalize}}</a>
+                        <a 
+                            data-turbo-frame="admin-main"
+                            href="{{path('app_avatar_morphotype')}}"
+                            data-turbo-action="replace" 
+                        >{{'morphotype'|capitalize}}</a>
+
 
                         <a 
                             data-turbo-frame="admin-main"
