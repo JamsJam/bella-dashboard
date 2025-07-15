@@ -5,27 +5,7 @@
 
 {% block body %}
 
-    <div class="header">
-    {#?==== Titre de la page #}
-        <turbo-frame id="dash-title">
-            <h1>{{metaData.title}}</h1>
-        </turbo-frame>
-
-    {#?==== fil d'arianne #}
-        <turbo-frame id="dash-arianne" >
-            {% for scrumItem in metaData.breadcrumb %}
-                
-                <a href="{{path(scrumItem.route)}}"
-                    data-turbo-frame="admin-main"
-                    {# target="_top" #}
-                    data-turbo-preload="true"
-                    data-turbo-action="replace"
-                >
-                    {{scrumItem.title}} {% if not loop.last %}/{% endif %}
-                </a> 
-            {% endfor %}
-        </turbo-frame>
-    </div>
+    {{ include('partials/_dashboard_header.html.twig') }}
 
    <turbo-frame id="avatar-frame" >
         
@@ -33,114 +13,118 @@
         
             <header>
             
-                <turbo-frame id="avatar-actions" >
-                    {# <div class="project__actions"> #}
+                <turbo-frame id="avatar-navigation" >
+                    <div class="avatar__navigation">
                         <a 
                             class="button__action" 
                             href="{{path('app_avatar_index')}}"
                             data-turbo-frame="admin-main"
                             {# data-turbo-preload="true" #}
                             data-turbo-action="replace"
-                        >body part</a>
+                        >Avatar</a>
                         <a 
                             class="button__action" 
                             href="{{path('app_avatar_shape_index')}}"
                             data-turbo-frame="admin-main"
-                                                        {# data-turbo-preload="true" #}
+                            
                             data-turbo-action="replace"
                         >Formes</a>
-                        <a class="button__action" href="">Morphologie</a>
-                        <a class="button__action" href="">Morphotype</a>
-                        <a class="button__action" href="{{ path('app_admin_project_new') }}" data-turbo-frame="avatar-frame"
-                        data-turbo-action="replace"
-                        >Ajouter</a>
                         <a 
-                            class="button__action" 
+                            class="button__action button__action--return" 
                             href="{{ path(metaData.breadcrumb[metaData.breadcrumb|length - 2].route) }}" 
                             data-turbo-frame="admin-main"
                             data-turbo-action="replace"
                         >Retour</a> 
-                    {# </div> #}
+                    </div>
                 </turbo-frame>
             
                 <turbo-frame id="avatar-actions" >
-                    {# <div class="project__actions"> #}
-                        <a 
-                            class="button__action" 
-                            href="{{path('app_avatar_index')}}"
-                            data-turbo-frame="admin-main"
-                            {# data-turbo-preload="true" #}
-                            data-turbo-action="replace"
-                        >body part</a>
-                        <a 
-                            class="button__action" 
-                            href="{{path('app_avatar_shape_index')}}"
-                            data-turbo-frame="admin-main"
-                                                        {# data-turbo-preload="true" #}
-                            data-turbo-action="replace"
-                        >Formes</a>
-                        <a class="button__action" href="">Morphologie</a>
-                        <a class="button__action" href="">Morphotype</a>
-                        <a class="button__action" href="{{ path('app_admin_project_new') }}" data-turbo-frame="avatar-frame"
-                        data-turbo-action="replace"
-                        >Ajouter</a>
-                        <a 
-                            class="button__action" 
-                            href="{{ path(metaData.breadcrumb[metaData.breadcrumb|length - 2].route) }}" 
-                            data-turbo-frame="admin-main"
-                            data-turbo-action="replace"
-                        >Retour</a> 
-                    {# </div> #}
+                    <div id="avatar_actions" class="avatar__navigation">
+                        {% if type is not same as null %}
+                            <a 
+                                {# target="color__grid" #}
+                                href="{{path('app_avatar_color_new',{type: type})}}"
+                                data-turbo-frame="_top" 
+                                class="button__action"
+                                >
+                                {{"Ajouter une couleur de " ~ type|capitalize}}
+                            </a>
+                        {% endif %}
+                    </div>
                 </turbo-frame>
 
  
             </header>
 
 
+            <turbo-frame id="avatar-container" >
+                {% if type is same as null %} 
+                    <div class="avatar__choice">
 
-            <turbo-frame id="avatar-results" >
-                <ul class="projets__grid">
-                    {# {% for article in articles %}
-                        <li class="projets__cell">
-                            <article class="article">
-                                <div class="article__visualbox">
-                                    <img class="article__image" src="{{ article.imageUrl }}" alt="{{ article.title }}">
-                                </div>
-                                <h2 class="article__titre">{{ article.title }}</h2>
-                                <div class="article__actions">
-                                    <ul>
-                                        <li>Voir</li>
-                                        <li>Modifier</li>
-                                        <li>Supprimer</li>
-                                    </ul>
-                                </div>
-                            </article>
-                        </li>
-                    {% else %}
-                        <li>
-                            <p>Aucun résultat trouvé.</p>
-                        </li>
-                    {% endfor %} #}
-                </ul>
+                        {% for key, item in colorChoice %}
+                                <a 
+                                    data-turbo-frame="admin-main"
+                                    href="{{path('app_avatar_color_index',{type: key})}}"
+                                    data-turbo-action="replace" 
+                                >{{item|capitalize}}</a>
 
-
-
-                {# <footer class="pagination">
-
-                    {% if pageCount > 1 %}
-                    <nav>
-                        <ul class="pagination-list">
-                        {% for page in 1..pageCount %}
-                            <li class="{{ currentPage == page ? 'active' : '' }}">
-                                <a href="{{ path(app.request.attributes.get('_route'), app.request.query.all | merge({'page': page})) }}" data-turbo-frame="avatar-results">
-                                    {{ page }}
-                                </a>
-                            </li>
                         {% endfor %}
-                        </ul>
-                    </nav>
-                    {% endif %}
-                </footer> #}
+
+                        <a 
+                            data-turbo-frame="admin-main"
+                            href="{{path('app_avatar_color_index')}}"
+                            data-turbo-action="replace" 
+                        >{{'vérification'|capitalize}}</a>
+
+                    </div>
+
+                {% else %}
+
+
+                    <div class="color__grid" id="color__grid" {{stimulus_controller("row_table")}}>
+
+                        <div class="grid__row header">
+                            <span></span>
+                            <p>Nom</p>
+                            <p>Couleur</p>
+                            <p>Actions</p>
+                        </div>
+                        {# {% for i in 1..10 %} #}
+                        {% for colorItem in colorItems %}
+                            
+                            <div class="grid__row" id="row-{{colorItem.id}}" >
+                                
+                                <span class="row__visual" style="{{ colorItem.hexa is same as null ? "" : "background-color:#" ~ colorItem.hexa}}">
+                                </span>
+                                
+                                <p>{{colorItem.name|capitalize}}</p>
+                                
+                                {% if colorItem.hexa is same as null %}
+                                    <p class="row__color">non assigned</p>
+                                {% else %}
+                                    <p class="row__color">{{'#' ~ colorItem.hexa}}</p>
+                                {% endif %}
+                                
+                                <div class="row__action">
+                                    <a class="action__edit" href="{{path('app_avatar_color_edit',{id:colorItem.id,type: type})}}" title="Modifier la couleur">
+                                        {{ ux_icon('mdi:edit-outline') }}
+                                    </a>
+                                    <form action="{{path('app_avatar_color_delete',{id:colorItem.id, type: type})}}" method="post" >
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete-color') }}">
+                                        <button 
+                                            type="submit" 
+                                            class="action__delete" 
+                                            onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette couleur ? Cette action entraînera la suppression de toutes les pièces d\'avatar portant cette couleur.');"
+                                            >
+                                            {{ ux_icon('weui:delete-outlined') }}
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                {% endif %}
             </turbo-frame>
         </section>
     </turbo-frame>

@@ -40,16 +40,16 @@
             
                 <turbo-frame id="avatar-actions" >
                     <div id="avatar_actions" class="avatar__navigation">
-                        {% if type is not same as null %}
+
                             <a 
                                 {# target="color__grid" #}
-                                href="{{path('app_avatar_shape_new',{type: type})}}"
+                                href="{{path('app_avatar_morphology_new')}}"
                                 data-turbo-frame="avatar-frame" 
                                 class="button__action"
                                 >
-                                {{"Ajouter une forme de " ~ type|capitalize}}
+                                {{"Ajouter une morphologie"|capitalize}}
                             </a>
-                        {% endif %}
+
                     </div>
                 </turbo-frame>
 
@@ -58,43 +58,7 @@
 
 
             <turbo-frame id="avatar-container" >
-                {% if type is same as null %} 
-                    <div class="avatar__choice">
 
-                        {% for key, item in shapeChoice %}
-                                <a 
-                                    data-turbo-frame="admin-main"
-                                    href="{{path('app_avatar_shape_index',{type: key})}}"
-                                    data-turbo-action="replace" 
-                                >{{item|capitalize}}</a>
-
-                        {% endfor %}
-                        <a 
-                            data-turbo-frame="admin-main"
-                            href="{{path('app_avatar_morphology')}}"
-                            data-turbo-action="replace" 
-                        >{{'morphologie'|capitalize}}</a>
-                        <a 
-                            data-turbo-frame="admin-main"
-                            href="{{path('app_avatar_bodysize')}}"
-                            data-turbo-action="replace" 
-                        >{{'taille des corps'|capitalize}}</a>
-                        <a 
-                            data-turbo-frame="admin-main"
-                            href="{{path('app_avatar_morphotype')}}"
-                            data-turbo-action="replace" 
-                        >{{'morphotype'|capitalize}}</a>
-
-
-                        <a 
-                            data-turbo-frame="admin-main"
-                            href="{{path('app_avatar_color_index')}}"
-                            data-turbo-action="replace" 
-                        >{{'vérification'|capitalize}}</a>
-
-                    </div>
-                    {% else %}
-                        
 
                         <div class="color__grid" id="color__grid" {{stimulus_controller("row_table")}}>
 
@@ -105,26 +69,26 @@
                             <p>Actions</p>
                         </div>
 
-                        {% for shapeItem in shapeItems %}
+                        {% for morphologie in morphologies %}
                             
-                            <div class="grid__row" id="row-{{shapeItem.id}}" >
+                            <div class="grid__row" id="row-{{morphologie.id}}" >
                                 
                                 <span ></span>
                                 <span ></span>
                                 
-                                <p>{{shapeItem.name|capitalize}}</p>
+                                <p>{{morphologie.name|capitalize}}</p>
                                 
                                 
                                 <div class="row__action">
-                                    <a class="action__edit" href="{{path('app_avatar_shape_edit',{id:shapeItem.id,type: type})}}" title="Modifier la couleur">
+                                    <a class="action__edit" href="{{path('app_avatar_morphology_edit',{id:morphologie.id})}}" title="Modifier la morphology">
                                         {{ ux_icon('mdi:edit-outline') }}
                                     </a>
-                                    <form action="{{path('app_avatar_shape_delete',{id:shapeItem.id, type: type})}}" method="post" >
-                                        <input type="hidden" name="_token" value="{{ csrf_token('delete-shape') }}">
+                                    <form action="{{path('app_avatar_morphology_delete',{id:morphologie.id})}}" method="post" >
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete-morphology') }}">
                                         <button 
                                             type="submit" 
                                             class="action__delete" 
-                                            onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette forme ? Cette action entraînera la suppression de toutes les pièces d\'avatar portant cette forme.');"
+                                            onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette moprhologie ? Cette action entraînera la suppression de tout les body de cette mophologie cette forme.');"
                                             >
                                             {{ ux_icon('weui:delete-outlined') }}
                                         </button>
@@ -133,7 +97,7 @@
                             </div>
                         {% endfor %}
                     </div>
-                {% endif %}
+
             </turbo-frame>
         </section>
     </turbo-frame>

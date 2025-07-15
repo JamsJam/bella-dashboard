@@ -5,27 +5,7 @@
 
 {% block body %}
 
-    <div class="header">
-        {#?==== Titre de la page #}
-        {# <turbo-frame id="dash-title"> #}
-            <h1>{{metaData.title}}</h1>
-        {# </turbo-frame> #}
-
-        {#?==== fil d'arianne #}
-        <turbo-frame id="dash-arianne" >
-            {% for scrumItem in metaData.breadcrumb %}
-                
-                <a href="{{path(scrumItem.route)}}"
-                    data-turbo-frame="admin-main"
-                    data-turbo-preload="true"
-                    data-turbo-action="replace"
-                >
-                    {{scrumItem.title}} {% if not loop.last %}/{% endif %}
-                </a> 
-            {% endfor %}
-        </turbo-frame>
-    </div>
-
+    {{ include('partials/_dashboard_header.html.twig') }}
         
     <turbo-frame id="avatar-frame" >
         <section class="avatar">
@@ -46,7 +26,7 @@
                             data-turbo-action="replace"
                         >Formes</a>
                         <a 
-                            class="button__action return" 
+                            class="button__action button__action--return" 
                             href="{{ path(metaData.breadcrumb[metaData.breadcrumb|length - 2].route) }}" 
                             data-turbo-frame="admin-main"
                             data-turbo-action="replace"
