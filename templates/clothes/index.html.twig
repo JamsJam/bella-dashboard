@@ -1,0 +1,33 @@
+{% extends 'base.html.twig' %}
+
+
+ {% block title %}Dashboard {{parent()}}{% endblock %}
+
+{% block body %}
+
+    {{ include('partials/_dashboard_header.html.twig') }}
+
+    {# <turbo-frame id="clothe-frame" > #}
+        <section class="clothes">
+            <header>
+            
+                <div class="clothes__navigation" id="clothes__navigation">
+
+                </div>
+
+
+                <div class="clothes__action" id="clothes__action">
+
+                </div>
+
+
+                <div id="clothes__container" class="clothes__container">
+
+                </div>
+
+
+            </header>
+        </section>
+    {# </turbo-frame> #}
+    {{block|raw}}
+{% endblock %}

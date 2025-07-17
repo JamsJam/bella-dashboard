@@ -89,7 +89,54 @@ dashboard_content:
         - title: "Morpholotypes"
           route: "app_avatar_morphotype"
 #? ========================= Clothes
+
+  app_clothes:
+    - title: "Voir tout les vêtements"
+      routeKey: "clothes"
+      breadcrumb:
+        - title: "Dashboard"
+          route: "app_home"
+        - title: "Vêtements"
+          route: "app_clothes"
+
+  app_clothes_collections:
+    - title: "Voir toutes les collections"
+      routeKey: "clothes"
+      breadcrumb:
+        - title: "Dashboard"
+          route: "app_home"
+        - title: "Vêtements"
+          route: "app_clothes"
+        - title: "Collection"
+          route: "app_clothes_collection"
+
+  app_clothes_category:
+    - title: "Voir toutes les categories"
+      routeKey: "clothes"
+      breadcrumb:
+        - title: "Dashboard"
+          route: "app_home"
+        - title: "Vêtements"
+          route: "app_clothes"
+        - title: "Categories"
+          route: "app_clothes_category"
 #? ========================= Customers
+  app_custumers:
+    - title: "Voir tout les clients"
+      routeKey: "customers"
+      breadcrumb:
+        - title: "Dashboard"
+          route: "app_home"
+        - title: "Clients"
+          route: "app_custumers"
 #? ========================= Orders
+  app_orders:
+    - title: "Voir tout les commandes"
+      routeKey: "orders"
+      breadcrumb:
+        - title: "Dashboard"
+          route: "app_home"
+        - title: "Commandes"
+          route: "app_orders"
 #? ========================= Statistics
 #? ========================= Parametters

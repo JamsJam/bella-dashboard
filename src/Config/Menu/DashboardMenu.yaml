@@ -7,14 +7,6 @@ menu:
     ariaLabel: "Accès au tableau de bord"
     roles: []
 
-  - label: "Vêtement"
-    route: "app_home"
-    key: "clothes"
-    class: "menu__item"
-    activClass: "menu__item--active"
-    ariaLabel: "Accès aux vêtements"
-    roles: []
-
   - label: "Avatar"
     route: "app_avatar_index"
     key: "avatar"
@@ -23,8 +15,16 @@ menu:
     ariaLabel: "Accès aux avatars"
     roles: []
 
+  - label: "Vêtement"
+    route: "app_clothes"
+    key: "clothes"
+    class: "menu__item"
+    activClass: "menu__item--active"
+    ariaLabel: "Accès aux vêtements"
+    roles: []
+
   - label: "Commandes"
-    route: "app_home"
+    route: "app_orders"
     key: "orders"
     class: "menu__item"
     activClass: "menu__item--active"
@@ -32,7 +32,7 @@ menu:
     roles: []
 
   - label: "Clients"
-    route: "app_home"
+    route: "app_customers"
     key: "customers"
     class: "menu__item"
     activClass: "menu__item--active"

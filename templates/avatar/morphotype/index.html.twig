@@ -43,11 +43,11 @@
 
                             <a 
                                 {# target="color__grid" #}
-                                href="{{path('app_avatar_morphology_new')}}"
+                                href="{{path('app_avatar_morphotype_new')}}"
                                 data-turbo-frame="avatar-frame" 
                                 class="button__action"
                                 >
-                                {{"Ajouter une morphologie"|capitalize}}
+                                {{"Ajouter une morphotype"|capitalize}}
                             </a>
 
                     </div>
@@ -60,7 +60,7 @@
             <turbo-frame id="avatar-container" >
 
 
-                        <div class="color__grid" id="color__grid" {{stimulus_controller("row_table")}}>
+                    <div class="color__grid" id="color__grid" {{stimulus_controller("row_table")}}>
 
                         <div class="grid__row header">
                             <span></span>
@@ -69,22 +69,22 @@
                             <p>Actions</p>
                         </div>
 
-                        {% for morphologie in morphologies %}
+                        {% for morphotype in morphotypes %}
                             
-                            <div class="grid__row" id="row-{{morphologie.id}}" >
+                            <div class="grid__row" id="row-{{morphotype.id}}" >
                                 
                                 <span ></span>
                                 <span ></span>
                                 
-                                <p>{{morphologie.name|capitalize}}</p>
+                                <p>{{morphotype.name|capitalize}}</p>
                                 
                                 
                                 <div class="row__action">
-                                    <a class="action__edit" href="{{path('app_avatar_morphology_edit',{id:morphologie.id})}}" title="Modifier la morphology">
+                                    {# <a class="action__edit" href="{{path('app_avatar_morphotype_edit',{id:morphotype.id})}}" title="Modifier la morphotype">
                                         {{ ux_icon('mdi:edit-outline') }}
-                                    </a>
-                                    <form action="{{path('app_avatar_morphology_delete',{id:morphologie.id})}}" method="post" >
-                                        <input type="hidden" name="_token" value="{{ csrf_token('delete-morphology') }}">
+                                    </a> #}
+                                    <form action="{{path('app_avatar_morphotype_delete',{id:morphotype.id})}}" method="post" >
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete-morphotype') }}">
                                         <button 
                                             type="submit" 
                                             class="action__delete" 

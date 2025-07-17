@@ -48,6 +48,7 @@ jobs:
             APP_SECRET=${{ secrets.APP_MAIN_SECRET }}
             MAILER_DSN=${{ secrets.MAILER_MAIN_DSN }}
             MESSENGER_TRANSPORT_DSN=${{ secrets.MESSENGER_MAIN_TRANSPORT_DSN }}
+            CORS_ALLOW_ORIGIN=${{ secrets.CORS_ALLOW_ORIGIN_TEST }}
             EOF
             echo
             echo "============================"
