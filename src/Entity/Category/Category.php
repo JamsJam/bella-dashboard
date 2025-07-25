@@ -25,8 +25,16 @@ class Category
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $image = null;
 
+    #[ORM\Column(length: 120, nullable: true)]
+    private ?string $metaDescription = null;
+
+    #[ORM\Column(length: 70)]
+    private ?string $slug = null;
+
     #[ORM\Column]
     private ?bool $isOnline = null;
+
+
 
     /**
      * @var Collection<int, Collections>
@@ -64,6 +72,31 @@ class Category
     public function setImage(?string $image): static
     {
         $this->image = $image;
+
+        return $this;
+    }
+
+    public function getMetaDescription(): ?string
+    {
+        return $this->metaDescription;
+    }
+
+    public function setMetaDescription(?string $metaDescription): static
+    {
+        $this->metaDescription = $metaDescription;
+
+        return $this;
+    }
+
+
+    public function getSlug(): ?string
+    {
+        return $this->slug;
+    }
+
+    public function setSlug(string $slug): static
+    {
+        $this->slug = $slug;
 
         return $this;
     }

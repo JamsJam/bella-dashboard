@@ -71,7 +71,7 @@ export default class extends Controller {
      * @returns {void}
      */
     updateCount(count) {
-        console.log(typeof 'hello');
+
         this.countTarget.innerText = `${count.toString()} fichier${count > 1 ? 's' : ''}`;
     }
 

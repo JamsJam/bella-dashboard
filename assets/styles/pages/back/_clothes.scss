@@ -30,7 +30,320 @@
             gap: 1rem;
             margin-bottom: 2rem;
         }
+
+        &__container{
+            position: relative;
+        }
+
+        &__grid{
+            // position:relative;
+            display: grid;
+            grid-template-rows: 1fr;
+            max-width: 1024px;
+            margin-inline: auto;
+            row-gap: 1rem;
+            padding: 0.5rem;
+        }
+            
+        &__row{
+                display: grid;
+                grid-template-columns: 50px repeat(3, 1fr);
+                column-gap: 2rem;
+                justify-items: center;
+                align-items: center;
+                /* max-width: 768px; */
+                padding-block: 1rem;
+                padding-inline: 1rem;
+                border-radius: 1rem;
+                box-shadow: black 0 2px 4px 0;
+                background-color: $admin-nuance-b-15;
+                transition: 
+                background-color 250ms ease-in-out
+                ;
+                
+                &:hover:not(.header){
+                    
+                    background-color: $admin-nuance-b-20;
+                    // cursor: pointer;
+                }
+
+                .row{
+
+                    &__image{
+                        height: 5rem;
+                        width: 5rem;
+                        border-radius: 50%;
+                        display: block;
+
+                        img{
+                            object-fit: contain;
+                            object-position: center;
+                            height: 100%;
+                            width: 100%;
+                        }
+                    }
+                    &__visual{
+                        height: 2.5rem;
+                        width: 2.5rem;
+                        border-radius: 50%;
+                        display: block;
+                    }
+
+                    // &__header{}
+
+                    // &__color{}
+
+                    &__action{
+                        @extend %flex-row-center-center;
+                        gap: 1rem;
+
+                        .action{
+
+                            &__edit,&__delete,&__show{
+
+                                background-color: $admin-nuance-b-15;
+                                border: 0.125rem solid $admin-nuance-b-30;
+                                box-shadow: black 0 2px 4px 0;
+                                border-radius: 0.5rem;
+                                padding-inline: 1rem;
+                                padding-block: 0.5rem;
+                                transition: 
+                                    box-shadow 250ms ease,
+                                    background-color 250ms ease-in-out
+                                    ;
+                                svg{
+                                    height: 1.25rem;
+                                    stroke: $admin-nuance-w-100;
+                                    transition: transform 500ms ease;
+                                    transform: rotateZ(0deg) ;
+                                }
+
+                
+                                &:hover{
+                                    
+                                    background-color: $admin-nuance-b-20;
+                                    border: 0.125rem solid $admin-nuance-b-15;
+                                    cursor: pointer;
+                                    box-shadow: black 0 1px 1px 0;
+
+                                    svg{
+                                        transform: rotateZ(-405deg) ;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+
+        .modal{
+
+            position: absolute;
+            top: 0;
+            left: 0;
+            backdrop-filter: blur(4px);
+            min-height: 100%;
+            width: 100%;
+            padding-inline: 2rem;
+            padding-block-end: 2rem;
+            @extend %flex-column-start-stretch;
+            background-color: hsla(0, 0%, 15%, 0.6);
+            z-index:1;
+            form{
+                @extend %flex-column-start-stretch;
+                gap: 2rem;
+                background-color: $admin-nuance-b-15;
+                box-shadow: 0 2px 4px 0 black;
+
+                padding: 2rem;
+
+                border-radius: 1rem;
+
+                .dropzoneWithPreview{
+                    
+                    @extend %flex-row-space-around-center;
+                    gap:2rem;
+                    height: 15rem;
+
+                    .dropzone{
+
+                        &__container{
+                            @extend %flex-row-center-center;
+                            border: dashed 2px $admin-nuance-w-87;
+                            border-radius: 1rem;
+                            position: relative;
+                            height: 100%;
+                            width: 100%;
+                            background-color: #ffffff01;
+                            transition: background-color 500ms ease-in-out;
+                            
+                            &--drophover{
+                                background-color: #ffffff20;
+                            }
+
+                            input[type='file']{
+                                position: absolute;
+                                top: 0;
+                                left: 0;
+                                height: 100%;
+                                width: 100%;
+                                opacity: 0;
+
+                                &:hover{
+                                    cursor: pointer;
+                                }
+                            }
+                        }
+                    }
+                    .preview{
+                        &__container{
+                            // display: none;
+                            border: dashed 2px $admin-nuance-w-87;
+                            border-radius: 1rem;
+                            height: 100%;
+                            width: 100%;
+
+                            img{
+                                width: 100%;
+                                height: 100%;
+                                object-fit: contain;
+                                object-position: center;
+                            }
+                        }
+                    }
+                }
+            }
+
+            &.categoryShow{
+                @extend %flex-column-center-stretch;
+                gap: 2rem;
+
+
+                .category{
+
+                    &__container{
+                        @extend %flex-row-center-center;
+                        gap:2rem;
+                    }
+                    
+                    &__image{
+                        height: 22rem;
+                        width: 22rem;
+                        padding: 1rem;
+                        border-radius: 1rem;
+                        background: #393939e0;
+
+                        img{
+                            height: 100%;
+                            width: 100%;
+                            object-fit: contain;
+                            object-position: center;
+                        }
+                    }
+                    &__info{
+
+                        @extend %flex-column-center-stretch;
+                        gap:1rem;
+
+                        .info__item{
+
+                            max-width:25vw;
+
+                            p.title{
+                                font-weight: 600;
+                                font-size: 1.25rem;
+                                margin-block-end: 0.5rem ;
+                            }
+                            p.value{
+                                font-weight: 500;
+                                font-size: 1rem;
+
+                            }
+                        }
+                    }
+                }
+                .collection{
+                    &__container{
+                        // background: red;
+                        // height: 50rem;
+                        width: 100%;
+                        @extend %flex-column-center-stretch;
+                        gap: 2rem;
+
+                    }
+                    &__row{
+                        display: grid;
+                        justify-items: center;
+                        align-items: center;
+                        grid-template-columns: repeat(3,1fr);
+                        border-radius: 1rem;
+                        padding-block: 1rem;
+                        box-shadow: 0px 1px 4px 1px rgba(0, 0, 0, 0.45);
+
+                        &.title{
+                            font-weight: 600;
+                        }
+
+                        &.empty{
+                            grid-template-columns: 1fr;
+                        }
+
+                        .row{
+                            &__action{
+                                @extend %flex-row-center-center;
+                                gap: 1rem;
+
+                                form{
+                                    padding: 0;
+                                }
+                                .action{
+
+                                    &__edit,&__delete,&__show{
+
+                                        background-color: $admin-nuance-b-15;
+                                        border: 0.125rem solid $admin-nuance-b-30;
+                                        box-shadow: black 0 2px 4px 0;
+                                        border-radius: 0.5rem;
+                                        padding-inline: 1rem;
+                                        padding-block: 0.5rem;
+                                        transition: 
+                                            box-shadow 250ms ease,
+                                            background-color 250ms ease-in-out
+                                            ;
+
+                                        
+                                        svg{
+                                            height: 1.25rem;
+                                            stroke: $admin-nuance-w-100;
+                                            transition: transform 500ms ease;
+                                            transform: rotateZ(0deg) ;
+                                        }
+
+                        
+                                        &:hover{
+                                            
+                                            background-color: $admin-nuance-b-20;
+                                            border: 0.125rem solid $admin-nuance-b-15;
+                                            cursor: pointer;
+                                            box-shadow: black 0 1px 1px 0;
+
+                                            svg{
+                                                transform: rotateZ(-405deg) ;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            
+                        }
+
+                    }
+                }
+            }
+        }
 }
+
 
 #clothe-frame,
 #clothe-actions
