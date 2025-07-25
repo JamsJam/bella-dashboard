@@ -7,6 +7,8 @@ parameters:
     menu.yaml.path:  '%kernel.project_dir%/src/Config/Menu/DashboardMenu.yaml'
     page_meta.yaml.path:  '%kernel.project_dir%/src/Config/Dashboard/PageMetadata.yaml'
     avatar_directory: '%kernel.project_dir%/public/upload/avatar'
+    # category_directory: '%kernel.project_dir%/public/upload/clothes/category'
+
 
 services:
     # default configuration for services in *this* file
@@ -33,3 +35,7 @@ services:
     App\Registry\Avatar\FilePath\AvatarFilePathRegistry:
         arguments:
             $targetDirectory: '%avatar_directory%'
+
+    # App\Controller\Clothes\CategoryController:
+    #     arguments:
+    #         $targetDirectory: '%category_directory%'

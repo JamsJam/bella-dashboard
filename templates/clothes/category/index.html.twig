@@ -7,49 +7,27 @@
 
     {{ include('partials/_dashboard_header.html.twig') }}
 
-        <turbo-frame id="clothe-frame" >
-            <section class="clothe">
+        {# <turbo-frame id="clothe-frame" > #}
+            <section class="clothes">
                 <header>
                 
-                    <turbo-frame id="clothe-navigation" >
-                        <div class="clothes__navigation">
-                            <a 
-                                class="button__action" 
-                                href="{{path('app_clothes')}}"
-                                data-turbo-frame="admin-main"
-                                {# data-turbo-preload="true" #}
-                                data-turbo-action="replace"
-                            >Vetement</a>
-                            <a 
-                                class="button__action" 
-                                href="{{path('app_clothes_collections')}}"
-                                data-turbo-frame="admin-main"
-                                {# data-turbo-preload="true" #}
-                                data-turbo-action="replace"
-                            >Collection</a>
-                            <a 
-                                class="button__action return" 
-                                href="{{ path(metaData.breadcrumb[metaData.breadcrumb|length - 2].route) }}" 
-                                data-turbo-frame="admin-main"
-                                data-turbo-action="replace"
-                            >Retour</a> 
-                        </div>
-                    </turbo-frame>
-                
-                    <turbo-frame id="clothe-actions" >
 
+                        <div class="clothes__navigation" id="clothes__navigation" >
                             
-                        <a 
-                            class="button__action" 
-                            href="{{ path('app_avatar_new') }}" 
-                            data-turbo-frame="admin-main"
-                            data-turbo-action="replace"
-                        >Ajouter des catégories</a> 
+                        </div>
 
-                    </turbo-frame>
+
+                        <div class="clothes__action" id="clothes__action" >
+
+                        </div>
+
 
 
                 </header>
+                <div id="clothes__container" class="clothes__container">
+
+                </div>
             </section>
-        </turbo-frame>
+        {# </turbo-frame> #}
+    {{block|raw}}
 {% endblock %}
