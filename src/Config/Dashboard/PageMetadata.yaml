@@ -108,7 +108,7 @@ dashboard_content:
         - title: "Vêtements"
           route: "app_clothes"
         - title: "Collection"
-          route: "app_clothes_collection"
+          route: "app_clothes_collections"
 
   app_clothes_category:
     - title: "Voir toutes les categories"

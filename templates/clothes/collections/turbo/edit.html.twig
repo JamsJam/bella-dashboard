@@ -1,0 +1,115 @@
+{% block edit_category_form %}
+
+	<turbo-stream action="replace" target="clothes__action">
+		<template>
+			<div id="clothes__action" class="clothes__action">
+				<a 
+				class="button__action" data-turbo-frame="admin-main" href="{{path('app_clothes_category_edit_cancel')}}" data-turbo-action="replace">{{"annuler"|capitalize}}</a>
+			</div>
+		</template>
+	</turbo-stream>
+
+    <turbo-stream action="append" target="clothes__container">
+        <template>
+            <div class="modal" id="clothe-modal">
+
+				{{ form_start(form, {'action': path('app_clothes_category_edit',{id:category.id})}) }}
+					<h2>Ajouter une categorie</h2>
+					{{form_row(form.name)}}
+
+					<div class="dropzoneWithPreview" {{stimulus_controller("dropzone-solo-preview")}}>
+						{# dropZone #}
+						<div class="dropzone__container" {{stimulus_target("dropzone-solo-preview", 'dropzoneContainer')}}>
+							{{form_widget(form.image,{attr:stimulus_target("dropzone-solo-preview", 'dropzoneInput').toArray()})}}
+							<p class="dropzone__placeholder" {{stimulus_target("dropzone-solo-preview", 'dropzonePlaceholder')}}>Déposer vos fichier ici ou parcourir vos fichiers</p>
+						</div>
+						<div class="preview__container" {{stimulus_target("dropzone-solo-preview", 'preview')}}>
+							<img src="{{asset(category.image)}}">
+						</div>
+					</div>
+
+					{{form_row(form.metaDescription)}}
+
+
+					<div class="button__container">
+						<button class="button__action" type="submit">Envoyer</button>
+
+					</div>
+				{{ form_end(form)}}
+			</div>
+        </template>
+    </turbo-stream>
+
+
+{% endblock %}
+
+{% block success_edit_category %}
+	<turbo-stream action="replace" targets="#avatar_actions">
+		<template>
+			<div id="avatar_actions" class="avatar__navigation">
+
+					<a  href="{{path('app_clothes_category_new')}}" data-turbo-frame="admin-main" class="button__action">
+						{{"Ajouter une category"|capitalize}}
+					</a>
+
+			</div>
+		</template>
+
+	</turbo-stream>
+
+	<turbo-stream action="remove" target="clothe-modal"></turbo-stream>
+
+	<turbo-stream action="update" targets="#row-{{category.id}}">
+		<template>
+
+
+			{# <div class="clothes__row" id="row-{{category.id}}" > #}
+
+				<div class="row__image">
+					<img src="{{asset(category.image)}}" alt="" >
+				</div>
+
+				<p>{{category.name|capitalize}}</p>
+				<p>{{category.isOnline ? 'OnLine' : 'Offline'}}</p>
+
+
+				<div class="row__action">
+					<a class="action__show" href="{{path('app_clothes_category_show',{id: category.id})}}">
+						{{ ux_icon('mdi:eye-outline') }}
+					</a>
+					<a class="action__edit" href="{{path('app_clothes_category_edit',{id:category.id})}}" title="Modifier la categorie">
+						{{ ux_icon('mdi:edit-outline') }}
+					</a>
+					<form action="{{path('app_clothes_category_delete',{id:category.id})}}" method="post" >
+						<input type="hidden" name="_token" value="{{ csrf_token('delete-category') }}">
+						<button 
+							type="submit" 
+							class="action__delete" 
+							onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette moprhologie ? Cette action entraînera la suppression de tout les body de cette mophologie cette forme.');"
+							>
+							{{ ux_icon('weui:delete-outlined') }}
+						</button>
+					</form>
+				</div>
+			{# </div> #}
+
+		</template>
+	</turbo-stream>
+{% endblock %}
+
+{% block delete_new_category_form %}
+	<turbo-stream action="replace" targets="#avatar_actions">
+		<template>
+			<div id="avatar_actions" class="avatar__navigation">
+					<a  
+						href="{{path('app_clothes_category_new')}}" 
+						data-turbo-frame="_top" 
+						class="button__action">
+						{{"Ajouter"|capitalize}}
+					</a>
+			</div>
+		</template>
+
+	</turbo-stream>
+	<turbo-stream action="remove" target="clothe-modal"></turbo-stream>
+{% endblock %}

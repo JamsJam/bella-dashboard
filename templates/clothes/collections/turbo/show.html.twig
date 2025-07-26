@@ -1,0 +1,162 @@
+{% block show_category %}
+
+  
+    
+    <turbo-stream action="replace" target="clothes__action">
+        <template>
+
+            <div class="clothes__action" id="clothes__action" >
+            {% if category.isOnline %}
+            
+                <a 
+                    class="button__action" 
+                    href="#" 
+                    {#todo path publication et dépublication  #}
+                >Dépublier</a> 
+            {% else %}
+                <a 
+                    class="button__action" 
+                    href="#" 
+                    {#todo path publication et dépublication  #}
+                >Publier</a> 
+                
+            {% endif %}
+
+                <a 
+                    class="button__action" 
+                    href="#" 
+                    {#todo path publication et dépublication  #}
+                >Catégories</a> 
+            </div>
+        </template>
+    </turbo-stream>
+
+	
+    <turbo-stream action="append" target="clothes__container">
+        <template>
+            <div class="modal categoryShow" id="clothe-modal">
+
+                <div class="category__container">
+                
+                    <div class="category__image">
+                        <img src="{{asset(category.image)}}" alt="">
+                    </div>
+                    <div class="category__info">
+
+                        <div class="info__item">
+                            <p class="title">Nom : </p>
+                            <p class='value'>{{category.name}} </p>
+                        </div>
+
+                        <div class="info__item">
+                            <p class="title">En ligne ? </p>
+                            <p class='value'> {{category.isOnline ? 'oui' : 'non'}}  </p>
+                        </div>
+
+                        <div class="info__item">
+                            <p class="title">méta description : </p>
+                            <p class='value'>{{category.metaDescription}}  </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="collection__container">
+                    <h3>
+                        Collections :
+                    </h3>
+                    <div class="collection__row">
+                        <p>Nom</p>
+                        <p>Status</p>
+                        <p>Actions</p>
+                    </div>
+                    {% for collection in category.collections %}
+
+                        <div class="collection__row">
+                            {# <p>{{i}} name</p>
+                            <p>status</p>
+                            <div class="row__action">
+                                <a class="action__show" href="{{path('app_clothes_category_show',{id: category.id})}}">
+                                    {{ ux_icon('mdi:eye-outline') }}
+                                </a>
+								<a class="action__edit" href="{{path('app_clothes_category_edit',{id:category.id})}}" title="Modifier la categorie">
+									{{ ux_icon('mdi:edit-outline') }}
+								</a>
+								<form action="{{path('app_clothes_category_delete',{id:category.id})}}" method="post" >
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete-category') }}">
+                                    <button 
+                                        type="submit" 
+                                        class="action__delete" 
+                                        onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette moprhologie ? Cette action entraînera la suppression de tout les body de cette mophologie cette forme.');"
+                                        >
+                                        {{ ux_icon('weui:delete-outlined') }}
+                                    </button>
+                                </form>
+							</div> #}
+                            
+                            <p>{{collection.name}}</p>
+                            <p>{{collection.isOnline ? 'online' : 'offline'}} </p> 
+                            {# <span></span> #}
+                            <div class="row__action">
+                                <a class="action__show" href="{{path('app_clothes_category_show',{id: category.id})}}">
+                                    {{ ux_icon('mdi:eye-outline') }}
+                                </a>
+								<a class="action__edit" href="{{path('app_clothes_category_edit',{id:category.id})}}" title="Modifier la categorie">
+									{{ ux_icon('mdi:edit-outline') }}
+								</a>
+								<form action="{{path('app_clothes_category_delete',{id:category.id})}}" method="post" >
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete-category') }}">
+                                    <button 
+                                        type="submit" 
+                                        class="action__delete" 
+                                        onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette moprhologie ? Cette action entraînera la suppression de tout les body de cette mophologie cette forme.');"
+                                        >
+                                        {{ ux_icon('weui:delete-outlined') }}
+                                    </button>
+                                </form>
+							</div> 
+
+                            {#bouton voir pour acceder a app_collection_show  #}
+                            
+                        </div>
+                        
+                    {% else %}
+                        <div class="collection__row empty">
+                            {# <p>{{i}} name</p>
+                            <p>status</p>
+                            <div class="row__action">
+                                <a class="action__show" href="{{path('app_clothes_category_show',{id: category.id})}}">
+                                    {{ ux_icon('mdi:eye-outline') }}
+                                </a>
+								<a class="action__edit" href="{{path('app_clothes_category_edit',{id:category.id})}}" title="Modifier la categorie">
+									{{ ux_icon('mdi:edit-outline') }}
+								</a>
+								<form action="{{path('app_clothes_category_delete',{id:category.id})}}" method="post" >
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete-category') }}">
+                                    <button 
+                                        type="submit" 
+                                        class="action__delete" 
+                                        onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette moprhologie ? Cette action entraînera la suppression de tout les body de cette mophologie cette forme.');"
+                                        >
+                                        {{ ux_icon('weui:delete-outlined') }}
+                                    </button>
+                                </form>
+							</div> #}
+                            
+                            <p>Cette catégories ne contient aucune collection</p>
+                            
+
+                            {#bouton voir pour acceder a app_collection_show  #}
+                            
+                        </div>
+                    {% endfor %}
+                        
+                </div>
+
+
+
+
+			</div>
+        </template>
+    </turbo-stream>
+
+{% endblock %}

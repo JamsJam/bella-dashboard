@@ -1,0 +1,76 @@
+{% block index %}
+	{#? ====== navigation  #}
+	<turbo-stream action="replace" target="clothes__navigation">
+		<template>
+			<div class="clothes__navigation">
+				<a class="button__action" href="{{path('app_clothes')}}" data-turbo-frame="admin-main" {# data-turbo-preload="true" #} data-turbo-action="replace">Vetement</a>
+				<a class="button__action" href="{{path('app_clothes_category')}}" data-turbo-frame="admin-main" {# data-turbo-preload="true" #} data-turbo-action="replace">Ccategory</a>
+				<a class="button__action return" href="{{ path(routePath) }}" data-turbo-frame="admin-main" data-turbo-action="replace">Retour</a>
+			</div>
+		</template>
+	</turbo-stream>
+
+	{#? ====== action  #}
+	<turbo-stream action="replace" target="clothes__action">
+		<template>
+
+			<div class="clothes__action" id="clothes__action">
+				<a class="button__action" href="{{ path('app_clothes_category_new') }}" data-turbo-frame="admin-main" data-turbo-action="replace">Ajouter une collection</a>
+			</div>
+		</template>
+	</turbo-stream>
+
+	{#? ====== content  #}
+	<turbo-stream action="replace" target="clothes__container">
+		<template>
+			<div id="clothes__container" class="clothes__container">
+
+				<div class="clothes__grid" id="clothes__grid" {{stimulus_controller("row_table")}}>
+
+					<div class="clothes__row ">
+						<span></span>
+						<p>Nom</p>
+						<p>En ligne</p>
+						<p>Actions</p>
+					</div>
+
+
+					{% for collection in collections %}
+
+						<div class="clothes__row" id="row-{{collection.id}}" >
+
+							<div class="row__image">
+                                <img src="{{asset(collection.image ?? '')}}" alt="" >
+                            </div>
+
+							<p>{{collection.name|capitalize}}</p>
+							<p>{{collection.isOnline ? 'OnLine' : 'Offline'}}</p>
+
+
+							<div class="row__action">
+                                <a class="action__show" href="{{path('app_clothes_category_show',{id: collection.id})}}">
+                                    {{ ux_icon('mdi:eye-outline') }}
+                                </a>
+								<a class="action__edit" href="{{path('app_clothes_category_edit',{id:collection.id})}}" title="Modifier la collection">
+									{{ ux_icon('mdi:edit-outline') }}
+								</a>
+								<form action="{{path('app_clothes_category_delete',{id:collection.id})}}" method="post" >
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete-category') }}">
+                                    <button 
+                                        type="submit" 
+                                        class="action__delete" 
+                                        onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette moprhologie ? Cette action entraînera la suppression de tout les body de cette mophologie cette forme.');"
+                                        >
+                                        {{ ux_icon('weui:delete-outlined') }}
+                                    </button>
+                                </form>
+							</div>
+						</div>
+					{% endfor %}
+				</div>
+			</div>
+		</template>
+
+
+	</turbo-stream>
+{% endblock %}
