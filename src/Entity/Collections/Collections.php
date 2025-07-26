@@ -39,6 +39,9 @@ class Collections
     #[ORM\OneToMany(targetEntity: Clothes::class, mappedBy: 'collection', orphanRemoval: true)]
     private Collection $clothes;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $image = null;
+
     public function __construct()
     {
         $this->clothes = new ArrayCollection();
@@ -123,6 +126,18 @@ class Collections
                 $clothes->setCollection(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getImage(): ?string
+    {
+        return $this->image;
+    }
+
+    public function setImage(?string $image): static
+    {
+        $this->image = $image;
 
         return $this;
     }

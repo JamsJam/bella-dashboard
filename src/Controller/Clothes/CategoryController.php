@@ -268,6 +268,7 @@ final class CategoryController extends AbstractController
         $request->setRequestFormat(TurboBundle::STREAM_FORMAT);
         return $this->renderBlock('clothes/category/turbo/edit.html.twig','delete_new_category_form',[]);
     }
+
 //? ---- delete
     #[Route('/clothes/category/delete/{id}', name: 'app_clothes_category_delete')]
     public function delete(
@@ -293,4 +294,5 @@ final class CategoryController extends AbstractController
             'categoryId'=>$id
         ]);
     }
+//? ---- 
 }
