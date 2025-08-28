@@ -1,0 +1,9 @@
+<div class='preview__row' {{stimulus_target("dropzone_preview","previewRow")}}>
+    <label for="front-clothe-__CLOTHEINDEX__-file-__INDEX__">
+    Image principale 
+    <input class='preview__radio' type="radio" id="front-clothe-__CLOTHEINDEX__-file-__INDEX__" name="front-clothe-__CLOTHEINDEX__-file" value="__INDEX__">
+    </label>
+    <div class="preview__img"><img src="__SRC__"></div>
+    <p>__NAME__</p>
+    <button class='preview__btn' type="button" {{stimulus_action("dropzone_preview","onFileRemove","click",{index: '__INDEX__'})}}>{{ ux_icon('ic:round-close') }}</button>
+</div>

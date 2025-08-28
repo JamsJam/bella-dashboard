@@ -1,0 +1,16 @@
+clothes:
+  - nom: "name"
+    description: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Quaerat facilis quo minus, tempora suscipit ipsum exercitationem hic iste repellendus odio, qui nobis. Architecto similique sed eveniet odit ratione, voluptas maiores quod explicabo dolorum ducimus! Vero, molestias iusto sint nesciunt, eveniet ea eligendi debitis consequuntur repellendus expedita aliquam vel nemo. Alias aspernatur laudantium velit deserunt voluptas placeat quae. Explicabo velit non cumque? Sunt corporis quod ratione libero corrupti deleniti harum, nostrum, quas, incidunt aliquam assumenda impedit culpa expedita? Qui ipsam ipsa illo ex corporis distinctio aperiam dolorem voluptas laborum, omnis consequuntur obcaecati repudiandae iusto quidem molestiae cum cupiditate inventore, molestias odio?"
+    metaDescription: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Quaerat facilis quo minus, tempora suscipit ipsum exercitationem hic iste repellendus odio, qui nobis. Architecto similique sed eveniet odit ratione, voluptas maiores quod explicabo dolorum ducimus! Vero, molestias iusto sint nesciunt, eveniet ea eligendi debitis consequuntur repellendus expedita aliquam vel nemo. Alias aspernatur laudantium velit deserunt voluptas placeat quae. Explicabo velit non cumque? Sunt corporis quod ratione libero corrupti deleniti harum, nostrum, quas, incidunt aliquam assumenda impedit culpa expedita? Qui ipsam ipsa illo ex corporis distinctio aperiam dolorem voluptas laborum, omnis consequuntur obcaecati repudiandae iusto quidem molestiae cum cupiditate inventore, molestias odio?"
+    images:
+      - path: "path/to/image"
+        index: "path/to/image"
+      - path: "path/to/image"
+        index: "path/to/image"
+      - path: "path/to/image"
+        index: "path/to/image"
+    prix: 4000
+    stock: 30
+    color: "color"
+    size:  "[\"S\", \"M\", \"L\"]"
+

@@ -4,6 +4,8 @@
 @forward "./layout/admin-aside" ;
 @forward "./layout/admin-main" ; 
 @forward "./components/_admin_buttons" ; 
+@forward "./components/_select" ; 
+@forward "./components/_toggle_switch" ; 
 @forward "./components/_admin_form" ; 
 @forward "./components/_dropzone" ;
 @forward "./components/_suneditor" ;
@@ -12,4 +14,33 @@
 .turbo-progress-bar {
   height: 5px;
   background-color: green;
+}
+main{
+
+  view-transition-name: admin_main;
+  position: relative;
+}
+
+html[data-turbo-visit-direction="forward"]::view-transition-old(admin_main)  {
+  animation: slide-to-right 0.5s ease-out;
+}
+html[data-turbo-visit-direction="forward"]::view-transition-new(admin_main)  {
+  animation: right-to-slide 0.5s ease-out;
+}
+
+@keyframes slide-to-right {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+@keyframes right-to-slide {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
 }

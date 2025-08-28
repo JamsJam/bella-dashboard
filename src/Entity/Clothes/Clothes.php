@@ -2,17 +2,20 @@
 
 namespace App\Entity\Clothes;
 
+use Doctrine\DBAL\Types\Types;
 use App\Entity\Avatar\Body\Body;
+use Doctrine\ORM\Mapping as ORM;
+use App\Entity\Traits\DateFieldsTrait;
 use App\Entity\Collections\Collections;
+use Doctrine\Common\Collections\Collection;
 use App\Repository\Clothes\ClothesRepository;
 use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
-use Doctrine\DBAL\Types\Types;
-use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ClothesRepository::class)]
 class Clothes
 {
+    use DateFieldsTrait;
+    
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -33,18 +36,18 @@ class Clothes
     #[ORM\Column(nullable: true)]
     private ?array $images = null;
 
-    #[ORM\ManyToOne(inversedBy: 'clothes')]
+    #[ORM\ManyToOne(inversedBy: 'clothes' )]
     #[ORM\JoinColumn(nullable: false)]
     private ?Collections $collection = null;
 
-    #[ORM\ManyToOne(inversedBy: 'clothes')]
+    #[ORM\ManyToOne(inversedBy: 'clothes' ,cascade: ['persist'])]
     #[ORM\JoinColumn(nullable: false)]
     private ?Clothescolor $color = null;
 
-    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[ORM\Column(length: 200, nullable: true)]
     private ?string $metadescription = null;
 
-    #[ORM\ManyToOne(inversedBy: 'clothes')]
+    #[ORM\ManyToOne(inversedBy: 'clothes' ,cascade: ['persist'])]
     private ?Clothessize $size = null;
 
     #[ORM\Column(length: 100)]
@@ -64,6 +67,8 @@ class Clothes
      */
     #[ORM\OneToMany(targetEntity: Body::class, mappedBy: 'clothe')]
     private Collection $bodies;
+
+
 
     public function __construct()
     {

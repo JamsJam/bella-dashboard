@@ -1,11 +1,51 @@
 {% block new %}
+	{% set strategy = 'html_attr' %}
+	{% set form_clothe_prototype %}
+		<div class="formpart-clothe__container">
+
+
+			{{form_row(form.clothes.vars.prototype.name)}}
+			{{form_row(form.clothes.vars.prototype.color)}}
+			{{form_row(form.clothes.vars.prototype.stock)}}
+			{{form_row(form.clothes.vars.prototype.price)}}
+			{{form_row(form.clothes.vars.prototype.size ,{
+				attr:{
+					'data-tag-collection-target':'trueInput',
+					'data-tag-prototype':include("partials/form/tag_collection/_tag.html.twig")|trim(),
+					'data-false-row-prototype':include("partials/form/tag_collection/_false_row.html.twig")|trim(),
+					'style': 'height: 0;width: 0;opacity: 0;',
+					}
+				})}}
+			{{form_row(form.clothes.vars.prototype.description)}}
+			{{form_row(form.clothes.vars.prototype.metadescription)}}
+
+			{#? image multiple-container-delete-select  #}
+			<div 
+				class="dropzoneMultilePreview" 
+				{{stimulus_controller("dropzone_preview")}} 
+				>
+				{{form_label(form.clothes.vars.prototype.images,)}}
+				<div class='dropzone__container'  {{stimulus_target("dropzone_preview","fileInputContainer")}}>
+					{{form_widget(form.clothes.vars.prototype.images,)}}
+				</div>
+				<div 
+					class='preview__container'
+					data-preview-row-prototype="{{ include("partials/form/dropzone/_preview_row.html.twig")|trim() }}"
+					{{stimulus_target("dropzone_preview","previewContainer")}}
+					>
+
+				</div>
+			</div>
+		</div>
+	{% endset %}
+
     <turbo-stream action="replace" target="clothes__action">
         <template>
 
             <div class="clothes__action" id="clothes__action" >
                 <a 
                     class="button__action" 
-                    href="{{ path('app_clothes_category_cancel_new') }}" 
+                    href="{{ path('app_clothes_collections') }}" 
                     data-turbo-frame="admin-main"
                     data-turbo-action="replace"
                 >Annuler</a> 
@@ -17,37 +57,48 @@
         <template>
             <div class="modal" id="clothe-modal">
 				{# {{ form_start(form)}} #}
-				{{ form_start(form, {'action': path('app_clothes_category_new')}) }}
-				<h2>Ajouter une categorie</h2>
+				{{ form_start(form, {'action': path('app_clothes_collections_new')}) }}
+
+				<h2>Ajouter une collection</h2>
+				
 				{{form_row(form.name)}}
-
-
-
+				{{form_row(form.category)}}
 
 				<div class="dropzoneWithPreview" {{stimulus_controller("dropzone-solo-preview")}}>
-						{# dropZone #}
-						<div class="dropzone__container" {{stimulus_target("dropzone-solo-preview", 'dropzoneContainer')}}>
-							{{form_widget(form.image,{attr:stimulus_target("dropzone-solo-preview", 'dropzoneInput').toArray()})}}
-							<p class="dropzone__placeholder" {{stimulus_target("dropzone-solo-preview", 'dropzonePlaceholder')}}>Déposer vos fichier ici ou Parcourir</p>
-						</div>
-
+					<div class="dropzone__container" {{stimulus_target("dropzone-solo-preview", 'dropzoneContainer')}}>
+						{{form_widget(form.image,{attr:stimulus_target("dropzone-solo-preview", 'dropzoneInput').toArray()})}}
+						<p class="dropzone__placeholder" {{stimulus_target("dropzone-solo-preview", 'dropzonePlaceholder')}}>Déposer vos fichier ici ou Parcourir</p>
+					</div>
 				</div>
 
-				{{form_row(form.metaDescription)}}
 
-				<div class="form_collection">
-					<h3>Créer des collections</h3>
-
-
+				{# <div class="form_collection">
+					<h3>Guide des tailles</h3>
 					<div {{ stimulus_controller('form-collection') }} 
-						data-form-collection-index-value="{{ form.collections|length > 0 ? form.collections|last.vars.name + 1 : 0 }}" 
-						data-form-collection-prototype-value="{{ form_widget(form.collections.vars.prototype)|e('html_attr') }}" 
+						data-form-collection-index-value="{{ form.sizeGuide|length > 0 ? form.sizeGuide|last.vars.name + 1 : 0 }}" 
+						data-form-collection-prototype-value="{{ form_widget(form.sizeGuide.vars.prototype)|e('html_attr') }}" 
 						class="form_collection__container"
 						>
 
-						<button class="button__action" type="button" {{ stimulus_action('form-collection', 'addCollectionElement') }}>Ajouter une collection</button>
 
 						<ul {{ stimulus_target('form-collection', 'collectionContainer') }} class="form_collection__list"></ul>
+						
+						<button class="button__action" type="button" {{ stimulus_action('form-collection', 'addCollectionElement') }}>Ajouter une entrée</button>
+
+					</div>
+				</div> #}
+
+				<div class="form_collection">
+					<h3>Vetements</h3>
+					<div {{ stimulus_controller('form-collection') }} 
+						data-form-collection-index-value="{{ form.clothes|length > 0 ? form.clothes|last.vars.name + 1 : 0 }}" 
+						data-form-collection-prototype-value="{{ form_clothe_prototype|e('html_attr') }}" 
+						class="form_collection__container"
+					>
+
+						<ul {{ stimulus_target('form-collection', 'collectionContainer') }} class="form_collection__list"></ul>
+
+						<button class="button__action" type="button" {{ stimulus_action('form-collection', 'addCollectionElement') }}>Ajouter un vetement</button>
 
 					</div>
 				</div>
@@ -57,20 +108,22 @@
 					<button class="button__action" type="submit">Envoyer</button>
 
 				</div>
+
+
 				{{ form_end(form)}}
 			</div>
         </template>
     </turbo-stream>
 {% endblock %}
 
-{% block cancel_new %}
+{# {% block cancel_new %}
     <turbo-stream action="replace" target="clothes__action" >
         <template>
 
             <div class="clothes__action" id="clothes__action" >
                 <a 
                     class="button__action" 
-                    href="{{ path('app_clothes_category_new') }}" 
+                    href="{{ path('app_clothes_collection_new') }}" 
                     data-turbo-frame="admin-main"
                     data-turbo-action="replace"
                 >Ajouter des catégories</a> 
@@ -79,7 +132,7 @@
     </turbo-stream>
 	
     <turbo-stream action="remove" target="clothe-modal"></turbo-stream>
-{% endblock %}
+{% endblock %} #}
 
 {% block new_success %}
     <turbo-stream action="replace" target="clothes__action" >
@@ -88,10 +141,10 @@
             <div class="clothes__action" id="clothes__action" >
                 <a 
                     class="button__action" 
-                    href="{{ path('app_clothes_category_new') }}" 
+                    href="{{ path('app_clothes_collections_new') }}" 
                     data-turbo-frame="admin-main"
                     data-turbo-action="replace"
-                >Ajouter des catégories</a> 
+                >Ajouter une collections</a> 
             </div>
         </template>
     </turbo-stream>
@@ -100,32 +153,38 @@
     
 	<turbo-stream action="append" target="clothes__grid">
 		<template>
-			<div class="clothes__row" id="row-{{categorie.id}}" >
-                            
-				<span><img src="{{asset(categorie.image)}}" alt="" srcset=""></span>
+			<div class="clothes__row" id="row-{{collection.id}}" >
 
-				<p>{{categorie.name|capitalize}}</p>
-				<p>{{categorie.isOnline ? 'OneLine' : 'Offline'}}</p>
-				
+							<div class="row__image">
+                                <img src="{{asset(collection.image ?? '')}}" alt="" >
+                            </div>
 
-				
-				
-				<div class="clothes__action">
-					<a class="action__edit" href="{{path('app_avatar_categorie_edit',{id:categorie.id})}}" title="Modifier la categorie">
-						{{ ux_icon('mdi:edit-outline') }}
-					</a>
-					{# <form action="{{path('app_avatar_categorie_delete',{id:categorie.id})}}" method="post" >
-						<input type="hidden" name="_token" value="{{ csrf_token('delete-categorie') }}">
-						<button 
-							type="submit" 
-							class="action__delete" 
-							onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette moprhologie ? Cette action entraînera la suppression de tout les body de cette mophologie cette forme.');"
-							>
-							{{ ux_icon('weui:delete-outlined') }}
-						</button>
-					</form> #}
-				</div>
-			</div>
+							<p>{{collection.name|capitalize}}</p>
+							<label class="switch">
+								<input type="checkbox" id="themeToggle-{{collection.id}}" {{collection.isOnline ? "checked" : ""}}</>
+								<span class="slider round"></span>
+							</label>
+
+
+							<div class="row__action">
+                                <a class="action__show" href="{{path('app_clothes_collections_show',{id: collection.id})}}">
+                                    {{ ux_icon('mdi:eye-outline') }}
+                                </a>
+								<a class="action__edit" href="{{path('app_clothes_collections_edit',{id:collection.id})}}" title="Modifier la collection">
+									{{ ux_icon('mdi:edit-outline') }}
+								</a>
+								<form action="{{path('app_clothes_collections_delete',{id:collection.id})}}" method="post" >
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete-category') }}">
+                                    <button 
+                                        type="submit" 
+                                        class="action__delete" 
+                                        onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette collection ? Cette action entraînera la suppression de tout vêtements associé.');"
+                                        >
+                                        {{ ux_icon('weui:delete-outlined') }}
+                                    </button>
+                                </form>
+							</div>
+						</div>
 		</template>
 	</turbo-stream>
 

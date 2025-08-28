@@ -4,7 +4,7 @@
 		<template>
 			<div class="clothes__navigation">
 				<a class="button__action" href="{{path('app_clothes')}}" data-turbo-frame="admin-main" {# data-turbo-preload="true" #} data-turbo-action="replace">Vetement</a>
-				<a class="button__action" href="{{path('app_clothes_category')}}" data-turbo-frame="admin-main" {# data-turbo-preload="true" #} data-turbo-action="replace">Ccategory</a>
+				<a class="button__action" href="{{path('app_clothes_collections')}}" data-turbo-frame="admin-main" {# data-turbo-preload="true" #} data-turbo-action="replace">Categorie</a>
 				<a class="button__action return" href="{{ path(routePath) }}" data-turbo-frame="admin-main" data-turbo-action="replace">Retour</a>
 			</div>
 		</template>
@@ -15,7 +15,7 @@
 		<template>
 
 			<div class="clothes__action" id="clothes__action">
-				<a class="button__action" href="{{ path('app_clothes_category_new') }}" data-turbo-frame="admin-main" data-turbo-action="replace">Ajouter une collection</a>
+				<a class="button__action" href="{{ path('app_clothes_collections_new') }}" >Ajouter une collection</a>
 			</div>
 		</template>
 	</turbo-stream>
@@ -44,22 +44,26 @@
                             </div>
 
 							<p>{{collection.name|capitalize}}</p>
-							<p>{{collection.isOnline ? 'OnLine' : 'Offline'}}</p>
+
+							<label class="switch">
+								<input type="checkbox" id="themeToggle-{{collection.id}}" {{collection.isOnline ? "checked" : ""}}</>
+								<span class="slider round"></span>
+							</label>
 
 
 							<div class="row__action">
-                                <a class="action__show" href="{{path('app_clothes_category_show',{id: collection.id})}}">
+                                <a class="action__show" href="{{path('app_clothes_collections_show',{id: collection.id})}}">
                                     {{ ux_icon('mdi:eye-outline') }}
                                 </a>
-								<a class="action__edit" href="{{path('app_clothes_category_edit',{id:collection.id})}}" title="Modifier la collection">
+								<a class="action__edit" href="{{path('app_clothes_collections_edit',{id:collection.id})}}" title="Modifier la collection">
 									{{ ux_icon('mdi:edit-outline') }}
 								</a>
-								<form action="{{path('app_clothes_category_delete',{id:collection.id})}}" method="post" >
+								<form action="{{path('app_clothes_collections_delete',{id:collection.id})}}" method="post" >
                                     <input type="hidden" name="_token" value="{{ csrf_token('delete-category') }}">
                                     <button 
                                         type="submit" 
                                         class="action__delete" 
-                                        onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette moprhologie ? Cette action entraînera la suppression de tout les body de cette mophologie cette forme.');"
+                                        onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette collection ? Cette action entraînera la suppression de tout vêtements associé.');"
                                         >
                                         {{ ux_icon('weui:delete-outlined') }}
                                     </button>

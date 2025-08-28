@@ -36,7 +36,7 @@ class Collections
     /**
      * @var Collection<int, Clothes>
      */
-    #[ORM\OneToMany(targetEntity: Clothes::class, mappedBy: 'collection', orphanRemoval: true)]
+    #[ORM\OneToMany(targetEntity: Clothes::class, mappedBy: 'collection', cascade: ['persist'], orphanRemoval: true)]
     private Collection $clothes;
 
     #[ORM\Column(length: 255, nullable: true)]

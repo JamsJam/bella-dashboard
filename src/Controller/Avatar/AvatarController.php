@@ -49,14 +49,14 @@ final class AvatarController extends AbstractController
 
             $filterItems = [];
             $usedFilters = [];
-            // dd($request->query);
+
             foreach ($filterEntities as $key => $value) {
                 $filterItems[$key] = $entityManagerInterface->getRepository($value)->findAll();
                 if ($request->query->all($key)) {
                     $usedFilters[$key] = $request->query->all($key);
                 }
             }
-            // dd($usedFilters);
+
 
             $allPart = [];
             if ([] === $usedFilters) {

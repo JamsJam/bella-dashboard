@@ -7,9 +7,9 @@
         aria-label="{{ariaLabel}}"
         {# title="{{item}}" #}
         data-turbo-frame="admin-main"
-        {# target="admin-main" #}
+        target="admin-main"
         {# data-turbo-preload="true" #}
-        data-turbo-action="replace"
+        data-turbo-action="advance"
         {{stimulus_target('menu_reload', 'navlink')}}
     >
         {{label}}

@@ -2,13 +2,14 @@
 
 namespace App\Service;
 
-use Symfony\Component\Filesystem\Filesystem;
+
+use App\Service\FileService\FileManagerService;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 final class UploadedFileService
 {
     public function __construct(
-        private Filesystem $filesystem,
+        private FileManagerService $fileManagerService,
     ) {
     }
 
@@ -22,7 +23,12 @@ final class UploadedFileService
 
     public function move(string $path, UploadedFile $file)
     {
-        $this->filesystem->mkdir($path);
+        $this->fileManagerService->createFolder($path);
         $file->move($path, $file->getClientOriginalName());
+    }
+
+
+    public function processFile(UploadedFile $file){
+
     }
 }

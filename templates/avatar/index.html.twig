@@ -138,11 +138,14 @@
                             <div class={{  bodyPartItems|length is same as 0 ? 'grid__result--empty' : 'grid__result' }}
                                 >
                                 {% for item in bodyPartItems %}
+                                {# <pre>
+                                    {{ dump(item) }}
+                                </pre> #}
                                         <div class="card card--unselected" {{stimulus_target('grid_filter','card')}}>
                                             <input type="checkbox" name="{{type}}" id="{{type ~'-'~ item.id}}" value={{item.id}} class='card__selectInput'>
                                             <div class="card__image">
                                                 {% if type is same as 'hair' %}
-
+                                                
                                                 <img class="img--front" src="{{item.images.frontImage}}" alt="">
                                                 <img class="img--back" src="{{item.images.backImage}}" alt="">
                                                 {% else %}

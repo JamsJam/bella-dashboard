@@ -1,0 +1,13 @@
+skincolors:
+  - name: "noir fonce"
+    hexa: "492E20"
+  - name: "noir clair"
+    hexa: "7B5537"
+  - name: "marron fonce"
+    hexa: "A27955"
+  - name: "marron clair"
+    hexa: "C29E7C"
+  - name: "blanc fonce"
+    hexa: "FABC92"
+  - name: "blanc clair"
+    hexa: "E8CDBA"

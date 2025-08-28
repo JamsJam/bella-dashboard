@@ -215,6 +215,55 @@
                 }
             }
 
+            .formpart-clothe{
+
+                &__container{
+
+                    @extend %flex-column-start-stretch;
+                    gap: 1rem;
+                    padding: 1rem;
+                    border-radius: 1rem;
+                    border: aliceblue 3px solid;
+
+                    .tagContainer{
+    
+                        @extend %flex-row-start-start;
+                        flex-wrap: wrap;
+                        gap: 1rem;
+                        width: 100%;
+                        padding: 1rem;
+    
+                        .tag{
+                            font-size:0.75rem;
+                            font-weight: 500;
+                            @extend %flex-row-space-around-center;
+                            gap: 0.5rem;
+                            padding: 0.5rem 0.75rem;
+                            
+                            background-color: $admin-nuance-b-30;
+                            border-radius: 0.5rem;
+                            
+                            
+                            &__button{
+                                all: unset;
+                                @extend %flex-row-center-center;
+                                &:hover{
+                                    cursor :pointer;
+                                    
+                                }
+                                svg{
+                                    height: 1.25rem;
+                                    width: 1.25rem;
+                                }
+                            }
+                        }
+                    }
+                }
+                
+
+
+            }
+
             &.categoryShow{
                 @extend %flex-column-center-stretch;
                 gap: 2rem;
@@ -271,6 +320,7 @@
                         @extend %flex-column-center-stretch;
                         gap: 2rem;
 
+                        
                     }
                     &__row{
                         display: grid;
@@ -339,6 +389,9 @@
                         }
 
                     }
+
+
+
                 }
             }
         }

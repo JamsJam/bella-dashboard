@@ -1,4 +1,4 @@
-{% block show_category %}
+{% block show_collection %}
 
   
     
@@ -6,7 +6,7 @@
         <template>
 
             <div class="clothes__action" id="clothes__action" >
-            {% if category.isOnline %}
+            {% if collection.isOnline %}
             
                 <a 
                     class="button__action" 
@@ -39,49 +39,53 @@
                 <div class="category__container">
                 
                     <div class="category__image">
-                        <img src="{{asset(category.image)}}" alt="">
+                        <img src="{{asset(collection.image ?? "")}}" alt="">
                     </div>
                     <div class="category__info">
 
                         <div class="info__item">
                             <p class="title">Nom : </p>
-                            <p class='value'>{{category.name}} </p>
+                            <p class='value'>{{collection.name}} </p>
                         </div>
 
                         <div class="info__item">
-                            <p class="title">En ligne ? </p>
-                            <p class='value'> {{category.isOnline ? 'oui' : 'non'}}  </p>
+                            <p class="title">En ligne : </p>
+                            <label class="switch" >
+								<input type="checkbox" id="toggle-{{collection.id}}" {{collection.isOnline ? "checked" : ""}} disabled</>
+								<span class="slider round"></span>
+							</label>
                         </div>
 
-                        <div class="info__item">
+                        {# <div class="info__item">
                             <p class="title">méta description : </p>
-                            <p class='value'>{{category.metaDescription}}  </p>
-                        </div>
+                            <p class='value'>{{collection.metaDescription}}  </p>
+                        </div> #}
                     </div>
                 </div>
 
                 <div class="collection__container">
                     <h3>
-                        Collections :
+                        Vetements :
                     </h3>
                     <div class="collection__row">
                         <p>Nom</p>
                         <p>Status</p>
                         <p>Actions</p>
                     </div>
-                    {% for collection in category.collections %}
+                    {% for clothe in clothes %}
 
                         <div class="collection__row">
-                            {# <p>{{i}} name</p>
+                            {# 
+                            <p>{{i}} name</p>
                             <p>status</p>
                             <div class="row__action">
-                                <a class="action__show" href="{{path('app_clothes_category_show',{id: category.id})}}">
+                                <a class="action__show" href="{{path('app_clothes_collection_show',{id: collection.id})}}">
                                     {{ ux_icon('mdi:eye-outline') }}
                                 </a>
-								<a class="action__edit" href="{{path('app_clothes_category_edit',{id:category.id})}}" title="Modifier la categorie">
+								<a class="action__edit" href="{{path('app_clothes_collection_edit',{id:collection.id})}}" title="Modifier la categorie">
 									{{ ux_icon('mdi:edit-outline') }}
 								</a>
-								<form action="{{path('app_clothes_category_delete',{id:category.id})}}" method="post" >
+								<form action="{{path('app_clothes_collection_delete',{id:collection.id})}}" method="post" >
                                     <input type="hidden" name="_token" value="{{ csrf_token('delete-category') }}">
                                     <button 
                                         type="submit" 
@@ -93,17 +97,17 @@
                                 </form>
 							</div> #}
                             
-                            <p>{{collection.name}}</p>
-                            <p>{{collection.isOnline ? 'online' : 'offline'}} </p> 
+                            <p>{{clothe.name}}</p>
+                            <p>{{clothe.isOnline ? 'online' : 'offline'}} </p> 
                             {# <span></span> #}
                             <div class="row__action">
-                                <a class="action__show" href="{{path('app_clothes_category_show',{id: category.id})}}">
+                                <a class="action__show" href="{{path('app_clothes_show',{id: clothe.id})}}">
                                     {{ ux_icon('mdi:eye-outline') }}
                                 </a>
-								<a class="action__edit" href="{{path('app_clothes_category_edit',{id:category.id})}}" title="Modifier la categorie">
+								<a class="action__edit" href="{{path('app_clothes_edit',{id:clothe.id})}}" title="Modifier la categorie">
 									{{ ux_icon('mdi:edit-outline') }}
 								</a>
-								<form action="{{path('app_clothes_category_delete',{id:category.id})}}" method="post" >
+								<form action="{{path('app_clothes_delete',{id:clothe.id})}}" method="post" >
                                     <input type="hidden" name="_token" value="{{ csrf_token('delete-category') }}">
                                     <button 
                                         type="submit" 
@@ -124,13 +128,13 @@
                             {# <p>{{i}} name</p>
                             <p>status</p>
                             <div class="row__action">
-                                <a class="action__show" href="{{path('app_clothes_category_show',{id: category.id})}}">
+                                <a class="action__show" href="{{path('app_clothes_collection_show',{id: collection.id})}}">
                                     {{ ux_icon('mdi:eye-outline') }}
                                 </a>
-								<a class="action__edit" href="{{path('app_clothes_category_edit',{id:category.id})}}" title="Modifier la categorie">
+								<a class="action__edit" href="{{path('app_clothes_collection_edit',{id:collection.id})}}" title="Modifier la categorie">
 									{{ ux_icon('mdi:edit-outline') }}
 								</a>
-								<form action="{{path('app_clothes_category_delete',{id:category.id})}}" method="post" >
+								<form action="{{path('app_clothes_collection_delete',{id:collection.id})}}" method="post" >
                                     <input type="hidden" name="_token" value="{{ csrf_token('delete-category') }}">
                                     <button 
                                         type="submit" 

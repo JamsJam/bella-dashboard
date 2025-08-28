@@ -20,16 +20,11 @@ class Clothescolor
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 50)]
-    private ?string $name = null;
-
-    #[ORM\Column(length: 6)]
-    private ?string $hexa = null;
-
+    
     /**
      * @var Collection<int, Clothes>
      */
-    #[ORM\OneToMany(targetEntity: Clothes::class, mappedBy: 'color')]
+    #[ORM\OneToMany(targetEntity: Clothes::class, mappedBy: 'color', cascade: ['persist'])]
     private Collection $clothes;
 
     public function __construct()

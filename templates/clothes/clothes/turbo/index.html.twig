@@ -94,10 +94,10 @@
                     <div class={{  clothes|length is same as 0 ? 'grid__result--empty' : 'grid__result' }}>
                         {% for item in clothes %}
                                 <div class="card card--unselected" {{stimulus_target('grid_filter','card')}}>
-                                    <input type="checkbox" name="{{type}}" id="{{type ~'-'~ item.id}}" value={{item.id}} class='card__selectInput'>
+                                    {# <input type="checkbox" name="{{type}}" id="{{type ~'-'~ item.id}}" value={{item.id}} class='card__selectInput'> #}
                                     <div class="card__image">
-                                            
-                                        <img src="{{item.image}}" alt="">
+
+                                        <img src="{{asset(item.images[0].path)}}" alt="">
 
                                     </div>
                                     <p>{{item.name}}</p>

@@ -239,6 +239,7 @@ final class CategoryController extends AbstractController
                 $categoryImage->move($targetDirectory,$newFilename);
                 $category->setImage(explode('public/',$targetDirectory.'/'.$newFilename)[1]);
             }
+            
             $entityManagerInterface->persist($category);
 
             $entityManagerInterface->flush();
