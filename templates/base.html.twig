@@ -1,8 +1,4 @@
 <!DOCTYPE html>
-
-
-
-
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
@@ -28,7 +24,7 @@
 <body class="admin" {{stimulus_controller('menu_reload')}} data-turbo-prefetch="true">
 
     {#?===== twig component adminmenu #}
-    <turbo-frame 
+    {# <turbo-frame 
         data-turbo-preload="true"
         id="admin_menu" 
         {{stimulus_target('menu_reload', 'menu')}} >
@@ -49,6 +45,7 @@
                 
             {% endblock %}
         </main>
-    </turbo-frame>
+    </turbo-frame> #}
+    
 </body>
 </html>
