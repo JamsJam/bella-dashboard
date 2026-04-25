@@ -1,0 +1,183 @@
+{# 
+	=== INCLUDE TABLE COMPONENT ===
+
+	Exemple d’appel du composant :
+
+	{% include 'components/table.html.twig' with {
+		theme: 'light',									# string → thème css (light, dark, ...)
+		tableTitle: 'Liste des vêtements',				# string → titre du tableau
+		colTitles: [									# array → titres colonnes
+			{ label: 'Nom', isSortable: true },
+			{ label: 'Couleur', isSortable: false },
+			{ label: 'Disponible', isSortable: true },
+			{ label: 'Actions', isSortable: false }
+		],
+		rows: [											# array de lignes
+			[
+				{ type: 'text', value: 'T-shirt' },
+				{ type: 'text', value: 'Rouge' },
+				{ type: 'boolean', value: true, onTrue: '✔', onFalse: '✘' },
+				{ type: 'action', value: [
+					{ type: 'link', label: 'Voir', url: path('app_clothes_show', {id: 1}) },
+					{ type: 'form', label: 'Supprimer', url: path('app_clothes_delete', {id: 1}) }
+				]}
+			],
+			[
+				{ type: 'text', value: 'Pantalon' },
+				{ type: 'text', value: 'Noir' },
+				{ type: 'boolean', value: false, onTrue: '✔', onFalse: '✘' },
+				{ type: 'action', value: [
+					{ type: 'link', label: 'Voir', url: path('app_clothes_show', {id: 2}) }
+				]}
+			]
+		],
+		noItemsLabel: 'aucun élément trouvé',			# string → affiché si rows est vide
+		isPaginated: true,								# bool → active la pagination
+		currentPage: 1,									# int → page actuelle
+		totalPages: 10,									# int → nombre total de pages
+		currentSort: 'nom',								# string → colonne triée actuellement
+		currentDirection: 'asc',						# string → sens du tri (asc/desc)
+		nextDirection: 'desc'							# string → sens du tri après clic
+	} %}
+
+#}
+
+
+{% if isSortable %}
+
+
+	{% set viewCurrentSort = currentSort %}
+	{% set viewCurrentDirection = currentDirection  %}
+	{% set nextDirection = viewCurrentDirection == "asc" ? "desc" : "asc" %}
+{% endif %}
+
+
+<div class="table__container table__container--{{theme}}">
+
+	<table class="table table--{{theme}}">
+		<caption class="table__caption table__caption--{{theme}}">{{ tableTitle|capitalize }}</caption>
+		<thead class="table__head table__head--{{theme}}">
+			<tr class="table__row--{{theme}}">
+
+				{# <th class="table__th table__th--{{theme}}"></th> #}
+				{% for colTitle in colTitles %}
+					
+					<th class="table__th table__th--{{theme}}">
+
+						{% if colTitle.isSortable and isSortable %}
+							{% if isPaginated %}
+							
+								<a href="{{ path("app_clothes", app.request.query.all|merge( { "sortBy": colTitle.property , "direction": nextDirection})) }}" class="flex-cell th__filter th__filter--{{theme}}">
+							{% else %}
+								
+								<a href="{{ path("app_clothes", app.request.query.all|merge( { "sortBy": colTitle.property, "direction": nextDirection})) }}" class="flex-cell th__filter th__filter--{{theme}}">
+							{% endif %}
+									{{ colTitle.label }}
+
+									{{ ux_icon('bxs:up-arrow', {class: "icon " ~ (viewCurrentSort == colTitle.property|lower ? viewCurrentDirection )}) }}
+								</a>
+						{% else %}
+							{{ colTitle.label|capitalize}}
+						{% endif %}
+
+					</th>
+				{% endfor %}
+
+			</tr>
+		</thead>
+		<tbody class="table__body table__body--{{theme}}">
+			{% for row in rows %}
+
+				<tr class="table__row table__row--{{theme}}">
+					{% for cell in row %}
+
+							{% if cell.type == "boolean"%}
+								
+								<td>{{ cell.value ? cell.onTrue : cell.onFalse }}</td>
+
+							{% elseif cell.type == "date"%}
+								
+								<td>{{ cell.value }}</td>
+
+							{% elseif cell.type == "image"%}
+								
+								<td>{{ cell.value }}</td>
+
+							{% elseif cell.type == "action"%}
+								
+								<td style="position:relative" {{stimulus_controller('dropdown')}}>
+									<button {{stimulus_target('dropdown','toggleler')}}>
+										{{ ux_icon('zondicons:dots-horizontal-triple',{class: 'dot'}) }}
+									</button>
+										<ul class="actionDropdown actionDropdown--{{theme}}" {{stimulus_target('dropdown','container')}}>
+											{% for item in cell.value %}
+												
+												
+												<li class="actionDropdown__item actionDropdown__item--{{theme}}">
+													{% if item.type == "link" %}
+														<a class="actionDropdown__link actionDropdown__link--{{ theme }}"
+														href="{{ path(item.url, item.params is defined ? item.params : {}) }}">
+															{{ item.label }}
+														</a>
+
+													
+												
+													{% elseif item.type == "form" %}
+														<form
+															action="{{ item.url }}"
+															class="actionDropdown__link actionDropdown__link--{{theme}}" 
+														>
+															<button 
+																type="submit" 
+																class="actionDropdown__button actionDropdown__button--{{theme}}" 
+															>
+																{{ item.label}}
+															</button>
+														</form>
+
+													{% elseif item.type == "button" %}
+														
+													{% endif %}
+													
+												</li>
+											{% endfor %}
+										</ul>
+									</button>
+								</td>
+
+
+
+							{% elseif cell.type == "component" %}
+								
+								{% if cell.value is defined %}
+									{% include cell.value with cell.props|default({}) %}
+								{% else %}
+									<span>N/A</span>
+								{% endif %}
+
+							{% else %}
+								<td>{{ cell.value }}</td>
+						{% endif %}
+
+					{% endfor %}
+
+				</tr>
+
+			{% else %}
+				<tr class="tr--{{theme}}">
+					<td class="td--{{theme}}" colspan="{{ colTitles|length }}">{{ noItemsLabel|capitalize }}</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+
+	{% if isPaginated %}
+	
+		{% include 'components/_pagination.html.twig' with {
+			page: currentPage,
+			pageCount: totalPage
+		} %}
+
+	{% endif %}
+
+</div>

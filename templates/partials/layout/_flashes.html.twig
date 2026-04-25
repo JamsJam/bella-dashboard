@@ -1,0 +1,14 @@
+{% for label, messages in flashes %}
+	{% for message in messages %}
+
+
+		<div class="flash__container" {{stimulus_controller("flash")}}>
+			<div class="flash flash__{{label}} flash__{{ label }}--{{theme}}" {{stimulus_target("flash","flash")}}>
+
+				<p>
+					{{ message }}
+				</p>
+			</div>
+		</div>
+	{% endfor %}
+{% endfor %}

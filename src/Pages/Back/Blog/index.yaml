@@ -1,0 +1,58 @@
+page:
+  - type: adminTabsBlock
+    reverse: false
+    tabs:
+      - label: "Articles"
+        href: "app_admin_blog"
+        isActive: true
+      - label: "Categories"
+        href: "app_home"
+        isActive: false
+      - label: "Tags"
+        href: "app_home"
+        isActive: false
+      - label: "Archives"
+        href: "app_home"
+        isActive: false
+
+  - type: adminTabsBlock
+    reverse: true
+    tabs:
+      - label: "Ajouter"
+        href: "app_admin_blog"
+        isActive: false
+      - label: "Retour"
+        href: "app_home"
+        isActive: false
+  - type: adminSortableTableBlock
+    tableTitle: 'Liste des article'
+    noItemsLabel: "aucun élément trouvé"
+    isPaginated: false
+    reverse: true
+    isSearchable: true								# bool → active la pagination							# bool → active la pagination
+    limit: 10							# int → nombre total de pages
+    colTitles: 									# array → titres colonnes
+      - label: 'Nom'
+        property: ''
+        isSortable: false
+      - label: 'Image'
+        property: ''
+        isSortable: false
+      - label: 'Categorie'
+        property: ''
+        isSortable:  false
+      - label: 'Status'
+        property: ''
+        isSortable:  false
+      - label: 'Action'
+        property: ''
+        isSortable: false
+    service: BlogService
+    method: 'getPost'
+
+    # currentPage: 1									# int → page actuelle
+    # currentSort: "nom"								# string → colonne triée actuellement
+    # currentDirection: "asc"						# string → sens du tri (asc/desc)
+    # nextDirection: "desc"
+
+

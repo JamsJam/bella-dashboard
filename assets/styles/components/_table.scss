@@ -1,0 +1,150 @@
+@use "../abstract/" as *;
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    border-end-start-radius: 1rem;
+    border-end-end-radius: 1rem;
+
+    &,
+    & * {
+        transition: color 0.5s ease, background-color 0.5s ease,
+            border-color 0.5s ease;
+    }
+    &__container {
+        border: 1px solid;
+        box-shadow: $shadow;
+        width: 100%;
+        // border-start-start-radius: 1rem;
+        // border-start-end-radius: 1rem;
+        border-radius: 1rem;
+        // overflow: hidden; // ⚡ pour garder les coins arrondis
+    }
+
+    &__caption {
+        padding-block: 1em;
+        border-start-start-radius: 1rem;
+        border-start-end-radius: 1rem;
+        font-family: $font-text;
+        font-size: clamp(1rem, 0.4286rem + 1.1905vw, 2rem);
+        font-weight: 600;
+        // text-align: left; // plus lisible pour un tableau
+    }
+
+    &__head {
+        border-block: 1px solid;
+        th {
+            padding: 1rem;
+            text-align: left;
+            border: none; // ✅ supprime la séparation entre colonnes
+        }
+    }
+
+    &__body {
+        tr {
+            td {
+                padding: 1rem;
+                border: none;
+
+                &>button{
+                    all:unset;
+                    padding:1rem;
+                    &:hover{
+                        cursor:pointer
+                        
+                    }
+                }
+
+                
+            }
+            &:last-child{
+                border-end-start-radius: 1rem;
+                border-end-end-radius: 1rem;
+                td:last-child{
+                    border-end-end-radius: 1rem;
+
+                }
+                td:first-child{
+                    border-end-start-radius: 1rem;
+                }
+            }
+
+            // &:last-child {
+            //     border-end-start-radius: 1rem;
+            //     border-end-end-radius: 1rem;
+            // }
+
+            // optionnel : effet hover
+            // &:hover {
+            //     background-color: rgba(0,0,0,0.03);
+            // }
+            .dot {
+                height: 1.5rem;
+                width: 1.5rem;
+            }
+        }
+    }
+
+    &__th {
+        padding: 1rem;
+
+        .flex-cell {
+            @extend %flex-row-start-center;
+            border: none;
+            gap: 0.5rem;
+
+            .icon {
+                width: 1rem;
+                height: 1rem;
+                will-change: transform;
+                transform: rotate(90deg);
+                transition: transform 0.2s ease;
+
+                &.asc {
+                    transform: rotate(0deg);
+                }
+                &.desc {
+                    transform: rotate(180deg);
+                }
+            }
+        }
+    }
+
+    // Thèmes dynamiques
+    @each $theme, $color in $themes {
+        &__container--#{$theme} {
+            border-color: map-get($color, border-muted);
+        }
+
+        &__caption--#{$theme} {
+            background-color: map-get($color, bg-light);
+            color: map-get($color, text);
+        }
+
+        &__head--#{$theme} {
+            color: map-get($color, text);
+            background-color: oklch(
+                from map-get($color, bg) calc(l + 10 / 100) c h
+            );
+            border-color: map-get($color, border-muted);
+
+            .table__th {
+                .flex-cell {
+                    color: map-get($color, text);
+                }
+            }
+        }
+
+        &__body--#{$theme} {
+            color: map-get($color, text);
+            background-color: map-get($color, bg);
+
+            // optionnel : effet zebra
+            tr:hover {
+                background-color: oklch(
+                    from map-get($color, bg) calc(l + 50 / 100) c h
+                );
+            }
+        }
+    }
+}

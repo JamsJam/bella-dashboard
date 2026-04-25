@@ -8,41 +8,87 @@
 }
 
 :root{
+
     font-size: 16px;
+    font-family: $font-text;
 }
 
-html,body{
-  min-height: 100dvh;
-  min-width: 100dvw;
-}
 body{
+    min-height: 100dvh;
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: start;
+    align-items: stretch;
+}
 
-  a{
+
+a{
     text-decoration: none;
-  }
-    
-    & h1, & h2, & h3, & h4, & h5, & h6{
+    color: inherit;
+}
 
-      font-family: $font-title;
+// header{
+//     background-color: $bg-clair1;
+
+
+// }
+
+h1,h2,h3{
+
+    color: $dark-mode__text;
+    font-weight: 600;
+    text-wrap: pretty;
+
+}
+h1{
+    font-size: $title-48-32-desk;
+
+    @media screen and (max-width:768px)  {
+        &{
+            font-size: $title-32-20-mob;
+        }
     }
+}
+h2{
+    font-size: $title-32-24-desk;
     
-    & p,& a,& span,& strong {
-      font-family: $font-text;
+    @media screen and (max-width:768px)  {
+        &{
+            font-size: $title-24-20-mob;
+        }
     }
+}
+h3{
+    font-size: $title-24-20-desk;
+
     
+    @media screen and (max-width:768px)  {
+        &{
+            font-size: $title-20-18-mob;
+        }
+    }
 
-    &.admin {
-      // @extend %flex-row-start-start;
-      display: grid;
-      grid-template-columns: 300px 1fr;
-      background-color: $admin-nuance-b-30;
+}
 
-      & h1,& h2,& h3,& h4,& h5,& h6,& p,& a,& span,& strong, label, button {
-        font-family: $admin-font;
-        color: $admin-nuance-w-100;
-      }
+li{
+    list-style: none;
 
+}
 
+.container{
+    width: 100%;
+    height: 100dvh;
+    overflow: hidden;
+    
+    
+    
+    
+    @each $theme, $color in $themes{
+        &--#{$theme}{
+            background-color: map-get($color,bg-dark );
+        }
+    
 
     }
 }

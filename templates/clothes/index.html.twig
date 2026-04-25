@@ -1,33 +1,20 @@
 {% extends 'base.html.twig' %}
 
 
- {% block title %}Dashboard {{parent()}}{% endblock %}
+{% block title %}Vêtements {{parent()}}{% endblock %}
 
 {% block body %}
 
-    {{ include('partials/_dashboard_header.html.twig') }}
+    <article class="clothes">
+            {% for pageblock in pageView.blocks %}
+                <pre>
+                    {{ dump(pageblock.getTemplate()) }}
+                </pre>
+                <pre>
+                    {{ dump(pageblock.getData()) }}
+                </pre>
+                {% include pageblock.getTemplate() with pageblock.getData() %}
+            {% endfor %}
 
-    {# <turbo-frame id="clothe-frame" > #}
-        <section class="clothes">
-            <header>
-            
-                <div class="clothes__navigation" id="clothes__navigation">
-
-                </div>
-
-
-                <div class="clothes__action" id="clothes__action">
-
-                </div>
-
-
-
-
-            </header>
-            <div id="clothes__container" class="clothes__container">
-
-            </div>
-        </section>
-    {# </turbo-frame> #}
-    {{block|raw}}
+    </article>
 {% endblock %}

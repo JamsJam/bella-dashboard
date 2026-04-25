@@ -1,0 +1,129 @@
+<aside class="menu menu--{{theme}}" {{stimulus_controller('toggle_menu') | stimulus_target('theme_switch','menu')}}>
+	<button class="toggle toggle--{{theme}}" {{stimulus_target('toggle_menu','toggleButton') | stimulus_action('toggle_menu','toggle', 'click')}}>
+		{{ ux_icon('stash:burger-classic-light',{class:'toggle__svg--{{theme}}'}) }}
+	</button>
+	<div class="menu__logo menu__logo--{{theme}}">
+		<img src="{{asset("/images/bella_logo_light.png")}}" alt="">
+	</div>
+	
+	<nav class="menu__nav" >
+		<ul class="nav__group">
+
+			<li class="nav__title nav__title--{{theme}}">Menu</li>
+
+			{#? === Accueil ===  #}
+			<li class="nav__item nav__item--{{theme}}">
+				<a href="{{path('app_home')}}" class="nav__link nav__link--{{theme}}">
+					{# <svg  class="nav__icon" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24"><path fill="currentColor" d="M4 19v-9q0-.475.213-.9t.587-.7l6-4.5q.525-.4 1.2-.4t1.2.4l6 4.5q.375.275.588.7T20 10v9q0 .825-.588 1.413T18 21h-3q-.425 0-.712-.288T14 20v-5q0-.425-.288-.712T13 14h-2q-.425 0-.712.288T10 15v5q0 .425-.288.713T9 21H6q-.825 0-1.412-.587T4 19"/></svg> #}
+					{{ ux_icon('ic:round-home',{class:"nav__icon"}) }}
+					<p class="nav__label">Dashboard</p>
+				</a>
+			</li>
+
+			{#? === Avatar ===  #}
+			<li class="nav__item nav__item--{{theme}}">
+				<a href="{{path('app_home')}}" class="nav__link nav__link--{{theme}}">
+					{# <svg  class="nav__icon" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24"><path fill="currentColor" d="M4 19v-9q0-.475.213-.9t.587-.7l6-4.5q.525-.4 1.2-.4t1.2.4l6 4.5q.375.275.588.7T20 10v9q0 .825-.588 1.413T18 21h-3q-.425 0-.712-.288T14 20v-5q0-.425-.288-.712T13 14h-2q-.425 0-.712.288T10 15v5q0 .425-.288.713T9 21H6q-.825 0-1.412-.587T4 19"/></svg> #}
+					{{ ux_icon('tdesign:user-avatar',{class:"nav__icon"}) }}
+					<p class="nav__label">Avatar</p>
+				</a>
+			</li>
+
+			{#? === Vetements ===  #}
+			<li class="nav__item nav__item--{{theme}}">
+				<a href="{{path('app_clothes')}}" class="nav__link nav__link--{{theme}}">
+					{# <svg  class="nav__icon" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24"><path fill="currentColor" d="M4 19v-9q0-.475.213-.9t.587-.7l6-4.5q.525-.4 1.2-.4t1.2.4l6 4.5q.375.275.588.7T20 10v9q0 .825-.588 1.413T18 21h-3q-.425 0-.712-.288T14 20v-5q0-.425-.288-.712T13 14h-2q-.425 0-.712.288T10 15v5q0 .425-.288.713T9 21H6q-.825 0-1.412-.587T4 19"/></svg> #}
+					{{ ux_icon('lsicon:clothes-outline',{class:"nav__icon"}) }}
+					<p class="nav__label">Vêtements</p>
+				</a>
+			</li>
+
+			{#? === Clients ===  #}
+			<li class="nav__item nav__item--{{theme}}">
+				<a href="{{path('app_home')}}" class="nav__link nav__link--{{theme}}">
+					{# <svg  class="nav__icon" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24"><path fill="currentColor" d="M4 19v-9q0-.475.213-.9t.587-.7l6-4.5q.525-.4 1.2-.4t1.2.4l6 4.5q.375.275.588.7T20 10v9q0 .825-.588 1.413T18 21h-3q-.425 0-.712-.288T14 20v-5q0-.425-.288-.712T13 14h-2q-.425 0-.712.288T10 15v5q0 .425-.288.713T9 21H6q-.825 0-1.412-.587T4 19"/></svg> #}
+					{{ ux_icon('ooui:user-avatar-outline',{class:"nav__icon"}) }}
+					<p class="nav__label">Client</p>
+				</a>
+			</li>
+
+			{#? === Commandes ===  #}
+			<li class="nav__item nav__item--{{theme}}">
+				<a href="{{path('app_home')}}" class="nav__link nav__link--{{theme}}">
+					{# <svg  class="nav__icon" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24"><path fill="currentColor" d="M4 19v-9q0-.475.213-.9t.587-.7l6-4.5q.525-.4 1.2-.4t1.2.4l6 4.5q.375.275.588.7T20 10v9q0 .825-.588 1.413T18 21h-3q-.425 0-.712-.288T14 20v-5q0-.425-.288-.712T13 14h-2q-.425 0-.712.288T10 15v5q0 .425-.288.713T9 21H6q-.825 0-1.412-.587T4 19"/></svg> #}
+					{{ ux_icon('material-symbols:orders-outline-rounded',{class:"nav__icon"}) }}
+					<p class="nav__label">Commandes</p>
+				</a>
+
+			</li>
+
+			{#? === Blog ===  #}
+			<li class="nav__item nav__item--{{theme}}">
+				<a href="{{path('app_home')}}" class="nav__link nav__link--{{theme}}">
+					{# <svg  class="nav__icon" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24"><path fill="currentColor" d="M4 19v-9q0-.475.213-.9t.587-.7l6-4.5q.525-.4 1.2-.4t1.2.4l6 4.5q.375.275.588.7T20 10v9q0 .825-.588 1.413T18 21h-3q-.425 0-.712-.288T14 20v-5q0-.425-.288-.712T13 14h-2q-.425 0-.712.288T10 15v5q0 .425-.288.713T9 21H6q-.825 0-1.412-.587T4 19"/></svg> #}
+					{{ ux_icon('carbon:blog',{class:"nav__icon"}) }}
+					<p class="nav__label">Blog</p>
+				</a>
+			</li>
+
+			{#? === Paramettre ===  #}
+			<li class="nav__item nav__item--{{theme}}">
+				<a href="{{path('app_home')}}" class="nav__link nav__link--{{theme}}">
+					{# <svg  class="nav__icon" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24"><path fill="currentColor" d="M4 19v-9q0-.475.213-.9t.587-.7l6-4.5q.525-.4 1.2-.4t1.2.4l6 4.5q.375.275.588.7T20 10v9q0 .825-.588 1.413T18 21h-3q-.425 0-.712-.288T14 20v-5q0-.425-.288-.712T13 14h-2q-.425 0-.712.288T10 15v5q0 .425-.288.713T9 21H6q-.825 0-1.412-.587T4 19"/></svg> #}
+					{{ ux_icon('icon-park-outline:setting-config',{class:"nav__icon"}) }}
+					<p class="nav__label">Paramettre</p>
+				</a>
+			</li>
+			
+
+
+			{#? === LogOut ===  #}
+			<li class="nav__item nav__item--{{theme}}">
+				<a href="{{path('app_home')}}" class="nav__link nav__link--{{theme}}">
+					{# <svg  class="nav__icon" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24"><path fill="currentColor" d="M4 19v-9q0-.475.213-.9t.587-.7l6-4.5q.525-.4 1.2-.4t1.2.4l6 4.5q.375.275.588.7T20 10v9q0 .825-.588 1.413T18 21h-3q-.425 0-.712-.288T14 20v-5q0-.425-.288-.712T13 14h-2q-.425 0-.712.288T10 15v5q0 .425-.288.713T9 21H6q-.825 0-1.412-.587T4 19"/></svg> #}
+					{{ ux_icon('bx:log-out',{class:"nav__icon"}) }}
+					<p class="nav__label">Déconnexion</p>
+				</a>
+			</li>
+
+		</ul>
+
+
+
+
+
+		{# <ul class="nav__group">
+			<li class="nav__title  nav__title--{{theme}}">lorem</li>
+			<li class="nav__item nav__item--{{theme}}">
+				<a href="" class="nav__link nav__link--{{theme}}">
+					<svg class="nav__icon">X</svg>
+					<p class="nav__label">Item 1</p>
+				</a>
+			</li>
+			<li class="nav__item nav__item--{{theme}}">
+				<a href="" class="nav__link nav__link--{{theme}}">
+					<svg class="nav__icon">Y</svg>
+					<p class="nav__label">Item 2</p>
+				</a>
+			</li>
+		</ul>
+		<ul class="nav__group">
+			<li class="nav__title  nav__title--{{theme}}">lorem</li>
+			<li class="nav__item nav__item--{{theme}}">
+				<a href="" class="nav__link nav__link--{{theme}}">
+					<svg class="nav__icon">X</svg>
+					<p class="nav__label">Item 1</p>
+				</a>
+			</li>
+			<li class="nav__item nav__item--{{theme}}">
+				<a href="" class="nav__link nav__link--{{theme}}">
+					<svg class="nav__icon">Y</svg>
+					<p class="nav__label">Item 2</p>
+				</a>
+			</li>
+		</ul> #}
+		
+
+
+	</nav>
+</aside>

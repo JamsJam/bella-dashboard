@@ -1,52 +1,52 @@
 //? ========= main Colors
-// //* === primary
-// $primary-35: hsl(248, 81%, 35%);
-// $primary-20: hsl(249, 100%, 20%);
-// $primary-15: hsl(247, 79%, 15%);
-// $primary-05: hsl(247, 93%, 5%);
+//* === primary
+$primary-35: hsl(248, 81%, 35%);
+$primary-20: hsl(249, 100%, 20%);
+$primary-15: hsl(247, 79%, 15%);
+$primary-05: hsl(247, 93%, 5%);
 
-// //* === nuance
-// $nuance-95: hsl(249, 100%, 95%);
-// $nuance-t-1: hsla(249, 100%, 95%, 0.5);
-// $nuance-s-1: hsla(0, 5%, 21%, 0.5);
-// $nuance-5: hsl(249, 100%, 5%);
+//* === nuance
+$nuance-95: hsl(249, 100%, 95%);
+$nuance-t-1: hsla(249, 100%, 95%, 0.5);
+$nuance-s-1: hsla(0, 5%, 21%, 0.5);
+$nuance-5: hsl(249, 100%, 5%);
 
-// //* === secondary
-// $secondary-70: hsl(275, 97%, 70%);
-// $secondary-40: hsl(275, 97%, 40%);
-// $secondary-30: hsl(275, 97%, 30%);
-// $secondary-13: hsl(276, 100%, 13%);
+//* === secondary
+$secondary-70: hsl(275, 97%, 70%);
+$secondary-40: hsl(275, 97%, 40%);
+$secondary-30: hsl(275, 97%, 30%);
+$secondary-13: hsl(276, 100%, 13%);
 
-// //* === accent
-// $accent-35: hsl(176, 100%, 35%);
-// $accent-25: hsl(191, 89%, 25%);
+//* === accent
+$accent-35: hsl(176, 100%, 35%);
+$accent-25: hsl(191, 89%, 25%);
 
-// //* === shadow
+//* === shadow
 
-// $shadow-01: $nuance-s-1;
-// $shadow-02: $secondary-70;
-// $shadow-02-hover: $accent-35;
+$shadow-01: $nuance-s-1;
+$shadow-02: $secondary-70;
+$shadow-02-hover: $accent-35;
 
-// //* === shadow
+//* === shadow
 
-// $danger: hsl(3, 65%, 55%);;
-// $danger-hover:hsl(3, 65%, 75%);
-// $danger-activ:hsl(3, 65%, 45%);
+$danger: hsl(3, 65%, 55%);;
+$danger-hover:hsl(3, 65%, 75%);
+$danger-activ:hsl(3, 65%, 45%);
 
 
 // //* === gradiant
-// $bg-linear : linear-gradient(
-//     0% $secondary-13, 
-//     21% $primary-05, 
-//     63% $primary-05, 
-//     );
+$bg-linear : linear-gradient(
+    0% $secondary-13, 
+    21% $primary-05, 
+    63% $primary-05, 
+    );
 
-//? ========= admin Colors
+////? ========= admin Colors
 
 //* === nuance
-// $admin-nuance-b-30 : $bg-linear ;
-// $admin-nuance-b-20 : $bg-linear ;
-// $admin-nuance-b-15 : $bg-linear ;
+$admin-nuance-b-30 : $bg-linear ;
+$admin-nuance-b-20 : $bg-linear ;
+$admin-nuance-b-15 : $bg-linear ;
 
 
 // $admin-nuance-w-100 : $bg-linear ;
@@ -55,12 +55,12 @@
 // $admin-nuance-b-15: hsl(0, 0%, 15%);
 
 
-// $admin-nuance-w-100: hsl(0, 0%, 100%);
-// $admin-nuance-w-87: hsl(0, 0%, 87%);
+$admin-nuance-w-100: hsl(0, 0%, 100%);
+$admin-nuance-w-87: hsl(0, 0%, 87%);
 
 
 $dark-mode__bg-dark: hsl(242 68% 3%);
-$dark-mode__bg: hsl(240 43% 6%);
+$dark-mode__bg: hsl(240 43% 8%);
 $dark-mode__bg-light: hsl(238 28% 11%);
 $dark-mode__text: hsl(236 100% 100%);
 $dark-mode__text-muted: hsl(236 36% 76%);
@@ -77,7 +77,7 @@ $dark-mode__info: hsl(217 100% 70%);
 
 $light-mode__bg-dark: hsl(25 64% 89%);
 $light-mode__bg: hsl(25 100% 94%);
-$light-mode__bg-light: hsl(25 100% 100%);
+$light-mode__bg-light: oklch(100% 0.00011 271.152);
 $light-mode__text: hsl(12 100% 5%);
 $light-mode__text-muted: hsl(26 43% 26%);
 $light-mode__highlight: hsl(25 100% 99%);

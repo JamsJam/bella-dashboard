@@ -68,6 +68,12 @@ class Clothes
     #[ORM\OneToMany(targetEntity: Body::class, mappedBy: 'clothe')]
     private Collection $bodies;
 
+    #[ORM\Column]
+    private ?bool $isBestseller = null;
+
+    #[ORM\Column]
+    private ?bool $isInCarousel = null;
+
 
 
     public function __construct()
@@ -262,6 +268,30 @@ class Clothes
                 $body->setClothe(null);
             }
         }
+
+        return $this;
+    }
+
+    public function isBestseller(): ?bool
+    {
+        return $this->isBestseller;
+    }
+
+    public function setIsBestseller(bool $isBestseller): static
+    {
+        $this->isBestseller = $isBestseller;
+
+        return $this;
+    }
+
+    public function isInCarousel(): ?bool
+    {
+        return $this->isInCarousel;
+    }
+
+    public function setIsInCarousel(bool $isInCarousel): static
+    {
+        $this->isInCarousel = $isInCarousel;
 
         return $this;
     }

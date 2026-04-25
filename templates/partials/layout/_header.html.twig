@@ -1,0 +1,12 @@
+<header class="adminHeader adminHeader--{{theme}}">
+
+	<div class="adminHeader__left adminHeader__left--{{theme}}">
+
+
+		<h1 class="adminHeader__title adminHeader__title--{{theme}}">{{title ?? 'Titre'}}</h1>
+	</div>
+	<div class="adminHeader__right ">
+	
+		<button {{stimulus_action('theme_switch','switchTheme','click')}}>change theme</button>
+	</div>
+</header>

@@ -1,0 +1,120 @@
+<aside class="menu menu--{{theme}}" {{stimulus_controller('toggle_menu') | stimulus_target('theme_switch','menu')}}>
+	<button class="toggle toggle--{{theme}}" {{stimulus_target('toggle_menu','toggleButton') | stimulus_action('toggle_menu','toggle', 'click')}}>
+		{{ ux_icon('stash:burger-classic-light',{class:'toggle__svg--' ~  theme }) }}
+	</button>
+	<div class="menu__logo menu__logo--{{theme}}">
+		<img src="{{asset("/images/logos/logo-320.png")}}" alt="logo">
+	</div>
+	
+	<nav class="menu__nav" >
+		<ul class="nav__group">
+
+			<li class="nav__title nav__title--{{theme}}">Menu</li>
+
+			{#? === Accueil ===  #}
+			<li class="nav__item nav__item--{{theme}}">
+				<a href="{{path('app_admin_dashboard')}}" class="nav__link nav__link--{{theme}}">
+					
+					{{ ux_icon('ic:round-home',{class:"nav__icon"}) }}
+					<p class="nav__label">Dashboard</p>
+				</a>
+			</li>
+			
+			{#? === Projets ===  #}
+			<li class="nav__item nav__item--{{theme}}">
+				<a href="{{path('app_admin_dashboard')}}" class="nav__link nav__link--{{theme}}">
+					
+					{{ ux_icon('grommet-icons:projects',{class:"nav__icon"}) }}
+					<p class="nav__label">Projets</p>
+				</a>
+			</li>
+			
+			{#? === CV ===  #}
+			<li class="nav__item nav__item--{{theme}}">
+				<a href="{{path('app_admin_dashboard')}}" class="nav__link nav__link--{{theme}}">
+					
+					{{ ux_icon('pepicons-pencil:cv',{class:"nav__icon"}) }}
+					<p class="nav__label">CV</p>
+				</a>
+			</li>
+			
+			{#? === Blog ===  #}
+			<li class="nav__item nav__item--{{theme}}">
+				<a href="{{path('app_admin_dashboard')}}" class="nav__link nav__link--{{theme}}">
+					
+					{{ ux_icon('carbon:blog',{class:"nav__icon"}) }}
+					<p class="nav__label">Blog</p>
+				</a>
+			</li>
+
+			{#? === Livre d'or ===  #}
+			<li class="nav__item nav__item--{{theme}}">
+				<a href="{{path('app_admin_dashboard')}}" class="nav__link nav__link--{{theme}}">
+					
+					{{ ux_icon('material-symbols:star-rounded',{class:"nav__icon"}) }}
+					<p class="nav__label">Livre d'or</p>
+				</a>
+			</li>
+
+			{#? === Paramettres ===  #}
+			<li class="nav__item nav__item--{{theme}}">
+				<a href="{{path('app_admin_dashboard')}}" class="nav__link nav__link--{{theme}}">
+					
+					{{ ux_icon('ic:round-settings',{class:"nav__icon"}) }}
+					<p class="nav__label">Paramettres</p>
+				</a>
+			</li>
+
+			
+
+
+			{#? === LogOut ===  #}
+			<li class="nav__item nav__item--{{theme}}">
+				<a href="{{path('app_home')}}" class="nav__link nav__link--{{theme}}">
+					
+					{{ ux_icon('bx:log-out',{class:"nav__icon"}) }}
+					<p class="nav__label">Déconnexion</p>
+				</a>
+			</li>
+
+		</ul>
+
+
+
+
+
+		{# <ul class="nav__group">
+			<li class="nav__title  nav__title--{{theme}}">lorem</li>
+			<li class="nav__item nav__item--{{theme}}">
+				<a href="" class="nav__link nav__link--{{theme}}">
+					<svg class="nav__icon">X</svg>
+					<p class="nav__label">Item 1</p>
+				</a>
+			</li>
+			<li class="nav__item nav__item--{{theme}}">
+				<a href="" class="nav__link nav__link--{{theme}}">
+					<svg class="nav__icon">Y</svg>
+					<p class="nav__label">Item 2</p>
+				</a>
+			</li>
+		</ul>
+		<ul class="nav__group">
+			<li class="nav__title  nav__title--{{theme}}">lorem</li>
+			<li class="nav__item nav__item--{{theme}}">
+				<a href="" class="nav__link nav__link--{{theme}}">
+					<svg class="nav__icon">X</svg>
+					<p class="nav__label">Item 1</p>
+				</a>
+			</li>
+			<li class="nav__item nav__item--{{theme}}">
+				<a href="" class="nav__link nav__link--{{theme}}">
+					<svg class="nav__icon">Y</svg>
+					<p class="nav__label">Item 2</p>
+				</a>
+			</li>
+		</ul> #}
+		
+
+
+	</nav>
+</aside>

@@ -1,0 +1,64 @@
+
+@use '../abstract/' as *;
+
+.actionDropdown{
+
+    display: none;
+
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 10;
+    
+    border: 2px solid;
+    box-shadow: $shadow;
+    // width: min-content;
+    transform: translateY(10%);
+
+    
+    &.open{
+        display: block;
+
+    }
+    &__item{
+        
+        border-bottom: 1px solid;
+    }
+
+    &__link{
+        padding: 0.75rem 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+    }
+    &__button{
+        all:unset;
+        // padding: 0;
+    }
+    
+    
+    @each $theme, $color in $themes{
+        &--#{$theme}{
+            border-color:  map-get($color,border );
+            // background-color: map-get($color,bg-light );
+        }
+        &__item--#{$theme}{
+            
+            background-color: map-get($color,bg );
+            border-color:  map-get($color,border-muted );
+            
+            &:hover{
+                background-color: map-get($color,bg-light );
+
+            }
+            
+        }
+        &__link--#{$theme}{
+            color: map-get($color, text );
+
+            // background-color: map-get($color,bg-light ); 
+        }
+
+    }
+}

@@ -21,7 +21,7 @@
         {% block importmap %}{{ importmap(['admin']) }}{% endblock %}
     {% endblock %}
 </head>
-<body class="admin" {{stimulus_controller('menu_reload')}} data-turbo-prefetch="true">
+{# <body class="admin" {{stimulus_controller('menu_reload')}} data-turbo-prefetch="true"> #}
 
     {#?===== twig component adminmenu #}
     {# <turbo-frame 
@@ -46,6 +46,30 @@
             {% endblock %}
         </main>
     </turbo-frame> #}
-    
-</body>
+
+{# </body> #}
+	<body class="admin" {{stimulus_controller('theme_switch')}}>
+
+		{% include "partials/layout/_aside.html.twig" with {theme:theme} %}
+
+		<div class="container container--{{theme}}">
+			{% include "partials/layout/_header.html.twig" with {
+			title: block('pagetitle') ?? 'Titre de la page',
+			theme: theme
+		} %}
+        <turbo-frame id="main">
+			<main>
+
+
+				{% include "partials/layout/_flashes.html.twig" with {
+						flashes: app.flashes,
+						
+					} %}
+
+
+				{% block body %}{% endblock %}
+			</main>
+        </turbo-frame>
+		</div>
+	</body>
 </html>
