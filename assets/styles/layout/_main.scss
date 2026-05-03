@@ -1,0 +1,20 @@
+@use "../abstract/" as *;
+
+.main{
+    height :calc(100dvh - 5rem);
+    padding: 2rem;
+    background-color: var(--bg);
+    
+    @extend %theme-transition;
+    
+    &__container{
+        width: 100%;
+        min-height: 100%;
+        border: var(--border) 2px solid;
+        background-color: var(--bg);
+        border-radius: 1rem;
+
+        @extend %theme-transition;
+
+    }
+}

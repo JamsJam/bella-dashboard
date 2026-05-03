@@ -1,0 +1,11 @@
+<nav class="breadcrumb" aria-label="Fil d’Ariane">
+    {% for item in breadscrumbs %}
+        {% if item.route is defined %}
+            <a href="{{ path(item.route, item.params ?? {}) }}">
+                {{ item.label }}
+            </a>
+        {% else %}
+            <span>{{ item.label }}</span>
+        {% endif %}
+    {% endfor %}
+</nav>

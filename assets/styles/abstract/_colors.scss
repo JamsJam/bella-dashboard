@@ -1,0 +1,130 @@
+//? ========= main Colors
+//* === primary
+$primary-35: hsl(248, 81%, 35%);
+$primary-20: hsl(249, 100%, 20%);
+$primary-15: hsl(247, 79%, 15%);
+$primary-05: hsl(247, 93%, 5%);
+
+//* === nuance
+$nuance-95: hsl(249, 100%, 95%);
+$nuance-t-1: hsla(249, 100%, 95%, 0.5);
+$nuance-s-1: hsla(0, 5%, 21%, 0.5);
+$nuance-5: hsl(249, 100%, 5%);
+
+//* === secondary
+$secondary-70: hsl(275, 97%, 70%);
+$secondary-40: hsl(275, 97%, 40%);
+$secondary-30: hsl(275, 97%, 30%);
+$secondary-13: hsl(276, 100%, 13%);
+
+//* === accent
+$accent-35: hsl(176, 100%, 35%);
+$accent-25: hsl(191, 89%, 25%);
+
+//* === shadow
+
+$shadow-01: $nuance-s-1;
+$shadow-02: $secondary-70;
+$shadow-02-hover: $accent-35;
+
+//* === shadow
+
+$danger: hsl(3, 65%, 55%);;
+$danger-hover:hsl(3, 65%, 75%);
+$danger-activ:hsl(3, 65%, 45%);
+
+
+// //* === gradiant
+$bg-linear : linear-gradient(
+    0% $secondary-13, 
+    21% $primary-05, 
+    63% $primary-05, 
+    );
+
+////? ========= admin Colors
+
+//* === nuance
+$admin-nuance-b-30 : $bg-linear ;
+$admin-nuance-b-20 : $bg-linear ;
+$admin-nuance-b-15 : $bg-linear ;
+
+
+// $admin-nuance-w-100 : $bg-linear ;
+// $admin-nuance-b-30: hsl(0, 0%, 30%);
+// $admin-nuance-b-20: hsl(0, 0%, 20%);
+// $admin-nuance-b-15: hsl(0, 0%, 15%);
+
+
+$admin-nuance-w-100: hsl(0, 0%, 100%);
+$admin-nuance-w-87: hsl(0, 0%, 87%);
+
+
+$dark-mode__bg-dark: hsl(242 68% 3%);
+$dark-mode__bg: hsl(240 43% 8%);
+$dark-mode__bg-light: hsl(238 28% 11%);
+$dark-mode__text: hsl(236 100% 100%);
+$dark-mode__text-muted: hsl(236 36% 76%);
+$dark-mode__highlight: hsl(237 17% 44%);
+$dark-mode__border: hsl(238 22% 33%);
+$dark-mode__border-muted: hsl(240 29% 23%);
+$dark-mode__primary: hsl(238 70% 80%);
+$dark-mode__secondary: hsl(55 100% 28%);
+$dark-mode__danger: hsl(7 94% 66%);
+$dark-mode__warning: hsl(53 100% 24%);
+$dark-mode__success: hsl(163 100% 26%);
+$dark-mode__info: hsl(217 100% 70%);
+
+
+$light-mode__bg-dark: hsl(25 64% 89%);
+$light-mode__bg: hsl(25 100% 94%);
+$light-mode__bg-light: oklch(100% 0.00011 271.152);
+$light-mode__text: hsl(12 100% 5%);
+$light-mode__text-muted: hsl(26 43% 26%);
+$light-mode__highlight: hsl(25 100% 99%);
+$light-mode__border: hsl(25 25% 49%);
+$light-mode__border-muted: hsl(25 33% 61%);
+$light-mode__primary: hsl(197 100% 19%);
+$light-mode__secondary: hsl(31 100% 21%);
+$light-mode__danger: hsl(6, 60%, 41%);
+$light-mode__warning: hsl(49, 100%, 24%);
+$light-mode__success: hsl(153, 100%, 24%);
+$light-mode__info: hsl(217, 63%, 44%);
+
+
+$shadow: 0px 2px 2px #00000030, 0px 4px 4px #00000015;
+
+$themes: (
+    dark: (
+        bg-dark: $dark-mode__bg-dark,
+        bg: $dark-mode__bg,
+        bg-light: $dark-mode__bg-light,
+        text: $dark-mode__text,
+        text-muted: $dark-mode__text-muted,
+        hoverlight: $dark-mode__highlight,
+        border: $dark-mode__border,
+        border-muted: $dark-mode__border-muted,
+        primary: $dark-mode__primary,
+        secondary: $dark-mode__secondary,
+        danger: $dark-mode__danger,
+        warning: $dark-mode__warning,
+        success: $dark-mode__success,
+        info: $dark-mode__info
+    ),
+    light: (
+        bg-dark: $light-mode__bg-dark,
+        bg: $light-mode__bg,
+        bg-light: $light-mode__bg-light,
+        text: $light-mode__text,
+        text-muted: $light-mode__text-muted,
+        hoverlight: $light-mode__highlight,
+        border: $light-mode__border,
+        border-muted: $light-mode__border-muted,
+        primary: $light-mode__primary,
+        secondary: $light-mode__secondary,
+        danger: $light-mode__danger,
+        warning: $light-mode__warning,
+        success: $light-mode__success,
+        info: $light-mode__info
+    )
+);
+

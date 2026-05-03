@@ -1,0 +1,41 @@
+
+
+	{% if item.children is empty %}
+
+
+		<a href="{{path(item.path)}}" class="menuItem">
+			{{item.title}}
+		</a>
+
+	{% else %}
+		<div class="menuItem" {{ stimulus_controller("item_collabsable") }}>
+			<button class="menuItem__header" {{ stimulus_action("item_collabsable","handleCollapseToggle","click") }}>
+				<span class="menuItem__title">
+					{{item.title}}
+				</span>
+				{{ ux_icon('ep:arrow-right') }}
+			</button>
+
+			<ul class="menuItem__children collapsed" {{ stimulus_target("item_collabsable","collapsablebox") }}>
+
+				{% for child in item.children %}
+
+					<li class="menuItem__child">
+						{% if child.icon is same as null %}
+
+							<span class="menuItem__iconPlaceholder"></span>
+						{% else %}
+
+							{{ ux_icon(child.icon) }}
+
+						{% endif %}
+						<a href="{{path(child.path)}}">{{child.label}}</a>
+					</li>
+
+				{% endfor %}
+
+			</ul>
+		</div>
+	{% endif %}
+
+

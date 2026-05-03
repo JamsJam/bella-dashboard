@@ -1,0 +1,25 @@
+@use "../abstract/" as *;
+
+.breadcrumb {
+    padding: 0 0.5rem;
+
+    & a,
+    & span {
+        color: var(--text-muted);
+        @extend %theme-transition;
+
+        &:hover {
+            color: var(--text);
+        }
+    }
+
+    & a {
+        font-weight: 600;
+    }
+
+    & a:not(:last-child)::after {
+        display: inline-block;
+        margin: 0 0.25rem;
+        content: "→";
+    }
+}

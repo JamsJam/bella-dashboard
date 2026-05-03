@@ -1,0 +1,113 @@
+{% set menu = [
+    {
+        title: 'Dashboard',
+        path: 'app_dashboard',
+        children: [
+
+        ]
+    },
+    {
+        title: 'Utilisateurs',
+        path: null,
+        children: [
+            {
+                label: 'Liste des utilisateurs',
+                icon: 'ep:user',
+                path: 'app_dashboard'
+            },
+            {
+                label: 'Créer un utilisateur',
+                icon: 'ep:plus',
+                path: 'app_dashboard'
+            }
+        ]
+    },
+    {
+        title: 'Produits',
+        path: null,
+        children: [
+            {
+                label: 'Catalogue',
+                icon: 'ep:goods',
+                path: 'app_dashboard'
+            },
+            {
+                label: 'Ajouter un produit',
+                icon: null,
+                path: 'app_dashboard'
+            }
+        ]
+    },
+    {
+        title: 'Commandes',
+        path: null,
+        children: [
+            {
+                label: 'Toutes les commandes',
+                icon: 'ep:document',
+                path: 'app_dashboard'
+            },
+            {
+                label: 'Commandes en attente',
+                icon: null,
+                path: 'app_dashboard'
+            }
+        ]
+    },
+    {
+        title: 'Paramètres',
+        path: null,
+        children: [
+            {
+                label: 'Configuration',
+                icon: 'ep:setting',
+                path: 'app_dashboard'
+            },
+            {
+                label: 'Logs',
+                icon: 'ep:warning',
+                path: 'app_dashboard'
+            }
+        ]
+    },
+    {
+        title: 'Déconnexion',
+        path: 'app_dashboard',
+        children: [
+            {
+                label: 'Configuration',
+                icon: 'ep:setting',
+                path: 'app_dashboard'
+            },
+            {
+                label: 'Logs',
+                icon: 'ep:warning',
+                path: 'app_dashboard'
+            }
+        ]
+    }
+] %}
+
+
+<div class="aside aside--close" {{ stimulus_target('aside_toggle', 'aside') }}>
+	<div class="aside__header">
+    
+        <a class="itemContainer" href="{{path('app_dashboard')}}">
+            {{ ux_icon('material-symbols-light:dashboard-rounded') }}
+            <span> 
+                Dashboard 
+            </span>
+        </a>
+
+    </div>
+
+    <div class="aside__menu" >
+		{% for item in menu %}
+			{% include "ui/components/menu/_item.html.twig" with {item} only %}
+		{% endfor %}
+	</div>
+
+
+
+</div>
+<div class="overlay overlay--close" {{ stimulus_target('aside_toggle', 'overlay') | stimulus_action("aside_toggle","handleAsideToggle","click") }}></div>

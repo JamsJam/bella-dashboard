@@ -1,0 +1,121 @@
+@use "../abstract/" as *;
+
+.aside{
+    height: 100dvh;
+
+    background-color: var(--bg);
+    border-inline-end: var(--border-muted) 2px solid;
+    box-shadow: 2px 0 10px 4px hsla(from var(--border-muted) h s l / 25%);
+    overflow: hidden;
+    transition: padding 0.3s ease-in-out;
+
+
+    &--open{
+            padding-inline: 1rem ;
+            
+        }
+    &--close{
+            padding-inline: 0px;
+            border-inline-end: var(--border-muted) 0px solid;
+        }
+
+
+
+
+    &__header{
+        @extend %flex-row-start-center;
+        height: 5rem;
+        
+        .itemContainer{
+            
+            @extend %flex-row-start-center;
+            gap:1rem;
+
+            width: 100%;
+
+            padding-block: 0.5rem;
+            padding-inline: 1rem;
+
+            border-radius: 1rem;
+
+
+            color: var(--text-muted);
+            font-size: 1rem;
+            font-weight: 600;
+
+            @extend %theme-transition;
+            
+            &:hover{
+                background-color: var(--bg-light);
+                cursor: pointer;
+
+                color: var(--text);
+
+            }
+        }
+        svg{
+            height: 1.5rem;
+            width: 1.5rem;
+        }
+
+    }
+
+    &__menu{
+        @extend %flex-column-start-start;
+        gap: 1rem;
+        
+        padding-block: 2rem;
+        
+    }
+
+
+    @media  screen and (max-width: 1068px) {
+    
+        position: absolute;
+        top:0;
+        left: -300px;
+        width: 300px;
+        transition: left 0.5s ease-in-out;
+        z-index: 2;
+        
+        &--open{
+            left: 0px;
+            
+        }
+
+    }
+}
+
+.overlay{
+    position: absolute;
+    left:0;
+    top: 0;
+    background-color: hsla(from var(--bg-light) h s l/0%);
+
+    z-index: 1;
+
+    width: 0;
+    left: 0;
+
+    @extend %theme-transition;
+    
+
+    @media  screen and (max-width: 1068px) {
+
+
+        
+        &--open{
+            
+            width: 100%;
+            height: 100%;
+            background-color: hsla(from var(--bg-light) h s l/60%)
+        }
+
+        &--close{
+            width: 0%;
+            height: 0%;
+            
+        }
+
+    }
+}

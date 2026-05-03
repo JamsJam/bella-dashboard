@@ -1,0 +1,32 @@
+@use "../abstract/" as *;
+
+.layout{
+    display: grid;
+    height: 100dvh;
+
+    transition: grid-template-columns 0.3s ease-in-out;
+
+    
+    &--open{
+        grid-template-columns: 300px 1fr;
+        
+    }
+    
+    &--close{
+        grid-template-columns: 0 1fr;
+
+    }
+    
+    @media  screen and (max-width: 1068px) {
+        
+        grid-template-columns: 1fr;
+        
+        &.layout--toggleOn,
+        &.layout--close{
+            grid-template-columns: 1fr;
+            
+        }
+        
+
+    }
+}
