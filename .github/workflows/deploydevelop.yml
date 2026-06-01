@@ -20,10 +20,10 @@ jobs:
       - name: Deployer sur le serveur de test
         uses: appleboy/ssh-action@v1.2.5
         env:
-          APP_TOKEN: ${{ secrets.APP_TEST_TOKEN }}
-          APP_DOMAIN: ${{ secrets.APP_TEST_DOMAIN }}
-          DATABASE_URL_SOURCE: ${{ secrets.DATABASE_TEST_URL }}
+          APP_DOMAIN: ${{ secrets.APP_APP_DOMAIN }}
           APP_SECRET_SOURCE: ${{ secrets.APP_TEST_SECRET }}
+          DATABASE_URL_SOURCE: ${{ secrets.DATABASE_TEST_URL }}
+          APP_TOKEN: ${{ secrets.APP_TEST_TOKEN }}
           MAILER_DSN_SOURCE: ${{ secrets.MAILER_TEST_DSN }}
           MESSENGER_TRANSPORT_DSN_SOURCE: ${{ secrets.MESSENGER_TEST_TRANSPORT_DSN }}
           CORS_ALLOW_ORIGIN_SOURCE: ${{ secrets.CORS_ALLOW_ORIGIN_TEST }}
@@ -34,15 +34,15 @@ jobs:
           STRIPE_WEBHOOK_SECRET_SOURCE: ${{ secrets.STRIPE_TEST_WEBHOOK_SECRET }}
           FRONT_APP_URL_SOURCE: ${{ secrets.FRONT_TEST_APP_URL }}
         with:
-          host: ${{ secrets.APP_TEST_SERVER }}
-          username: ${{ secrets.APP_TEST_USER }}
-          password: ${{ secrets.APP_TEST_PASS }}
-          port: ${{ secrets.APP_TEST_PORT }}
+          host: ${{ secrets.APP_SERVER }}
+          username: ${{ secrets.APP_USER }}
+          password: ${{ secrets.APP_PASS }}
+          port: ${{ secrets.APP_PORT }}
           envs: APP_TOKEN,APP_DOMAIN,DATABASE_URL_SOURCE,APP_SECRET_SOURCE,MAILER_DSN_SOURCE,MESSENGER_TRANSPORT_DSN_SOURCE,CORS_ALLOW_ORIGIN_SOURCE,JWT_PRIVATE_KEY_BASE64_SOURCE,JWT_PUBLIC_KEY_BASE64_SOURCE,JWT_PASSPHRASE_SOURCE,STRIPE_SECRET_KEY_SOURCE,STRIPE_WEBHOOK_SECRET_SOURCE,FRONT_APP_URL_SOURCE
           script: |
             set -e
 
-            PROJECT_DIR="/var/www/${{ secrets.APP_TEST_USER }}/${APP_DOMAIN}"
+            PROJECT_DIR="/var/www/${{ secrets.APP_USER }}/${APP_DOMAIN}"
 
             echo "[1/9] Acces au dossier du projet"
             cd "$PROJECT_DIR"
