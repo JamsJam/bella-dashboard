@@ -56,11 +56,7 @@ jobs:
             cd "$PROJECT_DIR"
             pwd
             echo "[2/9] Recuperation du dernier code de develop"
-            ORIGINAL_ORIGIN_URL="$(git remote get-url origin)"
-            restore_origin() {
-              git remote set-url origin "$ORIGINAL_ORIGIN_URL"
-            }
-            trap restore_origin EXIT
+       
 
             git clone --depth 1 --branch develop https://x-access-token:${{ secrets.APP_TOKEN }}@github.com/${{ github.repository }} .
             git reset --hard origin/develop
