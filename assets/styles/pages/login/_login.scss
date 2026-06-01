@@ -1,0 +1,139 @@
+@use "../../abstract/" as *;
+
+.login-page {
+    min-block-size: 100dvh;
+    background:
+        radial-gradient(circle at 15% 20%, color-mix(in srgb, var(--primary) 18%, transparent), transparent 34rem),
+        radial-gradient(circle at 85% 80%, color-mix(in srgb, var(--secondary) 16%, transparent), transparent 30rem),
+        var(--bg-dark);
+    color: var(--text);
+}
+
+.login-page__main {
+    @extend %flex-row-center-center;
+    min-block-size: 100dvh;
+    padding: clamp(1rem, 4vw, 3rem);
+}
+
+.login-card {
+    inline-size: min(100%, 28rem);
+    padding: clamp(1.25rem, 4vw, 2rem);
+    border: 1px solid var(--border);
+    border-radius: 1rem;
+    background: color-mix(in srgb, var(--bg) 94%, transparent);
+    box-shadow: 0 1rem 3rem color-mix(in srgb, var(--bg-dark) 62%, transparent);
+    backdrop-filter: blur(1rem);
+}
+
+.login-card__header {
+    position: relative;
+    @extend %flex-column-start-stretch;
+    gap: 0.55rem;
+    margin-block-end: 1.5rem;
+}
+
+.login-card__eyebrow {
+    color: var(--primary);
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+}
+
+.login-card h1 {
+    max-inline-size: 19rem;
+    color: var(--text);
+    font-size: clamp(1.65rem, 5vw, 2.15rem);
+    line-height: 1.08;
+}
+
+.login-card__subtitle {
+    color: var(--text-muted);
+    line-height: 1.5;
+}
+
+.login-card__theme {
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline-end: 0;
+    inline-size: 2.25rem;
+    block-size: 2.25rem;
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    background: var(--bg-light);
+    color: var(--text);
+    cursor: pointer;
+}
+
+.login-card__theme svg {
+    inline-size: 1.15rem;
+    block-size: 1.15rem;
+    fill: currentColor;
+}
+
+.login-card__alert {
+    margin-block-end: 1rem;
+    padding: 0.75rem;
+    border: 1px solid var(--danger);
+    border-radius: 0.45rem;
+    background: color-mix(in srgb, var(--danger) 13%, var(--bg));
+    color: var(--danger);
+    font-size: 0.9rem;
+    font-weight: 700;
+    line-height: 1.4;
+}
+
+.login-form,
+.login-form__field {
+    @extend %flex-column-start-stretch;
+}
+
+.login-form {
+    gap: 1rem;
+}
+
+.login-form__field {
+    gap: 0.45rem;
+}
+
+.login-form__field span {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    font-weight: 700;
+}
+
+.login-form__field input {
+    inline-size: 100%;
+    border: 1px solid var(--border);
+    border-radius: 0.45rem;
+    padding: 0.75rem 0.85rem;
+    background: var(--bg-light);
+    color: var(--text);
+    font: inherit;
+    outline: none;
+    transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.login-form__field input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 18%, transparent);
+}
+
+.login-form__submit {
+    margin-block-start: 0.35rem;
+    border: 1px solid var(--primary);
+    border-radius: 0.45rem;
+    padding: 0.8rem 1rem;
+    background: var(--primary);
+    color: var(--bg-dark);
+    font: inherit;
+    font-weight: 800;
+    cursor: pointer;
+    transition: filter 160ms ease, transform 160ms ease;
+}
+
+.login-form__submit:hover,
+.login-form__submit:focus-visible {
+    filter: brightness(1.08);
+    transform: translateY(-1px);
+}

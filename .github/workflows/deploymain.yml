@@ -1,0 +1,124 @@
+name: deploymain
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Deployer en production
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Recuperer le depot
+        uses: actions/checkout@v6
+
+      - name: Deployer sur le serveur
+        uses: appleboy/ssh-action@v1.2.5
+        env:
+          APP_TOKEN: ${{ secrets.APP_TOKEN }}
+          APP_DOMAIN: ${{ secrets.APP_DOMAIN }}
+          DATABASE_URL_SOURCE: ${{ secrets.DATABASE_MAIN_URL }}
+          APP_SECRET_SOURCE: ${{ secrets.APP_MAIN_SECRET }}
+          MAILER_DSN_SOURCE: ${{ secrets.MAILER_MAIN_DSN }}
+          MESSENGER_TRANSPORT_DSN_SOURCE: ${{ secrets.MESSENGER_MAIN_TRANSPORT_DSN }}
+          CORS_ALLOW_ORIGIN_SOURCE: ${{ secrets.CORS_ALLOW_ORIGIN_MAIN }}
+          JWT_PRIVATE_KEY_BASE64_SOURCE: ${{ secrets.JWT_MAIN_PRIVATE_KEY_BASE64 }}
+          JWT_PUBLIC_KEY_BASE64_SOURCE: ${{ secrets.JWT_MAIN_PUBLIC_KEY_BASE64 }}
+          JWT_PASSPHRASE_SOURCE: ${{ secrets.JWT_MAIN_PASSPHRASE }}
+          STRIPE_SECRET_KEY_SOURCE: ${{ secrets.STRIPE_MAIN_SECRET_KEY }}
+          STRIPE_WEBHOOK_SECRET_SOURCE: ${{ secrets.STRIPE_MAIN_WEBHOOK_SECRET }}
+          FRONT_APP_URL_SOURCE: ${{ secrets.FRONT_MAIN_APP_URL }}
+        with:
+          host: ${{ secrets.APP_SERVER }}
+          username: ${{ secrets.APP_USER }}
+          password: ${{ secrets.APP_PASS }}
+          port: ${{ secrets.APP_PORT }}
+          envs: APP_TOKEN,APP_DOMAIN,DATABASE_URL_SOURCE,APP_SECRET_SOURCE,MAILER_DSN_SOURCE,MESSENGER_TRANSPORT_DSN_SOURCE,CORS_ALLOW_ORIGIN_SOURCE,JWT_PRIVATE_KEY_BASE64_SOURCE,JWT_PUBLIC_KEY_BASE64_SOURCE,JWT_PASSPHRASE_SOURCE,STRIPE_SECRET_KEY_SOURCE,STRIPE_WEBHOOK_SECRET_SOURCE,FRONT_APP_URL_SOURCE
+          script: |
+            set -e
+
+            PROJECT_DIR="/var/www/${{ secrets.APP_USER }}/${APP_DOMAIN}"
+
+            echo "[1/9] Acces au dossier du projet"
+            cd "$PROJECT_DIR"
+
+            echo "[2/9] Recuperation du dernier code de main"
+            ORIGINAL_ORIGIN_URL="$(git remote get-url origin)"
+            restore_origin() {
+              git remote set-url origin "$ORIGINAL_ORIGIN_URL"
+            }
+            trap restore_origin EXIT
+
+            git remote set-url origin "https://x-access-token:${APP_TOKEN}@github.com/${{ github.repository }}.git"
+            git fetch --prune origin main
+            git checkout -B main origin/main
+            git reset --hard origin/main
+
+            restore_origin
+            trap - EXIT
+
+            echo "[3/9] Mise a jour de la configuration de production"
+            dotenv_quote() {
+              php -r 'echo json_encode($argv[1], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);' "$1"
+            }
+
+            DEFAULT_URI_VALUE="$(dotenv_quote "https://${APP_DOMAIN}")"
+            DATABASE_URL_VALUE="$(dotenv_quote "$DATABASE_URL_SOURCE")"
+            APP_SECRET_VALUE="$(dotenv_quote "$APP_SECRET_SOURCE")"
+            MAILER_DSN_VALUE="$(dotenv_quote "$MAILER_DSN_SOURCE")"
+            MESSENGER_TRANSPORT_DSN_VALUE="$(dotenv_quote "$MESSENGER_TRANSPORT_DSN_SOURCE")"
+            CORS_ALLOW_ORIGIN_VALUE="$(dotenv_quote "$CORS_ALLOW_ORIGIN_SOURCE")"
+            JWT_PASSPHRASE_VALUE="$(dotenv_quote "$JWT_PASSPHRASE_SOURCE")"
+            STRIPE_SECRET_KEY_VALUE="$(dotenv_quote "$STRIPE_SECRET_KEY_SOURCE")"
+            STRIPE_WEBHOOK_SECRET_VALUE="$(dotenv_quote "$STRIPE_WEBHOOK_SECRET_SOURCE")"
+            FRONT_APP_URL_VALUE="$(dotenv_quote "$FRONT_APP_URL_SOURCE")"
+
+            cat > .env.local <<EOF
+            APP_ENV=prod
+            APP_DEBUG=0
+            DEFAULT_URI=${DEFAULT_URI_VALUE}
+            DATABASE_URL=${DATABASE_URL_VALUE}
+            APP_SECRET=${APP_SECRET_VALUE}
+            MAILER_DSN=${MAILER_DSN_VALUE}
+            MESSENGER_TRANSPORT_DSN=${MESSENGER_TRANSPORT_DSN_VALUE}
+            CORS_ALLOW_ORIGIN=${CORS_ALLOW_ORIGIN_VALUE}
+            JWT_SECRET_KEY="%kernel.project_dir%/config/jwt/private.pem"
+            JWT_PUBLIC_KEY="%kernel.project_dir%/config/jwt/public.pem"
+            JWT_PASSPHRASE=${JWT_PASSPHRASE_VALUE}
+            STRIPE_SECRET_KEY_PROD=${STRIPE_SECRET_KEY_VALUE}
+            STRIPE_WEBHOOK_SECRET_PROD=${STRIPE_WEBHOOK_SECRET_VALUE}
+            FRONT_APP_URL=${FRONT_APP_URL_VALUE}
+            EOF
+
+            rm -f .env.local.php
+
+            echo "[4/9] Installation des cles JWT"
+            mkdir -p config/jwt
+            printf '%s' "$JWT_PRIVATE_KEY_BASE64_SOURCE" | base64 --decode > config/jwt/private.pem
+            printf '%s' "$JWT_PUBLIC_KEY_BASE64_SOURCE" | base64 --decode > config/jwt/public.pem
+            chmod 600 config/jwt/private.pem
+            chmod 644 config/jwt/public.pem
+
+            echo "[5/9] Installation des dependances Composer"
+            composer install --no-dev --optimize-autoloader --no-interaction --no-progress --prefer-dist
+
+            echo "[6/9] Optimisation des variables d'environnement Symfony"
+            composer dump-env prod
+
+            echo "[7/9] Nettoyage du cache et execution des migrations"
+            APP_ENV=prod APP_DEBUG=0 php bin/console cache:clear --no-warmup
+            APP_ENV=prod APP_DEBUG=0 php bin/console doctrine:migrations:migrate --no-interaction
+
+            echo "[8/9] Compilation des assets Sass et AssetMapper"
+            APP_ENV=prod APP_DEBUG=0 php bin/console sass:build
+            APP_ENV=prod APP_DEBUG=0 php bin/console asset-map:compile
+
+            echo "[9/9] Rechauffement du cache Symfony"
+            APP_ENV=prod APP_DEBUG=0 php bin/console cache:warmup
+
+            echo "Deploiement de production termine avec succes."

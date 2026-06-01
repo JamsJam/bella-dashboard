@@ -40,14 +40,13 @@ security:
         admin:
             lazy: true
             provider: app_admin_provider
-            form_login: 
+            form_login:
                 login_path: app_login
                 check_path: app_login
                 enable_csrf: true
             logout:
                 path: app_logout
-                # where to redirect after logout
-                # target: app_any_route
+                target: app_login
 
 
 
@@ -65,10 +64,10 @@ security:
     access_control:
         - { path: ^/api/login, roles: PUBLIC_ACCESS }
         - { path: ^/api/customers, roles: PUBLIC_ACCESS, methods: [POST] }
-        # - { path: ^/api, roles: ROLE_USER }
+        - { path: ^/api, roles: ROLE_USER }
     #     - { path: ^/api/customers, roles: ROLE_CUSTOMERS }
-    #     - { path: ^/login, roles: PUBLIC_ACCESS}
-    #     - { path: ^/, roles: ROLE_ADMIN }
+        - { path: ^/login$, roles: PUBLIC_ACCESS }
+        - { path: ^/, roles: ROLE_ADMIN }
 
 when@test:
     security:
