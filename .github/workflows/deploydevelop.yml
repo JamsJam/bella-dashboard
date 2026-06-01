@@ -42,7 +42,7 @@ jobs:
           script: |
             set -e
 
-            PROJECT_DIR="/var/www/${{ secrets.APP_USER }}/${APP_DOMAIN}"
+            PROJECT_DIR="/var/www/${{ secrets.APP_USER }}/${{secrets.APP_DOMAIN}}"
 
             echo "[1/9] Acces au dossier du projet"
             cd "$PROJECT_DIR"
