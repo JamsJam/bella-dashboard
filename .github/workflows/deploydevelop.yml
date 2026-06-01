@@ -42,7 +42,7 @@ jobs:
           script: |
             set -e
 
-            PROJECT_DIR="/var/www/${{ secrets.APP_USER }}/test-${{secrets.APP_DOMAIN}}"
+            PROJECT_DIR="/var/www/${{ secrets.APP_USER }}/test-${{secrets.APP_DOMAIN}}/${{ steps.hash.outputs.hash }}"
 
             echo "[1/9] Acces au dossier du projet"
             cd "$PROJECT_DIR"
@@ -54,9 +54,7 @@ jobs:
             }
             trap restore_origin EXIT
 
-            git remote set-url origin "https://x-access-token:${{secrets.APP_TOKEN}}@github.com/${{ github.repository }}.git"
-            git fetch --prune origin develop
-            git checkout -B develop origin/develop
+            git clone --depth 1 --branch develop https://x-access-token:${{ secrets.APP_TOKEN }}@github.com/${{ github.repository }} .
             git reset --hard origin/develop
 
             restore_origin
