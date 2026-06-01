@@ -1,0 +1,32 @@
+<turbo-frame id="collection-clothes-component" data-collection-online-target="clothesFrame">
+    <ul class="collection-show__clothes">
+        {% for clothe in clothes %}
+            <li class="collection-show__clothe">
+                <a href="{{ path('app_clothes_show', { slug: clothe.slug }) }}" data-turbo-frame="_top">
+                    {% if clothe.image %}
+                        <img src="{{ clothe.image }}" alt="{{ clothe.name }}">
+                    {% else %}
+                        <span class="collection-show__clothe-placeholder">Aucune image</span>
+                    {% endif %}
+                    <div>
+                        <strong>{{ clothe.name }}</strong>
+                        <span class="collection-show__size-tags">
+                            {% for size in clothe.sizes %}
+                                <span
+                                    class="collection-show__size-tag{% if size.isOnline %} collection-show__size-tag--online{% endif %}{% if size.stock == 0 %} collection-show__size-tag--out-of-stock{% endif %}"
+                                    title="{{ size.isOnline ? 'En ligne' : 'Hors ligne' }} · {{ size.stock }} en stock"
+                                >
+                                    {{ size.name }}
+                                </span>
+                            {% else %}
+                                <span class="collection-show__size-tag">Taille non renseignee</span>
+                            {% endfor %}
+                        </span>
+                    </div>
+                </a>
+            </li>
+        {% else %}
+            <li class="collection-show__empty">Aucun vetement dans cette collection.</li>
+        {% endfor %}
+    </ul>
+</turbo-frame>

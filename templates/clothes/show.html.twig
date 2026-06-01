@@ -1,0 +1,181 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ clothe.name }}{% endblock %}
+
+{% block body %}
+    <article
+        class="clothe-show"
+        aria-labelledby="clothe-show-title"
+        {{ stimulus_controller('clothe-bestseller')|stimulus_controller('clothe-online') }}
+        {{ stimulus_action('clothe-bestseller', 'change', 'toggle:change')|stimulus_action('clothe-bestseller', 'change', 'clothe-featured:change')|stimulus_action('clothe-online', 'change', 'clothe-online:change') }}
+    >
+        <header class="clothe-show__header">
+            <div>
+                <h1 id="clothe-show-title" class="title">{{ clothe.name }}</h1>
+                <p class="clothe-show__subtitle">
+                    {{ clothe.collection }} · {{ clothe.category }} · {{ clothe.color }}
+                </p>
+            </div>
+
+            {% include 'ui/components/tabs/_tabs.html.twig' with { tabs: tabs } only %}
+        </header>
+
+        <section class="clothe-show__summary">
+            <section class="clothe-show__gallery-section" aria-labelledby="clothe-show-gallery-title">
+                <h2 id="clothe-show-gallery-title">Images du vetement</h2>
+                <div class="clothe-show__gallery">
+                    {% for image in clothe.images %}
+                        <figure class="clothe-show__image">
+                            <img src="{{ image }}" alt="{{ clothe.name }} image {{ loop.index }}">
+                        </figure>
+                    {% else %}
+                        <div class="clothe-show__placeholder">Aucune image</div>
+                    {% endfor %}
+                </div>
+            </section>
+
+            <dl class="clothe-show__meta">
+                <div>
+                    <dt>Categorie</dt>
+                    <dd>
+                        {% if clothe.categoryId %}
+                            <a href="{{ path('app_clothe_category_show', { id: clothe.categoryId }) }}">{{ clothe.category }}</a>
+                        {% else %}
+                            Non renseignee
+                        {% endif %}
+                    </dd>
+                </div>
+                <div>
+                    <dt>Collection</dt>
+                    <dd>
+                        {% if clothe.collectionId %}
+                            <a href="{{ path('app_clothes_collection', { id: clothe.collectionId }) }}">{{ clothe.collection }}</a>
+                        {% else %}
+                            Non renseignee
+                        {% endif %}
+                    </dd>
+                </div>
+                <div>
+                    <dt>Bestseller</dt>
+                    <dd>
+                        {{ bestsellerToggle|raw }}
+                    </dd>
+                </div>
+                <div>
+                    <dt>Mise en avant</dt>
+                    <dd>
+                        {{ featuredToggle|raw }}
+                    </dd>
+                </div>
+                <div>
+                    <dt>Prix</dt>
+                    <dd>{{ clothe.price ? (clothe.price / 100)|number_format(2, ',', ' ') ~ ' €' : 'Non renseigne' }}</dd>
+                </div>
+            </dl>
+        </section>
+
+        <section class="clothe-show__section" aria-labelledby="clothe-show-publish-title">
+            <h2 id="clothe-show-publish-title">Mise en ligne par taille</h2>
+            <div class="clothe-show__sizes">
+                {% for size in clothe.sizes %}
+                    <article class="clothe-show__size">
+                        <strong>{{ size.name }}</strong>
+                        <span>{{ size.stock }} en stock</span>
+                        {{ size.onlineToggle|raw }}
+                    </article>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="clothe-show__section" aria-labelledby="clothe-show-highlight-images-title">
+            <h2 id="clothe-show-highlight-images-title">Images mises en avant</h2>
+            <div class="clothe-show__highlight-images">
+                <article class="clothe-show__highlight-card">
+                    <h3>Image mise en avant</h3>
+                    <div class="clothe-show__highlight-preview">
+                        {% if clothe.images[0]|default(null) %}
+                            <img src="{{ clothe.images[0] }}" alt="{{ clothe.name }} mise en avant">
+                        {% else %}
+                            <span>Aucune image</span>
+                        {% endif %}
+                    </div>
+                    <a href="{{ highlightImageModalUrls.featured }}" class="clothe-show__button" data-turbo-stream>
+                        Choisir une image
+                    </a>
+                </article>
+                <article class="clothe-show__highlight-card">
+                    <h3>Image bestseller</h3>
+                    <div class="clothe-show__highlight-preview">
+                        {% if clothe.images[0]|default(null) %}
+                            <img src="{{ clothe.images[0] }}" alt="{{ clothe.name }} bestseller">
+                        {% else %}
+                            <span>Aucune image</span>
+                        {% endif %}
+                    </div>
+                    <a href="{{ highlightImageModalUrls.bestseller }}" class="clothe-show__button" data-turbo-stream>
+                        Choisir une image
+                    </a>
+                </article>
+            </div>
+        </section>
+
+        <section class="clothe-show__section" aria-labelledby="clothe-show-size-guide-title">
+            <h2 id="clothe-show-size-guide-title">Guide des tailles</h2>
+            <form
+                method="post"
+                action="{{ sizeGuideUpdateUrl }}"
+                class="clothe-show__size-guide-form"
+                {{ stimulus_controller('clothe-size-guide', {
+                    previewUrl: sizeGuidePreviewUrl
+                }) }}
+            >
+                <input type="hidden" name="_csrf_token" value="{{ sizeGuideCsrfToken }}">
+
+                <p class="clothe-show__empty">Unite : {{ clothe.sizeGuide.unit }}</p>
+
+                <fieldset class="clothe-show__measurement-types">
+                    <legend>Colonnes du guide</legend>
+                    <div class="clothe-show__measurement-type-list">
+                        {% for type in clothe.sizeGuide.availableTypes %}
+                            <label class="clothe-show__measurement-type">
+                                <input
+                                    type="checkbox"
+                                    name="measurement_types[]"
+                                    value="{{ type.code }}"
+                                    {% if type.selected %}checked{% endif %}
+                                    {{ stimulus_action('clothe-size-guide', 'preview', 'change') }}
+                                >
+                                <span>{{ type.label }}</span>
+                            </label>
+                        {% endfor %}
+                    </div>
+                </fieldset>
+
+                {% include 'clothes/_size_guide_table.html.twig' with {
+                    sizeGuide: clothe.sizeGuide
+                } only %}
+                <button type="submit" class="clothe-show__action">Enregistrer le guide</button>
+            </form>
+        </section>
+
+        <section class="clothe-show__section" aria-labelledby="clothe-show-related-title">
+            <h2 id="clothe-show-related-title">Même collection</h2>
+            <ul class="clothe-show__related">
+                {% for related in sameCollectionClothes %}
+                    <li>
+                        <a class="clothe-show__related-card" href="{{ path('app_clothes_show', { slug: related.slug }) }}">
+                            {% if related.imageUrl %}
+                                <img src="{{ related.imageUrl }}" alt="{{ related.name }}">
+                            {% endif %}
+                            <span>{{ related.name }}</span>
+                        </a>
+                    </li>
+                {% else %}
+                    <li class="clothe-show__empty">Aucun autre vetement dans cette collection.</li>
+                {% endfor %}
+            </ul>
+        </section>
+    </article>
+
+    <turbo-frame id="clothe-modal-component"></turbo-frame>
+{% endblock %}

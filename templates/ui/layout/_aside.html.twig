@@ -1,39 +1,63 @@
 {% set menu = [
     {
-        title: 'Dashboard',
-        path: 'app_dashboard',
-        children: [
-
-        ]
-    },
-    {
-        title: 'Utilisateurs',
+        title: 'Vêtements',
         path: null,
         children: [
             {
-                label: 'Liste des utilisateurs',
-                icon: 'ep:user',
-                path: 'app_dashboard'
+                label: 'Liste des vêtements',
+                icon: 'ep:goods',
+                path: 'app_clothes'
             },
             {
-                label: 'Créer un utilisateur',
-                icon: 'ep:plus',
-                path: 'app_dashboard'
-            }
-        ]
-    },
-    {
-        title: 'Produits',
-        path: null,
-        children: [
+                label: 'Catégories',
+                icon: 'ep:menu',
+                path: 'app_clothes_categories'
+            },
             {
-                label: 'Catalogue',
-                icon: 'ep:goods',
-                path: 'app_dashboard'
+                label: 'Collections',
+                icon: 'ep:folder',
+                path: 'app_clothe_collection'
             },
             {
                 label: 'Ajouter un produit',
                 icon: null,
+                path: 'app_clothe_add'
+            }
+        ]
+    },
+    {
+        title: 'Avatars',
+        path: null,
+        children: [
+            {
+                label: 'Bibliothèque',
+                icon: 'ep:picture',
+                path: 'app_avatar'
+            },
+            {
+                label: 'Ajouter des avatars',
+                icon: 'ep:upload',
+                path: 'app_avatar_add'
+            },
+            {
+                label: 'Renommer les avatars',
+                icon: 'ep:edit',
+                path: 'app_avatar_rename'
+            }
+        ]
+    },
+    {
+        title: 'Clients',
+        path: null,
+        children: [
+            {
+                label: 'Liste des clients',
+                icon: 'ep:user',
+                path: 'app_customers'
+            },
+            {
+                label: 'Créer un client',
+                icon: 'ep:plus',
                 path: 'app_dashboard'
             }
         ]
@@ -45,7 +69,7 @@
             {
                 label: 'Toutes les commandes',
                 icon: 'ep:document',
-                path: 'app_dashboard'
+                path: 'app_orders'
             },
             {
                 label: 'Commandes en attente',
@@ -61,7 +85,7 @@
             {
                 label: 'Configuration',
                 icon: 'ep:setting',
-                path: 'app_dashboard'
+                path: 'app_config'
             },
             {
                 label: 'Logs',

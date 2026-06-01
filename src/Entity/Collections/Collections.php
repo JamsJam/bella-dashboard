@@ -30,9 +30,6 @@ class Collections
     #[ORM\JoinColumn(nullable: false)]
     private ?Category $category = null;
 
-    #[ORM\Column(nullable: true)]
-    private ?array $sizeguid = null;
-
     /**
      * @var Collection<int, Clothes>
      */
@@ -84,18 +81,6 @@ class Collections
     public function setCategory(?Category $category): static
     {
         $this->category = $category;
-
-        return $this;
-    }
-
-    public function getSizeguid(): ?array
-    {
-        return $this->sizeguid;
-    }
-
-    public function setSizeguid(?array $sizeguid): static
-    {
-        $this->sizeguid = $sizeguid;
 
         return $this;
     }

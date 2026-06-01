@@ -1,0 +1,29 @@
+{# 
+! Tabs component
+? Awaits an array of tabs with the following structure:
+*   tabs = [
+*       { id (int), label(string), href(string), isActive(boolean), attr (array optional) }
+*   ]
+? importe like this:
+* {% include 'ui/components/tabs/_tabs.html.twig' with { tabs: tabs } only %}
+
+#}
+
+
+<nav class="tabs" role="tablist" aria-label="Actions avatar">
+    {% for tab in tabs %}
+        <a
+            role="tab"
+            aria-selected="{{ tab.isActive ? 'true' : 'false' }}"
+            class="tab{{ tab.isActive ? ' active' : '' }}"
+            href="{{ tab.href }}"
+            {% if tab.attr is defined %}
+                {% for key, attr in tab.attr %}
+                    {{ key }}="{{ attr }}"
+                {% endfor %}
+            {% endif %}
+        >
+            {{ tab.label }}
+        </a>
+    {% endfor %}
+</nav>

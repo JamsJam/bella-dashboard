@@ -5,8 +5,6 @@ namespace App\Entity\Orders;
 use App\Entity\Traits\DateFieldsTrait;
 use App\Entity\Users\Customers;
 use App\Repository\Orders\OrdersRepository;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: OrdersRepository::class)]
@@ -40,19 +38,12 @@ class Orders
     #[ORM\Column]
     private array $shippinfo = [];
 
-    /**
-     * @var Collection<int, Cart>
-     */
-    #[ORM\OneToMany(targetEntity: Cart::class, mappedBy: 'orders', orphanRemoval: true)]
-    private Collection $cart;
+    #[ORM\OneToOne(inversedBy: 'order', targetEntity: Cart::class)]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Cart $cart = null;
 
     #[ORM\Column]
     private ?int $tva = null;
-
-    public function __construct()
-    {
-        $this->cart = new ArrayCollection();
-    }
 
     public function getId(): ?int
     {
@@ -143,32 +134,15 @@ class Orders
         return $this;
     }
 
-    /**
-     * @return Collection<int, Cart>
-     */
-    public function getCart(): Collection
+    public function getCart(): ?Cart
     {
         return $this->cart;
     }
 
-    public function addCart(Cart $cart): static
+    public function setCart(Cart $cart): static
     {
-        if (!$this->cart->contains($cart)) {
-            $this->cart->add($cart);
-            $cart->setOrders($this);
-        }
-
-        return $this;
-    }
-
-    public function removeCart(Cart $cart): static
-    {
-        if ($this->cart->removeElement($cart)) {
-            // set the owning side to null (unless already changed)
-            if ($cart->getOrders() === $this) {
-                $cart->setOrders(null);
-            }
-        }
+        $this->cart = $cart;
+        $cart->setOrder($this);
 
         return $this;
     }

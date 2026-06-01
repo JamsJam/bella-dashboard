@@ -1,0 +1,82 @@
+<?php
+
+namespace App\Application\Avatar\Resolver;
+
+use App\Application\Avatar\Factory\AvatarPartFactory;
+use App\Message\Avatar\RenameAvatarMessage;
+use Doctrine\ORM\EntityManagerInterface;
+
+final readonly class AvatarRenamePartResolver
+{
+    public function __construct(
+        private EntityManagerInterface $entityManager,
+        private AvatarPartFactory $avatarPartFactory,
+    ) {
+    }
+
+    public function resolvePart(RenameAvatarMessage $message): object
+    {
+        if ($message->category !== 'hair') {
+            return $this->avatarPartFactory->createFromCategory($message->category);
+        }
+
+        $entityClass = $this->avatarPartFactory->resolveEntityClass($message->category);
+        $existingHair = $this->entityManager->getRepository($entityClass)->findOneBy([
+            'name' => $this->resolveName($message),
+        ]);
+
+        return is_object($existingHair) ? $existingHair : $this->avatarPartFactory->createFromCategory($message->category);
+    }
+
+    public function resolveName(RenameAvatarMessage $message): string
+    {
+        $name = pathinfo($message->newName, PATHINFO_FILENAME);
+
+        if ($message->category === 'hair') {
+            return preg_replace('/__(front|back)$/', '', $name) ?? $name;
+        }
+
+        return $name;
+    }
+
+    public function resolveImagesPayload(object $avatarPart, RenameAvatarMessage $message, string $imagePath): array
+    {
+        if ($message->category !== 'hair') {
+            return [$imagePath];
+        }
+
+        $side = $this->resolveHairSide($message);
+        $images = method_exists($avatarPart, 'getImages') ? $avatarPart->getImages() : [];
+        $images = is_array($images) ? $images : [];
+
+        if (isset($images[$side])) {
+            throw new \RuntimeException(sprintf('Hair "%s" image already exists.', $side));
+        }
+
+        $images[$side] = $imagePath;
+
+        return $images;
+    }
+
+    private function resolveHairSide(RenameAvatarMessage $message): string
+    {
+        $side = $this->normalizeToken((string) ($message->filters['side'] ?? ''));
+
+        if (!in_array($side, ['front', 'back'], true)) {
+            throw new \InvalidArgumentException('Invalid hair side.');
+        }
+
+        return $side;
+    }
+
+    private function normalizeToken(string $value): string
+    {
+        $value = strtolower(trim($value));
+        $value = iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $value) ?: $value;
+        $value = preg_replace('/\s+/', '--', $value) ?? '';
+        $value = preg_replace('/[^a-z0-9_-]+/', '', $value) ?? '';
+        $value = preg_replace('/_+/', '_', $value) ?? '';
+
+        return trim($value, '_');
+    }
+}

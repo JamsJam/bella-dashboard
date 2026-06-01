@@ -3,17 +3,50 @@
 namespace App\Repository\Avatar;
 
 use App\Entity\Avatar\Skincolor;
+use App\Application\Avatar\Interface\AvatarFilterValueRepositoryInterface;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
  * @extends ServiceEntityRepository<Skincolor>
  */
-class SkincolorRepository extends ServiceEntityRepository
+class SkincolorRepository extends ServiceEntityRepository implements AvatarFilterValueRepositoryInterface
 {
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Skincolor::class);
+    }
+
+    public function findOrCreate(string $name): Skincolor
+    {
+        $name = $this->normalizeName($name);
+
+        if ($name === '') {
+            throw new \InvalidArgumentException('Invalid skin color name.');
+        }
+
+        $skincolor = $this->findOneBy(['name' => $name]);
+        if ($skincolor instanceof Skincolor) {
+            return $skincolor;
+        }
+
+        $skincolor = (new Skincolor())
+            ->setName($name)
+            ->setCreatedAt(new \DateTimeImmutable())
+            ->setEditedAt(new \DateTimeImmutable());
+
+        $this->getEntityManager()->persist($skincolor);
+
+        return $skincolor;
+    }
+
+    private function normalizeName(string $name): string
+    {
+        $name = strtolower(trim($name));
+        $name = iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $name) ?: $name;
+        $name = preg_replace('/[^a-z0-9_-]+/', '_', $name) ?? '';
+
+        return trim($name, '_-');
     }
 
     //    /**

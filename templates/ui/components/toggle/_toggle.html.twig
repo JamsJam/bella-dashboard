@@ -1,0 +1,44 @@
+{% if toggle is defined %}
+    {% set id = toggle.id %}
+    {% set name = toggle.name %}
+    {% set label = toggle.label %}
+    {% set checked = toggle.checked %}
+    {% set disabled = toggle.disabled %}
+    {% set eventName = toggle.eventName %}
+    {% set payload = toggle.payload %}
+{% endif %}
+
+{% set id = id|default('toggle-' ~ random()) %}
+{% set checked = checked|default(false) %}
+{% set disabled = disabled|default(false) %}
+{% set eventName = eventName|default('toggle:change') %}
+{% set payload = payload|default({}) %}
+
+<label
+    class="toggle"
+    for="{{ id }}"
+    {{ stimulus_controller('toggle', {
+        id: id,
+        checked: checked,
+        eventName: eventName,
+        payload: payload
+    }) }}
+    {{ stimulus_action('toggle', 'success', 'toggle:success')|stimulus_action('toggle', 'error', 'toggle:error')|stimulus_action('toggle', 'done', 'toggle:done') }}
+
+>
+    <input
+        id="{{ id }}"
+        class="toggle__input"
+        type="checkbox"
+        name="{{ name|default(id) }}"
+        value="1"
+        {% if checked %}checked{% endif %}
+        {% if disabled %}disabled{% endif %}
+        {{ stimulus_target('toggle', 'input') }}
+        {{ stimulus_action('toggle', 'onChange', 'change') }}
+    >
+    <span class="toggle__track" aria-hidden="true">
+        <span class="toggle__thumb"></span>
+    </span>
+    <span class="toggle__label" {{ stimulus_target('toggle', 'label') }}>{{ label|default('Activer') }}</span>
+</label>

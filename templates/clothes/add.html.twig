@@ -1,0 +1,55 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Ajouter un vetement{% endblock %}
+
+{% block body %}
+    <article class="collection-add" aria-labelledby="clothe-add-title">
+        <header class="admin-page__header">
+            <div>
+                <h1 id="clothe-add-title" class="title">Ajouter un vetement</h1>
+                <p class="admin-page__subtitle">
+                    Cree une reference hors-ligne, avec ses tailles, ses images et sa couleur.
+                </p>
+            </div>
+        </header>
+
+        {% include 'ui/components/tabs/_tabs.html.twig' with { tabs: tabs } only %}
+
+        <form
+            method="post"
+            action="{{ action }}"
+            enctype="multipart/form-data"
+            class="collection-form"
+            data-controller="collection-form"
+        >
+            <input type="hidden" name="_csrf_token" value="{{ csrfToken }}">
+
+            <section class="collection-form__section">
+                <label class="collection-form__field">
+                    <span>Collection</span>
+                    <select name="collection" required>
+                        <option value="">Selectionner une collection</option>
+                        {% for collection in collections %}
+                            <option value="{{ collection.id }}">
+                                {{ collection.name }}{% if collection.category %} - {{ collection.category.name }}{% endif %}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </label>
+            </section>
+
+            <section class="collection-form__section">
+                {% include 'clothes/_clothe_form_fields.html.twig' with {
+                    prefix: 'clothe',
+                    imageInputName: 'clotheImages[]',
+                    colors: colors,
+                    availableSizes: availableSizes
+                } only %}
+            </section>
+
+            <footer class="collection-form__actions">
+                <button type="submit" class="clothe-show__action">Creer le vetement</button>
+            </footer>
+        </form>
+    </article>
+{% endblock %}

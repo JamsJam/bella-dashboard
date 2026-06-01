@@ -1,0 +1,612 @@
+@use "../../abstract/" as *;
+
+
+.title {
+    color: var(--text);
+}
+
+.avatar-page {
+    @extend %flex-column-start-stretch;
+    gap: 1.5rem;
+}
+
+.avatar-page--rename {
+    height: 100%;
+    min-height: 0;
+}
+
+.avatar-page__header {
+    @extend %flex-column-start-stretch;
+    gap: 0.4rem;
+}
+
+.avatar-page__subtitle {
+    color: var(--text-muted);
+    max-width: 70ch;
+}
+
+.avatar-upload {
+    @extend %flex-column-start-stretch;
+    gap: 1rem;
+}
+
+.avatar-upload__dropzone {
+    position: relative;
+    border: 2px dashed var(--border);
+    border-radius: 0.5rem;
+    padding: 2rem;
+    text-align: center;
+    background: var(--bg);
+    cursor: pointer;
+
+    transition: border-color 0.2s, background-color 0.2s, box-shadow 0.2s;
+}
+
+.avatar-upload__dropzone:hover,
+.avatar-upload__dropzone:focus-visible,
+.avatar-upload__dropzone.is-drag-over {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 18%, transparent);
+    outline: none;
+}
+
+.avatar-upload__dropzone.is-drag-over {
+    background: color-mix(in srgb, var(--primary) 8%, var(--bg));
+}
+
+.avatar-upload__dropzone.is-disabled {
+    cursor: wait;
+    opacity: 0.7;
+}
+
+.avatar-upload__input {
+    position: absolute;
+    top: 0;
+    left:0;
+    inline-size: 100%;
+    block-size: 100%;
+    opacity: 0;
+    z-index: 1;
+    &:hover{
+
+        cursor: pointer;
+    }
+    // pointer-events: none;
+}
+
+.avatar-upload__title {
+    color: var(--text);
+    font-weight: 700;
+}
+
+.avatar-upload__hint,
+.avatar-upload__file-meta {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.avatar-upload__summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.avatar-upload__count {
+    color: var(--text);
+    font-size: 1rem;
+}
+
+.avatar-upload__actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.avatar-upload__button,
+.avatar-upload__remove {
+    padding: 0.55rem 0.9rem;
+    border: 0;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    background: var(--primary);
+    color: white;
+}
+
+.avatar-upload__button--secondary,
+.avatar-upload__remove {
+    background: var(--bg-light);
+    color: var(--text);
+    border: 1px solid var(--border);
+}
+
+.avatar-upload__button:disabled,
+.avatar-upload__remove:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+}
+
+.avatar-upload__list {
+    @extend %flex-column-start-stretch;
+    gap: 0.5rem;
+    list-style: none;
+    padding: 0;
+}
+
+.avatar-upload__item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 0.35rem;
+    background: var(--bg-light);
+}
+
+.avatar-upload__preview {
+    flex: 0 0 4rem;
+    inline-size: 4rem;
+    block-size: 4rem;
+    object-fit: contain;
+    border: 1px solid var(--border);
+    border-radius: 0.25rem;
+    background: var(--bg);
+}
+
+.avatar-upload__file {
+    @extend %flex-column-start-stretch;
+    gap: 0.2rem;
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.avatar-upload__file-name {
+    color: var(--text);
+    overflow-wrap: anywhere;
+}
+
+.avatar-upload__file-error {
+    color: #b42318;
+    font-size: 0.9rem;
+}
+
+.avatar-rename {
+    position: relative;
+    display: block;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+.avatar-rename__queue,
+.avatar-rename__validated,
+.avatar-rename__panel {
+    @extend %flex-column-start-stretch;
+    gap: 0.75rem;
+}
+
+.avatar-rename__validated {
+    margin-top: 1.25rem;
+}
+
+.avatar-rename__title {
+    color: var(--text);
+    font-size: 1rem;
+}
+
+.avatar-rename__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr));
+    gap: 0.75rem;
+    list-style: none;
+    padding: 0;
+}
+
+.avatar-rename__card {
+    position: relative;
+}
+
+.avatar-rename__cancel,
+.avatar-rename__delete {
+    display: none;
+    width: 100%;
+    margin-top: 0.4rem;
+    padding: 0.45rem 0.65rem;
+    border: 1px solid var(--border);
+    border-radius: 0.25rem;
+    background: var(--bg);
+    color: var(--text);
+    cursor: pointer;
+}
+
+.avatar-rename__card.is-validated .avatar-rename__cancel,
+.avatar-rename__delete {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.avatar-rename__cancel:hover,
+.avatar-rename__cancel:focus-visible,
+.avatar-rename__delete:hover,
+.avatar-rename__delete:focus-visible {
+    border-color: #b42318;
+    color: #b42318;
+    outline: none;
+}
+
+.avatar-rename__card-button {
+    @extend %flex-column-start-stretch;
+    gap: 0.5rem;
+    width: 100%;
+    min-width: 0;
+    min-height: 8rem;
+    padding: 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 0.35rem;
+    background: var(--bg-light);
+    color: var(--text);
+    cursor: pointer;
+    text-align: left;
+    transition: border-color 0.2s, box-shadow 0.2s, opacity 0.2s, background-color 0.2s;
+}
+
+.avatar-rename__card-button span {
+    display: block;
+    inline-size: 100%;
+    min-inline-size: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.avatar-rename__card-button:hover,
+.avatar-rename__card-button:focus-visible,
+.avatar-rename__card.is-selected .avatar-rename__card-button {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 16%, transparent);
+    outline: none;
+}
+
+.avatar-rename__card.is-validated .avatar-rename__card-button {
+    border-color: var(--success);
+    background: color-mix(in srgb, var(--success) 8%, var(--bg-light));
+}
+
+.avatar-rename__card[data-avatar-status="error"] .avatar-rename__card-button {
+    border-color: #b42318;
+    background: color-mix(in srgb, #b42318 7%, var(--bg-light));
+}
+
+.avatar-rename__card.is-validated::after,
+.avatar-rename__card[data-avatar-status="error"]::after {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    padding: 0.2rem 0.45rem;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 700;
+}
+
+.avatar-rename__card.is-validated::after {
+    content: "Validee";
+    background: var(--success);
+    color: white;
+}
+
+.avatar-rename__card[data-avatar-status="error"]::after {
+    content: "Erreur";
+    background: #b42318;
+    color: white;
+}
+
+.avatar-rename__thumb,
+.avatar-rename__preview {
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: contain;
+    background: var(--bg);
+    border-radius: 0.25rem;
+}
+
+.avatar-rename__panel {
+    position: absolute;
+    top: 0;
+    right: -500px;
+    z-index: 20;
+    width: min(24rem, 100%);
+    height: 100%;
+    overflow: auto;
+    padding: 1rem;
+    border: 1px solid var(--border);
+    border-radius: 0.35rem;
+    background: var(--bg-light);
+    box-shadow: 0 1rem 2.5rem color-mix(in srgb, var(--text) 16%, transparent);
+    transition: right 0.28s ease;
+}
+
+.avatar-rename__panel.is-open {
+    right: 0;
+}
+
+.avatar-rename__panel-close {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    inline-size: 2rem;
+    block-size: 2rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--bg);
+    color: var(--text);
+    cursor: pointer;
+    font-size: 1.35rem;
+    line-height: 1;
+}
+
+.avatar-rename__panel-close:hover,
+.avatar-rename__panel-close:focus-visible {
+    border-color: var(--primary);
+    outline: none;
+}
+
+.avatar-rename__confirm-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 80;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    background: color-mix(in srgb, var(--bg-dark) 58%, transparent);
+    backdrop-filter: blur(5px);
+}
+
+.avatar-rename__confirm {
+    inline-size: min(28rem, 100%);
+    border: 1px solid var(--border);
+    border-radius: 0.5rem;
+    background: var(--bg);
+    color: var(--text);
+}
+
+.avatar-rename__confirm header,
+.avatar-rename__confirm-actions {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-muted);
+}
+
+.avatar-rename__confirm h2 {
+    font-size: 1.1rem;
+}
+
+.avatar-rename__confirm-body {
+    display: grid;
+    gap: 1rem;
+    padding: 1rem;
+}
+
+.avatar-rename__confirm-body img {
+    inline-size: 100%;
+    max-block-size: 18rem;
+    object-fit: contain;
+    border: 1px solid var(--border);
+    border-radius: 0.35rem;
+    background: var(--bg-light);
+}
+
+.avatar-rename__confirm-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    border-top: 1px solid var(--border-muted);
+    border-bottom: 0;
+}
+
+.avatar-rename__confirm-actions button {
+    border: 1px solid var(--border);
+    border-radius: 0.35rem;
+    padding: 0.55rem 0.8rem;
+    background: var(--bg-light);
+    color: var(--text);
+    cursor: pointer;
+}
+
+.avatar-rename__confirm-actions [data-action="replace"] {
+    border-color: #b42318;
+    background: color-mix(in srgb, #b42318 12%, var(--bg));
+    color: #b42318;
+}
+
+.avatar-rename__field {
+    @extend %flex-column-start-stretch;
+    gap: 0.35rem;
+    color: var(--text);
+}
+
+.avatar-rename__field select,
+.avatar-rename__field input {
+    padding: 0.55rem 0.7rem;
+    border: 1px solid var(--border);
+    border-radius: 0.25rem;
+    background: var(--bg);
+    color: var(--text);
+}
+
+.avatar-rename__generated {
+    padding: 0.75rem;
+    border: 1px dashed var(--border);
+    border-radius: 0.25rem;
+    color: var(--text);
+    overflow-wrap: anywhere;
+}
+
+.avatar-rename__button,
+.avatar-rename__finish {
+    padding: 0.6rem 1rem;
+    border: 0;
+    border-radius: 0.25rem;
+    background: var(--primary);
+    color: white;
+    cursor: pointer;
+}
+
+.avatar-rename__finish {
+    justify-self: start;
+}
+
+.avatar-show {
+    @extend %flex-column-start-stretch;
+    gap: 1.5rem;
+}
+
+.avatar-show__header {
+    @extend %flex-column-start-stretch;
+    gap: 0.5rem;
+}
+
+.avatar-show__back {
+    color: var(--text-muted);
+    text-decoration: none;
+}
+
+.avatar-show__back:hover {
+    color: var(--text);
+}
+
+.avatar-show__main {
+    display: grid;
+    grid-template-columns: minmax(12rem, 20rem) minmax(0, 1fr);
+    gap: 1.5rem;
+    align-items: start;
+}
+
+.avatar-show__media {
+    @extend %flex-row-center-center;
+    min-height: 18rem;
+    border: 1px solid var(--border);
+    border-radius: 0.35rem;
+    background: var(--bg-light);
+}
+
+.avatar-show__media--sides {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+    padding: 0.75rem;
+}
+
+.avatar-show__side {
+    @extend %flex-column-start-stretch;
+    gap: 0.5rem;
+    margin: 0;
+    min-width: 0;
+}
+
+.avatar-show__side-frame {
+    @extend %flex-row-center-center;
+    aspect-ratio: 1;
+    border: 1px solid var(--border-muted);
+    border-radius: 0.35rem;
+    background: var(--bg);
+}
+
+.avatar-show__side figcaption,
+.avatar-show__placeholder {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    text-align: center;
+}
+
+.avatar-show__media img,
+.avatar-show__side-frame img,
+.avatar-show__card img {
+    inline-size: 100%;
+    block-size: 100%;
+    object-fit: contain;
+}
+
+.avatar-show__details {
+    display: grid;
+    gap: 0.65rem;
+    margin: 0;
+    color: var(--text);
+}
+
+.avatar-show__details div {
+    display: grid;
+    grid-template-columns: minmax(8rem, 12rem) minmax(0, 1fr);
+    gap: 1rem;
+    padding-block: 0.65rem;
+    border-bottom: 1px solid var(--border-muted);
+}
+
+.avatar-show__details dt {
+    color: var(--text-muted);
+    font-weight: 700;
+}
+
+.avatar-show__details dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+
+.avatar-show__similar {
+    @extend %flex-column-start-stretch;
+    gap: 0.75rem;
+}
+
+.avatar-show__similar h2 {
+    color: var(--text);
+    font-size: 1.1rem;
+}
+
+.avatar-show__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
+    gap: 0.75rem;
+    padding: 0;
+    list-style: none;
+}
+
+.avatar-show__card {
+    @extend %flex-column-start-stretch;
+    gap: 0.5rem;
+    min-height: 10rem;
+    padding: 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 0.35rem;
+    background: var(--bg-light);
+    color: var(--text);
+    text-decoration: none;
+}
+
+.avatar-show__card img {
+    aspect-ratio: 1;
+}
+
+.avatar-show__card:hover {
+    border-color: var(--primary);
+}
+
+.avatar-show__empty {
+    color: var(--text-muted);
+}
+
+@media (max-width: 720px) {
+    .avatar-show__main {
+        grid-template-columns: 1fr;
+    }
+
+    .avatar-show__details div {
+        grid-template-columns: 1fr;
+        gap: 0.25rem;
+    }
+}

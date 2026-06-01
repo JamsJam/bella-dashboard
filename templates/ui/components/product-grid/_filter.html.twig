@@ -1,0 +1,25 @@
+{% import 'ui/components/product-grid/prototype/_filterPrototype.html.twig' as filterPrototype %}
+
+<div class="library__filters-section">
+    <div class="filters" {{ stimulus_target('product_grid_search', 'filters') }}>
+        {% for filter in filters %}
+            {% set optionsHtml %}
+                {% for option in filter.options %}
+                    <option value="{{ option.value }}"{% if option.value == filter.selected %} selected{% endif %}>{{ option.label }}</option>
+                {% else %}
+                    <option value="" disabled>Aucune option disponible</option>
+                {% endfor %}
+            {% endset %}
+
+                {{ filterPrototype.filterPrototype()
+                |replace({
+                    '__ID__': filter.id,
+                    '__LABEL__': filter.label,
+                    '__OPTIONS__': optionsHtml
+                })|raw(html)
+
+                
+            }}
+        {% endfor %}
+    </div>
+</div>

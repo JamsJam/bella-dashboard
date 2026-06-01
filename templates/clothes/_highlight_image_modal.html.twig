@@ -1,0 +1,48 @@
+<div class="modal-backdrop">
+    <dialog class="modal" open aria-labelledby="clothe-highlight-image-modal-title">
+        <form method="post" action="{{ action }}" enctype="multipart/form-data" data-turbo="false">
+            <header class="modal__header">
+                <h2 id="clothe-highlight-image-modal-title">Image {{ slotLabel }}</h2>
+                <button type="button" class="modal__close" onclick="this.closest('.modal-backdrop').remove()" aria-label="Fermer">
+                    ×
+                </button>
+            </header>
+
+            <div class="modal__body">
+                <input type="hidden" name="_csrf_token" value="{{ csrfToken }}">
+                <p class="modal__subtitle">
+                    Choisir une image pour {{ clotheName }}.
+                </p>
+
+                <fieldset class="clothe-image-picker">
+                    <legend>Images du vetement</legend>
+                    {% for image in images %}
+                        <label class="clothe-image-picker__item">
+                            <input type="radio" name="selected_image" value="{{ image }}" {% if image == selectedImage %}checked{% endif %}>
+                            <span>
+                                <img src="{{ image }}" alt="{{ clotheName }} image {{ loop.index }}">
+                            </span>
+                        </label>
+                    {% else %}
+                        <p class="clothe-show__empty">Aucune image existante pour ce vetement.</p>
+                    {% endfor %}
+                </fieldset>
+
+                <label class="clothe-image-upload">
+                    <span>Ou ajouter une image depuis l'ordinateur</span>
+                    <input type="file" name="uploaded_image" accept="image/*">
+                </label>
+                <input type="hidden" name="slot" value="{{ slot }}">
+            </div>
+
+            <footer class="modal__actions">
+                <button type="button" class="clothe-show__button" onclick="this.closest('.modal-backdrop').remove()">
+                    Annuler
+                </button>
+                <button type="submit" class="clothe-show__button clothe-show__button--primary">
+                    Valider
+                </button>
+            </footer>
+        </form>
+    </dialog>
+</div>

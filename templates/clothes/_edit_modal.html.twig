@@ -1,0 +1,63 @@
+<turbo-frame id="clothe-modal-component">
+    <div class="modal-backdrop">
+        <dialog class="modal" open aria-labelledby="clothe-edit-modal-title">
+            <form
+                method="post"
+                action="{{ action }}"
+                data-turbo="false"
+                {{ stimulus_controller('clothe-edit-modal') }}
+            >
+                <header class="modal__header">
+                    <h2 id="clothe-edit-modal-title">Modifier le vetement</h2>
+                    <button type="button" class="modal__close" onclick="this.closest('.modal-backdrop').remove()" aria-label="Fermer">
+                        &times;
+                    </button>
+                </header>
+
+                <div class="modal__body">
+                    <input type="hidden" name="_csrf_token" value="{{ csrfToken }}">
+
+                    <label class="category-form__field">
+                        <span>Categorie</span>
+                        <select name="category" required {{ stimulus_target('clothe-edit-modal', 'category') }} {{ stimulus_action('clothe-edit-modal', 'filterCollections', 'change') }}>
+                            {% for category in categories %}
+                                <option value="{{ category.id }}" {% if category.id == clothe.collection.category.id|default(null) %}selected{% endif %}>
+                                    {{ category.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </label>
+
+                    <label class="category-form__field">
+                        <span>Collection</span>
+                        <select name="collection" required {{ stimulus_target('clothe-edit-modal', 'collection') }}>
+                            {% for collection in collections %}
+                                <option
+                                    value="{{ collection.id }}"
+                                    data-category-id="{{ collection.category.id }}"
+                                    {% if collection.id == clothe.collection.id|default(null) %}selected{% endif %}
+                                >
+                                    {{ collection.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </label>
+
+                    <label class="category-form__field">
+                        <span>Prix TTC en centimes</span>
+                        <input type="number" name="price" min="1" step="1" value="{{ clothe.price }}" required>
+                    </label>
+                </div>
+
+                <footer class="modal__actions">
+                    <button type="button" class="clothe-show__button" onclick="this.closest('.modal-backdrop').remove()">
+                        Annuler
+                    </button>
+                    <button type="submit" class="clothe-show__button clothe-show__button--primary">
+                        Enregistrer
+                    </button>
+                </footer>
+            </form>
+        </dialog>
+    </div>
+</turbo-frame>

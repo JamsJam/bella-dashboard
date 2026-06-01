@@ -1,0 +1,47 @@
+<div class="modal-backdrop">
+    <dialog class="modal" open aria-labelledby="clothe-sizes-modal-title">
+        <form
+            method="post"
+            action="{{ action }}"
+            data-turbo="false"
+            {{ stimulus_controller('clothe-size-modal') }}
+            {{ stimulus_action('clothe-size-modal', 'confirmRemovedSizes', 'submit') }}
+        >
+            <header class="modal__header">
+                <h2 id="clothe-sizes-modal-title">Modifier les tailles</h2>
+                <button type="button" class="modal__close" onclick="this.closest('.modal-backdrop').remove()" aria-label="Fermer">
+                    ×
+                </button>
+            </header>
+
+            <div class="modal__body">
+                <fieldset class="size-tags">
+                    <legend>Tailles disponibles</legend>
+                    {% for size in availableSizes %}
+                        <label class="size-tag">
+                            <input
+                                type="checkbox"
+                                name="sizes[]"
+                                value="{{ size }}"
+                                {% if size in selectedSizes %}checked{% endif %}
+                                data-clothe-size-modal-target="size"
+                                data-existing="{{ size in selectedSizes ? '1' : '0' }}"
+                            >
+                            <span>{{ size }}</span>
+                        </label>
+                    {% endfor %}
+                </fieldset>
+                <div data-clothe-size-modal-target="confirmContainer"></div>
+            </div>
+
+            <footer class="modal__actions">
+                <button type="button" class="clothe-show__button" onclick="this.closest('.modal-backdrop').remove()">
+                    Annuler
+                </button>
+                <button type="submit" class="clothe-show__button clothe-show__button--primary">
+                    Enregistrer
+                </button>
+            </footer>
+        </form>
+    </dialog>
+</div>

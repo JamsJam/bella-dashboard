@@ -1,0 +1,46 @@
+<div class="modal-backdrop">
+    <dialog class="modal" open aria-labelledby="category-edit-modal-title">
+        <form method="post" action="{{ action }}" enctype="multipart/form-data" data-turbo="false">
+            <header class="modal__header">
+                <h2 id="category-edit-modal-title">Modifier la categorie</h2>
+                <button type="button" class="modal__close" onclick="this.closest('.modal-backdrop').remove()" aria-label="Fermer">
+                    ×
+                </button>
+            </header>
+
+            <div class="modal__body">
+                <input type="hidden" name="_csrf_token" value="{{ csrfToken }}">
+
+                <label class="category-form__field">
+                    <span>Nom</span>
+                    <input type="text" name="name" value="{{ category.name }}" required maxlength="50">
+                </label>
+
+                <label class="category-form__field">
+                    <span>Description courte</span>
+                    <textarea name="metaDescription" maxlength="120" rows="3">{{ category.metaDescription }}</textarea>
+                </label>
+
+                <label class="category-form__field">
+                    <span>Remplacer l'image d'illustration PNG, JPEG ou SVG</span>
+                    <input type="file" name="illustration" accept=".png,.jpg,.jpeg,.svg,image/png,image/jpeg,image/svg+xml">
+                </label>
+
+                {% if category.image %}
+                    <div class="category-form__preview">
+                        <img src="{{ category.image }}" alt="{{ category.name }}">
+                    </div>
+                {% endif %}
+            </div>
+
+            <footer class="modal__actions">
+                <button type="button" class="category-show__button" onclick="this.closest('.modal-backdrop').remove()">
+                    Annuler
+                </button>
+                <button type="submit" class="category-show__button">
+                    Enregistrer
+                </button>
+            </footer>
+        </form>
+    </dialog>
+</div>

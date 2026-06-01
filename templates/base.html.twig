@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 	<head>
 		<meta charset="UTF-8">
 		<title>
@@ -36,6 +36,7 @@
 	</head>
 
 	<body {{ stimulus_controller('darkmode') }}>
+        {% include 'ui/components/_flash.html.twig' %}
 		<div class="layout layout--close" {{ stimulus_controller('aside_toggle') | stimulus_target('aside_toggle', 'layout') }}>
 			{% include "ui/layout/_aside.html.twig" %}
 
@@ -49,9 +50,10 @@
 
 				<main class="main">
 					<div class="main__container"> {% block body %}{% endblock %}
-						</div>
-					</main>
-				</div>
+					</div>
+				</main>
 			</div>
-		</body>
-	</html>
+		</div>
+        <div id="modal-root"></div>
+	</body>
+</html>

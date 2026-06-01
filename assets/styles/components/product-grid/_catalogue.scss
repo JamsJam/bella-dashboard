@@ -1,0 +1,25 @@
+@use '../../abstract/' as *;
+
+.product-grid-catalogue {
+    height: 50dvh;
+    overflow: scroll;
+
+
+    &__list{
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 0.8rem;
+        padding-block-end: 3rem;
+        
+        
+        
+    }
+    
+    &__notFounded{
+        grid-template-columns: 1fr;
+        place-items: center;
+
+    }
+
+    
+}

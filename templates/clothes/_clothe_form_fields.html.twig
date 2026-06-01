@@ -1,0 +1,75 @@
+<div class="collection-form__grid">
+    <label class="collection-form__field">
+        <span>Nom du vetement</span>
+        <input type="text" name="{{ prefix }}[name]" maxlength="70">
+    </label>
+
+    <label class="collection-form__field">
+        <span>Prix TTC en centimes</span>
+        <input type="number" name="{{ prefix }}[price]" min="1" step="1">
+    </label>
+
+    <label class="collection-form__field">
+        <span>Stock</span>
+        <input type="number" name="{{ prefix }}[stock]" min="0" step="1" value="0">
+    </label>
+
+    <label class="collection-form__field">
+        <span>Couleur</span>
+        <select
+            name="{{ prefix }}[color]"
+            data-collection-form-color-select
+            data-action="change->collection-form#toggleNewColorField"
+        >
+            <option value="">Selectionner une couleur</option>
+            {% for color in colors %}
+                <option value="{{ color.id }}">{{ color.name }}</option>
+            {% endfor %}
+            <option value="__new__">Ajouter une couleur</option>
+        </select>
+    </label>
+
+    <label class="collection-form__field" data-collection-form-new-color-name hidden>
+        <span>Nouvelle couleur</span>
+        <input type="text" name="{{ prefix }}[newColorName]" maxlength="50">
+    </label>
+
+    <label class="collection-form__field" data-collection-form-new-color-hex hidden>
+        <span>Code couleur</span>
+        <input type="color" name="{{ prefix }}[newColorHex]" value="#000000">
+    </label>
+</div>
+
+<label class="collection-form__field">
+    <span>Description</span>
+    <textarea name="{{ prefix }}[description]" rows="5"></textarea>
+</label>
+
+<label class="collection-form__field">
+    <span>Meta description</span>
+    <textarea name="{{ prefix }}[metadescription]" rows="3" maxlength="180"></textarea>
+</label>
+
+<label class="collection-form__field">
+    <span>Images du vetement</span>
+    <input
+        type="file"
+        name="{{ imageInputName }}"
+        accept=".jpg,.jpeg,.png,image/jpeg,image/png"
+        multiple
+        data-collection-form-images-input
+        data-action="change->collection-form#renderImageOrder"
+    >
+</label>
+
+<div class="collection-form__image-order" data-collection-form-image-order></div>
+
+<fieldset class="size-tags">
+    <legend>Tailles</legend>
+    {% for size in availableSizes %}
+        <label class="size-tag">
+            <input type="checkbox" name="{{ prefix }}[sizes][]" value="{{ size }}">
+            <span>{{ size }}</span>
+        </label>
+    {% endfor %}
+</fieldset>

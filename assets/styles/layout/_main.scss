@@ -1,20 +1,44 @@
 @use "../abstract/" as *;
 
-.main{
-    height :calc(100dvh - 5rem);
+//! responsive 
+//!     container-name = main
+
+.main {
+    height: calc(100dvh - 5rem);
     padding: 2rem;
-    background-color: var(--bg);
-    
+
+    container-type: inline-size;
+    container-name: content;
+
     @extend %theme-transition;
-    
-    &__container{
+
+    &__container {
+        container-type: inline-size;
+        container-name: main;
+
+        max-width: 1440px;
         width: 100%;
-        min-height: 100%;
-        border: var(--border) 2px solid;
-        background-color: var(--bg);
+
+        height: 100%;
+
+        // border: var(--border) 2px solid;
         border-radius: 1rem;
+
+        padding: 2rem;
+        margin-inline: auto;
+
+        overflow: scroll;
 
         @extend %theme-transition;
 
+        @extend %flex-column-start-stretch;
+        gap: 2rem;
+
+
+    }
+
+    @media screen and (max-width:1068px){
+
+        padding-inline: clamp(0.3rem, -0.4273rem + 3.6364vw, 2rem);
     }
 }

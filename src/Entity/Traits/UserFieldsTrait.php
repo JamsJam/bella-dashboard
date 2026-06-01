@@ -3,22 +3,26 @@
 namespace App\Entity\Traits;
 
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 trait UserFieldsTrait
 {
     #[ORM\Column(length: 180)]
+    #[Groups(['customer:read', 'customer:write'])]
     private ?string $email = null;
 
     /**
      * @var list<string> The user roles
      */
     #[ORM\Column]
+    #[Groups(['customer:read'])]
     private array $roles = [];
 
     /**
      * @var string The hashed password
      */
     #[ORM\Column]
+    #[Groups(['customer:write'])]
     private ?string $password = null;
 
     public function getId(): ?int

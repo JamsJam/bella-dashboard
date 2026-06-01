@@ -2,6 +2,7 @@
 
 namespace App\Repository\Avatar\Body;
 
+use App\Application\Avatar\Interface\AvatarPartModelInterface;
 use App\Entity\Avatar\Body\Body;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -9,7 +10,7 @@ use Doctrine\Persistence\ManagerRegistry;
 /**
  * @extends ServiceEntityRepository<Body>
  */
-class BodyRepository extends ServiceEntityRepository
+class BodyRepository extends ServiceEntityRepository implements AvatarPartModelInterface
 {
     public function __construct(ManagerRegistry $registry)
     {
@@ -32,93 +33,92 @@ class BodyRepository extends ServiceEntityRepository
     //    }
 
     /**
-     * //     * @return Body[] Returns an array of Body objects
-     * //     */
+     *  @return Body[] Returns an array of Body objects
+     *
+     */      
     public function findAllByFilters(
-        array $skincolor = [],
-        array $morphologie = [],
-        array $morphotype = [],
-        array $clothes = [],
-        array $collection = [],
+        ?int $skincolor = null,
+        ?int $morphologie = null,
+        ?int $morphotype = null,
+        ?int $clothes = null,
+        // ?int $collection = null,
     ): array {
         $qb = $this->createQueryBuilder('b');
 
-        if (!empty($skincolor)) {
-            $qb->leftJoin('b.skincolor', 'sc');
-            $or = $qb->expr()->orX();
-            foreach ($skincolor as $i => $id) {
-                $param = 'skincolor_'.$i;          // nom unique : skincolor_0, _1, …
-                $or->add($qb->expr()->eq('sc.id', ':'.$param));
-                $qb->setParameter($param, $id);
-
-                $qb->andWhere($or);
-            }
+        if ($skincolor !== 0 && $skincolor !== null) {
+            $qb->leftJoin('b.skincolor', 'sc')
+                ->andWhere('sc.id = :skincolor')
+                ->setParameter('skincolor', $skincolor);
         }
 
-        if (!empty($morphotype)) {
-            $qb->leftJoin('b.morphotype', 'mt');
-            $qb->leftJoin('mt.size', 'bs');
-
-            $or = $qb->expr()->orX();
-            foreach ($morphotype as $i => $sizeName) {
-                $param = 'morphotype_'.$i;          // nom unique : skincolor_0, _1, …
-                $or->add($qb->expr()->eq('bs.name', ':'.$param));
-                $qb->setParameter($param, $sizeName);
-
-                $qb->andWhere($or);
-            }
+        if ($morphotype !== 0 && $morphotype !== null) {
+            $qb->leftJoin('b.morphotype', 'mt')
+                ->andWhere('mt.id = :morphotype')
+                ->setParameter('morphotype', $morphotype);
         }
 
-        if (!empty($morphologie)) {
-            if (empty($morphotype)) {
+
+        if ($morphologie !== 0 && $morphologie !== null) {
+            // Si le morphotype n'est pas spécifié, on doit faire une jointure pour accéder à la morphologie
+            if ($morphotype === null || $morphotype === 0) {
                 $qb->leftJoin('b.morphotype', 'mt');
             }
-            $qb->leftJoin('mt.morphologie', 'ml');
-            $or = $qb->expr()->orX();
-            foreach ($morphologie as $i => $id) {
-                $param = 'morphologie_'.$i;          // nom unique : skincolor_0, _1, …
-                $or->add($qb->expr()->eq('ml.id', ':'.$param));
-                $qb->setParameter($param, $id);
 
-                $qb->andWhere($or);
-            }
+            $qb->leftJoin('mt.morphologie', 'ml')
+                ->andWhere('ml.id = :morphologie')
+                ->setParameter('morphologie', $morphologie);
+
         }
 
-        if (!empty($clothes)) {
-            $qb->leftJoin('b.clothe', 'cl');
-            $or = $qb->expr()->orX();
-            foreach ($clothes as $i => $id) {
-                $param = 'clothe_'.$i;          // nom unique : skincolor_0, _1, …
-                $or->add($qb->expr()->eq('cl.id', ':'.$param));
-                $qb->setParameter($param, $id);
-
-                $qb->andWhere($or);
-            }
+        if ($clothes !== 0 && $clothes !== null) {
+            $qb->leftJoin('b.clothe', 'cl')
+                ->andWhere('cl.id = :clothes')
+                ->setParameter('clothes', $clothes);
         }
 
-        if (!empty($collection)) {
-            if (empty($clothes)) {
-                $qb->leftJoin('b.clothe', 'cl');
-            }
-            $qb->leftJoin('cl.collection', 'co');
-            $or = $qb->expr()->orX();
-            foreach ($collection as $i => $id) {
-                $param = 'collection_'.$i;          // nom unique : skincolor_0, _1, …
-                $or->add($qb->expr()->eq('co.id', ':'.$param));
-                $qb->setParameter($param, $id);
+        // if ($collection !== 0 && $collection !== null) {
+        //     if (empty($clothes)) {
+        //         $qb->leftJoin('b.clothe', 'cl');
+        //     }
+        //     $qb->leftJoin('cl.collection', 'co');
+        //     $or = $qb->expr()->orX();
+        //     foreach ($collection as $i => $id) {
+        //         $param = 'collection_'.$i;          // nom unique : skincolor_0, _1, …
+        //         $or->add($qb->expr()->eq('co.id', ':'.$param));
+        //         $qb->setParameter($param, $id);
+        //     }
+        //     $qb->andWhere($or);
+        // }
 
-                $qb->andWhere($or);
-            }
-        }
 
-        /* mêmes tests pour les autres filtres … */
 
         return
         $qb
             ->getQuery()
-            // ->getResult()
             ->getArrayResult()
         ;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function findPartByFilters(array $filters = []): array
+    {
+        return $this->findAllByFilters(
+            $filters['skinColor'] ?? null,
+            $filters['morphologie'] ?? null,
+            $filters['morphotype'] ?? null,
+            $filters['clothes'] ?? null,
+            // $filters['collection'] ?? []
+        );
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function findAllPart(): array
+    {
+        return $this->findAll();
     }
 
     //    public function findOneBySomeField($value): ?Body

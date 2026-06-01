@@ -1,0 +1,22 @@
+{% macro filterPrototype() %}
+<div class="filter">
+    <label class="filter__label" for="filter-__ID__">__LABEL__</label>
+    <select
+        class="filter__select"
+        id="filter-__ID__"
+        name="__ID__"
+        data-filter-label="__ID__"
+
+        {{  stimulus_action('product_grid_search', 'onFilterChange', 'change') }}
+    >
+        __OPTIONS__
+    </select>
+</div>
+
+{% endmacro %}
+
+{% macro optionPrototype() %}
+    <option value="__VALUE__" __SELECTED__>
+        __LABEL__
+    </option>
+{% endmacro %}

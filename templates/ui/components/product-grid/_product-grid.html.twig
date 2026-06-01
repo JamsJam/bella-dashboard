@@ -1,0 +1,125 @@
+{% import 'ui/components/product-grid/prototype/_filterPrototype.html.twig' as filterPrototypes %}
+{% import 'ui/components/product-grid/prototype/_cardPrototype.html.twig' as cardPrototype %}
+
+
+{# 
+    gridData: {
+        filters: [...],
+        cardsByPart: {
+            body: [...],
+            eyes: [...],
+            face: [...],
+            
+        }
+        items: {
+            id: 1,
+            name: 'Avatar 1',
+            imageUrl: 'https://example.com/avatar1.jpg',
+            // ou image: 'https://example.com/avatar1.jpg'
+        },
+
+    }
+ #}
+
+
+    <div 
+        class="product-grid product-grid--full" 
+        aria-labelledby="product-grid__title"
+        {{ stimulus_controller('product_grid_search',{
+            searchUrl: gridData.searchRoute ? path(gridData.searchRoute) : '',
+
+            filterPrototype: filterPrototypes.filterPrototype(),
+            optionsPrototype: filterPrototypes.optionPrototype(),
+            cardsPrototype: cardPrototype.productCardPrototype(),
+            updateFilterUrl: gridData.updateFilterRoute ? path(gridData.updateFilterRoute) : '',
+            detailUrlTemplate: gridData.detailUrlTemplate,
+            deleteUrlTemplate: gridData.deleteUrlTemplate,
+            renameUrlTemplate: gridData.renameUrlTemplate,
+            deleteCsrfToken: gridData.deleteCsrfTokenId ? csrf_token(gridData.deleteCsrfTokenId) : '',
+            renameCsrfToken: gridData.renameCsrfTokenId ? csrf_token(gridData.renameCsrfTokenId) : '',
+            resourceKey: gridData.resourceKey,
+            resourceParamName: gridData.resourceParamName,
+            noResultsLabel: gridData.noResultsLabel,
+            detailActionLabel: gridData.detailActionLabel,
+            renameConfirmMessage: gridData.renameConfirmMessage,
+            deleteConfirmMessage: gridData.deleteConfirmMessage,
+            extraSearchParams: gridData.extraSearchParams ? gridData.extraSearchParams|json_encode : '{}'
+        }) }}
+        
+    >
+        <header class="product-grid__header">
+            <h2 id="product-grid__title" class="product-grid__title">{{ gridData.title }}</h2>
+
+
+        {% include 'ui/components/product-grid/_search.html.twig' with {
+            placeholder: gridData.searchPlaceholder
+        } only %}
+            {% if gridData.showSelectionActions %}
+                <div
+                    class="product-grid__selection-actions"
+                    {{ stimulus_target('product_grid_search', 'selectionActions') }}
+                    hidden
+                >
+                    <span class="product-grid__selection-count">
+                        <span {{ stimulus_target('product_grid_search', 'selectedCount') }}>0</span>
+                        {{ gridData.selectionCountLabel }}
+                    </span>
+                    <button
+                        type="button"
+                        class="product-grid__action"
+                        {{ stimulus_action('product_grid_search', 'selectAllProducts', 'click') }}
+                    >
+                        {{ gridData.selectAllLabel }}
+                    </button>
+                    <button
+                        type="button"
+                        class="product-grid__action"
+                        {{ stimulus_action('product_grid_search', 'clearSelection', 'click') }}
+                    >
+                        {{ gridData.clearSelectionLabel }}
+                    </button>
+                    {% if gridData.renameUrlTemplate != '#' %}
+                        <button
+                            type="button"
+                            class="product-grid__action product-grid__action--rename"
+                            {{ stimulus_action('product_grid_search', 'onRenameSelection', 'click') }}
+                        >
+                            {{ gridData.renameActionLabel }}
+                        </button>
+                    {% endif %}
+                    {% if gridData.deleteUrlTemplate != '#' %}
+                        <button
+                            type="button"
+                            class="product-grid__action product-grid__action--delete"
+                            {{ stimulus_action('product_grid_search', 'onDeleteSelection', 'click') }}
+                        >
+                            {{ gridData.deleteActionLabel }}
+                        </button>
+                    {% endif %}
+                    {% for action in gridData.selectionActions %}
+                        <a
+                            class="product-grid__action {{ action.class|default('') }}"
+                            href="{{ action.href|default('#') }}"
+                            {% for key, value in action.attr|default({}) %}
+                                {{ key }}="{{ value }}"
+                            {% endfor %}
+                        >
+                            {{ action.label }}
+                        </a>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </header>
+
+
+
+        {% include 'ui/components/product-grid/_filter.html.twig' with { filters: gridData.filters } only %}
+
+        {% include 'ui/components/product-grid/_catalogue.html.twig' with {
+            items: gridData.items,
+            resourceKey: gridData.resourceKey,
+            resourceParamName: gridData.resourceParamName,
+            detailActionLabel: gridData.detailActionLabel,
+            detailUrlTemplate: gridData.detailUrlTemplate
+        } only %}
+    </div>

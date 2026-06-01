@@ -9,16 +9,18 @@ use ApiPlatform\Metadata\Put;
 use App\Entity\Orders\Orders;
 use App\Entity\Traits\DateFieldsTrait;
 use App\Entity\Traits\UserFieldsTrait;
+use App\State\Users\CustomerPasswordHasherProcessor;
 use App\Repository\Users\CustomersRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ApiResource(
     operations: [
-        new Post(),         // inscription
+        new Post(processor: CustomerPasswordHasherProcessor::class),         // inscription
         new Get(),          // accès à son profil
         new Put(),          // modification de son profil
     ],
@@ -35,6 +37,7 @@ class Customers implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['customer:read'])]
     private ?int $id = null;
 
     /**

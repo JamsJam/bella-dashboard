@@ -1,0 +1,35 @@
+<div id="clothe-size-guide-table" class="clothe-show__table-wrap">
+    <table class="clothe-show__size-guide">
+        <thead>
+            <tr>
+                <th scope="col">Taille</th>
+                {% for type in sizeGuide.types %}
+                    <th scope="col">{{ type.label }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for guide in sizeGuide.rows %}
+                <tr>
+                    <th scope="row">{{ guide.size }}</th>
+                    {% for type in sizeGuide.types %}
+                        <td>
+                            <input
+                                type="number"
+                                min="0"
+                                step="0.1"
+                                name="measurements[{{ guide.size }}][{{ type.code }}]"
+                                value="{{ guide.measurements[type.code] ?? '' }}"
+                                aria-label="{{ type.label }} {{ guide.size }}"
+                            >
+                        </td>
+                    {% endfor %}
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="{{ sizeGuide.types|length + 1 }}">Aucune taille disponible pour ce vetement.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

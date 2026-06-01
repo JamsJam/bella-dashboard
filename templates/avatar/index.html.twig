@@ -1,0 +1,29 @@
+{% extends 'base.html.twig' %}
+
+{% set tabs = [
+    { id: 'add', label: 'Ajouter', href: path("app_avatar_add"), isActive: false },
+    { id: 'rename', label: 'Renommer', href: path("app_avatar_rename"), isActive: false }
+] %}
+
+{% block title %}Gestion des avatars{% endblock %}
+
+{% block body %}
+    <article class="avatar-page" aria-labelledby="avatar-page-title">
+        <header class="avatar-page__header">
+            <h1 id="avatar-page-title" class="title">Avatar</h1>
+            <p class="avatar-page__subtitle">
+                Ajoute un nouvel avatar ou renomme un avatar deja existant.
+            </p>
+        </header>
+
+        {% include 'ui/components/tabs/_tabs.html.twig' 
+            with { tabs: tabs } only 
+        %}
+        <section>
+            {% include 'ui/components/product-grid/_product-grid.html.twig' 
+                with { gridData: gridData } only 
+            %}
+        </section>
+
+    </article>
+{% endblock %}

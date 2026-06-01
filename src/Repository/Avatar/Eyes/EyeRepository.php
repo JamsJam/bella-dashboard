@@ -2,6 +2,7 @@
 
 namespace App\Repository\Avatar\Eyes;
 
+use App\Application\Avatar\Interface\AvatarPartModelInterface;
 use App\Entity\Avatar\Eyes\Eye;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -9,7 +10,7 @@ use Doctrine\Persistence\ManagerRegistry;
 /**
  * @extends ServiceEntityRepository<Eye>
  */
-class EyeRepository extends ServiceEntityRepository
+class EyeRepository extends ServiceEntityRepository implements AvatarPartModelInterface
 {
     public function __construct(ManagerRegistry $registry)
     {
@@ -17,40 +18,47 @@ class EyeRepository extends ServiceEntityRepository
     }
 
     /**
-     * @return Eye[] Returns an array of Body objects
+     * @return Eye[] Returns an array of Eye objects
      */
     public function findAllByFilters(
-        array $color,
-        array $shape,
+        array $filter = []
     ): array {
+        $color = $filter['color'] ?? null;
+        $shape = $filter['shape'] ?? null;
+        
         $qb = $this->createQueryBuilder('e');
 
-        if (!empty($color)) {
-            $qb->leftJoin('e.color', 'c');
-            $or = $qb->expr()->orX();
-            foreach ($color as $i => $id) {
-                $param = 'color_'.$i;
-                $or->add($qb->expr()->eq('c.id', ':'.$param));
-                $qb->setParameter($param, $id);
-
-                $qb->andWhere($or);
-            }
+        if ($color !== 0 && $color !== null) {
+            $qb->leftJoin('e.color', 'c')
+                ->andWhere('c.id = :color')
+                ->setParameter('color', $color);
         }
 
-        if (!empty($shape)) {
-            $qb->leftJoin('e.shape', 's');
-            $or = $qb->expr()->orX();
-            foreach ($shape as $i => $id) {
-                $param = 'shape_'.$i;
-                $or->add($qb->expr()->eq('s.id', ':'.$param));
-                $qb->setParameter($param, $id);
-
-                $qb->andWhere($or);
-            }
+        if ($shape !== 0 && $shape !== null) {
+            $qb->leftJoin('e.shape', 's')
+                ->andWhere('s.id = :shape')
+                ->setParameter('shape', $shape);
         }
 
         return $qb->getQuery()->getArrayResult();
     }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function findPartByFilters(array $filters = []): array
+    {
+        return $this->findAllByFilters($filters);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function findAllPart(): array
+    {
+        return $this->findAll();
+    }
+
     //    /**
     //     * @return Eye[] Returns an array of Eye objects
     //     */

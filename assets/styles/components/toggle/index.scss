@@ -1,0 +1,65 @@
+@use "../../abstract/" as *;
+
+.toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    color: var(--text);
+    cursor: pointer;
+    user-select: none;
+}
+
+.toggle__input {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.toggle__track {
+    position: relative;
+    inline-size: 2.6rem;
+    block-size: 1.4rem;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--bg);
+    transition: background-color 0.18s ease, border-color 0.18s ease;
+}
+
+.toggle__thumb {
+    position: absolute;
+    inset-block-start: 50%;
+    inset-inline-start: 0.15rem;
+    inline-size: 1rem;
+    block-size: 1rem;
+    border-radius: 999px;
+    background: var(--text-muted);
+    transform: translateY(-50%);
+    transition: transform 0.18s ease, background-color 0.18s ease;
+}
+
+.toggle__input:checked + .toggle__track {
+    border-color: var(--primary);
+    background: color-mix(in srgb, var(--primary) 22%, var(--bg));
+}
+
+.toggle__input:checked + .toggle__track .toggle__thumb {
+    background: var(--primary);
+    transform: translate(1.2rem, -50%);
+}
+
+.toggle__input:focus-visible + .toggle__track {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+
+.toggle__input:disabled + .toggle__track,
+.toggle__input:disabled ~ .toggle__label {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+.toggle.is-loading {
+    cursor: progress;
+}

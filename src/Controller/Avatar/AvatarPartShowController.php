@@ -1,0 +1,177 @@
+<?php
+
+namespace App\Controller\Avatar;
+
+use App\Application\Avatar\Services\AvatarResolverService;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Attribute\Route;
+
+final class AvatarPartShowController extends AbstractController
+{
+    #[Route('/avatar/{part}/{id}', name: 'app_avatar_part_show', requirements: ['id' => '\d+'], methods: ['GET'])]
+    public function __invoke(string $part, int $id, AvatarResolverService $avatarResolverService, EntityManagerInterface $entityManager): Response
+    {
+        $entityClass = $avatarResolverService->resolveEntity($part);
+        $avatarPart = $entityManager->find($entityClass, $id);
+
+        if (!is_object($avatarPart)) {
+            throw $this->createNotFoundException('Avatar part not found.');
+        }
+
+        return $this->render('avatar/show.html.twig', [
+            'breadscrumbs' => [
+                ['label' => 'Avatar', 'route' => 'app_avatar'],
+                ['label' => $this->resolveName($avatarPart)],
+            ],
+            'part' => $part,
+            'avatar' => $this->mapAvatarPart($avatarPart),
+            'similarAvatars' => array_map(
+                fn (object $similarAvatar): array => $this->mapAvatarPart($similarAvatar),
+                $this->findSimilarAvatars($entityManager, $entityClass, $avatarPart),
+            ),
+        ]);
+    }
+
+    private function findSimilarAvatars(EntityManagerInterface $entityManager, string $entityClass, object $avatarPart): array
+    {
+        $allParts = $entityManager->getRepository($entityClass)->findAll();
+
+        return array_slice(array_values(array_filter(
+            $allParts,
+            fn (object $candidate): bool => $this->isSimilarAvatar($avatarPart, $candidate),
+        )), 0, 12);
+    }
+
+    private function isSimilarAvatar(object $reference, object $candidate): bool
+    {
+        if ($this->resolveId($reference) === $this->resolveId($candidate)) {
+            return false;
+        }
+
+        $hasComparison = false;
+
+        foreach (['getShape', 'getColor', 'getSkincolor', 'getMorphotype'] as $getter) {
+            if (!method_exists($reference, $getter) || !method_exists($candidate, $getter)) {
+                continue;
+            }
+
+            $hasComparison = true;
+
+            if ($this->resolveId($reference->{$getter}()) !== $this->resolveId($candidate->{$getter}())) {
+                return false;
+            }
+        }
+
+        return $hasComparison;
+    }
+
+    private function mapAvatarPart(object $avatarPart): array
+    {
+        return [
+            'id' => $this->resolveId($avatarPart),
+            'name' => $this->resolveName($avatarPart),
+            'imageUrl' => $this->resolveImageUrl($avatarPart),
+            'imageUrls' => $this->resolveImageUrls($avatarPart),
+            'imageSides' => $this->resolveImageSides($avatarPart),
+            'attributes' => $this->resolveAttributes($avatarPart),
+        ];
+    }
+
+    private function resolveAttributes(object $avatarPart): array
+    {
+        $attributes = [];
+
+        foreach ([
+            'Couleur' => 'getColor',
+            'Couleur de peau' => 'getSkincolor',
+            'Forme' => 'getShape',
+            'Morphotype' => 'getMorphotype',
+            'Vetement' => 'getClothe',
+        ] as $label => $getter) {
+            if (!method_exists($avatarPart, $getter)) {
+                continue;
+            }
+
+            $value = $avatarPart->{$getter}();
+
+            if (is_object($value)) {
+                $attributes[$label] = $this->resolveName($value);
+            }
+        }
+
+        if (method_exists($avatarPart, 'getChecksum')) {
+            $attributes['Checksum'] = (string) $avatarPart->getChecksum();
+        }
+
+        return $attributes;
+    }
+
+    private function resolveImageUrl(object $avatarPart): string
+    {
+        if (method_exists($avatarPart, 'getImage') && $avatarPart->getImage()) {
+            return (string) $avatarPart->getImage();
+        }
+
+        if (method_exists($avatarPart, 'getImages')) {
+            $images = $avatarPart->getImages();
+
+            return is_array($images) ? (string) ($images[0] ?? $images['front'] ?? reset($images) ?: '') : '';
+        }
+
+        return '';
+    }
+
+    private function resolveImageUrls(object $avatarPart): array
+    {
+        if (method_exists($avatarPart, 'getImages')) {
+            $images = $avatarPart->getImages();
+
+            return is_array($images) ? array_values(array_filter($images)) : [];
+        }
+
+        $imageUrl = $this->resolveImageUrl($avatarPart);
+
+        return $imageUrl !== '' ? [$imageUrl] : [];
+    }
+
+    private function resolveImageSides(object $avatarPart): array
+    {
+        if (!method_exists($avatarPart, 'getImages')) {
+            return [];
+        }
+
+        $images = $avatarPart->getImages();
+        if (!is_array($images)) {
+            return [];
+        }
+
+        return [
+            'front' => (string) ($images['front'] ?? ''),
+            'back' => (string) ($images['back'] ?? ''),
+        ];
+    }
+
+    private function resolveName(?object $entity): string
+    {
+        if ($entity === null) {
+            return '';
+        }
+
+        if (method_exists($entity, 'getName') && $entity->getName()) {
+            return (string) $entity->getName();
+        }
+
+        if (method_exists($entity, 'getSize') && is_object($entity->getSize()) && method_exists($entity->getSize(), 'getName')) {
+            return (string) $entity->getSize()->getName();
+        }
+
+        return '#'.(string) $this->resolveId($entity);
+    }
+
+    private function resolveId(?object $entity): ?int
+    {
+        return $entity !== null && method_exists($entity, 'getId') ? $entity->getId() : null;
+    }
+}

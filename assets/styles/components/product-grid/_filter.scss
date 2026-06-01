@@ -1,0 +1,73 @@
+@use '../../abstract/' as *;
+
+.filters{
+
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+
+
+    .filter {
+        @extend %flex-column-start-stretch;
+        gap: 0.4rem;
+        min-width: 150px;
+        
+        
+        &__label {
+            color: var(--text);
+            font-size: 0.92rem;
+            font-weight: 600;
+        }
+        
+        
+        
+        
+        &__select {
+            width: 100%;
+            border-radius: 0.6rem;
+            border: 2px solid var(--border-muted);
+            background-color: var(--bg);
+            color: var(--text-muted);
+            padding: 0.65rem 0.75rem;
+            font-size: 0.92rem;
+            cursor: pointer;
+            
+            @extend %theme-transition;
+            
+            &:hover {
+                outline: none;
+                color: var(--text);
+                border-color: var(--border);
+                
+            }
+            &:focus {
+                outline: 2px var(--border) solid ;
+                color: var(--text-muted);
+                border-color: var(--border);
+                background-color: var(--bg-light);
+            }
+        }
+    }
+}
+// .field {
+//     @extend %flex-column-start-stretch;
+//     gap: 0.4rem;
+// }
+
+// .field__label {
+//     color: var(--text);
+//     font-size: 0.92rem;
+// }
+
+// .field__input {
+//     width: 100%;
+//     border-radius: 0.6rem;
+//     border: 1px solid var(--border);
+//     background-color: var(--bg-light);
+//     color: var(--text);
+//     padding: 0.65rem 0.75rem;
+// }
+
+// .field__input--file {
+//     cursor: pointer;
+// }

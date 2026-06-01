@@ -1,0 +1,61 @@
+{% import 'ui/components/product-grid/prototype/_cardPrototype.html.twig' as cardPrototype %}
+
+<div class="product-grid-catalogue" id="product-grid-catalogue">
+    <ul
+        class="product-grid-catalogue__list product-grid-catalogue__notFounded"
+        {{ stimulus_target('product_grid_search', 'list') }}
+        aria-label="Liste des elements"
+    >
+        {% for item in items %}
+            {% set title = item.name ?? 'Avatar ' ~ loop.index %}
+            {% set imageUrls = item.imageUrls|default([]) %}
+            {% if imageUrls is empty and item.imageUrl|default('') %}
+                {% set imageUrls = [item.imageUrl] %}
+            {% elseif imageUrls is empty and item.image|default('') %}
+                {% set imageUrls = [item.image] %}
+            {% elseif imageUrls is empty and item.images|default([]) is iterable %}
+                {% set imageUrls = item.images %}
+            {% endif %}
+            {% set imageStack %}
+                {% for imageUrl in imageUrls %}
+                    <img src="{{ imageUrl }}" alt="{{ title }}" class="product-grid-card__image">
+                {% else %}
+                    <span class="product-grid-card__placeholder">Aucune image</span>
+                {% endfor %}
+            {% endset %}
+            {% set statusBadge = '' %}
+            {% if item.isOnline is same as(true) %}
+                {% set statusBadge = '<span class="product-grid-card__status product-grid-card__status--online">En ligne</span>' %}
+            {% elseif item.isOnline is same as(false) %}
+                {% set statusBadge = '<span class="product-grid-card__status product-grid-card__status--offline">Hors ligne</span>' %}
+            {% endif %}
+            {% set detailUrl = detailUrlTemplate|default('#') == '#'
+                ? '#'
+                : detailUrlTemplate|default('/avatar/__PART__/__ID__')|replace({
+                    '__PART__': resourceKey|default(''),
+                    '__RESOURCE__': resourceKey|default(''),
+                    '__SLUG__': item.slug|default(item.id ?? loop.index),
+                    '__ID__': item.id ?? loop.index
+                })
+            %}
+            <li>
+                {{ cardPrototype.productCardPrototype()|replace({
+                    '__ID__': item.id ?? loop.index,
+                    '__TITLE__': title,
+                    '__IMAGE_STACK__': imageStack,
+                    '__STATUS_BADGE__': statusBadge,
+                    '__IMAGE_ALT__': title,
+                    '__DETAIL_URL__': detailUrl,
+                    '__DETAIL_LABEL__': detailActionLabel|default('Voir les details'),
+
+                })|raw }}
+            </li>
+        {% else %}
+            <li >
+                <div class="product-grid-card__notFounded">
+                    <p>Aucun element</p>
+                </div>
+            </li>
+        {% endfor %}
+    </ul>
+</div>

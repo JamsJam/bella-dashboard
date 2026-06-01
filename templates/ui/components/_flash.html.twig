@@ -1,0 +1,31 @@
+<turbo-frame
+    id="_flash_component"
+    class="flash-messages"
+    aria-live="polite"
+    aria-label="Notifications"
+    {{
+        stimulus_controller('flash', {
+            reloadUrl: path('app_ui_flashes')
+        })
+        | stimulus_action('flash', 'reload', 'flash-reload@window')
+    }}
+    {# data-controller="flash"
+    data-flash-reload-url-value="{{ path('app_ui_flashes') }}"
+    data-action="flash-reload@window->flash#reload" #}
+>
+    {% for type, messages in app.flashes %}
+        {% for message in messages %}
+            <article class="flash-messages__item flash-messages__item--{{ type }}" {{stimulus_target('flash', 'item')}}>
+                <p>{{ message }}</p>
+                <button
+                    type="button"
+                    class="flash-messages__close"
+                    aria-label="Fermer la notification"
+                    {{stimulus_action('flash', 'close')}}
+                >
+                    &times;
+                </button>
+            </article>
+        {% endfor %}
+    {% endfor %}
+</turbo-frame>

@@ -1,0 +1,26 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Categories{% endblock %}
+
+{% block body %}
+    <article
+        class="admin-page"
+        aria-labelledby="categories-title"
+        {{ stimulus_controller('category-online') }}
+        {{ stimulus_action('category-online', 'change', 'toggle:change') }}
+    >
+        <header class="admin-page__header">
+            <div>
+                <h1 id="categories-title" class="title">Categories</h1>
+                <p class="admin-page__subtitle">
+                    Gere les categories utilisees pour organiser les collections de vetements.
+                </p>
+            </div>
+        </header>
+            {% include 'ui/components/tabs/_tabs.html.twig' with { tabs: tabs } only %}
+
+        {% include 'ui/components/data-table/_data_table.html.twig' with table only %}
+    </article>
+
+    <div id="modal-root"></div>
+{% endblock %}

@@ -1,0 +1,41 @@
+@use "../../abstract/"  as *;
+
+
+
+.library__search {
+    @extend %flex-column-start-stretch;
+
+    
+    &-input {
+        width: 100%;
+        border-radius: 0.6rem;
+        border: 2px solid var(--border-muted);
+    
+        background-color: var(--bg);
+        color: var(--text-muted);
+        padding: 0.65rem 0.75rem;
+        font-size: 0.95rem;
+        @extend %theme-transition;
+    
+        &::placeholder {
+            color: var(--text-muted);
+        }
+    
+        &:hover {
+            outline: none;
+            border-color: var(--border);
+            color: var(--text);
+            background-color: var(--bg);
+    
+            &::placeholder {
+                color: var(--text);
+            }
+        }
+    
+        &:focus {
+            outline: 2px solid var(--border);;
+            border-color: var(--border);
+            background-color: var(--bg-light);
+        }
+    }
+}

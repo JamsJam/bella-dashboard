@@ -1,0 +1,27 @@
+<div
+    class="avatar-upload__dropzone"
+    role="button"
+    tabindex="0"
+    {{
+        stimulus_target('dropzone', 'dropzone')
+        | stimulus_action('dropzone', 'openFileDialog', 'click')
+        | stimulus_action('dropzone', 'openFileDialog', 'keydown.enter')
+        | stimulus_action('dropzone', 'openFileDialog', 'keydown.space')
+        | stimulus_action('dropzone', 'handleDragOver', 'dragover')
+        | stimulus_action('dropzone', 'handleDragLeave', 'dragleave')
+        | stimulus_action('dropzone', 'handleDrop', 'drop')
+    }}
+>
+    <input
+        class="avatar-upload__input"
+        type="file"
+        accept=".png,image/png"
+        multiple
+        {{
+            stimulus_target('dropzone', 'input')
+            | stimulus_action('dropzone', 'handleInputChange', 'change')
+        }}
+    >
+    <p class="avatar-upload__title">Glissez-deposez vos fichiers PNG ici</p>
+    <p class="avatar-upload__hint">ou cliquez pour selectionner plusieurs fichiers</p>
+</div>

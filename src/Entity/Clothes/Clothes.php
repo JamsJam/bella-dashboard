@@ -3,6 +3,7 @@
 namespace App\Entity\Clothes;
 
 use ApiPlatform\Metadata\ApiResource;
+use App\Entity\SizeGuide;
 use Doctrine\DBAL\Types\Types;
 use App\Entity\Avatar\Body\Body;
 use Doctrine\ORM\Mapping as ORM;
@@ -23,7 +24,7 @@ class Clothes
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 50)]
+    #[ORM\Column(length: 70)]
     private ?string $name = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
@@ -76,7 +77,9 @@ class Clothes
     #[ORM\Column]
     private ?bool $isInCarousel = null;
 
-
+    #[ORM\ManyToOne(inversedBy: 'clothes')]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?SizeGuide $sizeGuide = null;
 
     public function __construct()
     {
@@ -297,4 +300,17 @@ class Clothes
 
         return $this;
     }
+
+    public function getSizeGuide(): ?SizeGuide
+    {
+        return $this->sizeGuide;
+    }
+
+    public function setSizeGuide(?SizeGuide $sizeGuide): static
+    {
+        $this->sizeGuide = $sizeGuide;
+
+        return $this;
+    }
+
 }

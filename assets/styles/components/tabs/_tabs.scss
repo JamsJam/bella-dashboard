@@ -1,0 +1,43 @@
+@use "../../abstract/" as *;
+
+
+.tabs {
+    @extend %flex-row-start-center;
+    @extend %theme-transition;
+
+    align-self: flex-end;
+    flex-wrap: wrap;
+    gap: 1rem;
+    background-color: var(--bg-dark);
+    // border: 2px solid var(--border);
+    padding-inline: 1rem; 
+    padding-block: 1rem;
+    border-radius: 1rem;
+
+
+    .tab {
+        @extend %flex-row-center-center;
+        @extend %theme-transition;
+        
+        padding: 0.5rem 1rem;
+        border-radius: 1rem;
+        
+        border: 1px solid var(--border-muted);
+        background-color: var(--bg);
+        color: var(--text-muted);
+        
+        font-weight: 600;
+        
+
+        &:hover {
+            color: var(--text);
+            border-color: var(--border);
+            background-color: var(--bg-light);
+        }
+        &.active {
+            color: var(--text);
+            border-color: var(--border);
+            background-color: var(--bg-light);
+        }
+    }
+}

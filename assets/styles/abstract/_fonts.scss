@@ -8,7 +8,6 @@
 //? ====== familly
 $font-title: "Montserrat", sans-serif;
 $font-text: "Montserrat", sans-serif;
-$admin-font: "Montserrat", sans-serif;
 
 //? ====== size
 $fs-0-00: 0rem;       // 0px
@@ -28,40 +27,37 @@ $fs-1-63: 1.625rem;   // 26px
 $fs-1-75: 1.75rem;    // 28px
 $fs-1-88: 1.875rem;   // 30px
 $fs-2-00: 2rem;       // 32px
-$fs-2-25 : 2.25rem;  // 36px
-$fs-2-05  : 2.5rem;   // 40px
-$fs-2-75 : 2.75rem;  // 44px
-$fs-3-00    : 3rem;     // 48px
-$fs-3-25 : 3.25rem;  // 52px
-$fs-3-05  : 3.5rem;   // 56px
-$fs-3-75 : 3.75rem;  // 60px
-$fs-4-00    : 4rem;     // 64px
-$fs-4-25 : 4.25rem;  // 68px
-$fs-4-05  : 4.5rem;   // 72px
-$fs-4-75 : 4.75rem;  // 76px
-$fs-5-00    : 5rem;     // 80px
-$fs-5-25 : 5.25rem;  // 84px
-$fs-5-05  : 5.5rem;   // 88px
-$fs-5-75 : 5.75rem;  // 92px
-$fs-6-00    : 6rem;   // 96px
+$fs-2-25: 2.25rem;    // 36px
+$fs-2-05: 2.5rem;     // 40px
+$fs-2-75: 2.75rem;    // 44px
+$fs-3-00: 3rem;       // 48px
+$fs-3-25: 3.25rem;    // 52px
+$fs-3-05: 3.5rem;     // 56px
+$fs-3-75: 3.75rem;    // 60px
+$fs-4-00: 4rem;       // 64px
+$fs-4-25: 4.25rem;    // 68px
+$fs-4-05: 4.5rem;     // 72px
+$fs-4-75: 4.75rem;    // 76px
+$fs-5-00: 5rem;       // 80px
+$fs-5-25: 5.25rem;    // 84px
+$fs-5-05: 5.5rem;     // 88px
+$fs-5-75: 5.75rem;    // 92px
+$fs-6-00: 6rem;       // 96px
 
-$h2-size-desktop:  clamp(2rem, 0.7692rem + 1.9231vw, 2.5rem);
-$h2-size-mobile: clamp(1.75rem, 1.3929rem + 1.7857vw, 2.25rem);
+$h2-size-desktop:   clamp(2rem, 0.7692rem + 1.9231vw, 2.5rem);
+$h2-size-mobile:    clamp(1.75rem, 1.3929rem + 1.7857vw, 2.25rem);
 
-$h3-size-desktop: clamp(1.5rem, 1.3571rem + 0.7143vw, 2rem);
+$h3-size-desktop:   clamp(1.5rem, 1.3571rem + 0.7143vw, 2rem);
 // $h3-size-mobile: clamp(1.75rem, 1.3929rem + 1.7857vw, 2.25rem);;
-
-
 
 
 //?================= admin
 
 //?===== typo desk
 //titre
-
-$title-48-32-desk :clamp(2rem, 0.8539rem + 2.3845vw, 3rem);
-$title-32-24-desk :clamp(1.5rem, 0.927rem + 1.1923vw, 2rem);
-$title-24-20-desk :clamp(1.25rem, 0.9643rem + 0.5952vw, 1.5rem);
+$title-48-32-desk: clamp(2rem, 0.8539rem + 2.3845vw, 3rem);
+$title-32-24-desk: clamp(1.5rem, 0.927rem + 1.1923vw, 2rem);
+$title-24-20-desk: clamp(1.25rem, 0.9643rem + 0.5952vw, 1.5rem);
 
 
 //text

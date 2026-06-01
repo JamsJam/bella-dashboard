@@ -2,6 +2,7 @@
 
 namespace App\Repository\Avatar\Faces;
 
+use App\Application\Avatar\Interface\AvatarPartModelInterface;
 use App\Entity\Avatar\Faces\Faces;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -9,7 +10,7 @@ use Doctrine\Persistence\ManagerRegistry;
 /**
  * @extends ServiceEntityRepository<Faces>
  */
-class FacesRepository extends ServiceEntityRepository
+class FacesRepository extends ServiceEntityRepository implements AvatarPartModelInterface
 {
     public function __construct(ManagerRegistry $registry)
     {
@@ -17,44 +18,46 @@ class FacesRepository extends ServiceEntityRepository
     }
 
     /**
-     * //     * @return Nose[] Returns an array of Body objects
-     * //     */
+     * @return Faces[] Returns an array of Faces objects
+     */
     public function findAllByFilters(
-        array $skincolor = [],
-        array $shape = [],
+        ?int $skincolor = null,
+        ?int $shape = null,
     ): array {
         $qb = $this->createQueryBuilder('f');
 
-        if (!empty($skincolor)) {
-            $qb->leftJoin('f.skincolor', 'sc');
-            $or = $qb->expr()->orX();
-            foreach ($skincolor as $i => $id) {
-                $param = 'skincolor_'.$i;
-                $or->add($qb->expr()->eq('sc.id', ':'.$param));
-                $qb->setParameter($param, $id);
-
-                $qb->andWhere($or);
-            }
+        if ($skincolor !== 0 && $skincolor !== null) {
+            $qb->leftJoin('f.skincolor', 'sc')
+                ->andWhere('sc.id = :skincolor')
+                ->setParameter('skincolor', $skincolor);
         }
 
-        if (!empty($shape)) {
-            $qb->leftJoin('f.shape', 's');
-            $or = $qb->expr()->orX();
-            foreach ($shape as $i => $id) {
-                $param = 'shape_'.$i;
-                $or->add($qb->expr()->eq('s.id', ':'.$param));
-                $qb->setParameter($param, $id);
-
-                $qb->andWhere($or);
-            }
+        if ($shape !== 0 && $shape !== null) {
+            $qb->leftJoin('f.shape', 's')
+                ->andWhere('s.id = :shape')
+                ->setParameter('shape', $shape);
         }
 
-        return
-        $qb
-            ->getQuery()
-            // ->getResult()
-            ->getArrayResult()
-        ;
+        return $qb->getQuery()->getArrayResult();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function findPartByFilters(array $filters = []): array
+    {
+        return $this->findAllByFilters(
+            $filters['skinColor'] ?? null,
+            $filters['shape'] ?? null
+        );
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function findAllPart(): array
+    {
+        return $this->findAll();
     }
 
     //    /**

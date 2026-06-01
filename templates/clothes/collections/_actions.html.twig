@@ -1,0 +1,18 @@
+<div class="data-table__actions">
+    <a href="{{ showUrl|default('#') }}" class="data-table__action" aria-label="Voir la collection">
+        {{ ux_icon('ep:document') }}
+        <span>Voir</span>
+    </a>
+    <form method="post" action="{{ deleteUrl }}" data-turbo-confirm="Supprimer cette collection ?">
+        <input type="hidden" name="_csrf_token" value="{{ deleteToken }}">
+        <button
+            type="submit"
+            class="data-table__action data-table__action--danger"
+            data-collection-id="{{ collectionId }}"
+            aria-label="Supprimer la collection"
+        >
+            {{ ux_icon('ep:delete') }}
+            <span>Supprimer</span>
+        </button>
+    </form>
+</div>

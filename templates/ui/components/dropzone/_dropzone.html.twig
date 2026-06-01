@@ -1,0 +1,16 @@
+{% import "ui/components/dropzone/prototype/_dz_itemPrototype.html.twig" as dz_prototype %}
+
+<div class="dropzone"
+
+        {{ stimulus_controller('dropzone', {
+                    uploadUrl: dropzone.uploadUrl,
+                    csrfToken: dropzone.token,
+                    redirectUrl: dropzone.redirectUrl|default(''),
+                    itemPrototype: dz_prototype.itemPrototype()
+                }) 
+        }}
+    >
+	{% include 'ui/components/dropzone/_dz_zone.html.twig' only %}
+
+	{% include 'ui/components/dropzone/_dz_summary.html.twig' only %}
+</div>

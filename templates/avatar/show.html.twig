@@ -1,0 +1,111 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ avatar.name }}{% endblock %}
+
+{% block body %}
+    {% set actionTabs = [
+        { id: 'back', label: 'Retour', href: path('app_avatar'), isActive: false },
+        {
+            id: 'rename',
+            label: 'Renommer',
+            href: path('app_avatar_part_queue_rename', { part: part, id: avatar.id }),
+            isActive: false,
+            attr: {
+                'data-action': 'avatar-part-actions#rename'
+            }
+        },
+        {
+            id: 'delete',
+            label: 'Supprimer',
+            href: path('app_avatar_part_delete', { part: part, id: avatar.id }),
+            isActive: false,
+            attr: {
+                'data-action': 'avatar-part-actions#delete'
+            }
+        }
+    ] %}
+
+    <article
+        class="avatar-show"
+        aria-labelledby="avatar-show-title"
+        {{
+            stimulus_controller('avatar-part-actions', {
+                deleteUrl: path('app_avatar_part_delete', { part: part, id: avatar.id }),
+                deleteCsrfToken: csrf_token('avatar_part_delete'),
+                renameUrl: path('app_avatar_part_queue_rename', { part: part, id: avatar.id }),
+                renameCsrfToken: csrf_token('avatar_part_queue_rename'),
+                indexUrl: path('app_avatar'),
+                renameIndexUrl: path('app_avatar_rename')
+            })
+        }}
+    >
+        <header class="avatar-show__header">
+            <h1 id="avatar-show-title" class="title">{{ avatar.name }}</h1>
+            {% include 'ui/components/tabs/_tabs.html.twig' with { tabs: actionTabs } only %}
+        </header>
+
+        <section class="avatar-show__main">
+            {% if part == 'hair' %}
+                <div class="avatar-show__media avatar-show__media--sides">
+                    {% for side, label in { front: 'Front', back: 'Back' } %}
+                        <figure class="avatar-show__side">
+                            <div class="avatar-show__side-frame">
+                                {% if avatar.imageSides[side]|default('') %}
+                                    <img src="{{ avatar.imageSides[side] }}" alt="{{ avatar.name }} {{ label }}">
+                                {% else %}
+                                    <span class="avatar-show__placeholder">{{ label }} absent</span>
+                                {% endif %}
+                            </div>
+                            <figcaption>{{ label }}</figcaption>
+                        </figure>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="avatar-show__media">
+                    {% if avatar.imageUrl %}
+                        <img src="{{ avatar.imageUrl }}" alt="{{ avatar.name }}">
+                    {% else %}
+                        <span class="avatar-show__placeholder">Aucune image</span>
+                    {% endif %}
+                </div>
+            {% endif %}
+
+            <dl class="avatar-show__details">
+                <div>
+                    <dt>ID</dt>
+                    <dd>{{ avatar.id }}</dd>
+                </div>
+                <div>
+                    <dt>Partie</dt>
+                    <dd>{{ part }}</dd>
+                </div>
+                {% for label, value in avatar.attributes %}
+                    <div>
+                        <dt>{{ label }}</dt>
+                        <dd>{{ value }}</dd>
+                    </div>
+                {% endfor %}
+            </dl>
+        </section>
+
+        <section class="avatar-show__similar" aria-labelledby="avatar-show-similar-title">
+            <h2 id="avatar-show-similar-title">Elements similaires</h2>
+            <ul class="avatar-show__grid">
+                {% for similarAvatar in similarAvatars %}
+                    <li>
+                        <a class="avatar-show__card" href="{{ path('app_avatar_part_show', { part: part, id: similarAvatar.id }) }}">
+                            {% if similarAvatar.imageUrl %}
+                                <img src="{{ similarAvatar.imageUrl }}" alt="{{ similarAvatar.name }}">
+                            {% else %}
+                                <span class="avatar-show__placeholder">Aucune image</span>
+                            {% endif %}
+                            <span>{{ similarAvatar.name }}</span>
+                        </a>
+                    </li>
+                {% else %}
+                    <li class="avatar-show__empty">Aucun element similaire.</li>
+                {% endfor %}
+            </ul>
+        </section>
+    </article>
+{% endblock %}

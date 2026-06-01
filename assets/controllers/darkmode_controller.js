@@ -31,6 +31,9 @@ export default class extends Controller {
     }
     
     modeValueChanged(current, old){
+        if(!old) {
+            return
+        }
         document.querySelector("#theme-button").classList.replace(old, current)
 
     }

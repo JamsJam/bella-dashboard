@@ -1,0 +1,33 @@
+<div class="avatar-upload__summary">
+    <h3 class="avatar-upload__count">
+        Fichiers a uploader (<span {{ stimulus_target('dropzone', 'count') }}>0</span>)
+    </h3>
+    <div class="avatar-upload__actions">
+        <button
+            type="button"
+            class="avatar-upload__button avatar-upload__button--secondary"
+            hidden
+            {{
+                stimulus_target('dropzone', 'clearButton')
+                | stimulus_action('dropzone', 'clearFiles')
+            }}
+        >
+            Vider la liste
+        </button>
+        <button
+            type="button"
+            class="avatar-upload__button"
+            hidden
+            {{
+                stimulus_target('dropzone', 'sendButton')
+                | stimulus_action('dropzone', 'uploadFiles')
+            }}
+        >
+            Envoyer
+        </button>
+    </div>
+</div>
+
+<ul class="avatar-upload__list" {{ stimulus_target('dropzone', 'list') }}></ul>
+
+{% include 'ui/components/dropzone/prototype/_dz_itemPrototype.html.twig' only %}

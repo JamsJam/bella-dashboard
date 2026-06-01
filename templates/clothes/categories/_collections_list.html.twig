@@ -1,0 +1,20 @@
+<ul class="category-show__collections" data-category-online-target="collectionsList">
+    {% for collection in category.collections %}
+        <li class="category-show__collection">
+            <a href="{{ path('app_clothes_collection', { id: collection.id }) }}">
+                {% if collection.image %}
+                    <img src="{{ collection.image }}" alt="{{ collection.name }}">
+                {% else %}
+                    <span class="category-show__collection-placeholder">Aucune image</span>
+                {% endif %}
+                <div>
+                    <strong>{{ collection.name }}</strong>
+                    <span>{{ collection.isOnline ? 'En ligne' : 'Hors ligne' }}</span>
+                    <span>{{ collection.clothes|length }} vetement(s)</span>
+                </div>
+            </a>
+        </li>
+    {% else %}
+        <li class="category-show__empty">Aucune collection dans cette categorie.</li>
+    {% endfor %}
+</ul>
