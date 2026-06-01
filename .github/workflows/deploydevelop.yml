@@ -53,6 +53,7 @@ jobs:
 
             echo "[1/9] Acces au dossier du projet"
             mkdir -p "$PROJECT_DIR"
+            cd "$PROJECT_DIR"
             pwd
             echo "[2/9] Recuperation du dernier code de develop"
             ORIGINAL_ORIGIN_URL="$(git remote get-url origin)"
