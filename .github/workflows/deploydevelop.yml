@@ -60,6 +60,8 @@ jobs:
 
             git clone --depth 1 --branch develop https://x-access-token:${{ secrets.APP_TOKEN }}@github.com/${{ github.repository }} .
             git reset --hard origin/develop
+            
+            git clone --depth 1 --branch develop https://x-access-token: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@github.com/https://github.com/JamsJam/bella-dashboard.git .
 
             restore_origin
             trap - EXIT
