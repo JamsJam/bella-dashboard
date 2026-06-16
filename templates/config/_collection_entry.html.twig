@@ -1,0 +1,94 @@
+{% set selectedContentType = entry.vars.data.contentType|default('text') %}
+
+<div class="config-collection__item" {{ stimulus_target('config-image-upload', 'section') }}>
+    {% for field in entry %}
+        {% if field.vars.name == 'flagFile' %}
+            {% include 'config/_image_field.html.twig' with {
+                file_field: field,
+                image_kind: field.vars.id,
+                public_url: entry.vars.data.flag|default(''),
+            } only %}
+        {% elseif field.vars.name == 'imageFile' %}
+            {% set imageFieldAttributes = {
+                'data-config-content-field': 'image',
+            }|merge(stimulus_target('config-image-upload', 'contentField').toArray()) %}
+            {% if selectedContentType != 'image' %}
+                {% set imageFieldAttributes = imageFieldAttributes|merge({ hidden: 'hidden', 'aria-hidden': 'true' }) %}
+            {% endif %}
+            <div class="config-field"{% for attr, value in imageFieldAttributes %} {{ attr }}="{{ value }}"{% endfor %}>
+                {% include 'config/_image_field.html.twig' with {
+                    file_field: field,
+                    image_kind: field.vars.id,
+                    public_url: entry.vars.data.image|default(''),
+                } only %}
+            </div>
+        {% elseif field.vars.name == 'image' %}
+            {{ form_widget(field) }}
+        {% elseif field.vars.name == 'flag' %}
+            {{ form_widget(field) }}
+        {% elseif 'collection' in field.vars.block_prefixes %}
+            {% set prototypeHtml %}
+                {% include 'config/_collection_entry.html.twig' with { entry: field.vars.prototype } only %}
+            {% endset %}
+            {% set collectionAttributes = field.vars.row_attr %}
+            {% if collectionAttributes['data-config-content-field'] is defined %}
+                {% set collectionAttributes = collectionAttributes|merge(stimulus_target('config-image-upload', 'contentField collection').toArray()) %}
+                {% if collectionAttributes['data-config-content-field'] != selectedContentType %}
+                    {% set collectionAttributes = collectionAttributes|merge({ hidden: 'hidden', 'aria-hidden': 'true' }) %}
+                {% endif %}
+            {% else %}
+                {% set collectionAttributes = collectionAttributes|merge(stimulus_target('config-image-upload', 'collection').toArray()) %}
+            {% endif %}
+            <div
+                class="config-collection config-collection--nested"
+                {% for attr, value in collectionAttributes %} {{ attr }}="{{ value }}"{% endfor %}
+                data-config-collection
+                data-prototype="{{ prototypeHtml|e('html_attr') }}"
+                data-index="{{ field|length }}"
+            >
+                <div class="config-collection__header">
+                    {{ form_label(field) }}
+                    <button
+                        type="button"
+                        class="config-collection__add"
+                        {{ stimulus_action('config-image-upload', 'addCollectionItem', 'click') }}
+                    >Ajouter</button>
+                </div>
+
+                <div class="config-collection__items" {{ stimulus_target('config-image-upload', 'collectionItems') }}>
+                    {% for item in field %}
+                        {% include 'config/_collection_entry.html.twig' with { entry: item } only %}
+                    {% endfor %}
+                </div>
+            </div>
+        {% else %}
+            {% set fieldAttributes = field.vars.row_attr %}
+            {% if fieldAttributes['data-config-content-field'] is defined %}
+                {% set fieldAttributes = fieldAttributes|merge(stimulus_target('config-image-upload', 'contentField').toArray()) %}
+                {% if fieldAttributes['data-config-content-field'] != selectedContentType %}
+                    {% set fieldAttributes = fieldAttributes|merge({ hidden: 'hidden', 'aria-hidden': 'true' }) %}
+                {% endif %}
+            {% endif %}
+            <div class="config-field"{% for attr, value in fieldAttributes %} {{ attr }}="{{ value }}"{% endfor %}>
+                {{ form_label(field) }}
+                {% if field.vars.name == 'contentType' %}
+                    {{ form_widget(field, {
+                        attr: field.vars.attr
+                            |merge(stimulus_target('config-image-upload', 'contentTypeSelect').toArray())
+                            |merge(stimulus_action('config-image-upload', 'toggleContentFields', 'change').toArray())
+                    }) }}
+                {% else %}
+                    {{ form_widget(field) }}
+                {% endif %}
+                {{ form_help(field) }}
+                {{ form_errors(field) }}
+            </div>
+        {% endif %}
+    {% endfor %}
+
+    <button
+        type="button"
+        class="config-collection__remove"
+        {{ stimulus_action('config-image-upload', 'removeCollectionItem', 'click') }}
+    >Supprimer</button>
+</div>

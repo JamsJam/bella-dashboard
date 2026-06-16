@@ -11,15 +11,19 @@ final class BreadscrumbsService
         'dashboard' => 'Dashboard',
         'user' => 'Utilisateurs',
         'order' => 'Commandes',
+        'orders' => 'Commandes',
         'avatar'=>'Avatar',
         'clothes' => 'Vêtements',
         'categories' => 'Catégories',
         'collections' => 'Collections',
         'config' => 'Configuration',
+        'page' => 'Shop',
+        'contact' => 'Contact',
         'pending' => 'En attente',
         'rename' => 'Renommer',
         'index' => 'Index',
         'add' => 'Ajouter',
+        "config" => "Configuration",
     ];
 
     /**
@@ -81,7 +85,7 @@ final class BreadscrumbsService
 
             $breadcrumb = [
                 'label' => self::LABELS[$part] ?? ucfirst($part),
-                'route' => $path,
+                'route' => $path === 'app_config' ? 'app_config_index' : $path,
             ];
 
             if ($path === $route && $currentLabel !== null) {

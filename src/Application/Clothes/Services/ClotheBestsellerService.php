@@ -4,10 +4,10 @@ namespace App\Application\Clothes\Services;
 
 use App\Application\Clothes\Model\BestsellerUpdateResult;
 use App\Application\Clothes\Provider\ClotheProvider\ClotheProvider;
+use App\Application\Config\Service\ClothesConfigService;
 use App\Entity\Clothes\Clothes;
 use App\Repository\Clothes\ClothesRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Contracts\Cache\ItemInterface;
 
@@ -20,8 +20,7 @@ final readonly class ClotheBestsellerService
         private ClothesRepository $clothesRepository,
         private EntityManagerInterface $entityManager,
         private CacheInterface $cache,
-        #[Autowire('%app.clothes.bestseller.max_items%')]
-        private int $maxItems,
+        private ClothesConfigService $configService,
     ) {
     }
 
@@ -98,7 +97,7 @@ final readonly class ClotheBestsellerService
             requiresPruning: false,
             bestsellers: $this->getBestsellers(),
             overflow: [],
-            maxItems: $this->maxItems,
+            maxItems: $this->getMaxItems(),
             message: 'Liste bestseller mise a jour.',
         );
     }
@@ -106,7 +105,7 @@ final readonly class ClotheBestsellerService
 
     public function getMaxItems(): int
     {
-        return $this->maxItems;
+        return $this->configService->get()->bestsellerCount;
     }
 
     /**
@@ -115,20 +114,21 @@ final readonly class ClotheBestsellerService
     private function saveSlugs(array $slugs, bool $pruneOverflow): BestsellerUpdateResult
     {
         $slugs = array_values(array_unique(array_filter($slugs)));
-        $overflowSlugs = array_slice($slugs, $this->maxItems);
+        $maxItems = $this->getMaxItems();
+        $overflowSlugs = array_slice($slugs, $maxItems);
 
         if ($overflowSlugs !== [] && !$pruneOverflow) {
             return new BestsellerUpdateResult(
                 success: false,
                 requiresPruning: true,
-                bestsellers: $this->clothesRepository->findDistinctEntitiesBySlugs(array_slice($slugs, 0, $this->maxItems)),
+                bestsellers: $this->clothesRepository->findDistinctEntitiesBySlugs(array_slice($slugs, 0, $maxItems)),
                 overflow: $this->clothesRepository->findDistinctEntitiesBySlugs($overflowSlugs),
-                maxItems: $this->maxItems,
-                message: sprintf('La liste bestseller ne peut pas contenir plus de %d elements.', $this->maxItems),
+                maxItems: $maxItems,
+                message: sprintf('La liste bestseller ne peut pas contenir plus de %d elements.', $maxItems),
             );
         }
 
-        $keptSlugs = array_slice($slugs, 0, $this->maxItems);
+        $keptSlugs = array_slice($slugs, 0, $maxItems);
         $keptSlugMap = array_flip($keptSlugs);
 
         foreach ($this->clothesRepository->findBestsellerVariants() as $variant) {
@@ -151,7 +151,7 @@ final readonly class ClotheBestsellerService
             requiresPruning: false,
             bestsellers: $this->getBestsellers(),
             overflow: [],
-            maxItems: $this->maxItems,
+            maxItems: $maxItems,
             message: 'Liste bestseller mise a jour.',
         );
     }

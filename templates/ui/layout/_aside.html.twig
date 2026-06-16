@@ -79,18 +79,33 @@
         ]
     },
     {
-        title: 'Paramètres',
+        title: 'Configuration',
         path: null,
         children: [
             {
-                label: 'Configuration',
+                label: 'Général',
                 icon: 'ep:setting',
-                path: 'app_config'
+                path: 'app_config_index'
             },
             {
-                label: 'Logs',
-                icon: 'ep:warning',
-                path: 'app_dashboard'
+                label: 'Shop',
+                icon: 'ep:shop',
+                path: 'app_config_pages'
+            },
+            {
+                label: 'Commandes',
+                icon: 'ep:document',
+                path: 'app_config_orders'
+            },
+            {
+                label: 'Vêtements',
+                icon: 'ep:goods',
+                path: 'app_config_clothes'
+            },
+            {
+                label: 'Contact',
+                icon: 'ep:user',
+                path: 'app_config_contact'
             }
         ]
     },
@@ -127,7 +142,10 @@
 
     <div class="aside__menu" >
 		{% for item in menu %}
-			{% include "ui/components/menu/_item.html.twig" with {item} only %}
+			{% include "ui/components/menu/_item.html.twig" with {
+                item: item,
+                currentRoute: app.request.attributes.get('_route')
+            } only %}
 		{% endfor %}
 	</div>
 

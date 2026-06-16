@@ -22,7 +22,7 @@
             class="collection-form"
             data-controller="collection-form"
         >
-            <input type="hidden" name="_csrf_token" value="{{ csrfToken }}">
+            <input type="hidden" name="_token" value="{{ csrf_token('collection_create') }}">
 
             <section class="collection-form__section">
                 <label class="collection-form__field">

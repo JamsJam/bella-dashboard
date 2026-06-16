@@ -15,9 +15,9 @@
                 </header>
 
                 <div class="modal__body">
-                    <input type="hidden" name="_csrf_token" value="{{ csrfToken }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('clothe_edit_' ~ slug) }}">
 
-                    <label class="category-form__field">
+                    {# <label class="category-form__field">
                         <span>Categorie</span>
                         <select name="category" required {{ stimulus_target('clothe-edit-modal', 'category') }} {{ stimulus_action('clothe-edit-modal', 'filterCollections', 'change') }}>
                             {% for category in categories %}
@@ -26,7 +26,7 @@
                                 </option>
                             {% endfor %}
                         </select>
-                    </label>
+                    </label> #}
 
                     <label class="category-form__field">
                         <span>Collection</span>

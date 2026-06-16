@@ -5,11 +5,8 @@
     gap: 1.5rem;
 }
 
-.config-page__grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
-    gap: 1rem;
-    align-items: start;
+.config-page__content {
+    max-inline-size: 52rem;
 }
 
 .config-card {
@@ -32,6 +29,14 @@
     color: var(--text);
 }
 
+.config-field[hidden],
+.config-collection[hidden],
+.config-image-field[hidden],
+.config-file__preview-frame[hidden],
+.config-file__preview[hidden] {
+    display: none !important;
+}
+
 .config-field span,
 .config-checkbox span {
     color: var(--text-muted);
@@ -40,7 +45,9 @@
 }
 
 .config-field input,
-.config-field textarea {
+.config-field textarea,
+.config-field select,
+.config-collection input {
     inline-size: 100%;
     border: 1px solid var(--border);
     border-radius: 0.35rem;
@@ -62,4 +69,195 @@
 .config-card__actions {
     display: flex;
     justify-content: flex-end;
+}
+
+.config-group {
+    @extend %flex-column-start-stretch;
+    gap: 1rem;
+    margin: 0;
+    padding: 1rem;
+    border: 1px solid var(--border);
+    border-radius: 0.5rem;
+}
+
+.config-group legend {
+    padding-inline: 0.4rem;
+    color: var(--text);
+    font-weight: 700;
+}
+
+.config-page-list {
+    display: grid;
+    gap: 0.75rem;
+    margin: 1rem 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.config-page-list__item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem;
+    border: 1px solid var(--border);
+    border-radius: 0.5rem;
+    background: var(--bg-light);
+    color: var(--text);
+}
+
+.config-page-list__item div {
+    @extend %flex-column-start-stretch;
+    gap: 0.25rem;
+}
+
+.config-page-list__item span {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.config-collection {
+    @extend %flex-column-start-stretch;
+    gap: 0.75rem;
+}
+
+.config-collection__header {
+    @extend %flex-row-space-between-center;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    font-weight: 700;
+}
+
+.config-collection__items {
+    @extend %flex-column-start-stretch;
+    gap: 0.75rem;
+}
+
+.config-collection__item {
+    @extend %flex-column-start-stretch;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 0.5rem;
+}
+
+.config-collection__item > div {
+    @extend %flex-column-start-stretch;
+    gap: 0.75rem;
+}
+
+.config-collection__add,
+.config-collection__remove {
+    border: 1px solid var(--border);
+    border-radius: 0.35rem;
+    padding: 0.45rem 0.65rem;
+    background: var(--bg);
+    color: var(--text);
+    cursor: pointer;
+}
+
+.config-collection__remove {
+    align-self: flex-end;
+}
+
+.config-file__row {
+    display: flex;
+    flex-direction: row-reverse;
+    align-items: stretch;
+    justify-content: space-around;
+    gap: 1rem;
+}
+
+.config-file__zone {
+    position: relative;
+    flex: 1 1 24rem;
+    border: 1px dashed var(--border);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    background: var(--bg);
+    cursor: pointer;
+}
+
+.config-image-field {
+    @extend %flex-column-start-stretch;
+    gap: 1rem;
+}
+
+.config-file__zone.is-drag-over {
+    border-color: var(--text);
+    background: var(--bg-light);
+}
+
+.config-file__input {
+    position: absolute;
+    inset: 0;
+    inline-size: 100%;
+    block-size: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.config-file__body {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    min-block-size: 6rem;
+    color: var(--text);
+}
+
+.config-file__preview-frame {
+    display: grid;
+    place-items: center;
+    flex: 0 0 8rem;
+    min-block-size: 8rem;
+    border: 1px solid var(--border);
+    border-radius: 0.5rem;
+    background: var(--bg);
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    text-align: center;
+}
+
+.config-file__preview {
+    inline-size: 7rem;
+    block-size: 7rem;
+    object-fit: contain;
+    border-radius: 0.4rem;
+}
+
+.config-file__preview-empty {
+    padding: 0.75rem;
+}
+
+.config-file__title,
+.config-file__hint {
+    margin: 0;
+}
+
+.config-file__title {
+    font-weight: 700;
+}
+
+.config-file__hint {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.config-cropper {
+    @extend %flex-column-start-stretch;
+    gap: 0.75rem;
+}
+
+.config-cropper .cropperjs-image {
+    max-inline-size: 100%;
+}
+
+@media (max-width: 40rem) {
+    .config-file__row {
+        flex-direction: column;
+    }
+
+    .config-file__preview-frame {
+        flex-basis: auto;
+    }
 }

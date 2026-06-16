@@ -1,7 +1,0 @@
-order:
-    currency: 'EUR'
-    default_status: 'pending'
-    minimum_amount: 0
-    shipping_cost: 0
-    free_shipping_from: null
-    allow_guest_checkout: false

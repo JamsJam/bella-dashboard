@@ -27,7 +27,7 @@
 ###< symfonycasts/sass-bundle ###
 
 ###> uploads ###
-public/uploads/*
+public/images/*
 ###< uploads ###
 
 ###> lexik/jwt-authentication-bundle ###

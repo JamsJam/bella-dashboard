@@ -6,6 +6,7 @@ use App\Entity\Category\Category;
 use App\Application\Clothes\Services\CategoryPublicationService;
 use App\Notifier\Services\FlashService;
 use App\Service\BreadscrumbsService;
+use App\Service\LoggerService;
 use App\UI\Toggle\ToggleActionModel;
 use App\UI\Toggle\ToggleModel;
 use Doctrine\ORM\EntityManagerInterface;
@@ -89,11 +90,13 @@ final class CategoryController extends AbstractController
         EntityManagerInterface $entityManager,
         CsrfTokenManagerInterface $csrfTokenManager,
         FlashService $flashService,
+        LoggerService $logger,
     ): Response {
         $token = new CsrfToken('category_create', (string) $request->request->get('_csrf_token', ''));
 
         if (!$csrfTokenManager->isTokenValid($token)) {
             $flashService->error('Token CSRF invalide.');
+            $logger->warning('Invalid CSRF token for category creation.');
 
             return $this->redirectToRoute('app_clothes_categories');
         }
@@ -129,6 +132,10 @@ final class CategoryController extends AbstractController
         }
 
         $flashService->success('Categorie creee hors-ligne.');
+        $logger->info('Category created.', [
+            'category_id' => $category->getId(),
+            'category_name' => $category->getName(),
+        ]);
 
         return $this->redirectToRoute('app_clothe_category_show', ['id' => $category->getId()]);
     }
@@ -140,15 +147,25 @@ final class CategoryController extends AbstractController
         Request $request,
         CsrfTokenManagerInterface $csrfTokenManager,
         CategoryPublicationService $categoryPublicationService,
+        LoggerService $logger,
     ): JsonResponse {
         $tokenId = $this->getOnlineCsrfTokenId($category);
         $token = new CsrfToken($tokenId, (string) $request->headers->get('X-CSRF-TOKEN', ''));
 
         if (!$csrfTokenManager->isTokenValid($token)) {
+            $logger->warning('Invalid CSRF token for category online toggle.', [
+                'category_id' => $category->getId(),
+                'state' => $state,
+            ]);
+
             return $this->json(['success' => false, 'error' => 'Invalid CSRF token.'], Response::HTTP_FORBIDDEN);
         }
 
         if ($state === 'on' && !$categoryPublicationService->publish($category)) {
+            $logger->warning('Category publication rejected.', [
+                'category_id' => $category->getId(),
+            ]);
+
             return $this->json([
                 'success' => false,
                 'error' => 'Category cannot be published.',
@@ -211,11 +228,15 @@ final class CategoryController extends AbstractController
         EntityManagerInterface $entityManager,
         CsrfTokenManagerInterface $csrfTokenManager,
         FlashService $flashService,
+        LoggerService $logger,
     ): Response {
         $token = new CsrfToken($this->getEditCsrfTokenId($category), (string) $request->request->get('_csrf_token', ''));
 
         if (!$csrfTokenManager->isTokenValid($token)) {
             $flashService->error('Token CSRF invalide.');
+            $logger->warning('Invalid CSRF token for category update.', [
+                'category_id' => $category->getId(),
+            ]);
 
             return $this->redirectToRoute('app_clothe_category_show', ['id' => $category->getId()]);
         }
@@ -243,8 +264,11 @@ final class CategoryController extends AbstractController
         if ($image instanceof UploadedFile) {
             try {
                 $category->setImage($this->storeIllustration($category, $image));
-            } catch (\RuntimeException) {
+            } catch (\RuntimeException $exception) {
                 $flashService->error('Impossible de creer le dossier d upload.');
+                $logger->exception($exception, 'Unable to store category illustration.', [
+                    'category_id' => $category->getId(),
+                ]);
 
                 return $this->redirectToRoute('app_clothe_category_show', ['id' => $category->getId()]);
             }
@@ -252,6 +276,9 @@ final class CategoryController extends AbstractController
 
         $entityManager->flush();
         $flashService->success('Categorie modifiee.');
+        $logger->info('Category updated.', [
+            'category_id' => $category->getId(),
+        ]);
 
         return $this->redirectToRoute('app_clothe_category_show', ['id' => $category->getId()]);
     }
@@ -262,10 +289,15 @@ final class CategoryController extends AbstractController
         Request $request,
         EntityManagerInterface $entityManager,
         CsrfTokenManagerInterface $csrfTokenManager,
+        LoggerService $logger,
     ): Response {
         $token = new CsrfToken($this->getDeleteCsrfTokenId($category), (string) $request->request->get('_csrf_token', ''));
 
         if (!$csrfTokenManager->isTokenValid($token)) {
+            $logger->warning('Invalid CSRF token for category deletion.', [
+                'category_id' => $category->getId(),
+            ]);
+
             return new Response('Invalid CSRF token.', Response::HTTP_FORBIDDEN);
         }
 
@@ -273,6 +305,10 @@ final class CategoryController extends AbstractController
 
         $entityManager->remove($category);
         $entityManager->flush();
+        $logger->info('Category deleted.', [
+            'category_id' => $category->getId(),
+            'row_id' => $rowId,
+        ]);
 
         return new Response(
             sprintf('<turbo-stream action="remove" target="%s"></turbo-stream>', $rowId),
@@ -288,11 +324,15 @@ final class CategoryController extends AbstractController
         EntityManagerInterface $entityManager,
         CsrfTokenManagerInterface $csrfTokenManager,
         FlashService $flashService,
+        LoggerService $logger,
     ): Response {
         $token = new CsrfToken($this->getImageCsrfTokenId($category), (string) $request->request->get('_csrf_token', ''));
 
         if (!$csrfTokenManager->isTokenValid($token)) {
             $flashService->error('Token CSRF invalide.');
+            $logger->warning('Invalid CSRF token for category image update.', [
+                'category_id' => $category->getId(),
+            ]);
 
             return $this->redirectToRoute('app_clothe_category_show', ['id' => $category->getId()]);
         }
@@ -313,8 +353,11 @@ final class CategoryController extends AbstractController
 
         try {
             $category->setImage($this->storeIllustration($category, $image));
-        } catch (\RuntimeException) {
+        } catch (\RuntimeException $exception) {
             $flashService->error('Impossible de creer le dossier d upload.');
+            $logger->exception($exception, 'Unable to store category image.', [
+                'category_id' => $category->getId(),
+            ]);
 
             return $this->redirectToRoute('app_clothe_category_show', ['id' => $category->getId()]);
         }

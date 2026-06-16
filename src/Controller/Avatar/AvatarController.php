@@ -5,6 +5,7 @@ namespace App\Controller\Avatar;
 use App\Application\Avatar\Services\AvatarProductGridService;
 use App\Application\Avatar\Services\AvatarUploadService;
 use App\Service\BreadscrumbsService;
+use App\Service\LoggerService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -39,6 +40,7 @@ final class AvatarController extends AbstractController
         CsrfTokenManagerInterface $csrfTokenManager,
         BreadscrumbsService $breadscrumbs,
         AvatarUploadService $avatarUploadService,
+        LoggerService $logger,
     ): Response
     {
         $route = $request->attributes->get('_route');
@@ -52,10 +54,18 @@ final class AvatarController extends AbstractController
 
         $token = (string) $request->headers->get('X-CSRF-TOKEN', '');
         if (!$csrfTokenManager->isTokenValid(new CsrfToken('avatar_upload', $token))) {
+            $logger->warning('Invalid CSRF token for avatar upload.');
+
             return $this->json(['success' => false, 'error' => 'Invalid CSRF token'], Response::HTTP_FORBIDDEN);
         }
 
         $result = $avatarUploadService->handleChunkUpload($request);
+        if ($result->httpStatus >= 400) {
+            $logger->warning('Avatar upload failed.', [
+                'status' => $result->httpStatus,
+                'result' => $result->toArray(),
+            ]);
+        }
 
         return $this->json($result->toArray(), $result->httpStatus);
     }

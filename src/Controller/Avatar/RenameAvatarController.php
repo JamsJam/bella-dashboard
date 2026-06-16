@@ -8,6 +8,7 @@ use App\Entity\AvatarTemp;
 use App\Message\Avatar\RenameAvatarMessage;
 use App\Notifier\Services\FlashService;
 use App\Service\BreadscrumbsService;
+use App\Service\LoggerService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -53,12 +54,18 @@ final class RenameAvatarController extends AbstractController
     public function checkName(
         Request $request,
         AvatarRenameDestinationResolver $destinationResolver,
+        LoggerService $logger,
     ): Response {
         $newName = (string) $request->query->get('name', '');
         $category = (string) $request->query->get('category', '');
         $filters = json_decode((string) $request->query->get('filters', '{}'), true);
 
         if (!$this->isSafeAvatarName($newName) || $category === '' || !is_array($filters)) {
+            $logger->warning('Invalid avatar rename check payload.', [
+                'name' => $newName,
+                'category' => $category,
+            ]);
+
             return $this->json(['available' => false, 'error' => 'Nom invalide.'], Response::HTTP_BAD_REQUEST);
         }
 
@@ -71,7 +78,12 @@ final class RenameAvatarController extends AbstractController
             );
             $webDirectory = $destinationResolver->resolveWebDirectory($message);
             $absolutePath = $destinationResolver->resolveAbsoluteDirectory($webDirectory).'/'.$newName;
-        } catch (\Throwable) {
+        } catch (\Throwable $exception) {
+            $logger->exception($exception, 'Unable to check avatar rename availability.', [
+                'name' => $newName,
+                'category' => $category,
+            ]);
+
             return $this->json(['available' => false, 'error' => 'Impossible de verifier ce nom.'], Response::HTTP_BAD_REQUEST);
         }
 
@@ -92,10 +104,12 @@ final class RenameAvatarController extends AbstractController
         MessageBusInterface $messageBus,
         EntityManagerInterface $entityManager,
         FlashService $flashService,
+        LoggerService $logger,
     ): RedirectResponse
     {
         if (!$this->isCsrfTokenValid('avatar_rename', (string) $request->request->get('_csrf_token', ''))) {
             $flashService->error('Token CSRF invalide.');
+            $logger->warning('Invalid CSRF token for avatar rename submit.');
 
             return $this->redirectToRoute('app_avatar_rename');
         }
@@ -103,6 +117,7 @@ final class RenameAvatarController extends AbstractController
         $renames = json_decode((string) $request->request->get('renames', '[]'), true);
         if (!is_array($renames)) {
             $flashService->error('Payload de renommage invalide.');
+            $logger->warning('Invalid avatar rename payload.');
 
             return $this->redirectToRoute('app_avatar_rename');
         }
@@ -133,8 +148,12 @@ final class RenameAvatarController extends AbstractController
 
         if ($dispatched > 0) {
             $flashService->success(sprintf('%d renommage(s) envoye(s) au traitement.', $dispatched));
+            $logger->info('Avatar renames dispatched.', [
+                'dispatched_count' => $dispatched,
+            ]);
         } else {
             $flashService->error('Aucun renommage valide a traiter.');
+            $logger->warning('No valid avatar rename to dispatch.');
         }
 
         return $this->redirectToRoute('app_avatar_rename');
@@ -145,14 +164,24 @@ final class RenameAvatarController extends AbstractController
         AvatarTemp $avatarTemp,
         Request $request,
         EntityManagerInterface $entityManager,
+        LoggerService $logger,
         #[Autowire('%kernel.project_dir%')]
         string $projectDir,
     ): Response {
         if (!$this->isCsrfTokenValid('avatar_temp_delete', (string) $request->headers->get('X-CSRF-TOKEN', ''))) {
+            $logger->warning('Invalid CSRF token for avatar temp deletion.', [
+                'avatar_temp_id' => $avatarTemp->getId(),
+            ]);
+
             return $this->json(['success' => false, 'error' => 'Invalid CSRF token.'], Response::HTTP_FORBIDDEN);
         }
 
         if ($avatarTemp->getStatus() !== 'uploaded') {
+            $logger->warning('Avatar temp deletion rejected for current status.', [
+                'avatar_temp_id' => $avatarTemp->getId(),
+                'status' => $avatarTemp->getStatus(),
+            ]);
+
             return $this->json(['success' => false, 'error' => 'Cette image ne peut pas etre supprimee.'], Response::HTTP_CONFLICT);
         }
 
@@ -164,6 +193,9 @@ final class RenameAvatarController extends AbstractController
 
         $entityManager->remove($avatarTemp);
         $entityManager->flush();
+        $logger->info('Avatar temp deleted.', [
+            'avatar_temp_id' => $avatarTemp->getId(),
+        ]);
 
         return $this->json(['success' => true]);
     }

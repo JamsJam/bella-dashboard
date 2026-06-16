@@ -26,8 +26,10 @@
         @extend %theme-transition;
 
         background-color: var(--bg);
-        &.open{
+        &.open,
+        &.active{
             background-color: var(--bg-light);
+            color: var(--text);
             
             svg{
                 
@@ -80,6 +82,11 @@
         &:hover{
             color: var(--text)
         }
+
+        &.active {
+            color: var(--text);
+            font-weight: 700;
+        }
     }   
 }
 
@@ -104,9 +111,9 @@ a.menuItem {
         color 180ms ease-in-out,
         background-color 180ms ease-in-out;
 
-    &:hover {
+    &:hover,
+    &.active {
         background-color: var(--bg-light);
         color: var(--text);
     }
 }
-

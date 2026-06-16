@@ -31,4 +31,18 @@ return [
     'just-extend' => [
         'version' => '5.1.1',
     ],
+    '@symfony/ux-cropperjs' => [
+        'path' => './vendor/symfony/ux-cropperjs/assets/dist/controller.js',
+    ],
+    '@symfony/ux-cropperjs/dist/style.min.css' => [
+        'path' => './vendor/symfony/ux-cropperjs/assets/dist/style.min.css',
+        'type' => 'css',
+    ],
+    'cropperjs' => [
+        'version' => '1.6.2',
+    ],
+    'cropperjs/dist/cropper.min.css' => [
+        'version' => '1.6.2',
+        'type' => 'css',
+    ],
 ];

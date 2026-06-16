@@ -7,8 +7,10 @@
         aria-label="Liste des elements"
     >
         {% for item in items %}
+
             {% set title = item.name ?? 'Avatar ' ~ loop.index %}
             {% set imageUrls = item.imageUrls|default([]) %}
+
             {% if imageUrls is empty and item.imageUrl|default('') %}
                 {% set imageUrls = [item.imageUrl] %}
             {% elseif imageUrls is empty and item.image|default('') %}
@@ -16,6 +18,7 @@
             {% elseif imageUrls is empty and item.images|default([]) is iterable %}
                 {% set imageUrls = item.images %}
             {% endif %}
+
             {% set imageStack %}
                 {% for imageUrl in imageUrls %}
                     <img src="{{ imageUrl }}" alt="{{ title }}" class="product-grid-card__image">
@@ -23,12 +26,16 @@
                     <span class="product-grid-card__placeholder">Aucune image</span>
                 {% endfor %}
             {% endset %}
+
+
+            {#todo macro badge  #}
             {% set statusBadge = '' %}
             {% if item.isOnline is same as(true) %}
                 {% set statusBadge = '<span class="product-grid-card__status product-grid-card__status--online">En ligne</span>' %}
             {% elseif item.isOnline is same as(false) %}
                 {% set statusBadge = '<span class="product-grid-card__status product-grid-card__status--offline">Hors ligne</span>' %}
             {% endif %}
+
             {% set detailUrl = detailUrlTemplate|default('#') == '#'
                 ? '#'
                 : detailUrlTemplate|default('/avatar/__PART__/__ID__')|replace({

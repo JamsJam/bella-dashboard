@@ -1,0 +1,68 @@
+<fieldset class="config-group">
+    <legend>Page</legend>
+
+    <div class="config-field">
+        {{ form_label(form.slug) }}
+        {{ form_widget(form.slug) }}
+        {{ form_help(form.slug) }}
+        {{ form_errors(form.slug) }}
+    </div>
+
+    {% set prototypeHtml %}
+        {% include 'config/_collection_entry.html.twig' with { entry: form.sections.vars.prototype } only %}
+    {% endset %}
+    <div
+        class="config-collection"
+        {{ stimulus_target('config-image-upload', 'collection') }}
+        data-config-collection
+        data-prototype="{{ prototypeHtml|e('html_attr') }}"
+        data-index="{{ form.sections|length }}"
+    >
+        <div class="config-collection__header">
+            {{ form_label(form.sections) }}
+            <button
+                type="button"
+                class="config-collection__add"
+                {{ stimulus_action('config-image-upload', 'addCollectionItem', 'click') }}
+            >Ajouter</button>
+        </div>
+
+        <div class="config-collection__items" {{ stimulus_target('config-image-upload', 'collectionItems') }}>
+            {% for section in form.sections %}
+                {% include 'config/_collection_entry.html.twig' with { entry: section } only %}
+            {% endfor %}
+        </div>
+    </div>
+</fieldset>
+
+<fieldset class="config-group">
+    <legend>SEO</legend>
+
+    <div class="config-field">
+        {{ form_label(form.seoTitle) }}
+        {{ form_widget(form.seoTitle) }}
+        {{ form_help(form.seoTitle) }}
+        {{ form_errors(form.seoTitle) }}
+    </div>
+
+    <div class="config-field">
+        {{ form_label(form.seoMetadescription) }}
+        {{ form_widget(form.seoMetadescription) }}
+        {{ form_help(form.seoMetadescription) }}
+        {{ form_errors(form.seoMetadescription) }}
+    </div>
+
+    <div class="config-field">
+        {{ form_label(form.jsonLdYaml) }}
+        {{ form_widget(form.jsonLdYaml) }}
+        {{ form_help(form.jsonLdYaml) }}
+        {{ form_errors(form.jsonLdYaml) }}
+    </div>
+
+    <div class="config-field">
+        {{ form_label(form.openGraphYaml) }}
+        {{ form_widget(form.openGraphYaml) }}
+        {{ form_help(form.openGraphYaml) }}
+        {{ form_errors(form.openGraphYaml) }}
+    </div>
+</fieldset>

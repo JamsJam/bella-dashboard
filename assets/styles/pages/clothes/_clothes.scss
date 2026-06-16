@@ -508,6 +508,12 @@
     @extend %flex-column-start-stretch;
     gap: 0.4rem;
     color: var(--text);
+
+    & input[type="color"] {
+        min-block-size: 2.75rem;
+        padding-block: 0.25rem;
+    }
+
 }
 
 .collection-form__field[hidden],
@@ -530,11 +536,19 @@
     padding: 0.65rem 0.75rem;
     background: var(--bg);
     color: var(--text);
+
+
+
 }
 
 .collection-form__field textarea {
     resize: vertical;
 }
+
+// .collection-form__field input[type='color'] {
+//     min-block-size: 2.75rem;
+//     padding-block: 0.15rem;
+// }
 
 .collection-form__section-header,
 .collection-form__actions {

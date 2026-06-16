@@ -1,0 +1,41 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Pages shop{% endblock %}
+
+{% block body %}
+    <article class="config-page" aria-labelledby="config-pages-title">
+        <header class="admin-page__header">
+            <div>
+                <h1 id="config-pages-title" class="title">Pages shop</h1>
+                <p class="admin-page__subtitle">Configure les contenus statiques envoyes au front, page par page.</p>
+            </div>
+        </header>
+
+        <section class="config-page__content">
+            <form class="config-card" method="post" action="{{ path('app_config_pages_create') }}">
+                <label class="config-field">
+                    <span>Nouvelle page</span>
+                    <input type="text" name="slug" placeholder="ex: about, faq, livraison">
+                </label>
+                <footer class="config-card__actions">
+                    <button type="submit" class="clothe-show__action">Configurer</button>
+                </footer>
+            </form>
+
+            <ul class="config-page-list">
+                {% for page in pages %}
+                    <li class="config-page-list__item">
+                        <div>
+                            <strong>{{ page.normalizedSlug() }}</strong>
+                            {% if page.seoTitle %}
+                                <span>{{ page.seoTitle }}</span>
+                            {% endif %}
+                        </div>
+                        <a class="clothe-show__button" href="{{ path('app_config_page', { slug: page.normalizedSlug() }) }}">Modifier</a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </section>
+    </article>
+
+{% endblock %}
