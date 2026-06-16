@@ -380,6 +380,7 @@ final class ClotheController extends AbstractController
                 'bestseller' => $this->generateUrl('app_clothes_highlight_image_modal', ['slug' => $slug, 'slot' => 'bestseller']),
                 'featured' => $this->generateUrl('app_clothes_highlight_image_modal', ['slug' => $slug, 'slot' => 'carousel']),
             ],
+            'imagesModalUrl' => $this->generateUrl('app_clothes_images_modal', ['slug' => $slug]),
             'bestsellerToggle' => $this->renderClotheBestsellerToggle($mainClothe, $csrfTokenManager),
             'featuredToggle' => $this->renderClotheFeaturedToggle($mainClothe, $csrfTokenManager),
             'sizeGuideUpdateUrl' => $this->generateUrl('app_clothes_size_guide_update', ['slug' => $slug]),
@@ -735,6 +736,122 @@ final class ClotheController extends AbstractController
         );
     }
 
+    #[Route('/clothes/{slug}/images/modal', name: 'app_clothes_images_modal', methods: ['GET'])]
+    public function imagesModal(
+        string $slug,
+        ClotheService $clotheService,
+        CsrfTokenManagerInterface $csrfTokenManager,
+    ): Response {
+        $variants = $clotheService->getClotheVariantsBySlug($slug);
+
+        if ($variants === []) {
+            throw $this->createNotFoundException('Clothe not found.');
+        }
+
+        /** @var Clothes $mainClothe */
+        $mainClothe = $variants[0];
+        $images = [];
+
+        foreach ($variants as $variant) {
+            $images = array_merge($images, $variant->getImages() ?? []);
+        }
+
+        $html = $this->renderView('clothes/_images_modal.html.twig', [
+            'clotheName' => $mainClothe->getName(),
+            'images' => array_values(array_unique(array_filter($images))),
+            'action' => $this->generateUrl('app_clothes_images_update', ['slug' => $slug]),
+            'csrfToken' => $csrfTokenManager->getToken('clothe_images_'.$slug)->getValue(),
+        ]);
+
+        return new Response(
+            sprintf('<turbo-stream action="update" target="modal-root"><template>%s</template></turbo-stream>', $html),
+            Response::HTTP_OK,
+            ['Content-Type' => 'text/vnd.turbo-stream.html'],
+        );
+    }
+
+    #[Route('/clothes/{slug}/images', name: 'app_clothes_images_update', methods: ['POST'])]
+    public function updateImages(
+        string $slug,
+        Request $request,
+        ClotheService $clotheService,
+        EntityManagerInterface $entityManager,
+        FlashService $flashService,
+        LoggerService $logger,
+    ): RedirectResponse {
+        if (!$this->isCsrfTokenValid('clothe_images_'.$slug, (string) $request->request->get('_csrf_token'))) {
+            $flashService->error('Token CSRF invalide.');
+            $logger->warning('Invalid CSRF token for clothe images update.', [
+                'slug' => $slug,
+            ]);
+
+            return $this->redirectToRoute('app_clothes_show', ['slug' => $slug]);
+        }
+
+        $variants = $clotheService->getClotheVariantsBySlug($slug);
+        if ($variants === []) {
+            $logger->warning('Clothe not found for images update.', [
+                'slug' => $slug,
+            ]);
+
+            throw $this->createNotFoundException('Clothe not found.');
+        }
+
+        /** @var Clothes $mainClothe */
+        $mainClothe = $variants[0];
+        $availableImages = [];
+
+        foreach ($variants as $variant) {
+            $availableImages = array_merge($availableImages, $variant->getImages() ?? []);
+        }
+
+        $availableImages = array_values(array_unique(array_filter($availableImages)));
+        $keptImages = array_values(array_unique(array_filter(
+            $request->request->all('images'),
+            static fn (mixed $image): bool => is_string($image) && in_array($image, $availableImages, true),
+        )));
+
+        $uploadedImages = $request->files->all('uploaded_images');
+        $storedImages = $this->storeClotheImages(
+            is_array($uploadedImages) ? $uploadedImages : [],
+            (string) $mainClothe->getName(),
+        );
+
+        $images = [
+            ...$keptImages,
+            ...array_map(static fn (ClotheImageInput $image): string => $image->path, $storedImages),
+        ];
+
+        if ($images === []) {
+            $flashService->error('Conserve ou ajoute au moins une image.');
+            $logger->warning('Clothe images update rejected without image.', [
+                'slug' => $slug,
+            ]);
+
+            return $this->redirectToRoute('app_clothes_show', ['slug' => $slug]);
+        }
+
+        $now = new \DateTimeImmutable();
+        foreach ($variants as $variant) {
+            if (!$variant instanceof Clothes) {
+                continue;
+            }
+
+            $variant
+                ->setImages($images)
+                ->setEditedAt($now);
+        }
+
+        $entityManager->flush();
+        $flashService->success('Images du vetement mises a jour.');
+        $logger->info('Clothe images updated.', [
+            'slug' => $slug,
+            'images_count' => count($images),
+        ]);
+
+        return $this->redirectToRoute('app_clothes_show', ['slug' => $slug]);
+    }
+
     #[Route('/clothes/{slug}/highlight-image/{slot}', name: 'app_clothes_highlight_image_update', requirements: ['slot' => 'carousel|bestseller'], methods: ['POST'])]
     public function updateHighlightImage(
         string $slug,
@@ -817,7 +934,11 @@ final class ClotheController extends AbstractController
     }
 
     #[Route('/clothes/{slug}/sizes/modal', name: 'app_clothes_sizes_modal', methods: ['GET'])]
-    public function sizesModal(string $slug, ClotheService $clotheService): Response
+    public function sizesModal(
+        string $slug,
+        ClotheService $clotheService,
+        CsrfTokenManagerInterface $csrfTokenManager,
+    ): Response
     {
         $variants = $clotheService->getClotheVariantsBySlug($slug);
 
@@ -835,6 +956,7 @@ final class ClotheController extends AbstractController
             'availableSizes' => ClotheService::AVAILABLE_SIZES,
             'selectedSizes' => $selectedSizes,
             'action' => $this->generateUrl('app_clothes_sizes_update', ['slug' => $slug]),
+            'csrfToken' => $csrfTokenManager->getToken('clothe_sizes_'.$slug)->getValue(),
         ]);
 
         return new Response(
@@ -853,6 +975,15 @@ final class ClotheController extends AbstractController
         LoggerService $logger,
     ): RedirectResponse
     {
+        if (!$this->isCsrfTokenValid('clothe_sizes_'.$slug, (string) $request->request->get('_csrf_token'))) {
+            $flashService->error('Token CSRF invalide.');
+            $logger->warning('Invalid CSRF token for clothe sizes update.', [
+                'slug' => $slug,
+            ]);
+
+            return $this->redirectToRoute('app_clothes_show', ['slug' => $slug]);
+        }
+
         $selectedSizes = $request->request->all('sizes');
         $confirmDelete = $request->request->getBoolean('confirm_delete');
 
@@ -896,6 +1027,13 @@ final class ClotheController extends AbstractController
                 'href' => $this->generateUrl('app_clothes_stock_modal', ['slug' => $slug]),
                 'isActive' => false,
                 'attr' => ['data-turbo-frame' => 'clothe-modal-component'],
+            ],
+            [
+                'id' => 'sizes',
+                'label' => 'Tailles',
+                'href' => $this->generateUrl('app_clothes_sizes_modal', ['slug' => $slug]),
+                'isActive' => false,
+                'attr' => ['data-turbo-stream' => 'true'],
             ],
             ['id' => 'delete', 'label' => 'Supprimer', 'href' => '#', 'isActive' => false],
         ];

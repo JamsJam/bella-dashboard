@@ -22,7 +22,12 @@
 
         <section class="clothe-show__summary">
             <section class="clothe-show__gallery-section" aria-labelledby="clothe-show-gallery-title">
-                <h2 id="clothe-show-gallery-title">Images du vetement</h2>
+                <div class="clothe-show__section-header">
+                    <h2 id="clothe-show-gallery-title">Images du vetement</h2>
+                    <a href="{{ imagesModalUrl }}" class="clothe-show__button" data-turbo-stream>
+                        Modifier les images
+                    </a>
+                </div>
                 <div class="clothe-show__gallery">
                     {% for image in clothe.images %}
                         <figure class="clothe-show__image">

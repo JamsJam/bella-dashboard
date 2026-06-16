@@ -1,0 +1,55 @@
+<div class="modal-backdrop">
+    <dialog class="modal modal--wide" open aria-labelledby="clothe-images-modal-title">
+        <form
+            method="post"
+            action="{{ action }}"
+            enctype="multipart/form-data"
+            data-turbo="false"
+            {{ stimulus_controller('clothe-images-modal') }}
+        >
+            <header class="modal__header">
+                <div>
+                    <h2 id="clothe-images-modal-title">Images du vetement</h2>
+                    <p class="modal__subtitle">{{ clotheName }}</p>
+                </div>
+                <button type="button" class="modal__close" onclick="this.closest('.modal-backdrop').remove()" aria-label="Fermer">
+                    ×
+                </button>
+            </header>
+
+            <div class="modal__body">
+                <input type="hidden" name="_csrf_token" value="{{ csrfToken }}">
+
+                <div class="clothe-image-order" {{ stimulus_target('clothe-images-modal', 'list') }}>
+                    {% for image in images %}
+                        <article class="clothe-image-order__item" {{ stimulus_target('clothe-images-modal', 'item') }}>
+                            <input type="hidden" name="images[]" value="{{ image }}">
+                            <img src="{{ image }}" alt="{{ clotheName }} image {{ loop.index }}">
+                            <div class="clothe-image-order__actions">
+                                <button type="button" {{ stimulus_action('clothe-images-modal', 'moveUp', 'click') }}>Monter</button>
+                                <button type="button" {{ stimulus_action('clothe-images-modal', 'moveDown', 'click') }}>Descendre</button>
+                                <button type="button" {{ stimulus_action('clothe-images-modal', 'remove', 'click') }}>Retirer</button>
+                            </div>
+                        </article>
+                    {% else %}
+                        <p class="clothe-show__empty">Aucune image existante pour ce vetement.</p>
+                    {% endfor %}
+                </div>
+
+                <label class="clothe-image-upload">
+                    <span>Ajouter des images</span>
+                    <input type="file" name="uploaded_images[]" accept=".jpg,.jpeg,.png,image/jpeg,image/png" multiple>
+                </label>
+            </div>
+
+            <footer class="modal__actions">
+                <button type="button" class="clothe-show__button" onclick="this.closest('.modal-backdrop').remove()">
+                    Annuler
+                </button>
+                <button type="submit" class="clothe-show__button clothe-show__button--primary">
+                    Enregistrer
+                </button>
+            </footer>
+        </form>
+    </dialog>
+</div>
