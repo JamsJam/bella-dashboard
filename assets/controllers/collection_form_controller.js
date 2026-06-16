@@ -49,12 +49,12 @@ export default class extends Controller {
             return;
         }
 
-        const colorSelect = modal.querySelector('[data-collection-form-color-select]');
-        const color = colorSelect?.selectedOptions?.[0]?.textContent?.trim() || 'Vetement';
+        const nameInput = modal.querySelector('[data-collection-form-clothe-name-input]');
+        const name = nameInput?.value?.trim() || 'Vetement';
         const summary = document.createElement('div');
         summary.className = 'collection-form__clothe-summary';
         summary.innerHTML = `
-            <strong>${this.escapeHtml(color)}</strong>
+            <strong>${this.escapeHtml(name)}</strong>
             <button type="button" data-action="collection-form#removeClotheSummary">Retirer</button>
         `;
 

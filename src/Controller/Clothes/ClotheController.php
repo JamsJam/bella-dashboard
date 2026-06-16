@@ -3,8 +3,10 @@
 namespace App\Controller\Clothes;
 
 use App\Application\Clothes\DTO\ClotheImageInput;
+use App\Application\Clothes\Guard\ClotheNameGuard;
 use App\Application\Clothes\Guard\ClotheOnlineGuard;
 use App\Application\Clothes\Services\ClothePublicationService;
+use App\Application\Clothes\Services\ClotheRenameService;
 use App\Application\Clothes\Services\ClotheService;
 use App\Application\Clothes\Services\ClotheSizeGuideService;
 use App\Entity\Category\Category;
@@ -413,6 +415,7 @@ final class ClotheController extends AbstractController
         string $slug,
         Request $request,
         ClotheService $clotheService,
+        ClotheRenameService $clotheRenameService,
         EntityManagerInterface $entityManager,
         FlashService $flashService,
         LoggerService $logger,
@@ -432,6 +435,7 @@ final class ClotheController extends AbstractController
 
         $collection = $entityManager->getRepository(Collections::class)->find($request->request->getInt('collection'));
         $price = $request->request->getInt('price');
+        $name = (string) $request->request->get('name', '');
 
         if (
             !$collection instanceof Collections
@@ -442,26 +446,38 @@ final class ClotheController extends AbstractController
             return $this->redirectToRoute('app_clothes_show', ['slug' => $slug]);
         }
 
-        $now = new \DateTimeImmutable();
-        foreach ($variants as $variant) {
-            if (!$variant instanceof Clothes) {
-                continue;
-            }
+        try {
+            $newSlug = $clotheRenameService->renameVariants($variants, $slug, $name);
+            $now = new \DateTimeImmutable();
+            foreach ($variants as $variant) {
+                if (!$variant instanceof Clothes) {
+                    continue;
+                }
 
-            $variant
-                ->setCollection($collection)
-                ->setPrice($price)
-                ->setEditedAt($now);
+                $variant
+                    ->setCollection($collection)
+                    ->setPrice($price)
+                    ->setEditedAt($now);
+            }
+        } catch (\InvalidArgumentException $exception) {
+            $flashService->error($exception->getMessage());
+            $logger->warning('Clothe rename rejected.', [
+                'slug' => $slug,
+                'error' => $exception->getMessage(),
+            ]);
+
+            return $this->redirectToRoute('app_clothes_show', ['slug' => $slug]);
         }
 
         $entityManager->flush();
         $flashService->success('Informations du vetement mises a jour.');
         $logger->info('Clothe updated.', [
-            'slug' => $slug,
+            'old_slug' => $slug,
+            'new_slug' => $newSlug,
             'collection_id' => $collection->getId(),
         ]);
 
-        return $this->redirectToRoute('app_clothes_show', ['slug' => $slug]);
+        return $this->redirectToRoute('app_clothes_show', ['slug' => $newSlug]);
     }
 
     #[Route('/clothes/{slug}/stock/modal', name: 'app_clothes_stock_modal', methods: ['GET'])]
@@ -1109,6 +1125,7 @@ final class ClotheController extends AbstractController
         array $uploadedImages,
         EntityManagerInterface $entityManager,
         Collections $collection,
+        ClotheNameGuard $clotheNameGuard,
     ): void {
         $metaDescription = trim((string) ($data['metadescription'] ?? ''));
         if (mb_strlen($metaDescription) > 180) {
@@ -1136,13 +1153,13 @@ final class ClotheController extends AbstractController
             throw new \InvalidArgumentException('Selectionne une couleur ou cree une nouvelle couleur.');
         }
 
-        $name = $this->createClotheName($collection, $color);
+        $name = $clotheNameGuard->assertNameAvailable((string) ($data['name'] ?? ''));
+        $slug = $clotheNameGuard->createSlug($name);
         $images = $this->storeClotheImages($uploadedImages, $name);
         if ($images === []) {
             throw new \InvalidArgumentException('Ajoute au moins une image pour le vetement.');
         }
 
-        $slug = strtolower((string) (new AsciiSlugger())->slug(sprintf('%s %s', $collection->getName(), $color->getName())));
         foreach ($sizes as $sizeName) {
             $size = $this->findOrCreateSize($sizeName, $entityManager);
             $clothe = (new Clothes())
@@ -1222,16 +1239,6 @@ final class ClotheController extends AbstractController
         return $size;
     }
 
-    private function createClotheName(Collections $collection, Clothescolor $color): string
-    {
-        $name = sprintf('%s - %s', $collection->getName(), $color->getName());
-        if (mb_strlen($name) > 70) {
-            throw new \InvalidArgumentException('Le nom genere du vetement est limite a 70 caracteres.');
-        }
-
-        return $name;
-    }
-
     /**
      * @param list<UploadedFile> $uploadedImages
      * @return list<ClotheImageInput>
@@ -1282,6 +1289,7 @@ final class ClotheController extends AbstractController
         Request $request,
         EntityManagerInterface $entityManager,
         CsrfTokenManagerInterface $csrfTokenManager,
+        ClotheNameGuard $clotheNameGuard,
         FlashService $flashService,
         LoggerService $logger,
     ): Response {
@@ -1311,6 +1319,7 @@ final class ClotheController extends AbstractController
                     uploadedImages: $request->files->all('clotheImages'),
                     entityManager: $entityManager,
                     collection: $collection,
+                    clotheNameGuard: $clotheNameGuard,
                 );
                 $entityManager->flush();
                 $flashService->success('Vetement cree hors-ligne.');

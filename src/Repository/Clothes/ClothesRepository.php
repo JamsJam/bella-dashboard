@@ -149,6 +149,27 @@ class ClothesRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    public function findOneByNameOrSlugExcludingSlug(string $name, string $slug, ?string $excludedSlug = null): ?Clothes
+    {
+        $qb = $this->createQueryBuilder('c');
+
+        $qb
+            ->andWhere($qb->expr()->orX('LOWER(c.name) = :name', 'c.slug = :slug'))
+            ->setParameter('name', mb_strtolower($name))
+            ->setParameter('slug', $slug)
+            ->setMaxResults(1);
+
+        if ($excludedSlug !== null && $excludedSlug !== '') {
+            $qb
+                ->andWhere('c.slug != :excludedSlug')
+                ->setParameter('excludedSlug', $excludedSlug);
+        }
+
+        $clothe = $qb->getQuery()->getOneOrNullResult();
+
+        return $clothe instanceof Clothes ? $clothe : null;
+    }
+
     /**
      * @return Clothes[]
      */

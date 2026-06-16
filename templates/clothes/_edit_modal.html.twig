@@ -15,7 +15,7 @@
                 </header>
 
                 <div class="modal__body">
-                    <input type="hidden" name="_token" value="{{ csrf_token('clothe_edit_' ~ slug) }}">
+                    <input type="hidden" name="_csrf_token" value="{{ csrf_token('clothe_edit_' ~ slug) }}">
 
                     {# <label class="category-form__field">
                         <span>Categorie</span>
@@ -27,6 +27,11 @@
                             {% endfor %}
                         </select>
                     </label> #}
+
+                    <label class="category-form__field">
+                        <span>Nom du vetement</span>
+                        <input type="text" name="name" value="{{ clothe.name }}" required maxlength="70">
+                    </label>
 
                     <label class="category-form__field">
                         <span>Collection</span>

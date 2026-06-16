@@ -3,6 +3,7 @@
 namespace App\Application\Clothes\Persister;
 
 use App\Application\Clothes\DTO\ClotheImageInput;
+use App\Application\Clothes\Guard\ClotheNameGuard;
 use App\Application\Clothes\Services\ClotheService;
 use App\Entity\Clothes\Clothes;
 use App\Entity\Clothes\Clothescolor;
@@ -20,6 +21,7 @@ final class ClothesPersister
 
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
+        private readonly ClotheNameGuard $clotheNameGuard,
         #[Autowire('%kernel.project_dir%')]
         private readonly string $projectDir,
     ) {
@@ -30,8 +32,10 @@ final class ClothesPersister
      */
     public function createForCollection(Collections $collection, array $clothes): void
     {
+        $reservedSlugs = [];
+
         foreach ($clothes as $clothe) {
-            $this->createClotheForCollection($clothe['data'], $clothe['images'], $collection);
+            $this->createClotheForCollection($clothe['data'], $clothe['images'], $collection, $reservedSlugs);
         }
 
         $this->entityManager->flush();
@@ -40,8 +44,9 @@ final class ClothesPersister
     /**
      * @param array<string, mixed> $data
      * @param array<int, mixed> $uploadedImages
+     * @param array<string, true> $reservedSlugs
      */
-    private function createClotheForCollection(array $data, array $uploadedImages, Collections $collection): void
+    private function createClotheForCollection(array $data, array $uploadedImages, Collections $collection, array &$reservedSlugs): void
     {
         $description = trim((string) ($data['description'] ?? ''));
         $metaDescription = trim((string) ($data['metadescription'] ?? ''));
@@ -70,13 +75,18 @@ final class ClothesPersister
             throw new \InvalidArgumentException('Selectionne une couleur ou cree une nouvelle couleur.');
         }
 
-        $name = $this->createClotheName($collection, $color);
+        $name = $this->clotheNameGuard->assertNameAvailable((string) ($data['name'] ?? ''));
+        $slug = $this->clotheNameGuard->createSlug($name);
+        if (isset($reservedSlugs[$slug])) {
+            throw new \InvalidArgumentException('Un autre vetement utilise deja ce nom.');
+        }
+
+        $reservedSlugs[$slug] = true;
         $images = $this->storeClotheImages($uploadedImages, $name);
         if ($images === []) {
             throw new \InvalidArgumentException('Ajoute au moins une image pour le vetement.');
         }
 
-        $slug = $this->createClotheSlug($collection, $color);
         foreach ($sizes as $sizeName) {
             $size = $this->findOrCreateSize($sizeName);
             $clothe = (new Clothes())
@@ -208,21 +218,6 @@ final class ClothesPersister
 
         return in_array($extension, self::IMAGE_EXTENSIONS, true)
             && in_array($mimeType, self::IMAGE_MIME_TYPES, true);
-    }
-
-    private function createClotheSlug(Collections $collection, Clothescolor $color): string
-    {
-        return strtolower((string) (new AsciiSlugger())->slug(sprintf('%s %s', $collection->getName(), $color->getName())));
-    }
-
-    private function createClotheName(Collections $collection, Clothescolor $color): string
-    {
-        $name = sprintf('%s - %s', $collection->getName(), $color->getName());
-        if (mb_strlen($name) > 70) {
-            throw new \InvalidArgumentException('Le nom genere du vetement est limite a 70 caracteres.');
-        }
-
-        return $name;
     }
 
     private function createSku(string $slug, string $sizeName): string

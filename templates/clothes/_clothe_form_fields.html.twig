@@ -1,5 +1,10 @@
 <div class="collection-form__grid">
     <label class="collection-form__field">
+        <span>Nom du vetement</span>
+        <input type="text" name="{{ prefix }}[name]" maxlength="70" required data-collection-form-clothe-name-input>
+    </label>
+
+    <label class="collection-form__field">
         <span>Prix TTC en centimes</span>
         <input type="number" name="{{ prefix }}[price]" min="1" step="1">
     </label>
