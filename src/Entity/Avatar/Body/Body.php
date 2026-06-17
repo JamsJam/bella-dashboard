@@ -6,6 +6,8 @@ use App\Entity\Avatar\Skincolor;
 use App\Entity\Clothes\Clothes;
 use App\Entity\Traits\DateFieldsTrait;
 use App\Repository\Avatar\Body\BodyRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: BodyRepository::class)]
@@ -29,14 +31,23 @@ class Body
     #[ORM\JoinColumn(nullable: false)]
     private ?Morphotype $morphotype = null;
 
-    #[ORM\ManyToOne(inversedBy: 'bodies')]
-    private ?Clothes $clothe = null;
+    /**
+     * @var Collection<int, Clothes>
+     */
+    #[ORM\ManyToMany(targetEntity: Clothes::class, inversedBy: 'bodies')]
+    #[ORM\JoinTable(name: 'body_clothes')]
+    private Collection $clothes;
 
     #[ORM\Column(length: 255)]
     private ?string $image = null;
 
     #[ORM\Column(length: 64)]
     private ?string $checksum = null;
+
+    public function __construct()
+    {
+        $this->clothes = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -81,12 +92,50 @@ class Body
 
     public function getClothe(): ?Clothes
     {
-        return $this->clothe;
+        return $this->clothes->first() ?: null;
     }
 
     public function setClothe(?Clothes $clothe): static
     {
-        $this->clothe = $clothe;
+        foreach ($this->clothes as $currentClothe) {
+            $currentClothe->getBodies()->removeElement($this);
+        }
+
+        $this->clothes->clear();
+
+        if ($clothe instanceof Clothes) {
+            $this->addClothe($clothe);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Clothes>
+     */
+    public function getClothes(): Collection
+    {
+        return $this->clothes;
+    }
+
+    public function addClothe(Clothes $clothe): static
+    {
+        if (!$this->clothes->contains($clothe)) {
+            $this->clothes->add($clothe);
+
+            if (!$clothe->getBodies()->contains($this)) {
+                $clothe->getBodies()->add($this);
+            }
+        }
+
+        return $this;
+    }
+
+    public function removeClothe(Clothes $clothe): static
+    {
+        if ($this->clothes->removeElement($clothe)) {
+            $clothe->getBodies()->removeElement($this);
+        }
 
         return $this;
     }

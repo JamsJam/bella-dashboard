@@ -14,6 +14,8 @@ export default class extends Controller {
         'filtersContainer',
         'filter',
         'newFilter',
+        'newFilterColor',
+        'newFilterGroup',
         'generatedName',
         'renamesInput',
         'finishButton',
@@ -273,7 +275,17 @@ export default class extends Controller {
         this.filterTargets.forEach((select) => {
             const filterName = select.dataset.filterName;
             const customInput = this.newFilterTargets.find((input) => input.dataset.filterName === filterName);
+            const customColor = this.newFilterColorTargets.find((input) => input.dataset.filterName === filterName);
             const customValue = customInput?.value.trim();
+
+            if (select.value === this.constructor.newFilterValue && this.isColorFilter(select)) {
+                filters[filterName] = {
+                    name: customValue,
+                    hexa: customColor?.value || null,
+                };
+
+                return;
+            }
 
             filters[filterName] = select.value === this.constructor.newFilterValue ? customValue : select.value;
         });
@@ -325,17 +337,46 @@ export default class extends Controller {
                     ` : ''}
                 </select>
                 ${filter.allowCreate ? `
-                    <input
+                    <div
                         hidden
-                        type="text"
-                        placeholder="Nom de la nouvelle ${this.escapeAttribute(filter.label.toLowerCase())}"
-                        data-avatar-rename-target="newFilter"
+                        class="avatar-rename__new-filter"
+                        data-avatar-rename-target="newFilterGroup"
                         data-filter-name="${this.escapeAttribute(filter.id)}"
-                        data-action="input->avatar-rename#generateName"
                     >
+                        <input
+                            type="text"
+                            placeholder="Nom de la nouvelle ${this.escapeAttribute(filter.label.toLowerCase())}"
+                            data-avatar-rename-target="newFilter"
+                            data-filter-name="${this.escapeAttribute(filter.id)}"
+                            data-action="input->avatar-rename#generateName"
+                        >
+                        ${this.isColorFilterDefinition(filter) ? `
+                            <input
+                                type="color"
+                                value="#000000"
+                                aria-label="Code couleur"
+                                data-avatar-rename-target="newFilterColor"
+                                data-filter-name="${this.escapeAttribute(filter.id)}"
+                            >
+                        ` : ''}
+                    </div>
                 ` : ''}
             </label>
         `).join('');
+
+        this.filterTargets.forEach((select) => this.toggleNewFilterInput(select));
+    }
+
+    isColorFilter(select) {
+        return this.isColorFilterId(select.dataset.filterName);
+    }
+
+    isColorFilterDefinition(filter) {
+        return this.isColorFilterId(filter.id);
+    }
+
+    isColorFilterId(filterId) {
+        return ['color', 'skinColor'].includes(filterId);
     }
 
     renderEmptyStateIfNeeded() {
@@ -377,6 +418,8 @@ export default class extends Controller {
 
     toggleNewFilterInput(select) {
         const customInput = this.newFilterTargets.find((input) => input.dataset.filterName === select.dataset.filterName);
+        const customColor = this.newFilterColorTargets.find((input) => input.dataset.filterName === select.dataset.filterName);
+        const customGroup = this.newFilterGroupTargets.find((group) => group.dataset.filterName === select.dataset.filterName);
 
         if (!customInput) {
             return;
@@ -384,8 +427,18 @@ export default class extends Controller {
 
         const isNewFilter = select.value === this.constructor.newFilterValue;
 
-        customInput.hidden = !isNewFilter;
+        if (customGroup) {
+            customGroup.hidden = !isNewFilter;
+        } else {
+            customInput.hidden = !isNewFilter;
+        }
+
         customInput.required = isNewFilter;
+
+        if (customColor) {
+            customColor.hidden = !isNewFilter;
+            customColor.disabled = !isNewFilter;
+        }
 
         if (!isNewFilter) {
             customInput.value = '';
@@ -393,6 +446,10 @@ export default class extends Controller {
     }
 
     normalizeValue(value) {
+        if (value && typeof value === 'object') {
+            value = value.name;
+        }
+
         return String(value || '-none-')
             .normalize('NFD')
             .replace(/[\u0300-\u036f]/g, '')

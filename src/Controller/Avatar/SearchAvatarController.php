@@ -23,7 +23,7 @@ final class SearchAvatarController extends AbstractController
         #[MapQueryParameter] ?int $skinColor,
         #[MapQueryParameter] ?int $morphologie,
         #[MapQueryParameter] ?int $morphotype,
-        #[MapQueryParameter] ?int $clothes,
+        #[MapQueryParameter] ?string $clothes,
         #[MapQueryParameter] ?int $collection,
         Request $request, 
         SearchAvatarService $searchAvatarService
@@ -40,7 +40,7 @@ final class SearchAvatarController extends AbstractController
                 'skinColor' => $skinColor ?? 0,
                 'morphologie' => $morphologie ?? 0,
                 'morphotype' => $morphotype ?? 0,
-                'clothes' => $clothes ?? 0,
+                'clothes' => $clothes ?? '',
                 'collection' => $collection ?? 0,
 
             ]

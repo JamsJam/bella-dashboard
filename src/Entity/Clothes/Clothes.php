@@ -68,7 +68,7 @@ class Clothes
     /**
      * @var Collection<int, Body>
      */
-    #[ORM\OneToMany(targetEntity: Body::class, mappedBy: 'clothe')]
+    #[ORM\ManyToMany(targetEntity: Body::class, mappedBy: 'clothes')]
     private Collection $bodies;
 
     #[ORM\Column]
@@ -259,7 +259,7 @@ class Clothes
     {
         if (!$this->bodies->contains($body)) {
             $this->bodies->add($body);
-            $body->setClothe($this);
+            $body->addClothe($this);
         }
 
         return $this;
@@ -268,10 +268,7 @@ class Clothes
     public function removeBody(Body $body): static
     {
         if ($this->bodies->removeElement($body)) {
-            // set the owning side to null (unless already changed)
-            if ($body->getClothe() === $this) {
-                $body->setClothe(null);
-            }
+            $body->removeClothe($this);
         }
 
         return $this;

@@ -440,6 +440,24 @@
     color: var(--text);
 }
 
+.avatar-rename__new-filter {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.avatar-rename__new-filter[hidden] {
+    display: none;
+}
+
+.avatar-rename__new-filter input[type="color"] {
+    inline-size: 3rem;
+    min-inline-size: 3rem;
+    block-size: 2.55rem;
+    padding: 0.2rem;
+}
+
 .avatar-rename__generated {
     padding: 0.75rem;
     border: 1px dashed var(--border);

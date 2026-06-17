@@ -25,7 +25,7 @@ class SkincolorRepository extends ServiceEntityRepository implements AvatarFilte
             throw new \InvalidArgumentException('Invalid skin color name.');
         }
 
-        $skincolor = $this->findOneBy(['name' => $name]);
+        $skincolor = $this->findOneByNormalizedName($name);
         if ($skincolor instanceof Skincolor) {
             return $skincolor;
         }
@@ -38,6 +38,18 @@ class SkincolorRepository extends ServiceEntityRepository implements AvatarFilte
         $this->getEntityManager()->persist($skincolor);
 
         return $skincolor;
+    }
+
+    private function findOneByNormalizedName(string $name): ?Skincolor
+    {
+        $skincolor = $this->createQueryBuilder('s')
+            ->andWhere('LOWER(s.name) = :name')
+            ->setParameter('name', $name)
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        return $skincolor instanceof Skincolor ? $skincolor : null;
     }
 
     private function normalizeName(string $name): string

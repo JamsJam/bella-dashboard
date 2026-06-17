@@ -88,13 +88,25 @@ final class AvatarPartShowController extends AbstractController
             'Couleur de peau' => 'getSkincolor',
             'Forme' => 'getShape',
             'Morphotype' => 'getMorphotype',
-            'Vetement' => 'getClothe',
+            'Vetements' => 'getClothes',
         ] as $label => $getter) {
             if (!method_exists($avatarPart, $getter)) {
                 continue;
             }
 
             $value = $avatarPart->{$getter}();
+
+            if ($value instanceof \Traversable) {
+                $names = $label === 'Vetements'
+                    ? $this->resolveDistinctSlugNames($value)
+                    : $this->resolveTraversableNames($value);
+
+                if ($names !== []) {
+                    $attributes[$label] = implode(', ', $names);
+                }
+
+                continue;
+            }
 
             if (is_object($value)) {
                 $attributes[$label] = $this->resolveName($value);
@@ -106,6 +118,36 @@ final class AvatarPartShowController extends AbstractController
         }
 
         return $attributes;
+    }
+
+    private function resolveTraversableNames(\Traversable $items): array
+    {
+        $names = [];
+
+        foreach ($items as $item) {
+            if (is_object($item)) {
+                $names[] = $this->resolveName($item);
+            }
+        }
+
+        return $names;
+    }
+
+    private function resolveDistinctSlugNames(\Traversable $items): array
+    {
+        $namesBySlug = [];
+
+        foreach ($items as $item) {
+            if (!is_object($item)) {
+                continue;
+            }
+
+            $slug = method_exists($item, 'getSlug') ? (string) $item->getSlug() : '';
+            $key = $slug !== '' ? $slug : (string) $this->resolveId($item);
+            $namesBySlug[$key] ??= $this->resolveName($item);
+        }
+
+        return array_values($namesBySlug);
     }
 
     private function resolveImageUrl(object $avatarPart): string

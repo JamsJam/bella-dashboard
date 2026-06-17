@@ -2,6 +2,7 @@
 
 namespace App\Repository\Avatar\Body;
 
+use App\Application\Avatar\Interface\AvatarFilterValueRepositoryInterface;
 use App\Entity\Avatar\Body\Morphologie;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -9,11 +10,55 @@ use Doctrine\Persistence\ManagerRegistry;
 /**
  * @extends ServiceEntityRepository<Morphologie>
  */
-class MorphologieRepository extends ServiceEntityRepository
+class MorphologieRepository extends ServiceEntityRepository implements AvatarFilterValueRepositoryInterface
 {
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Morphologie::class);
+    }
+
+    public function findOrCreate(string $name): Morphologie
+    {
+        $name = $this->normalizeName($name);
+
+        if ($name === '') {
+            throw new \InvalidArgumentException('Invalid morphologie name.');
+        }
+
+        $morphologie = $this->findOneByNormalizedName($name);
+        if ($morphologie instanceof Morphologie) {
+            return $morphologie;
+        }
+
+        $morphologie = (new Morphologie())
+            ->setName($name)
+            ->setCreatedAt(new \DateTimeImmutable())
+            ->setEditedAt(new \DateTimeImmutable());
+
+        $this->getEntityManager()->persist($morphologie);
+
+        return $morphologie;
+    }
+
+    private function findOneByNormalizedName(string $name): ?Morphologie
+    {
+        $morphologie = $this->createQueryBuilder('m')
+            ->andWhere('LOWER(m.name) = :name')
+            ->setParameter('name', $name)
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        return $morphologie instanceof Morphologie ? $morphologie : null;
+    }
+
+    private function normalizeName(string $name): string
+    {
+        $name = strtolower(trim($name));
+        $name = iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $name) ?: $name;
+        $name = preg_replace('/[^a-z0-9_-]+/', '_', $name) ?? '';
+
+        return trim($name, '_-');
     }
 
     //    /**

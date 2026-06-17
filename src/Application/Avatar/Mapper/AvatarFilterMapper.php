@@ -2,8 +2,8 @@
 
 namespace App\Application\Avatar\Mapper;
 
+use App\Entity\Avatar\Body\Bodysize;
 use App\Entity\Avatar\Body\Morphologie;
-use App\Entity\Avatar\Body\Morphotype;
 use App\Entity\Avatar\Eyebrows\Eyebrowscolor;
 use App\Entity\Avatar\Eyebrows\Eyebrowshape;
 use App\Entity\Avatar\Eyes\Eyecolor;
@@ -39,8 +39,8 @@ final class AvatarFilterMapper
     private const FILTERS_BY_PART = [
         'body' => [
             ['id' => 'skinColor', 'label' => 'Couleur de peau', 'source' => Skincolor::class, 'emptyLabel' => 'Toutes'],
-            ['id' => 'morphologie', 'label' => 'Morphologie', 'source' => Morphologie::class, 'emptyLabel' => 'Toutes', 'allowCreate' => false],
-            ['id' => 'morphotype', 'label' => 'Morphotype', 'source' => Morphotype::class, 'emptyLabel' => 'Tous', 'allowCreate' => false],
+            ['id' => 'morphologie', 'label' => 'Morphologie', 'source' => Morphologie::class, 'emptyLabel' => 'Toutes'],
+            ['id' => 'bodySize', 'label' => 'Taille', 'source' => Bodysize::class, 'emptyLabel' => 'Toutes'],
             ['id' => 'clothes', 'label' => 'Vetement', 'source' => Clothes::class, 'emptyLabel' => 'Tous', 'allowCreate' => false],
             ['id' => 'collection', 'label' => 'Collection', 'source' => Collections::class, 'emptyLabel' => 'Toutes', 'allowCreate' => false],
         ],
@@ -160,6 +160,10 @@ final class AvatarFilterMapper
 
     private function createOptions(string $entityClass, string $emptyLabel): array
     {
+        if ($entityClass === Clothes::class) {
+            return $this->createClothesSlugOptions($emptyLabel);
+        }
+
         $options = [['value' => '', 'label' => $emptyLabel]];
         $entities = $this->entityManager->getRepository($entityClass)->findBy([], ['id' => 'ASC']);
 
@@ -170,6 +174,27 @@ final class AvatarFilterMapper
             if ($id !== null && $label !== null && $label !== '') {
                 $options[] = ['value' => $id, 'label' => $label];
             }
+        }
+
+        return $options;
+    }
+
+    private function createClothesSlugOptions(string $emptyLabel): array
+    {
+        $options = [['value' => '', 'label' => $emptyLabel]];
+        $repository = $this->entityManager->getRepository(Clothes::class);
+
+        if (!method_exists($repository, 'findDistinctEntitiesByName')) {
+            return $options;
+        }
+
+        foreach ($repository->findDistinctEntitiesByName(orderBy: 'c.name', direction: 'asc') as $clothe) {
+            if (!$clothe instanceof Clothes || $clothe->getSlug() === null || $clothe->getSlug() === '') {
+                continue;
+            }
+
+            $label = $clothe->getName() ?: $clothe->getSlug();
+            $options[] = ['value' => $clothe->getSlug(), 'label' => $label];
         }
 
         return $options;

@@ -3,6 +3,7 @@
 namespace App\Application\Avatar\Resolver;
 
 use App\Application\Avatar\Mapper\AvatarRenameFilterMapper;
+use App\Entity\Clothes\Clothes;
 use App\Message\Avatar\RenameAvatarMessage;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
@@ -28,12 +29,13 @@ final readonly class AvatarRenameDestinationResolver
 
         foreach ($this->avatarRenameFilterMapper->getStoragePathFilters($message->category) as $filterId) {
             $value = $message->filters[$filterId] ?? null;
+            $filterName = $this->extractFilterName($value);
 
-            if ($value === null || trim((string) $value) === '') {
+            if ($value === null || $filterName === '') {
                 continue;
             }
 
-            $folderName = $this->resolveFilterFolderName($message->category, $filterId, (string) $value);
+            $folderName = $this->resolveFilterFolderName($message->category, $filterId, $filterName);
             if ($folderName !== '') {
                 $segments[] = $folderName;
             }
@@ -74,10 +76,23 @@ final readonly class AvatarRenameDestinationResolver
                 throw new \InvalidArgumentException('Unknown avatar filter id.');
             }
 
+            if ($filterId === 'clothes' && $entity instanceof Clothes && $entity->getSlug() !== null) {
+                return $this->normalizeToken($entity->getSlug());
+            }
+
             return $this->normalizeToken($this->resolveEntityLabel($entity));
         }
 
         return $this->normalizeToken($value);
+    }
+
+    private function extractFilterName(mixed $value): string
+    {
+        if (is_array($value)) {
+            $value = $value['name'] ?? '';
+        }
+
+        return trim((string) $value);
     }
 
     private function resolveEntityLabel(object $entity): string

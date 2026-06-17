@@ -7,7 +7,9 @@ use App\Application\Avatar\Resolver\AvatarRenameDestinationResolver;
 use App\Application\Avatar\Resolver\AvatarRenameFilterValueResolver;
 use App\Application\Avatar\Resolver\AvatarRenamePartResolver;
 use App\Application\Avatar\Resolver\AvatarRenameSourcePathResolver;
+use App\Entity\Avatar\Body\Body;
 use App\Entity\AvatarTemp;
+use App\Entity\Clothes\Clothes;
 use App\Message\Avatar\RenameAvatarMessage;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -59,7 +61,7 @@ final readonly class AvatarRenameService
             throw new \RuntimeException('Avatar final filename collision.');
         }
 
-        $avatarPart = $this->partResolver->resolvePart($message);
+        $avatarPart = $this->resolveAvatarPart($message);
         $this->hydrateAvatarPart($avatarPart, $message, $sourcePath, $destinationWebDir.'/'.$message->newName);
 
         if (file_exists($destinationPath) && $message->replaceExisting && !unlink($destinationPath)) {
@@ -79,6 +81,61 @@ final readonly class AvatarRenameService
         $this->entityManager->flush();
     }
 
+    private function resolveAvatarPart(RenameAvatarMessage $message): object
+    {
+        if ($message->category !== 'body') {
+            return $this->partResolver->resolvePart($message);
+        }
+
+        $body = new Body();
+        $clothes = $this->resolveClothesForBody($message);
+        foreach ($clothes as $clothe) {
+            $body->addClothe($clothe);
+        }
+
+        return $body;
+    }
+
+    /**
+     * @return list<Clothes>
+     */
+    private function resolveClothesForBody(RenameAvatarMessage $message): array
+    {
+        $value = $message->filters['clothes'] ?? null;
+        $slug = $this->resolveClothesSlug($value);
+
+        if ($slug === '') {
+            return [];
+        }
+
+        $repository = $this->entityManager->getRepository(Clothes::class);
+        if (method_exists($repository, 'findVariantsBySlug')) {
+            return array_values(array_filter(
+                $repository->findVariantsBySlug($slug),
+                fn (mixed $clothe): bool => $clothe instanceof Clothes,
+            ));
+        }
+
+        return [];
+    }
+
+    private function resolveClothesSlug(mixed $value): string
+    {
+        $value = $this->extractFilterName($value);
+
+        if ($value === '') {
+            return '';
+        }
+
+        if (ctype_digit($value)) {
+            $clothe = $this->entityManager->find(Clothes::class, (int) $value);
+
+            return $clothe instanceof Clothes ? (string) $clothe->getSlug() : '';
+        }
+
+        return $value;
+    }
+
     private function assertSafeNewName(string $newName): void
     {
         if (
@@ -94,7 +151,7 @@ final readonly class AvatarRenameService
     private function assertRequiredFilters(RenameAvatarMessage $message): void
     {
         foreach ($this->avatarRenameFilterMapper->getRequiredFilters($message->category) as $filterId) {
-            if (!isset($message->filters[$filterId]) || trim((string) $message->filters[$filterId]) === '') {
+            if (!isset($message->filters[$filterId]) || $this->extractFilterName($message->filters[$filterId]) === '') {
                 throw new \InvalidArgumentException(sprintf('Missing required avatar filter "%s".', $filterId));
             }
         }
@@ -127,7 +184,11 @@ final readonly class AvatarRenameService
         foreach ($message->filters as $filterId => $filterValue) {
             $sourceClass = $this->avatarRenameFilterMapper->getFilterSourceClass($message->category, (string) $filterId);
 
-            if ($sourceClass === null || $filterValue === '' || $filterValue === null) {
+            if ($sourceClass === null || $filterValue === null || $this->extractFilterName($filterValue) === '') {
+                continue;
+            }
+
+            if ($message->category === 'body' && (string) $filterId === 'clothes' && $avatarPart instanceof Body) {
                 continue;
             }
 
@@ -135,9 +196,14 @@ final readonly class AvatarRenameService
                 sourceClass: $sourceClass,
                 part: $message->category,
                 filterId: (string) $filterId,
-                value: (string) $filterValue,
+                value: $filterValue,
+                filters: $message->filters,
             );
             $setter = $this->avatarRenameFilterMapper->getSetterForFilter((string) $filterId);
+
+            if ($this->isContextFilter((string) $filterId)) {
+                continue;
+            }
 
             if (!method_exists($avatarPart, $setter)) {
                 if ($this->avatarRenameFilterMapper->isRequiredFilter($message->category, (string) $filterId)) {
@@ -149,6 +215,10 @@ final readonly class AvatarRenameService
 
             $avatarPart->{$setter}($filterEntity);
         }
+
+        if ($message->category === 'body' && $avatarPart instanceof Body) {
+            $avatarPart->setMorphotype($this->filterValueResolver->resolveBodyMorphotype($message->filters));
+        }
     }
 
     private function callRequiredSetter(object $entity, string $setter, mixed $value): void
@@ -158,5 +228,19 @@ final readonly class AvatarRenameService
         }
 
         $entity->{$setter}($value);
+    }
+
+    private function extractFilterName(mixed $value): string
+    {
+        if (is_array($value)) {
+            $value = $value['name'] ?? '';
+        }
+
+        return trim((string) $value);
+    }
+
+    private function isContextFilter(string $filterId): bool
+    {
+        return in_array($filterId, ['morphologie', 'bodySize'], true);
     }
 }

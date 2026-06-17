@@ -40,7 +40,7 @@ class BodyRepository extends ServiceEntityRepository implements AvatarPartModelI
         ?int $skincolor = null,
         ?int $morphologie = null,
         ?int $morphotype = null,
-        ?int $clothes = null,
+        int|string|null $clothes = null,
         // ?int $collection = null,
     ): array {
         $qb = $this->createQueryBuilder('b');
@@ -70,10 +70,19 @@ class BodyRepository extends ServiceEntityRepository implements AvatarPartModelI
 
         }
 
-        if ($clothes !== 0 && $clothes !== null) {
-            $qb->leftJoin('b.clothe', 'cl')
-                ->andWhere('cl.id = :clothes')
-                ->setParameter('clothes', $clothes);
+        if ($clothes !== 0 && $clothes !== null && $clothes !== '' && $clothes !== '0') {
+            $qb->distinct();
+            $qb->leftJoin('b.clothes', 'cl');
+
+            if (is_numeric($clothes)) {
+                $qb
+                    ->andWhere('cl.id = :clothes')
+                    ->setParameter('clothes', (int) $clothes);
+            } else {
+                $qb
+                    ->andWhere('cl.slug = :clothes')
+                    ->setParameter('clothes', (string) $clothes);
+            }
         }
 
         // if ($collection !== 0 && $collection !== null) {
