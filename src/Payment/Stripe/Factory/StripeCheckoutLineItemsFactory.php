@@ -20,6 +20,7 @@ final readonly class StripeCheckoutLineItemsFactory
                         'name' => $item->getName(),
                         'metadata' => [
                             'product_id' => (string) $item->getProductId(),
+                            'variant_id' => (string) ($item->getVariant()?->getId() ?? $item->getProductId()),
                         ],
                     ],
                 ],

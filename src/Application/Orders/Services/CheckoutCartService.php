@@ -3,6 +3,7 @@
 namespace App\Application\Orders\Services;
 
 use App\ApiResource\Orders\CheckoutCartInput;
+use App\Entity\Clothes\ClothesVariant;
 use App\Entity\Orders\Cart;
 use App\Entity\Orders\CartItem;
 use App\Entity\Users\Customers;
@@ -41,24 +42,35 @@ final readonly class CheckoutCartService
 
     private function createItem(array $payload): CartItem
     {
-        foreach (['productId', 'name', 'quantity', 'unitPriceTTC'] as $field) {
+        foreach (['variantId', 'quantity'] as $field) {
             if (!array_key_exists($field, $payload)) {
                 throw new \InvalidArgumentException(sprintf('Missing cart item field "%s".', $field));
             }
         }
 
-        $productId = filter_var($payload['productId'], FILTER_VALIDATE_INT);
+        $variantId = filter_var($payload['variantId'], FILTER_VALIDATE_INT);
         $quantity = filter_var($payload['quantity'], FILTER_VALIDATE_INT);
-        $unitPriceTTC = filter_var($payload['unitPriceTTC'], FILTER_VALIDATE_INT);
-        $name = trim((string) $payload['name']);
 
-        if ($productId === false || $productId <= 0 || $quantity === false || $quantity <= 0 || $unitPriceTTC === false || $unitPriceTTC <= 0 || $name === '') {
+        if ($variantId === false || $variantId <= 0 || $quantity === false || $quantity <= 0) {
             throw new \InvalidArgumentException('Invalid cart item payload.');
         }
 
+        $variant = $this->entityManager->getRepository(ClothesVariant::class)->findOneWithProduct($variantId);
+        $clothe = $variant?->getClothes();
+
+        if (!$variant instanceof ClothesVariant || !$clothe?->isOnline() || !$variant->isOnline() || $variant->getStock() < $quantity) {
+            throw new \InvalidArgumentException('Selected variant is unavailable.');
+        }
+
+        $unitPriceTTC = (int) $clothe->getPrice();
+        if ($unitPriceTTC <= 0) {
+            throw new \InvalidArgumentException('Selected product has no valid price.');
+        }
+
         return (new CartItem())
-            ->setProductId($productId)
-            ->setName($name)
+            ->setVariant($variant)
+            ->setProductId($variantId)
+            ->setName($variant->getDisplayName())
             ->setQuantity($quantity)
             ->setUnitPriceTTC($unitPriceTTC);
     }

@@ -14,10 +14,46 @@
 
                     <div class="clothe-show__form-row clothe-show__form-row--column">
                         {% for variant in variants %}
-                            <label>
-                                <span>{{ variant.size ? variant.size.name : 'Taille inconnue' }}</span>
-                                <input type="number" name="stocks[{{ variant.id }}]" min="0" step="1" value="{{ variant.stock ?? 0 }}" required>
-                            </label>
+                            <fieldset class="collection-form__variant">
+                                <legend>{{ variant.displayName }}</legend>
+
+                                <label>
+                                    <span>Couleur</span>
+                                    <select name="colors[{{ variant.id }}]" required>
+                                        {% for color in colors %}
+                                            <option value="{{ color.id }}" {% if color.id == variant.color.id|default(null) %}selected{% endif %}>
+                                                {{ color.name }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </label>
+
+                                <label>
+                                    <span>Taille</span>
+                                    <select name="sizes[{{ variant.id }}]" required>
+                                        {% for size in availableSizes %}
+                                            <option value="{{ size }}" {% if size == variant.size.name|default(null) %}selected{% endif %}>
+                                                {{ size }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </label>
+
+                                <label>
+                                    <span>SKU</span>
+                                    <input type="text" value="{{ variant.sku }}" readonly>
+                                </label>
+
+                                <label>
+                                    <span>Stock</span>
+                                    <input type="number" name="stocks[{{ variant.id }}]" min="0" step="1" value="{{ variant.stock ?? 0 }}" required>
+                                </label>
+
+                                <label>
+                                    <span>En ligne</span>
+                                    <input type="checkbox" name="online[{{ variant.id }}]" value="1" {% if variant.online %}checked{% endif %}>
+                                </label>
+                            </fieldset>
                         {% endfor %}
                     </div>
                 </div>

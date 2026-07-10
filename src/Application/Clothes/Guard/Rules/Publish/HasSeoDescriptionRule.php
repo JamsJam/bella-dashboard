@@ -8,6 +8,12 @@ final readonly class HasSeoDescriptionRule implements ClothePublishRuleInterface
 {
     public function validate(Clothes $clothe): ?string
     {
-        return trim((string) $clothe->getMetadescription()) !== '' ? null : 'La meta description SEO est requise.';
+        foreach ($clothe->getVariants() as $variant) {
+            if (trim((string) $variant->getMetadescription()) === '') {
+                return 'Chaque variante doit avoir une meta description SEO.';
+            }
+        }
+
+        return !$clothe->getVariants()->isEmpty() ? null : 'Au moins une variante est requise.';
     }
 }

@@ -3,9 +3,8 @@
 namespace App\Repository\Clothes;
 
 use App\Entity\Clothes\Clothes;
-use Doctrine\ORM\Query\Parameter;
+use App\Entity\Clothes\ClothesVariant;
 use Doctrine\Persistence\ManagerRegistry;
-use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 
 /**
@@ -35,11 +34,12 @@ class ClothesRepository extends ServiceEntityRepository
         $qb = $this->createQueryBuilder('c');
 
         $qb
-            ->addSelect('col', 'cat', 'cc', 'cs')
+            ->addSelect('col', 'cat', 'variants', 'cc', 'cs')
             ->join('c.collection', 'col')
             ->join('col.category', 'cat')
-            ->leftJoin('c.color', 'cc')
-            ->leftJoin('c.size', 'cs')
+            ->leftJoin('c.variants', 'variants')
+            ->leftJoin('variants.color', 'cc')
+            ->leftJoin('variants.size', 'cs')
             ->orderBy($orderBy ?? 'c.name', $direction ?? 'asc')
             ->addOrderBy('c.isOnline', 'desc')
             ->addOrderBy('c.id', 'asc')
@@ -74,37 +74,26 @@ class ClothesRepository extends ServiceEntityRepository
         }
 
         if ($bestsellerOnly) {
-            $qb->andWhere('c.isBestseller = true');
+            $qb->andWhere('variants.isBestseller = true');
         }
 
         if ($online === true) {
             $qb
                 ->andWhere('cat.isOnline = true')
                 ->andWhere('col.isOnline = true')
-                ->andWhere(
-                    $qb->expr()->exists(
-                        $this->createQueryBuilder('onlineVariant')
-                            ->select('1')
-                            ->andWhere('onlineVariant.slug = c.slug')
-                            ->andWhere('onlineVariant.isOnline = true')
-                            ->getDQL(),
-                    ),
-                )
+                ->andWhere('c.isOnline = true')
+                ->andWhere('variants.isOnline = true')
+                ->andWhere('variants.stock > 0')
             ;
         } elseif ($online === false) {
             $qb->andWhere(
                 $qb->expr()->orX(
                     'cat.isOnline = false',
                     'col.isOnline = false',
-                    $qb->expr()->not(
-                        $qb->expr()->exists(
-                            $this->createQueryBuilder('onlineVariant')
-                                ->select('1')
-                                ->andWhere('onlineVariant.slug = c.slug')
-                                ->andWhere('onlineVariant.isOnline = true')
-                                ->getDQL(),
-                        ),
-                    ),
+                    'c.isOnline = false',
+                    'variants.id IS NULL',
+                    'variants.isOnline = false',
+                    'variants.stock <= 0',
                 ),
             );
         }
@@ -117,36 +106,61 @@ class ClothesRepository extends ServiceEntityRepository
             $qb->setFirstResult($offset);
         }
 
-        $clothesBySlug = [];
-
-        foreach ($qb->getQuery()->getResult() as $clothe) {
-            if (!$clothe instanceof Clothes || $clothe->getSlug() === null) {
-                continue;
-            }
-
-            $clothesBySlug[$clothe->getSlug()] ??= $clothe;
-        }
-
-        return array_values($clothesBySlug);
+        return $qb->getQuery()->getResult();
     }
 
     /**
-     * @return Clothes[]
+     * @return ClothesVariant[]
      */
     public function findVariantsBySlug(string $slug): array
     {
-        return $this->createQueryBuilder('c')
-            ->addSelect('col', 'cat', 'cc', 'cs')
+        $clothe = $this->createQueryBuilder('c')
+            ->addSelect('col', 'cat', 'variants', 'cc', 'cs')
             ->join('c.collection', 'col')
             ->join('col.category', 'cat')
-            ->leftJoin('c.color', 'cc')
-            ->leftJoin('c.size', 'cs')
-            ->andWhere('c.slug = :slug')
+            ->join('c.variants', 'slugVariant')
+            ->leftJoin('c.variants', 'variants')
+            ->leftJoin('variants.color', 'cc')
+            ->leftJoin('variants.size', 'cs')
+            ->andWhere('slugVariant.slug = :slug')
             ->setParameter('slug', $slug)
             ->orderBy('cs.name', 'ASC')
-            ->addOrderBy('c.id', 'ASC')
+            ->addOrderBy('variants.id', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getOneOrNullResult();
+
+        if (!$clothe instanceof Clothes) {
+            return [];
+        }
+
+        return array_values(array_filter(
+            $clothe->getVariants()->toArray(),
+            static fn (ClothesVariant $variant): bool => $variant->getSlug() === $slug,
+        ));
+    }
+
+    public function findOneOnlineBySlugWithVariants(string $slug): ?Clothes
+    {
+        $clothe = $this->createQueryBuilder('c')
+            ->addSelect('col', 'cat', 'variants', 'cc', 'cs')
+            ->join('c.collection', 'col')
+            ->join('col.category', 'cat')
+            ->join('c.variants', 'slugVariant')
+            ->join('c.variants', 'variants')
+            ->join('variants.color', 'cc')
+            ->join('variants.size', 'cs')
+            ->andWhere('slugVariant.slug = :slug')
+            ->andWhere('c.isOnline = true')
+            ->andWhere('col.isOnline = true')
+            ->andWhere('cat.isOnline = true')
+            ->andWhere('variants.isOnline = true')
+            ->setParameter('slug', $slug)
+            ->orderBy('cc.name', 'ASC')
+            ->addOrderBy('cs.name', 'ASC')
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        return $clothe instanceof Clothes ? $clothe : null;
     }
 
     public function findOneByNameOrSlugExcludingSlug(string $name, string $slug, ?string $excludedSlug = null): ?Clothes
@@ -154,14 +168,18 @@ class ClothesRepository extends ServiceEntityRepository
         $qb = $this->createQueryBuilder('c');
 
         $qb
-            ->andWhere($qb->expr()->orX('LOWER(c.name) = :name', 'c.slug = :slug'))
+            ->leftJoin('c.variants', 'variants')
+            ->andWhere($qb->expr()->orX('LOWER(c.name) = :name', 'variants.slug = :slug'))
             ->setParameter('name', mb_strtolower($name))
             ->setParameter('slug', $slug)
             ->setMaxResults(1);
 
         if ($excludedSlug !== null && $excludedSlug !== '') {
             $qb
-                ->andWhere('c.slug != :excludedSlug')
+                ->andWhere(sprintf(
+                    'c.id NOT IN (SELECT excludedClothe.id FROM %s excludedClothe JOIN excludedClothe.variants excludedVariant WHERE excludedVariant.slug = :excludedSlug)',
+                    Clothes::class,
+                ))
                 ->setParameter('excludedSlug', $excludedSlug);
         }
 
@@ -175,33 +193,34 @@ class ClothesRepository extends ServiceEntityRepository
      */
     public function findDistinctCollectionItemsBySlug(string $slug, int $limit = 8): array
     {
-        $reference = $this->findOneBy(['slug' => $slug]);
+        $reference = $this->createQueryBuilder('c')
+            ->join('c.variants', 'referenceVariant')
+            ->andWhere('referenceVariant.slug = :slug')
+            ->setParameter('slug', $slug)
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+
         if (!$reference instanceof Clothes || $reference->getCollection() === null) {
             return [];
         }
 
         $results = $this->createQueryBuilder('c')
-            ->addSelect('col', 'cat', 'cc')
+            ->addSelect('col', 'cat', 'variants', 'cc')
             ->join('c.collection', 'col')
             ->join('col.category', 'cat')
-            ->leftJoin('c.color', 'cc')
+            ->leftJoin('c.variants', 'variants')
+            ->leftJoin('variants.color', 'cc')
             ->andWhere('col = :collection')
-            ->andWhere('c.slug != :slug')
+            ->andWhere('c.id != :referenceId')
             ->setParameter('collection', $reference->getCollection())
-            ->setParameter('slug', $slug)
+            ->setParameter('referenceId', $reference->getId())
             ->orderBy('c.name', 'ASC')
             ->addOrderBy('c.id', 'ASC')
             ->getQuery()
             ->getResult();
 
-        $clothesBySlug = [];
-        foreach ($results as $clothe) {
-            if ($clothe instanceof Clothes && $clothe->getSlug() !== null) {
-                $clothesBySlug[$clothe->getSlug()] ??= $clothe;
-            }
-        }
-
-        return array_slice(array_values($clothesBySlug), 0, $limit);
+        return array_slice($results, 0, $limit);
     }
 
     /**
@@ -210,10 +229,11 @@ class ClothesRepository extends ServiceEntityRepository
     public function findClothesInCollection($collection): array
     {
         $qb= $this->createQueryBuilder('c');
-        $qb->select('DISTINCT c.name, c.images, c.isOnline, co.name As collectionName, cc.name AS colorName, c.createdAt')
+        $qb->select('DISTINCT c.name, variants.images, c.isOnline, co.name As collectionName, cc.name AS colorName, c.createdAt')
             ->leftJoin('c.collection','co')
-            ->leftJoin('c.size','cs')
-            ->leftJoin('c.color','cc')
+            ->leftJoin('c.variants','variants')
+            ->leftJoin('variants.size','cs')
+            ->leftJoin('variants.color','cc')
             ->andWhere($qb->expr()->eq('co.id', ':collection'))
             ->setParameter(':collection', $collection->getId())
 
@@ -234,10 +254,11 @@ class ClothesRepository extends ServiceEntityRepository
 
         $qb = $this->createQueryBuilder('c');
 
-        $qb ->select('c.slug, c.name, col.name AS collection , cat.name AS category, c.isOnline')
+        $qb ->select('variants.slug, c.name, col.name AS collection , cat.name AS category, c.isOnline')
             ->join('c.collection', 'col')
             ->join('col.category', 'cat')
-            ->groupBy('c.slug, c.name, col.name, cat.name, c.isOnline')
+            ->leftJoin('c.variants', 'variants')
+            ->groupBy('variants.slug, c.name, col.name, cat.name, c.isOnline')
             ->orderBy($orderBy,$direction)
             ->setMaxResults( $limit )
         ;
@@ -265,14 +286,15 @@ class ClothesRepository extends ServiceEntityRepository
 
         $qb = $this->createQueryBuilder('c');
 
-        $qb ->select('c.slug, c.name, col.name AS collection , cat.name AS category')
+        $qb ->select('variants.slug, c.name, col.name AS collection , cat.name AS category')
             ->join('c.collection', 'col')
             ->join('col.category', 'cat')
-            ->groupBy('c.slug, c.name, col.name, cat.name')
+            ->leftJoin('c.variants', 'variants')
+            ->groupBy('variants.slug, c.name, col.name, cat.name')
             ->orderBy('c.name',"asc")
             ->andWhere($qb->expr()->orX(
                 $qb->expr()->eq(
-                    'c.isBestseller', true),
+                    'variants.isBestseller', true),
             ))
             ->setMaxResults( $limit )
         ;
@@ -287,27 +309,19 @@ class ClothesRepository extends ServiceEntityRepository
     public function findDistinctBestsellerEntities(?int $limit = null): array
     {
         $results = $this->createQueryBuilder('c')
-            ->addSelect('col', 'cat', 'cc', 'cs')
+            ->addSelect('col', 'cat', 'variants', 'cc', 'cs')
             ->join('c.collection', 'col')
             ->join('col.category', 'cat')
-            ->leftJoin('c.color', 'cc')
-            ->leftJoin('c.size', 'cs')
-            ->andWhere('c.isBestseller = true')
+            ->leftJoin('c.variants', 'variants')
+            ->leftJoin('variants.color', 'cc')
+            ->leftJoin('variants.size', 'cs')
+            ->andWhere('variants.isBestseller = true')
             ->orderBy('c.name', 'ASC')
             ->addOrderBy('c.id', 'ASC')
             ->getQuery()
             ->getResult();
 
-        $clothesBySlug = [];
-        foreach ($results as $clothe) {
-            if ($clothe instanceof Clothes && $clothe->getSlug() !== null) {
-                $clothesBySlug[$clothe->getSlug()] ??= $clothe;
-            }
-        }
-
-        $clothes = array_values($clothesBySlug);
-
-        return $limit !== null ? array_slice($clothes, 0, $limit) : $clothes;
+        return $limit !== null ? array_slice($results, 0, $limit) : $results;
     }
 
     /**
@@ -323,11 +337,12 @@ class ClothesRepository extends ServiceEntityRepository
         }
 
         $results = $this->createQueryBuilder('c')
-            ->addSelect('col', 'cat', 'cc', 'cs')
+            ->addSelect('col', 'cat', 'variants', 'cc', 'cs')
             ->join('c.collection', 'col')
             ->join('col.category', 'cat')
-            ->leftJoin('c.color', 'cc')
-            ->leftJoin('c.size', 'cs')
+            ->leftJoin('c.variants', 'variants')
+            ->leftJoin('variants.color', 'cc')
+            ->leftJoin('variants.size', 'cs')
             ->andWhere('c.id IN (:ids)')
             ->setParameter('ids', $ids)
             ->orderBy('c.name', 'ASC')
@@ -335,14 +350,7 @@ class ClothesRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
 
-        $clothesBySlug = [];
-        foreach ($results as $clothe) {
-            if ($clothe instanceof Clothes && $clothe->getSlug() !== null) {
-                $clothesBySlug[$clothe->getSlug()] ??= $clothe;
-            }
-        }
-
-        return array_values($clothesBySlug);
+        return $results;
     }
 
     /**
@@ -358,26 +366,21 @@ class ClothesRepository extends ServiceEntityRepository
         }
 
         $results = $this->createQueryBuilder('c')
-            ->addSelect('col', 'cat', 'cc', 'cs')
+            ->addSelect('col', 'cat', 'variants', 'cc', 'cs')
             ->join('c.collection', 'col')
             ->join('col.category', 'cat')
-            ->leftJoin('c.color', 'cc')
-            ->leftJoin('c.size', 'cs')
-            ->andWhere('c.slug IN (:slugs)')
+            ->leftJoin('c.variants', 'variants')
+            ->leftJoin('variants.color', 'cc')
+            ->leftJoin('variants.size', 'cs')
+            ->join('c.variants', 'slugVariant')
+            ->andWhere('slugVariant.slug IN (:slugs)')
             ->setParameter('slugs', $slugs)
             ->orderBy('c.name', 'ASC')
             ->addOrderBy('c.id', 'ASC')
             ->getQuery()
             ->getResult();
 
-        $clothesBySlug = [];
-        foreach ($results as $clothe) {
-            if ($clothe instanceof Clothes && $clothe->getSlug() !== null) {
-                $clothesBySlug[$clothe->getSlug()] ??= $clothe;
-            }
-        }
-
-        return array_values($clothesBySlug);
+        return $results;
     }
 
 
@@ -412,7 +415,7 @@ class ClothesRepository extends ServiceEntityRepository
 
     /**
      * @param list<string> $slugs
-     * @return Clothes[]
+     * @return ClothesVariant[]
      */
     public function findVariantsBySlugs(array $slugs): array
     {
@@ -423,23 +426,27 @@ class ClothesRepository extends ServiceEntityRepository
         }
 
         return $this->createQueryBuilder('c')
-            ->andWhere('c.slug IN (:slugs)')
+            ->select('variants')
+            ->join('c.variants', 'variants')
+            ->andWhere('variants.slug IN (:slugs)')
             ->setParameter('slugs', $slugs)
-            ->orderBy('c.slug', 'ASC')
-            ->addOrderBy('c.id', 'ASC')
+            ->orderBy('variants.slug', 'ASC')
+            ->addOrderBy('variants.id', 'ASC')
             ->getQuery()
             ->getResult();
     }
 
     /**
-     * @return Clothes[]
+     * @return ClothesVariant[]
      */
     public function findBestsellerVariants(): array
     {
         return $this->createQueryBuilder('c')
-            ->andWhere('c.isBestseller = true')
-            ->orderBy('c.slug', 'ASC')
-            ->addOrderBy('c.id', 'ASC')
+            ->select('variants')
+            ->join('c.variants', 'variants')
+            ->andWhere('variants.isBestseller = true')
+            ->orderBy('variants.slug', 'ASC')
+            ->addOrderBy('variants.id', 'ASC')
             ->getQuery()
             ->getResult();
     }
@@ -450,9 +457,10 @@ class ClothesRepository extends ServiceEntityRepository
     public function findDistinctFeaturedEntities(): array
     {
         $results = $this->createQueryBuilder('c')
-            ->addSelect('col')
+            ->addSelect('col', 'variants')
             ->join('c.collection', 'col')
-            ->andWhere('c.isInCarousel = true')
+            ->join('c.variants', 'variants')
+            ->andWhere('variants.isInCarousel = true')
             ->orderBy('c.name', 'ASC')
             ->addOrderBy('c.id', 'ASC')
             ->getQuery()
@@ -469,14 +477,16 @@ class ClothesRepository extends ServiceEntityRepository
     }
 
     /**
-     * @return Clothes[]
+     * @return ClothesVariant[]
      */
     public function findFeaturedVariants(): array
     {
         return $this->createQueryBuilder('c')
-            ->andWhere('c.isInCarousel = true')
-            ->orderBy('c.slug', 'ASC')
-            ->addOrderBy('c.id', 'ASC')
+            ->select('variants')
+            ->join('c.variants', 'variants')
+            ->andWhere('variants.isInCarousel = true')
+            ->orderBy('variants.slug', 'ASC')
+            ->addOrderBy('variants.id', 'ASC')
             ->getQuery()
             ->getResult();
     }
@@ -489,12 +499,13 @@ class ClothesRepository extends ServiceEntityRepository
     {
         $qb = $this->createQueryBuilder('c');
 
-        $qb ->select('c.slug, c.name, col.name AS collection , cat.name AS category')
+        $qb ->select('variants.slug, c.name, col.name AS collection , cat.name AS category')
             ->join('c.collection', 'col')
             ->join('col.category', 'cat')
-            ->groupBy('c.slug, c.name, col.name, cat.name')
+            ->leftJoin('c.variants', 'variants')
+            ->groupBy('variants.slug, c.name, col.name, cat.name')
             ->orderBy('c.name',"asc")
-            ->andWhere('c.isInCarousel = true')
+            ->andWhere('variants.isInCarousel = true')
         ;
 
         if ($limit !== null) {

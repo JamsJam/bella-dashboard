@@ -6,7 +6,9 @@ use App\Application\Clothes\Model\BestsellerUpdateResult;
 use App\Application\Clothes\Provider\ClotheProvider\ClotheProvider;
 use App\Application\Config\Service\ClothesConfigService;
 use App\Entity\Clothes\Clothes;
+use App\Entity\Clothes\ClothesVariant;
 use App\Repository\Clothes\ClothesRepository;
+use App\Repository\Clothes\ClothesVariantRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Contracts\Cache\ItemInterface;
@@ -18,6 +20,7 @@ final readonly class ClotheBestsellerService
     public function __construct(
         private ClotheProvider $clotheProvider,
         private ClothesRepository $clothesRepository,
+        private ClothesVariantRepository $clothesVariantRepository,
         private EntityManagerInterface $entityManager,
         private CacheInterface $cache,
         private ClothesConfigService $configService,
@@ -60,7 +63,7 @@ final readonly class ClotheBestsellerService
     public function addByIds(array $ids, bool $pruneOverflow = false): BestsellerUpdateResult
     {
         $currentSlugs = $this->extractSlugs($this->getBestsellers());
-        $addedSlugs = $this->extractSlugs($this->clothesRepository->findDistinctEntitiesByIds($ids));
+        $addedSlugs = $this->extractVariantSlugs($this->findVariantsByIds($ids));
 
         return $this->saveSlugs(array_values(array_unique([...$currentSlugs, ...$addedSlugs])), $pruneOverflow);
     }
@@ -71,7 +74,7 @@ final readonly class ClotheBestsellerService
     public function replaceByIds(array $ids, bool $pruneOverflow = false): BestsellerUpdateResult
     {
         return $this->saveSlugs(
-            $this->extractSlugs($this->clothesRepository->findDistinctEntitiesByIds($ids)),
+            $this->extractVariantSlugs($this->findVariantsByIds($ids)),
             $pruneOverflow,
         );
     }
@@ -84,7 +87,7 @@ final readonly class ClotheBestsellerService
         $removedSlugMap = array_flip(array_values(array_unique(array_filter($slugs))));
 
         foreach ($this->clothesRepository->findBestsellerVariants() as $variant) {
-            if ($variant instanceof Clothes && isset($removedSlugMap[(string) $variant->getSlug()])) {
+            if ($variant instanceof ClothesVariant && isset($removedSlugMap[(string) $variant->getSlug()])) {
                 $variant->setIsBestseller(false);
             }
         }
@@ -132,13 +135,13 @@ final readonly class ClotheBestsellerService
         $keptSlugMap = array_flip($keptSlugs);
 
         foreach ($this->clothesRepository->findBestsellerVariants() as $variant) {
-            if ($variant instanceof Clothes && !isset($keptSlugMap[(string) $variant->getSlug()])) {
+            if ($variant instanceof ClothesVariant && !isset($keptSlugMap[(string) $variant->getSlug()])) {
                 $variant->setIsBestseller(false);
             }
         }
 
         foreach ($this->clothesRepository->findVariantsBySlugs($keptSlugs) as $variant) {
-            if ($variant instanceof Clothes) {
+            if ($variant instanceof ClothesVariant) {
                 $variant->setIsBestseller(true);
             }
         }
@@ -165,6 +168,32 @@ final readonly class ClotheBestsellerService
         return array_values(array_filter(array_map(
             static fn (Clothes $clothe): ?string => $clothe->getSlug(),
             $clothes,
+        )));
+    }
+
+    /**
+     * @param list<int> $ids
+     * @return list<ClothesVariant>
+     */
+    private function findVariantsByIds(array $ids): array
+    {
+        $ids = array_values(array_unique(array_filter($ids, static fn (int $id): bool => $id > 0)));
+        if ($ids === []) {
+            return [];
+        }
+
+        return $this->clothesVariantRepository->findBy(['id' => $ids]);
+    }
+
+    /**
+     * @param list<ClothesVariant> $variants
+     * @return list<string>
+     */
+    private function extractVariantSlugs(array $variants): array
+    {
+        return array_values(array_filter(array_map(
+            static fn (ClothesVariant $variant): ?string => $variant->getSlug(),
+            $variants,
         )));
     }
 }

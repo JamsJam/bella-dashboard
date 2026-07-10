@@ -4,6 +4,7 @@ namespace App\Application\Clothes\Guard;
 
 use App\Application\Clothes\Guard\Rules\Publish\ClothePublishRuleInterface;
 use App\Entity\Clothes\Clothes;
+use App\Entity\Clothes\ClothesVariant;
 use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 
 final readonly class ClotheOnlineGuard
@@ -33,7 +34,7 @@ final readonly class ClotheOnlineGuard
     }
 
     /**
-     * @param list<Clothes> $variants
+     * @param list<ClothesVariant> $variants
      */
     public function isOnline(array $variants): bool
     {
@@ -42,7 +43,7 @@ final readonly class ClotheOnlineGuard
         }
 
         foreach ($variants as $variant) {
-            if (!$variant instanceof Clothes || !$variant->isOnline()) {
+            if (!$variant instanceof ClothesVariant || !$variant->isOnline()) {
                 return false;
             }
         }

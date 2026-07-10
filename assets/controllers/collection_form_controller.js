@@ -7,11 +7,15 @@ export default class extends Controller {
         'newCategoryField',
         'clothesList',
         'clotheTemplate',
+        'variantsList',
+        'variantTemplate',
     ];
 
     connect() {
         this.clotheIndex = 0;
+        this.variantIndex = 0;
         this.toggleNewCategoryField();
+        this.ensureInitialVariant();
     }
 
     toggleNewCategoryField() {
@@ -41,6 +45,7 @@ export default class extends Controller {
         const fragment = document.createRange().createContextualFragment(html);
         this.clothesListTarget.appendChild(fragment);
         this.clotheIndex += 1;
+        this.ensureInitialVariant();
     }
 
     confirmClotheModal(event) {
@@ -79,7 +84,7 @@ export default class extends Controller {
     }
 
     toggleNewColorField(event) {
-        const modal = event.currentTarget.closest('.collection-form__clothe-modal') || this.element;
+        const modal = event.currentTarget.closest('[data-collection-form-variant]') || event.currentTarget.closest('.collection-form__clothe-modal') || this.element;
         const colorSelect = event.currentTarget;
         const nameField = modal.querySelector('[data-collection-form-new-color-name]');
         const hexField = modal.querySelector('[data-collection-form-new-color-hex]');
@@ -100,6 +105,36 @@ export default class extends Controller {
                 nameInput.value = '';
             }
         }
+    }
+
+    addVariant(event = null) {
+        const section = event?.currentTarget?.closest('.collection-form__variants') || this.variantsListTargets[0];
+        const template = section?.querySelector('[data-collection-form-variant-template]');
+        const list = section?.matches('[data-collection-form-target~="variantsList"]')
+            ? section
+            : section?.querySelector('[data-collection-form-target~="variantsList"]');
+
+        if (!list || !template) {
+            return;
+        }
+
+        const html = template.innerHTML.replaceAll('__VARIANT_INDEX__', String(this.variantIndex));
+        const fragment = document.createRange().createContextualFragment(html);
+        list.appendChild(fragment);
+        this.variantIndex += 1;
+    }
+
+    removeVariant(event) {
+        event.currentTarget.closest('[data-collection-form-variant]')?.remove();
+        this.ensureInitialVariant();
+    }
+
+    ensureInitialVariant() {
+        this.variantsListTargets.forEach((list) => {
+            if (!list.querySelector('[data-collection-form-variant]')) {
+                this.addVariant({ currentTarget: list });
+            }
+        });
     }
 
     renderImageOrder(event) {

@@ -26,6 +26,18 @@
     align-items: start;
 }
 
+.clothe-show__presentation {
+    @extend %flex-column-start-stretch;
+    gap: 1rem;
+}
+
+.clothe-show__presentation-grid {
+    display: grid;
+    grid-template-columns: minmax(16rem, 34rem) minmax(18rem, 1fr);
+    gap: 1.5rem;
+    align-items: start;
+}
+
 .clothe-show__gallery {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
@@ -84,10 +96,40 @@
     margin: 0;
 }
 
+.clothe-show__information,
+.clothe-show__description {
+    @extend %flex-column-start-stretch;
+    gap: 0.75rem;
+}
+
+.clothe-show__description {
+    padding-block-start: 0.5rem;
+}
+
+.clothe-show__description h3 {
+    margin: 0;
+    color: var(--text);
+    font-size: 0.95rem;
+}
+
+.clothe-show__description p {
+    margin: 0;
+    color: var(--text-muted);
+    line-height: 1.6;
+}
+
 .clothe-show__inline-action,
 .clothe-show__button {
+    border: 0;
+    background: transparent;
     color: var(--primary);
+    font: inherit;
     text-decoration: none;
+    cursor: pointer;
+}
+
+.clothe-show__button--danger {
+    color: var(--danger);
 }
 
 .clothe-show__action {
@@ -148,6 +190,188 @@
     font-size: 0.95rem;
 }
 
+.clothe-show__variant-groups {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+    gap: 1rem;
+}
+
+.clothe-show__variant-group {
+    @extend %flex-column-start-stretch;
+    gap: 0.85rem;
+    padding: 1rem;
+    border: 1px solid var(--border);
+    border-radius: 0.35rem;
+    background: var(--bg-light);
+    color: var(--text);
+}
+
+.clothe-show__variant-group-header,
+.clothe-show__variant-size,
+.clothe-show__variant-toggles,
+.clothe-show__presentation-toggles {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.clothe-show__variant-group-header h3 {
+    margin: 0;
+    font-size: 1.05rem;
+}
+
+.clothe-show__variant-group-header p,
+.clothe-show__variant-size span,
+.clothe-show__variant-toggles span,
+.clothe-show__presentation-toggles span {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+
+.clothe-show__variant-gallery {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.clothe-show__variant-image {
+    inline-size: min(120px, 100%);
+    max-inline-size: 120px;
+    flex: 0 0 min(120px, 100%);
+    margin: 0;
+    aspect-ratio: 1;
+    overflow: hidden;
+    border: 1px solid var(--border-muted);
+    border-radius: 0.35rem;
+    background: var(--bg);
+}
+
+.clothe-show__variant-image img {
+    inline-size: 100%;
+    block-size: 100%;
+    object-fit: contain;
+}
+
+.clothe-show__variant-toggles,
+.clothe-show__presentation-toggles {
+    align-items: stretch;
+}
+
+.clothe-show__variant-toggles > div,
+.clothe-show__presentation-toggles > div,
+.clothe-show__variant-sizes {
+    @extend %flex-column-start-stretch;
+    gap: 0.5rem;
+}
+
+.clothe-show__presentation-toggles {
+    padding-block-start: 0.5rem;
+}
+
+.clothe-show__variant-size {
+    padding: 0.65rem;
+    border: 1px solid var(--border-muted);
+    border-radius: 0.35rem;
+    background: var(--bg);
+}
+
+.clothe-show__variant-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.clothe-show__seo {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+    gap: 0.75rem;
+    margin: 0;
+}
+
+.clothe-show__seo div {
+    @extend %flex-column-start-stretch;
+    gap: 0.45rem;
+    min-block-size: 6rem;
+    padding: 0.85rem;
+    border: 1px solid var(--border);
+    border-radius: 0.35rem;
+    background: var(--bg-light);
+    box-shadow: 0 1px 0 color-mix(in srgb, var(--border) 45%, transparent);
+}
+
+.clothe-show__seo dt {
+    color: var(--text-muted);
+    font-weight: 700;
+}
+
+.clothe-show__seo dd {
+    margin: 0;
+    color: var(--text);
+    overflow-wrap: anywhere;
+}
+
+.clothe-show__stock-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+    gap: 0.75rem;
+}
+
+.clothe-show__variant-card {
+    @extend %flex-column-start-stretch;
+    gap: 0.85rem;
+    min-block-size: 12rem;
+    padding: 0.9rem;
+    border: 1px solid var(--border);
+    border-radius: 0.35rem;
+    background: var(--bg-light);
+    color: var(--text);
+    box-shadow: 0 1px 0 color-mix(in srgb, var(--border) 45%, transparent);
+}
+
+.clothe-show__stock-main,
+.clothe-show__stock-availability,
+.clothe-show__stock-value,
+.clothe-show__stock-toggle {
+    @extend %flex-column-start-stretch;
+    gap: 0.25rem;
+}
+
+.clothe-show__stock-main strong,
+.clothe-show__stock-value strong {
+    font-size: 1.25rem;
+}
+
+.clothe-show__stock-main span,
+.clothe-show__stock-value span {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+
+.clothe-show__card-label {
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.clothe-show__status {
+    inline-size: fit-content;
+    border: 1px solid var(--border-muted);
+    border-radius: 999px;
+    padding: 0.25rem 0.55rem;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.clothe-show__status--available {
+    border-color: var(--success);
+    color: var(--success);
+}
+
 .clothe-show__highlight-preview {
     @extend %flex-row-center-center;
     aspect-ratio: 4 / 3;
@@ -167,9 +391,10 @@
 
 .clothe-show__table-wrap {
     overflow-x: auto;
-    border: 1px solid var(--border);
+    border: 2px solid var(--border);
     border-radius: 0.35rem;
     background: var(--bg-light);
+    box-shadow: 0 1px 0 color-mix(in srgb, var(--border) 55%, transparent);
 }
 
 .clothe-show__size-guide-form {
@@ -1129,6 +1354,7 @@
 
 @container main (max-width: 760px) {
     .clothe-show__summary,
+    .clothe-show__presentation-grid,
     .clothe-show__meta div,
     .category-show__summary,
     .collection-show__summary {

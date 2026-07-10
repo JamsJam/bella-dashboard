@@ -9,6 +9,8 @@
         {{ stimulus_controller('clothe-bestseller')|stimulus_controller('clothe-online') }}
         {{ stimulus_action('clothe-bestseller', 'change', 'toggle:change')|stimulus_action('clothe-bestseller', 'change', 'clothe-featured:change')|stimulus_action('clothe-online', 'change', 'clothe-online:change') }}
     >
+        {% set currentGroup = clothe.variantGroups|first %}
+
         <header class="clothe-show__header">
             <div>
                 <h1 id="clothe-show-title" class="title">{{ clothe.name }}</h1>
@@ -20,86 +22,98 @@
             {% include 'ui/components/tabs/_tabs.html.twig' with { tabs: tabs } only %}
         </header>
 
-        <section class="clothe-show__summary">
-            <section class="clothe-show__gallery-section" aria-labelledby="clothe-show-gallery-title">
-                <div class="clothe-show__section-header">
-                    <h2 id="clothe-show-gallery-title">Images du vetement</h2>
-                    <a href="{{ imagesModalUrl }}" class="clothe-show__button" data-turbo-stream>
-                        Modifier les images
+        <section class="clothe-show__presentation" aria-labelledby="clothe-show-presentation-title">
+            <div class="clothe-show__section-header">
+                <h2 id="clothe-show-presentation-title">Presentation</h2>
+                {% if currentGroup %}
+                    <a href="{{ currentGroup.imagesModalUrl }}" class="clothe-show__button" data-turbo-stream>
+                        Gerer la galerie
                     </a>
-                </div>
+                {% endif %}
+            </div>
+
+            <div class="clothe-show__presentation-grid">
                 <div class="clothe-show__gallery">
                     {% for image in clothe.images %}
                         <figure class="clothe-show__image">
-                            <img src="{{ image }}" alt="{{ clothe.name }} image {{ loop.index }}">
+                            <img src="{{ image }}" alt="{{ clothe.name }} {{ clothe.color }} image {{ loop.index }}">
                         </figure>
                     {% else %}
                         <div class="clothe-show__placeholder">Aucune image</div>
                     {% endfor %}
                 </div>
-            </section>
 
-            <dl class="clothe-show__meta">
-                <div>
-                    <dt>Categorie</dt>
-                    <dd>
-                        {% if clothe.categoryId %}
-                            <a href="{{ path('app_clothe_category_show', { id: clothe.categoryId }) }}">{{ clothe.category }}</a>
-                        {% else %}
-                            Non renseignee
-                        {% endif %}
-                    </dd>
-                </div>
-                <div>
-                    <dt>Collection</dt>
-                    <dd>
-                        {% if clothe.collectionId %}
-                            <a href="{{ path('app_clothes_collection', { id: clothe.collectionId }) }}">{{ clothe.collection }}</a>
-                        {% else %}
-                            Non renseignee
-                        {% endif %}
-                    </dd>
-                </div>
-                <div>
-                    <dt>Bestseller</dt>
-                    <dd>
-                        {{ bestsellerToggle|raw }}
-                    </dd>
-                </div>
-                <div>
-                    <dt>Mise en avant</dt>
-                    <dd>
-                        {{ featuredToggle|raw }}
-                    </dd>
-                </div>
-                <div>
-                    <dt>Prix</dt>
-                    <dd>{{ clothe.price ? (clothe.price / 100)|number_format(2, ',', ' ') ~ ' €' : 'Non renseigne' }}</dd>
-                </div>
-            </dl>
-        </section>
+                <div class="clothe-show__information">
+                    <dl class="clothe-show__meta">
+                        <div>
+                            <dt>Categorie</dt>
+                            <dd>
+                                {% if clothe.categoryId %}
+                                    <a href="{{ path('app_clothe_category_show', { id: clothe.categoryId }) }}">{{ clothe.category }}</a>
+                                {% else %}
+                                    Non renseignee
+                                {% endif %}
+                            </dd>
+                        </div>
+                        <div>
+                            <dt>Collection</dt>
+                            <dd>
+                                {% if clothe.collectionId %}
+                                    <a href="{{ path('app_clothes_collection', { id: clothe.collectionId }) }}">{{ clothe.collection }}</a>
+                                {% else %}
+                                    Non renseignee
+                                {% endif %}
+                            </dd>
+                        </div>
+                        <div>
+                            <dt>Couleur</dt>
+                            <dd>{{ clothe.color ?: 'Non renseignee' }}</dd>
+                        </div>
+                        <div>
+                            <dt>Prix</dt>
+                            <dd>{{ clothe.price ? (clothe.price / 100)|number_format(2, ',', ' ') ~ ' €' : 'Non renseigne' }}</dd>
+                        </div>
+                        <div>
+                            <dt>Stock total</dt>
+                            <dd>{{ clothe.totalStock }}</dd>
+                        </div>
+                        <div>
+                            <dt>Slug</dt>
+                            <dd>{{ clothe.slug }}</dd>
+                        </div>
+                    </dl>
 
-        <section class="clothe-show__section" aria-labelledby="clothe-show-publish-title">
-            <h2 id="clothe-show-publish-title">Mise en ligne par taille</h2>
-            <div class="clothe-show__sizes">
-                {% for size in clothe.sizes %}
-                    <article class="clothe-show__size">
-                        <strong>{{ size.name }}</strong>
-                        <span>{{ size.stock }} en stock</span>
-                        {{ size.onlineToggle|raw }}
-                    </article>
-                {% endfor %}
+                    <div class="clothe-show__description">
+                        <h3>Information</h3>
+                        <p>{{ clothe.description ?: 'Non renseignee' }}</p>
+                    </div>
+
+                    {% if currentGroup %}
+                        <div class="clothe-show__presentation-toggles">
+                            <div>
+                                <span>Bestseller</span>
+                                {{ currentGroup.bestsellerToggle|raw }}
+                            </div>
+                            <div>
+                                <span>Mise en avant</span>
+                                {{ currentGroup.featuredToggle|raw }}
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
             </div>
         </section>
 
         <section class="clothe-show__section" aria-labelledby="clothe-show-highlight-images-title">
-            <h2 id="clothe-show-highlight-images-title">Images mises en avant</h2>
+            <div class="clothe-show__section-header">
+                <h2 id="clothe-show-highlight-images-title">Images mises en avant</h2>
+            </div>
             <div class="clothe-show__highlight-images">
                 <article class="clothe-show__highlight-card">
                     <h3>Image mise en avant</h3>
                     <div class="clothe-show__highlight-preview">
-                        {% if clothe.images[0]|default(null) %}
-                            <img src="{{ clothe.images[0] }}" alt="{{ clothe.name }} mise en avant">
+                        {% if clothe.highlightImage|default(null) %}
+                            <img src="{{ clothe.highlightImage }}" alt="{{ clothe.name }} mise en avant">
                         {% else %}
                             <span>Aucune image</span>
                         {% endif %}
@@ -111,8 +125,8 @@
                 <article class="clothe-show__highlight-card">
                     <h3>Image bestseller</h3>
                     <div class="clothe-show__highlight-preview">
-                        {% if clothe.images[0]|default(null) %}
-                            <img src="{{ clothe.images[0] }}" alt="{{ clothe.name }} bestseller">
+                        {% if clothe.bestsellerImage|default(null) %}
+                            <img src="{{ clothe.bestsellerImage }}" alt="{{ clothe.name }} bestseller">
                         {% else %}
                             <span>Aucune image</span>
                         {% endif %}
@@ -121,6 +135,74 @@
                         Choisir une image
                     </a>
                 </article>
+            </div>
+        </section>
+
+        <section class="clothe-show__section" aria-labelledby="clothe-show-seo-title">
+            <div class="clothe-show__section-header">
+                <h2 id="clothe-show-seo-title">SEO</h2>
+                {% if currentGroup %}
+                    <a href="{{ currentGroup.editUrl }}" class="clothe-show__button" data-turbo-stream>
+                        Modifier
+                    </a>
+                {% endif %}
+            </div>
+            <dl class="clothe-show__seo">
+                <div>
+                    <dt>Titre</dt>
+                    <dd>{{ clothe.name }}</dd>
+                </div>
+                <div>
+                    <dt>Slug</dt>
+                    <dd>{{ clothe.slug }}</dd>
+                </div>
+                <div>
+                    <dt>Meta description</dt>
+                    <dd>{{ clothe.metadescription ?: 'Non renseignee' }}</dd>
+                </div>
+                <div>
+                    <dt>Description</dt>
+                    <dd>{{ clothe.description ?: 'Non renseignee' }}</dd>
+                </div>
+            </dl>
+        </section>
+
+        <section class="clothe-show__section" aria-labelledby="clothe-show-stock-title">
+            <div class="clothe-show__section-header">
+                <h2 id="clothe-show-stock-title">Info variants</h2>
+                <a href="{{ variantsManageUrl }}" class="clothe-show__button" data-turbo-stream>
+                    Gerer les variantes
+                </a>
+            </div>
+            <div class="clothe-show__stock-list">
+                {% for size in clothe.sizes %}
+                    <article class="clothe-show__variant-card">
+                        <div class="clothe-show__stock-main">
+                            <span class="clothe-show__card-label">Taille</span>
+                            <strong>{{ size.name }}</strong>
+                            <span>{{ size.sku ?: 'SKU non renseigne' }}</span>
+                        </div>
+                        <div class="clothe-show__stock-availability">
+                            <span class="clothe-show__card-label">Statut</span>
+                            {% if size.isAvailable %}
+                                <span class="clothe-show__status clothe-show__status--available">Disponible</span>
+                            {% else %}
+                                <span class="clothe-show__status">Indisponible</span>
+                            {% endif %}
+                        </div>
+                        <div class="clothe-show__stock-value">
+                            <span class="clothe-show__card-label">Stock</span>
+                            <strong>{{ size.stock }}</strong>
+                            <span>en stock</span>
+                        </div>
+                        <div class="clothe-show__stock-toggle">
+                            <span class="clothe-show__card-label">En ligne</span>
+                            {{ size.onlineToggle|raw }}
+                        </div>
+                    </article>
+                {% else %}
+                    <p class="clothe-show__empty">Aucune taille.</p>
+                {% endfor %}
             </div>
         </section>
 

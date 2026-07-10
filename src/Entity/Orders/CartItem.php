@@ -2,6 +2,7 @@
 
 namespace App\Entity\Orders;
 
+use App\Entity\Clothes\ClothesVariant;
 use App\Entity\Traits\DateFieldsTrait;
 use App\Repository\Orders\CartItemRepository;
 use Doctrine\ORM\Mapping as ORM;
@@ -22,6 +23,10 @@ class CartItem
 
     #[ORM\Column]
     private ?int $productId = null;
+
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?ClothesVariant $variant = null;
 
     #[ORM\Column(length: 255)]
     private ?string $name = null;
@@ -64,6 +69,21 @@ class CartItem
     public function setProductId(int $productId): static
     {
         $this->productId = $productId;
+
+        return $this;
+    }
+
+    public function getVariant(): ?ClothesVariant
+    {
+        return $this->variant;
+    }
+
+    public function setVariant(?ClothesVariant $variant): static
+    {
+        $this->variant = $variant;
+        if ($variant instanceof ClothesVariant && $variant->getId() !== null) {
+            $this->productId = $variant->getId();
+        }
 
         return $this;
     }

@@ -8,6 +8,12 @@ final readonly class HasColorRule implements ClothePublishRuleInterface
 {
     public function validate(Clothes $clothe): ?string
     {
-        return $clothe->getColor() !== null ? null : 'La couleur est requise.';
+        foreach ($clothe->getVariants() as $variant) {
+            if ($variant->getColor() !== null) {
+                return null;
+            }
+        }
+
+        return 'Au moins une couleur de variante est requise.';
     }
 }

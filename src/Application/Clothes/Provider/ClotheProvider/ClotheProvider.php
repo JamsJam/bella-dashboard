@@ -4,13 +4,15 @@ namespace App\Application\Clothes\Provider\ClotheProvider;
 
 use App\Entity\Clothes\Clothes;
 use App\Repository\Clothes\ClothesRepository;
+use App\Repository\Clothes\ClothesVariantRepository;
 
 
 
 final class ClotheProvider 
 {
     public function __construct(
-        private ClothesRepository $clothesRepository
+        private ClothesRepository $clothesRepository,
+        private ClothesVariantRepository $clothesVariantRepository,
     ){}
 
     public function searchDistinctClothes(
@@ -48,9 +50,9 @@ final class ClotheProvider
         ?int $offset = null,
     ): array {
         $allowedOrder = match ($orderBy) {
-            'collection' => 'col.name',
-            'category' => 'cat.name',
-            'color' => 'cc.name',
+            'collection' => 'collection.name',
+            'category' => 'category.name',
+            'color' => 'color.name',
             default => 'c.name',
         };
         $allowedDirections = match (strtolower((string) $direction)) {
@@ -58,7 +60,7 @@ final class ClotheProvider
             default => 'asc',
         };
 
-        return $this->clothesRepository->findDistinctEntitiesByName(
+        return $this->clothesVariantRepository->findGroupsBySlug(
             $allowedOrder,
             $allowedDirections,
             $query,

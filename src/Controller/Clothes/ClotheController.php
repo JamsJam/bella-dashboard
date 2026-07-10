@@ -11,6 +11,7 @@ use App\Application\Clothes\Services\ClotheService;
 use App\Application\Clothes\Services\ClotheSizeGuideService;
 use App\Entity\Category\Category;
 use App\Entity\Clothes\Clothes;
+use App\Entity\Clothes\ClothesVariant;
 use App\Entity\Clothes\Clothescolor;
 use App\Entity\Clothes\Clothessize;
 use App\Entity\Collections\Collections;
@@ -57,7 +58,7 @@ final class ClotheController extends AbstractController
         $collection = $request->query->getInt('collection') ?: null;
         $bestsellerOnly = $request->query->getBoolean('bestseller');
         $online = $this->resolveOnlineFilter($request->query->get('online'));
-        $clothes = $clotheService->getDistinctClotheByName(
+        $variantGroups = $clotheService->getDistinctClotheByName(
             sortBy: 'name',
             direction: 'asc',
             query: (string) $request->query->get('search', ''),
@@ -72,7 +73,7 @@ final class ClotheController extends AbstractController
             'tabs' => $this->createTabs($bestsellerOnly),
             'gridData' => new ProductGridViewModel(
                 id: 'clothes-grid',
-                items: array_map(fn (Clothes $clothe): ProductGridItemModel => $this->mapClothe($clothe), $clothes),
+                items: array_map(fn (ClothesVariant $variant): ProductGridItemModel => $this->mapVariantGroup($variant), $variantGroups),
                 filters: $this->createFilters($categoryRepository, $collectionsRepository, $category, $collection, $online),
                 searchRoute: 'app_search_clothes',
                 title: 'Bibliotheque de vetements',
@@ -80,6 +81,8 @@ final class ClotheController extends AbstractController
                 noResultsLabel: 'Aucun vetement trouve',
                 detailActionLabel: 'Voir le detail',
                 detailUrlTemplate: '/clothes/__SLUG__',
+                deleteUrlTemplate: '#',
+                deleteCsrfTokenId: null,
                 resourceKey: 'clothes',
                 resourceParamName: 'resource',
                 extraSearchParams: $bestsellerOnly ? ['bestseller' => '1'] : [],
@@ -131,7 +134,7 @@ final class ClotheController extends AbstractController
         #[MapQueryParameter] ?string $online,
         ClotheService $clotheService,
     ): JsonResponse {
-        $clothes = $clotheService->getDistinctClotheByName(
+        $variantGroups = $clotheService->getDistinctClotheByName(
             sortBy: 'name',
             direction: 'asc',
             query: $search ?? '',
@@ -142,7 +145,7 @@ final class ClotheController extends AbstractController
         );
 
         return $this->json([
-            'items' => array_map(fn (Clothes $clothe): array => $this->mapClothe($clothe)->toArray(), $clothes),
+            'items' => array_map(fn (ClothesVariant $variant): array => $this->mapVariantGroup($variant)->toArray(), $variantGroups),
         ]);
     }
 
@@ -241,9 +244,49 @@ final class ClotheController extends AbstractController
             attributes: [
                 'collection' => $clothe->getCollection()?->getName(),
                 'category' => $clothe->getCollection()?->getCategory()?->getName(),
-                'color' => $clothe->getColor()?->getName(),
+                'variants' => (string) $clothe->getVariants()->count(),
+                'stock' => (string) $clothe->getTotalStock(),
             ],
         );
+    }
+
+    private function mapVariantGroup(ClothesVariant $variant): ProductGridItemModel
+    {
+        $clothe = $variant->getClothes();
+        $images = $variant->getImages() ?? [];
+        $groupVariants = $this->filterVariantsByColor($clothe?->getVariants()->toArray() ?? [], $variant->getColor()?->getId());
+        $stock = 0;
+
+        foreach ($groupVariants as $groupVariant) {
+            $stock += $groupVariant->getStock();
+        }
+
+        return new ProductGridItemModel(
+            id: (string) $variant->getId(),
+            name: trim(sprintf('%s %s', (string) $clothe?->getName(), (string) $variant->getColor()?->getName())),
+            imageUrl: (string) ($images[0] ?? $clothe?->getCollection()?->getImage() ?? ''),
+            slug: (string) $variant->getSlug(),
+            isOnline: $this->isVariantGroupEffectivelyOnline($variant),
+            attributes: [
+                'collection' => $clothe?->getCollection()?->getName(),
+                'category' => $clothe?->getCollection()?->getCategory()?->getName(),
+                'sizes' => (string) count($groupVariants),
+                'stock' => (string) $stock,
+            ],
+        );
+    }
+
+    private function isVariantGroupEffectivelyOnline(ClothesVariant $variant): bool
+    {
+        $clothe = $variant->getClothes();
+        $collection = $clothe?->getCollection();
+        $category = $collection?->getCategory();
+
+        return (bool) $category?->isOnline()
+            && (bool) $collection?->isOnline()
+            && (bool) $clothe?->isOnline()
+            && $variant->isOnline()
+            && $variant->getStock() > 0;
     }
 
     private function isEffectivelyOnline(Clothes $clothe): bool
@@ -284,20 +327,20 @@ final class ClotheController extends AbstractController
         $mode = $this->readBestsellerMode($request);
         $slugs = $mode === 'remove'
             ? $this->readBestsellerSlugs($request)
-            : $this->extractClotheSlugs($clothesRepository->findDistinctEntitiesByIds($this->readBestsellerIds($request)));
+            : $this->extractVariantSlugs($this->findVariantsByIds($this->readBestsellerIds($request), $entityManager));
 
         if ($mode === 'replace') {
             $keptSlugMap = array_flip($slugs);
 
             foreach ($clothesRepository->findFeaturedVariants() as $variant) {
-                if ($variant instanceof Clothes && !isset($keptSlugMap[(string) $variant->getSlug()])) {
+                if ($variant instanceof ClothesVariant && !isset($keptSlugMap[(string) $variant->getSlug()])) {
                     $variant->setIsInCarousel(false);
                 }
             }
         }
 
         foreach ($clothesRepository->findVariantsBySlugs($slugs) as $variant) {
-            if ($variant instanceof Clothes) {
+            if ($variant instanceof ClothesVariant) {
                 $variant->setIsInCarousel($mode !== 'remove');
             }
         }
@@ -361,8 +404,7 @@ final class ClotheController extends AbstractController
             throw $this->createNotFoundException('Clothe not found.');
         }
 
-        /** @var Clothes $mainClothe */
-        $mainClothe = $variants[0];
+        $mainClothe = $this->resolveMainClothe($variants);
 
         return $this->render('clothes/show.html.twig', [
             'breadscrumbs' => $breadscrumbs->resolve(
@@ -370,7 +412,7 @@ final class ClotheController extends AbstractController
                 routeParams: ['slug' => $slug],
                 currentLabel: (string) $mainClothe->getName(),
             ),
-            'tabs' => $this->createShowTabs($slug),
+            'tabs' => $this->createShowTabs($slug, (int) $mainClothe->getId()),
             'clothe' => $this->mapClotheDetails($mainClothe, $variants, $clotheOnlineGuard, $clotheSizeGuideService, $csrfTokenManager),
             'sameCollectionClothes' => array_map(
                 fn (Clothes $clothe): ProductGridItemModel => $this->mapClothe($clothe),
@@ -380,7 +422,7 @@ final class ClotheController extends AbstractController
                 'bestseller' => $this->generateUrl('app_clothes_highlight_image_modal', ['slug' => $slug, 'slot' => 'bestseller']),
                 'featured' => $this->generateUrl('app_clothes_highlight_image_modal', ['slug' => $slug, 'slot' => 'carousel']),
             ],
-            'imagesModalUrl' => $this->generateUrl('app_clothes_images_modal', ['slug' => $slug]),
+            'variantsManageUrl' => $this->generateUrl('app_clothes_variants_manage_modal', ['slug' => $slug]),
             'bestsellerToggle' => $this->renderClotheBestsellerToggle($mainClothe, $csrfTokenManager),
             'featuredToggle' => $this->renderClotheFeaturedToggle($mainClothe, $csrfTokenManager),
             'sizeGuideUpdateUrl' => $this->generateUrl('app_clothes_size_guide_update', ['slug' => $slug]),
@@ -400,8 +442,7 @@ final class ClotheController extends AbstractController
             throw $this->createNotFoundException('Clothe not found.');
         }
 
-        /** @var Clothes $mainClothe */
-        $mainClothe = $variants[0];
+        $mainClothe = $this->resolveMainClothe($variants);
 
         return $this->render('clothes/_edit_modal.html.twig', [
             'clothe' => $mainClothe,
@@ -448,17 +489,19 @@ final class ClotheController extends AbstractController
         }
 
         try {
-            $newSlug = $clotheRenameService->renameVariants($variants, $slug, $name);
+            $mainClothe = $this->resolveMainClothe($variants);
+            $newSlug = $clotheRenameService->renameClothe($mainClothe, $slug, $name);
             $now = new \DateTimeImmutable();
+            $mainClothe
+                ->setCollection($collection)
+                ->setPrice($price)
+                ->setEditedAt($now);
             foreach ($variants as $variant) {
-                if (!$variant instanceof Clothes) {
-                    continue;
+                if ($variant instanceof ClothesVariant) {
+                    $variant
+                        ->setSku($this->createVariantSku($mainClothe, $variant->getColor(), $variant->getSize()))
+                        ->setEditedAt($now);
                 }
-
-                $variant
-                    ->setCollection($collection)
-                    ->setPrice($price)
-                    ->setEditedAt($now);
             }
         } catch (\InvalidArgumentException $exception) {
             $flashService->error($exception->getMessage());
@@ -481,10 +524,92 @@ final class ClotheController extends AbstractController
         return $this->redirectToRoute('app_clothes_show', ['slug' => $newSlug]);
     }
 
+    #[Route('/clothes/{id}', name: 'app_clothes_delete', requirements: ['id' => '\d+'], methods: ['DELETE'])]
+    public function delete(
+        Clothes $clothe,
+        Request $request,
+        EntityManagerInterface $entityManager,
+        LoggerService $logger,
+    ): JsonResponse {
+        if (!$this->isCsrfTokenValid('clothe_delete', (string) $request->headers->get('X-CSRF-TOKEN', ''))) {
+            $logger->warning('Invalid CSRF token for clothe deletion.', [
+                'clothe_id' => $clothe->getId(),
+            ]);
+
+            return $this->json([
+                'success' => false,
+                'error' => 'Invalid CSRF token.',
+            ], Response::HTTP_FORBIDDEN);
+        }
+
+        $id = $clothe->getId();
+        $this->removeClothe($clothe, $entityManager, $logger);
+
+        return $this->json([
+            'success' => true,
+            'id' => $id,
+        ]);
+    }
+
+    #[Route('/clothes/{id}/delete/modal', name: 'app_clothes_delete_modal', requirements: ['id' => '\d+'], methods: ['GET'])]
+    public function deleteModal(
+        Clothes $clothe,
+        CsrfTokenManagerInterface $csrfTokenManager,
+    ): Response {
+        $html = $this->renderView('clothes/_delete_modal.html.twig', [
+            'clothe' => $clothe,
+            'action' => $this->generateUrl('app_clothes_delete_confirm', ['id' => $clothe->getId()]),
+            'csrfToken' => $csrfTokenManager->getToken('clothe_delete_'.$clothe->getId())->getValue(),
+        ]);
+
+        return new Response(
+            sprintf('<turbo-stream action="update" target="modal-root"><template>%s</template></turbo-stream>', $html),
+            Response::HTTP_OK,
+            ['Content-Type' => 'text/vnd.turbo-stream.html'],
+        );
+    }
+
+    #[Route('/clothes/{id}/delete', name: 'app_clothes_delete_confirm', requirements: ['id' => '\d+'], methods: ['POST'])]
+    public function confirmDelete(
+        Clothes $clothe,
+        Request $request,
+        EntityManagerInterface $entityManager,
+        FlashService $flashService,
+        LoggerService $logger,
+    ): RedirectResponse {
+        if (!$this->isCsrfTokenValid('clothe_delete_'.$clothe->getId(), (string) $request->request->get('_csrf_token'))) {
+            $flashService->error('Token CSRF invalide.');
+            $logger->warning('Invalid CSRF token for clothe deletion.', [
+                'clothe_id' => $clothe->getId(),
+            ]);
+
+            return $this->redirectToRoute('app_clothes_show', ['slug' => $clothe->getSlug()]);
+        }
+
+        $this->removeClothe($clothe, $entityManager, $logger);
+        $flashService->success('Vetement supprime.');
+
+        return $this->redirectToRoute('app_clothes');
+    }
+
+    private function removeClothe(Clothes $clothe, EntityManagerInterface $entityManager, LoggerService $logger): void
+    {
+        $id = $clothe->getId();
+        $slug = $clothe->getSlug();
+
+        $entityManager->remove($clothe);
+        $entityManager->flush();
+        $logger->info('Clothe deleted.', [
+            'clothe_id' => $id,
+            'slug' => $slug,
+        ]);
+    }
+
     #[Route('/clothes/{slug}/stock/modal', name: 'app_clothes_stock_modal', methods: ['GET'])]
     public function stockModal(
         string $slug,
         ClotheService $clotheService,
+        EntityManagerInterface $entityManager,
         CsrfTokenManagerInterface $csrfTokenManager,
     ): Response {
         $variants = $clotheService->getClotheVariantsBySlug($slug);
@@ -494,6 +619,8 @@ final class ClotheController extends AbstractController
 
         return $this->render('clothes/_stock_modal.html.twig', [
             'variants' => $variants,
+            'colors' => $entityManager->getRepository(Clothescolor::class)->findBy([], ['name' => 'ASC']),
+            'availableSizes' => ClotheService::AVAILABLE_SIZES,
             'action' => $this->generateUrl('app_clothes_stock_update', ['slug' => $slug]),
             'csrfToken' => $csrfTokenManager->getToken('clothe_stock_'.$slug)->getValue(),
         ]);
@@ -527,13 +654,21 @@ final class ClotheController extends AbstractController
         }
 
         $submittedStocks = $request->request->all('stocks');
+        $submittedColors = $request->request->all('colors');
+        $submittedSizes = $request->request->all('sizes');
+        $submittedOnline = $request->request->all('online');
         $stocks = [];
+        $colors = [];
+        $sizes = [];
+        $onlineStates = [];
+        $mainClothe = $this->resolveMainClothe($variants);
 
         foreach ($variants as $variant) {
-            if (!$variant instanceof Clothes || $variant->getId() === null) {
+            if (!$variant instanceof ClothesVariant || $variant->getId() === null) {
                 continue;
             }
 
+            $variantId = (string) $variant->getId();
             $stock = filter_var($submittedStocks[(string) $variant->getId()] ?? null, FILTER_VALIDATE_INT);
             if ($stock === false || $stock < 0) {
                 $flashService->error('Le stock doit etre un entier positif ou nul.');
@@ -546,26 +681,52 @@ final class ClotheController extends AbstractController
             }
 
             $stocks[$variant->getId()] = $stock;
+
+            $color = $entityManager->getRepository(Clothescolor::class)->find((int) ($submittedColors[$variantId] ?? 0));
+            if (!$color instanceof Clothescolor) {
+                $flashService->error('Selectionne une couleur valide pour chaque variante.');
+
+                return $this->redirectToRoute('app_clothes_show', ['slug' => $slug]);
+            }
+
+            $sizeName = trim((string) ($submittedSizes[$variantId] ?? ''));
+            if (!in_array($sizeName, ClotheService::AVAILABLE_SIZES, true)) {
+                $flashService->error('Selectionne une taille valide pour chaque variante.');
+
+                return $this->redirectToRoute('app_clothes_show', ['slug' => $slug]);
+            }
+
+            $colors[$variant->getId()] = $color;
+            $sizes[$variant->getId()] = $this->findOrCreateSize($sizeName, $entityManager);
+            $onlineStates[$variant->getId()] = isset($submittedOnline[$variantId]) && $stock > 0;
         }
 
         $now = new \DateTimeImmutable();
         foreach ($variants as $variant) {
-            if (!$variant instanceof Clothes || $variant->getId() === null) {
+            if (!$variant instanceof ClothesVariant || $variant->getId() === null) {
                 continue;
             }
 
             $stock = $stocks[$variant->getId()];
             $variant
+                ->setColor($colors[$variant->getId()])
+                ->setSize($sizes[$variant->getId()])
+                ->setSku($this->createVariantSku($mainClothe, $colors[$variant->getId()], $sizes[$variant->getId()]))
                 ->setStock($stock)
+                ->setIsOnline($onlineStates[$variant->getId()])
                 ->setEditedAt($now);
+        }
 
-            if ($stock === 0) {
-                $variant->setIsOnline(false);
-            }
+        try {
+            $this->assertUniqueVariantPayload($mainClothe, $entityManager);
+        } catch (\InvalidArgumentException $exception) {
+            $flashService->error($exception->getMessage());
+
+            return $this->redirectToRoute('app_clothes_show', ['slug' => $slug]);
         }
 
         $entityManager->flush();
-        $flashService->success('Stocks mis a jour.');
+        $flashService->success('Variantes mises a jour.');
         $logger->info('Clothe stocks updated.', [
             'slug' => $slug,
             'variants_count' => count($stocks),
@@ -616,6 +777,44 @@ final class ClotheController extends AbstractController
         ]);
     }
 
+    #[Route('/clothes/variant/{id}/online/{state}', name: 'app_clothes_variant_toggle_online', requirements: ['id' => '\d+', 'state' => 'on|off'], methods: ['POST'])]
+    public function toggleVariantOnline(
+        ClothesVariant $variant,
+        string $state,
+        Request $request,
+        CsrfTokenManagerInterface $csrfTokenManager,
+        EntityManagerInterface $entityManager,
+        LoggerService $logger,
+    ): JsonResponse {
+        $token = new CsrfToken($this->getVariantOnlineCsrfTokenId($variant), (string) $request->headers->get('X-CSRF-TOKEN', ''));
+
+        if (!$csrfTokenManager->isTokenValid($token)) {
+            $logger->warning('Invalid CSRF token for clothe variant online toggle.', [
+                'variant_id' => $variant->getId(),
+                'state' => $state,
+            ]);
+
+            return $this->json(['success' => false, 'error' => 'Invalid CSRF token.'], Response::HTTP_FORBIDDEN);
+        }
+
+        if ($state === 'on' && $variant->getStock() <= 0) {
+            return $this->json([
+                'success' => false,
+                'error' => 'Variant cannot be published without stock.',
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        $variant
+            ->setIsOnline($state === 'on')
+            ->setEditedAt(new \DateTimeImmutable());
+        $entityManager->flush();
+
+        return $this->json([
+            'success' => true,
+            'isOnline' => $variant->isOnline(),
+        ]);
+    }
+
     #[Route('/clothes/{slug}/size-guide/preview', name: 'app_clothes_size_guide_preview', methods: ['POST'])]
     public function previewSizeGuide(
         string $slug,
@@ -628,8 +827,7 @@ final class ClotheController extends AbstractController
             throw $this->createNotFoundException('Clothe not found.');
         }
 
-        /** @var Clothes $mainClothe */
-        $mainClothe = $variants[0];
+        $mainClothe = $this->resolveMainClothe($variants);
         $measurements = $request->request->all('measurements');
         $measurementTypes = $request->request->all('measurement_types');
         $sizeGuide = $clotheSizeGuideService->buildPreviewView(
@@ -677,8 +875,7 @@ final class ClotheController extends AbstractController
             throw $this->createNotFoundException('Clothe not found.');
         }
 
-        /** @var Clothes $mainClothe */
-        $mainClothe = $variants[0];
+        $mainClothe = $this->resolveMainClothe($variants);
         $measurements = $request->request->all('measurements');
         $measurementTypes = $request->request->all('measurement_types');
 
@@ -711,12 +908,19 @@ final class ClotheController extends AbstractController
             throw $this->createNotFoundException('Clothe not found.');
         }
 
-        /** @var Clothes $mainClothe */
-        $mainClothe = $variants[0];
+        $mainClothe = $this->resolveMainClothe($variants);
         $images = [];
+        $selectedImage = null;
 
         foreach ($variants as $variant) {
+            if (!$variant instanceof ClothesVariant) {
+                continue;
+            }
+
             $images = array_merge($images, $variant->getImages() ?? []);
+            $selectedImage ??= $slot === 'carousel'
+                ? $variant->getHighlightImage()
+                : $variant->getBestsellerImage();
         }
 
         $html = $this->renderView('clothes/_highlight_image_modal.html.twig', [
@@ -724,7 +928,7 @@ final class ClotheController extends AbstractController
             'slotLabel' => $slot === 'carousel' ? 'carrousel' : 'bestseller',
             'clotheName' => $mainClothe->getName(),
             'images' => array_values(array_unique(array_filter($images))),
-            'selectedImage' => ($mainClothe->getImages() ?? [])[0] ?? null,
+            'selectedImage' => $selectedImage,
             'action' => $this->generateUrl('app_clothes_highlight_image_update', ['slug' => $slug, 'slot' => $slot]),
             'csrfToken' => $csrfTokenManager->getToken('clothe_highlight_image_'.$slug.'_'.$slot)->getValue(),
         ]);
@@ -739,6 +943,7 @@ final class ClotheController extends AbstractController
     #[Route('/clothes/{slug}/images/modal', name: 'app_clothes_images_modal', methods: ['GET'])]
     public function imagesModal(
         string $slug,
+        Request $request,
         ClotheService $clotheService,
         CsrfTokenManagerInterface $csrfTokenManager,
     ): Response {
@@ -748,18 +953,26 @@ final class ClotheController extends AbstractController
             throw $this->createNotFoundException('Clothe not found.');
         }
 
-        /** @var Clothes $mainClothe */
-        $mainClothe = $variants[0];
+        $mainClothe = $this->resolveMainClothe($variants);
+        $colorId = $request->query->getInt('color') ?: null;
+        $imageVariants = $this->filterVariantsByColor($variants, $colorId);
         $images = [];
 
-        foreach ($variants as $variant) {
-            $images = array_merge($images, $variant->getImages() ?? []);
+        foreach ($imageVariants as $variant) {
+            if ($variant instanceof ClothesVariant) {
+                $images = array_merge($images, $variant->getImages() ?? []);
+            }
         }
 
         $html = $this->renderView('clothes/_images_modal.html.twig', [
-            'clotheName' => $mainClothe->getName(),
+            'clotheName' => $colorId !== null && $imageVariants !== []
+                ? sprintf('%s - %s', (string) $mainClothe->getName(), (string) $imageVariants[0]->getColor()?->getName())
+                : $mainClothe->getName(),
             'images' => array_values(array_unique(array_filter($images))),
-            'action' => $this->generateUrl('app_clothes_images_update', ['slug' => $slug]),
+            'action' => $this->generateUrl('app_clothes_images_update', array_filter([
+                'slug' => $slug,
+                'color' => $colorId,
+            ], static fn (mixed $value): bool => $value !== null)),
             'csrfToken' => $csrfTokenManager->getToken('clothe_images_'.$slug)->getValue(),
         ]);
 
@@ -797,12 +1010,15 @@ final class ClotheController extends AbstractController
             throw $this->createNotFoundException('Clothe not found.');
         }
 
-        /** @var Clothes $mainClothe */
-        $mainClothe = $variants[0];
+        $mainClothe = $this->resolveMainClothe($variants);
+        $colorId = $request->query->getInt('color') ?: null;
+        $imageVariants = $this->filterVariantsByColor($variants, $colorId);
         $availableImages = [];
 
-        foreach ($variants as $variant) {
-            $availableImages = array_merge($availableImages, $variant->getImages() ?? []);
+        foreach ($imageVariants as $variant) {
+            if ($variant instanceof ClothesVariant) {
+                $availableImages = array_merge($availableImages, $variant->getImages() ?? []);
+            }
         }
 
         $availableImages = array_values(array_unique(array_filter($availableImages)));
@@ -832,20 +1048,21 @@ final class ClotheController extends AbstractController
         }
 
         $now = new \DateTimeImmutable();
-        foreach ($variants as $variant) {
-            if (!$variant instanceof Clothes) {
-                continue;
-            }
+        $mainClothe->setEditedAt($now);
 
-            $variant
-                ->setImages($images)
-                ->setEditedAt($now);
+        foreach ($imageVariants as $variant) {
+            if ($variant instanceof ClothesVariant) {
+                $variant
+                    ->setImages($images)
+                    ->setEditedAt($now);
+            }
         }
 
         $entityManager->flush();
-        $flashService->success('Images du vetement mises a jour.');
+        $flashService->success($colorId === null ? 'Images du vetement mises a jour.' : 'Images du variant mises a jour.');
         $logger->info('Clothe images updated.', [
             'slug' => $slug,
+            'color_id' => $colorId,
             'images_count' => count($images),
         ]);
 
@@ -882,8 +1099,7 @@ final class ClotheController extends AbstractController
             throw $this->createNotFoundException('Clothe not found.');
         }
 
-        /** @var Clothes $mainClothe */
-        $mainClothe = $variants[0];
+        $mainClothe = $this->resolveMainClothe($variants);
         $selectedImage = trim((string) $request->request->get('selected_image', ''));
         $uploadedImage = $request->files->get('uploaded_image');
 
@@ -894,7 +1110,9 @@ final class ClotheController extends AbstractController
 
         $availableImages = [];
         foreach ($variants as $variant) {
-            $availableImages = array_merge($availableImages, $variant->getImages() ?? []);
+            if ($variant instanceof ClothesVariant) {
+                $availableImages = array_merge($availableImages, $variant->getImages() ?? []);
+            }
         }
 
         if ($selectedImage === '' || (!in_array($selectedImage, $availableImages, true) && !($uploadedImage instanceof UploadedFile))) {
@@ -908,19 +1126,22 @@ final class ClotheController extends AbstractController
         }
 
         $now = new \DateTimeImmutable();
-        foreach ($variants as $variant) {
-            $images = array_values(array_filter(
-                $variant->getImages() ?? [],
-                static fn (string $image): bool => $image !== $selectedImage,
-            ));
+        $mainClothe->setEditedAt($now);
 
-            $variant
-                ->setImages([$selectedImage, ...$images])
-                ->setEditedAt($now);
+        foreach ($variants as $variant) {
+            if (!$variant instanceof ClothesVariant) {
+                continue;
+            }
 
             if ($slot === 'carousel') {
-                $variant->setIsInCarousel(true);
+                $variant
+                    ->setHighlightImage($selectedImage)
+                    ->setIsInCarousel(true);
+            } else {
+                $variant->setBestsellerImage($selectedImage);
             }
+
+            $variant->setEditedAt($now);
         }
 
         $entityManager->flush();
@@ -947,7 +1168,7 @@ final class ClotheController extends AbstractController
         }
 
         $selectedSizes = array_values(array_filter(array_map(
-            fn (Clothes $clothe): ?string => $clothe->getSize()?->getName(),
+            fn (ClothesVariant $variant): ?string => $variant->getSize()?->getName(),
             $variants,
         )));
 
@@ -1010,7 +1231,7 @@ final class ClotheController extends AbstractController
         return $this->redirectToRoute('app_clothes_show', ['slug' => $slug]);
     }
 
-    private function createShowTabs(string $slug): array
+    private function createShowTabs(string $slug, int $clotheId): array
     {
         return [
             ['id' => 'back', 'label' => 'Retour', 'href' => $this->generateUrl('app_clothes'), 'isActive' => false],
@@ -1023,10 +1244,10 @@ final class ClotheController extends AbstractController
             ],
             [
                 'id' => 'stock',
-                'label' => 'Stock',
-                'href' => $this->generateUrl('app_clothes_stock_modal', ['slug' => $slug]),
+                'label' => 'Variantes',
+                'href' => $this->generateUrl('app_clothes_variants_manage_modal', ['slug' => $slug]),
                 'isActive' => false,
-                'attr' => ['data-turbo-frame' => 'clothe-modal-component'],
+                'attr' => ['data-turbo-stream' => 'true'],
             ],
             [
                 'id' => 'sizes',
@@ -1035,12 +1256,37 @@ final class ClotheController extends AbstractController
                 'isActive' => false,
                 'attr' => ['data-turbo-stream' => 'true'],
             ],
-            ['id' => 'delete', 'label' => 'Supprimer', 'href' => '#', 'isActive' => false],
+            [
+                'id' => 'delete',
+                'label' => 'Supprimer',
+                'href' => $this->generateUrl('app_clothes_delete_modal', ['id' => $clotheId]),
+                'isActive' => false,
+                'attr' => ['data-turbo-stream' => 'true'],
+            ],
         ];
     }
 
-    private function renderClotheBestsellerToggle(Clothes $clothe, CsrfTokenManagerInterface $csrfTokenManager): string
+    /**
+     * @param list<int> $variantIds
+     */
+    private function renderClotheBestsellerToggle(
+        Clothes $clothe,
+        CsrfTokenManagerInterface $csrfTokenManager,
+        string $idSuffix = '',
+        ?string $slug = null,
+        array $variantIds = [],
+        ?bool $checked = null,
+    ): string
     {
+        $payloadIds = $variantIds;
+        if ($payloadIds === []) {
+            foreach ($clothe->getVariants() as $variant) {
+                if ($variant->getId() !== null) {
+                    $payloadIds[] = $variant->getId();
+                }
+            }
+        }
+
         $csrfToken = $csrfTokenManager->getToken('clothe_bestseller')->getValue();
         $onlineAction = new ToggleActionModel(
             url: $this->generateUrl('app_clothes_bestsellers_update'),
@@ -1053,19 +1299,19 @@ final class ClotheController extends AbstractController
             label: 'Bestseller',
         );
         $toggle = new ToggleModel(
-            id: 'clothe-bestseller-'.$clothe->getId(),
+            id: 'clothe-bestseller-'.$clothe->getId().$idSuffix,
             label: 'Bestseller',
-            checked: (bool) $clothe->isBestseller(),
+            checked: $checked ?? (bool) $clothe->isBestseller(),
             name: 'bestseller',
             payload: [
                 'on' => $onlineAction->toArray() + [
-                    'ids' => [(string) $clothe->getId()],
+                    'ids' => array_map('strval', $payloadIds),
                     'mode' => 'add',
                 ],
                 'off' => $offlineAction->toArray() + [
                     'ids' => [],
                     'mode' => 'remove',
-                    'slug' => (string) $clothe->getSlug(),
+                    'slug' => (string) ($slug ?? $clothe->getSlug()),
                 ],
             ],
         );
@@ -1075,8 +1321,27 @@ final class ClotheController extends AbstractController
         ]);
     }
 
-    private function renderClotheFeaturedToggle(Clothes $clothe, CsrfTokenManagerInterface $csrfTokenManager): string
+    /**
+     * @param list<int> $variantIds
+     */
+    private function renderClotheFeaturedToggle(
+        Clothes $clothe,
+        CsrfTokenManagerInterface $csrfTokenManager,
+        string $idSuffix = '',
+        ?string $slug = null,
+        array $variantIds = [],
+        ?bool $checked = null,
+    ): string
     {
+        $payloadIds = $variantIds;
+        if ($payloadIds === []) {
+            foreach ($clothe->getVariants() as $variant) {
+                if ($variant->getId() !== null) {
+                    $payloadIds[] = $variant->getId();
+                }
+            }
+        }
+
         $csrfToken = $csrfTokenManager->getToken('clothe_featured')->getValue();
         $onlineAction = new ToggleActionModel(
             url: $this->generateUrl('app_clothes_featured_update'),
@@ -1089,20 +1354,20 @@ final class ClotheController extends AbstractController
             label: 'Mise en avant',
         );
         $toggle = new ToggleModel(
-            id: 'clothe-featured-'.$clothe->getId(),
+            id: 'clothe-featured-'.$clothe->getId().$idSuffix,
             label: 'Mise en avant',
-            checked: (bool) $clothe->isInCarousel(),
+            checked: $checked ?? (bool) $clothe->isInCarousel(),
             name: 'featured',
             eventName: 'clothe-featured:change',
             payload: [
                 'on' => $onlineAction->toArray() + [
-                    'ids' => [(string) $clothe->getId()],
+                    'ids' => array_map('strval', $payloadIds),
                     'mode' => 'add',
                 ],
                 'off' => $offlineAction->toArray() + [
                     'ids' => [],
                     'mode' => 'remove',
-                    'slug' => (string) $clothe->getSlug(),
+                    'slug' => (string) ($slug ?? $clothe->getSlug()),
                 ],
             ],
         );
@@ -1112,20 +1377,20 @@ final class ClotheController extends AbstractController
         ]);
     }
 
-    private function renderClotheOnlineToggle(Clothes $clothe, CsrfTokenManagerInterface $csrfTokenManager): string
+    private function renderVariantOnlineToggle(ClothesVariant $variant, CsrfTokenManagerInterface $csrfTokenManager): string
     {
-        $csrfToken = $csrfTokenManager->getToken($this->getOnlineCsrfTokenId($clothe))->getValue();
+        $csrfToken = $csrfTokenManager->getToken($this->getVariantOnlineCsrfTokenId($variant))->getValue();
         $onlineAction = new ToggleActionModel(
-            url: $this->generateUrl('app_clothes_toggle_online', [
-                'id' => $clothe->getId(),
+            url: $this->generateUrl('app_clothes_variant_toggle_online', [
+                'id' => $variant->getId(),
                 'state' => 'on',
             ]),
             csrfToken: $csrfToken,
             label: 'En ligne',
         );
         $offlineAction = new ToggleActionModel(
-            url: $this->generateUrl('app_clothes_toggle_online', [
-                'id' => $clothe->getId(),
+            url: $this->generateUrl('app_clothes_variant_toggle_online', [
+                'id' => $variant->getId(),
                 'state' => 'off',
             ]),
             csrfToken: $csrfToken,
@@ -1133,10 +1398,10 @@ final class ClotheController extends AbstractController
         );
 
         $toggle = new ToggleModel(
-            id: 'clothe-online-'.$clothe->getId(),
-            label: $clothe->isOnline() ? 'En ligne' : 'Hors ligne',
-            checked: (bool) $clothe->isOnline(),
-            name: 'clothe_online_'.$clothe->getId(),
+            id: 'clothe-variant-online-'.$variant->getId(),
+            label: $variant->isOnline() ? 'En ligne' : 'Hors ligne',
+            checked: $variant->isOnline(),
+            name: 'clothe_variant_online_'.$variant->getId(),
             eventName: 'clothe-online:change',
             payload: [
                 'on' => $onlineAction->toArray(),
@@ -1152,6 +1417,11 @@ final class ClotheController extends AbstractController
     private function getOnlineCsrfTokenId(Clothes $clothe): string
     {
         return 'clothe_online_'.((string) $clothe->getId());
+    }
+
+    private function getVariantOnlineCsrfTokenId(ClothesVariant $variant): string
+    {
+        return 'clothe_variant_online_'.((string) $variant->getId());
     }
 
     /**
@@ -1221,6 +1491,32 @@ final class ClotheController extends AbstractController
         )));
     }
 
+    /**
+     * @param list<int> $ids
+     * @return list<ClothesVariant>
+     */
+    private function findVariantsByIds(array $ids, EntityManagerInterface $entityManager): array
+    {
+        $ids = array_values(array_unique(array_filter($ids, static fn (int $id): bool => $id > 0)));
+        if ($ids === []) {
+            return [];
+        }
+
+        return $entityManager->getRepository(ClothesVariant::class)->findBy(['id' => $ids]);
+    }
+
+    /**
+     * @param list<ClothesVariant> $variants
+     * @return list<string>
+     */
+    private function extractVariantSlugs(array $variants): array
+    {
+        return array_values(array_filter(array_map(
+            static fn (ClothesVariant $variant): ?string => $variant->getSlug(),
+            $variants,
+        )));
+    }
+
     private function readCsrfToken(Request $request): string
     {
         return (string) (
@@ -1265,30 +1561,9 @@ final class ClotheController extends AbstractController
         Collections $collection,
         ClotheNameGuard $clotheNameGuard,
     ): void {
-        $metaDescription = trim((string) ($data['metadescription'] ?? ''));
-        if (mb_strlen($metaDescription) > 180) {
-            throw new \InvalidArgumentException('La meta description est limitee a 180 caracteres.');
-        }
-
         $price = (int) ($data['price'] ?? 0);
         if ($price <= 0) {
             throw new \InvalidArgumentException('Le prix du vetement doit etre superieur a 0.');
-        }
-
-        $stock = (int) ($data['stock'] ?? 0);
-        if ($stock < 0) {
-            throw new \InvalidArgumentException('Le stock du vetement ne peut pas etre negatif.');
-        }
-
-        $selectedSizes = $data['sizes'] ?? [];
-        $sizes = array_values(array_intersect(ClotheService::AVAILABLE_SIZES, is_array($selectedSizes) ? $selectedSizes : []));
-        if ($sizes === []) {
-            throw new \InvalidArgumentException('Selectionne au moins une taille pour le vetement.');
-        }
-
-        $color = $this->resolveClotheColorFromPayload($data, $entityManager);
-        if (!$color instanceof Clothescolor) {
-            throw new \InvalidArgumentException('Selectionne une couleur ou cree une nouvelle couleur.');
         }
 
         $name = $clotheNameGuard->assertNameAvailable((string) ($data['name'] ?? ''));
@@ -1297,30 +1572,114 @@ final class ClotheController extends AbstractController
         if ($images === []) {
             throw new \InvalidArgumentException('Ajoute au moins une image pour le vetement.');
         }
+        $imagePaths = array_map(static fn (ClotheImageInput $image): string => $image->path, $images);
 
-        foreach ($sizes as $sizeName) {
+        $now = new \DateTimeImmutable();
+        $clothe = (new Clothes())
+            ->setName($name)
+            ->setPrice($price)
+            ->setCollection($collection)
+            ->setIsOnline(false)
+            ->setCreatedAt($now)
+            ->setEditedAt($now);
+
+        $variantPayloads = $this->normalizeVariantPayloads($data);
+        if ($variantPayloads === []) {
+            throw new \InvalidArgumentException('Ajoute au moins une variante au vetement.');
+        }
+
+        foreach ($variantPayloads as $variantData) {
+            $stock = filter_var($variantData['stock'] ?? 0, FILTER_VALIDATE_INT);
+            if ($stock === false || $stock < 0) {
+                throw new \InvalidArgumentException('Le stock de chaque variante doit etre un entier positif ou nul.');
+            }
+
+            $color = $this->resolveClotheColorFromPayload($variantData, $entityManager);
+            if (!$color instanceof Clothescolor) {
+                throw new \InvalidArgumentException('Selectionne une couleur pour chaque variante.');
+            }
+
+            $sizeName = trim((string) ($variantData['size'] ?? ''));
+            if (!in_array($sizeName, ClotheService::AVAILABLE_SIZES, true)) {
+                throw new \InvalidArgumentException('Selectionne une taille valide pour chaque variante.');
+            }
+
+            $metaDescription = $this->normalizeVariantMetaDescription($variantData['metadescription'] ?? null);
             $size = $this->findOrCreateSize($sizeName, $entityManager);
-            $clothe = (new Clothes())
-                ->setName($name)
-                ->setDescription(trim((string) ($data['description'] ?? '')) ?: null)
-                ->setMetadescription($metaDescription !== '' ? $metaDescription : null)
-                ->setPrice($price)
+            $variantName = $this->createVariantName($name, $color, $size);
+            $variant = (new ClothesVariant())
+                ->setName($variantName)
+                ->setSlug($this->createVariantSlug($name, $color))
                 ->setStock($stock)
-                ->setImages(array_map(static fn (ClotheImageInput $image): string => $image->path, $images))
-                ->setCollection($collection)
                 ->setColor($color)
                 ->setSize($size)
-                ->setSku(strtoupper(sprintf('%s-%s-%s', $slug, $sizeName, bin2hex(random_bytes(2)))))
-                ->setSlug($slug)
-                ->setStatus('draft')
-                ->setIsOnline(false)
-                ->setIsBestseller(false)
-                ->setIsInCarousel(false)
-                ->setCreatedAt(new \DateTimeImmutable())
-                ->setEditedAt(new \DateTimeImmutable());
+                ->setSku($this->createVariantSku($clothe, $color, $size))
+                ->setDescription(trim((string) ($data['description'] ?? '')) ?: null)
+                ->setMetadescription($metaDescription)
+                ->setImages($imagePaths)
+                ->setHighlightImage($imagePaths[0] ?? null)
+                ->setBestsellerImage($imagePaths[0] ?? null)
+                ->setIsOnline((bool) ($variantData['isOnline'] ?? false));
 
-            $entityManager->persist($clothe);
+            $clothe->addVariant($variant);
         }
+
+        $this->assertUniqueVariantPayload($clothe, $entityManager);
+        $entityManager->persist($clothe);
+    }
+
+    /**
+     * @param array<string, mixed> $data
+     * @return list<array<string, mixed>>
+     */
+    private function normalizeVariantPayloads(array $data): array
+    {
+        $variants = $data['variants'] ?? [];
+        if (is_array($variants) && $variants !== []) {
+            $normalizedVariants = [];
+
+            foreach ($variants as $variant) {
+                if (!is_array($variant)) {
+                    continue;
+                }
+
+                $selectedSizes = $variant['sizes'] ?? ($variant['size'] ?? []);
+                if (is_string($selectedSizes)) {
+                    $selectedSizes = [$selectedSizes];
+                }
+
+                $sizes = array_values(array_intersect(
+                    ClotheService::AVAILABLE_SIZES,
+                    is_array($selectedSizes) ? $selectedSizes : [],
+                ));
+
+                foreach ($sizes as $size) {
+                    $variant['size'] = $size;
+                    $normalizedVariants[] = $variant;
+                }
+            }
+
+            return $normalizedVariants;
+        }
+
+        $selectedSizes = $data['sizes'] ?? [];
+        $sizes = array_values(array_intersect(ClotheService::AVAILABLE_SIZES, is_array($selectedSizes) ? $selectedSizes : []));
+
+        $legacyVariants = array_map(
+            static fn (string $size): array => [
+                'color' => $data['color'] ?? null,
+                'newColorName' => $data['newColorName'] ?? null,
+                'newColorHex' => $data['newColorHex'] ?? null,
+                'size' => $size,
+                'stock' => $data['stock'] ?? 0,
+                'sku' => null,
+                'isOnline' => false,
+                'metadescription' => $data['metadescription'] ?? null,
+            ],
+            $sizes,
+        );
+
+        return $legacyVariants;
     }
 
     /**
@@ -1495,7 +1854,7 @@ final class ClotheController extends AbstractController
     }
 
     /**
-     * @param list<Clothes> $variants
+     * @param list<ClothesVariant> $variants
      */
     private function mapClotheDetails(
         Clothes $mainClothe,
@@ -1507,41 +1866,230 @@ final class ClotheController extends AbstractController
     {
         $images = [];
         $sizes = [];
-        $isBestseller = false;
-        $isInCarousel = false;
+        $colors = [];
+        $variantGroups = [];
+        $highlightImage = null;
+        $bestsellerImage = null;
+        $metadescription = null;
 
         foreach ($variants as $variant) {
+            if (!$variant instanceof ClothesVariant) {
+                continue;
+            }
+
             $sizeName = $variant->getSize()?->getName() ?? 'Taille inconnue';
+            $colorName = $variant->getColor()?->getName() ?? 'Couleur inconnue';
+            $colors[$colorName] = $colorName;
             $images = array_merge($images, $variant->getImages() ?? []);
-            $sizes[] = [
+            $highlightImage ??= $variant->getHighlightImage();
+            $bestsellerImage ??= $variant->getBestsellerImage();
+            $metadescription ??= $variant->getMetadescription();
+            $sizeView = [
                 'id' => $variant->getId(),
                 'name' => $sizeName,
-                'stock' => $variant->getStock() ?? 0,
-                'isOnline' => (bool) $variant->isOnline(),
-                'onlineToggle' => $this->renderClotheOnlineToggle($variant, $csrfTokenManager),
+                'color' => $colorName,
+                'sku' => $variant->getSku(),
+                'description' => $variant->getDescription() ?? $mainClothe->getDescription(),
+                'metadescription' => $variant->getMetadescription(),
+                'images' => $variant->getImages() ?? [],
+                'highlightImage' => $variant->getHighlightImage(),
+                'bestsellerImage' => $variant->getBestsellerImage(),
+                'stock' => $variant->getStock(),
+                'isOnline' => $variant->isOnline(),
+                'isAvailable' => $variant->isAvailable(),
+                'editUrl' => $this->generateUrl('app_clothes_variant_edit_modal', ['id' => $variant->getId()]),
+                'onlineToggle' => $this->renderVariantOnlineToggle($variant, $csrfTokenManager),
             ];
-            $isBestseller = $isBestseller || (bool) $variant->isBestseller();
-            $isInCarousel = $isInCarousel || (bool) $variant->isInCarousel();
+            $sizes[] = $sizeView;
+
+            $colorId = $variant->getColor()?->getId();
+            $groupKey = $colorId !== null ? (string) $colorId : $colorName;
+            if (!isset($variantGroups[$groupKey])) {
+                $idSuffix = '-variant-'.preg_replace('/[^a-zA-Z0-9_-]/', '-', $groupKey);
+                $variantGroups[$groupKey] = [
+                    'colorId' => $colorId,
+                    'color' => $colorName,
+                    'slug' => $variant->getSlug(),
+                    'sizes' => [],
+                    'variantIds' => [],
+                    'images' => [],
+                    'highlightImage' => null,
+                    'bestsellerImage' => null,
+                    'isBestseller' => false,
+                    'isInCarousel' => false,
+                    'editUrl' => $colorId !== null
+                        ? $this->generateUrl('app_clothes_variant_group_edit_modal', [
+                            'slug' => $variant->getSlug(),
+                            'color' => $colorId,
+                        ])
+                        : $this->generateUrl('app_clothes_variant_edit_modal', ['id' => $variant->getId()]),
+                    'imagesModalUrl' => $this->generateUrl('app_clothes_images_modal', array_filter([
+                        'slug' => $variant->getSlug(),
+                        'color' => $colorId,
+                    ], static fn (mixed $value): bool => $value !== null)),
+                    'bestsellerToggle' => '',
+                    'featuredToggle' => '',
+                    'toggleIdSuffix' => $idSuffix,
+                ];
+            }
+
+            $variantGroups[$groupKey]['sizes'][] = $sizeView;
+            $variantGroups[$groupKey]['variantIds'][] = $variant->getId();
+            $variantGroups[$groupKey]['images'] = [
+                ...$variantGroups[$groupKey]['images'],
+                ...($variant->getImages() ?? []),
+            ];
+            $variantGroups[$groupKey]['highlightImage'] ??= $variant->getHighlightImage();
+            $variantGroups[$groupKey]['bestsellerImage'] ??= $variant->getBestsellerImage();
+            $variantGroups[$groupKey]['isBestseller'] = $variantGroups[$groupKey]['isBestseller'] || $variant->isBestseller();
+            $variantGroups[$groupKey]['isInCarousel'] = $variantGroups[$groupKey]['isInCarousel'] || $variant->isInCarousel();
         }
+
+        foreach ($variantGroups as &$group) {
+            $group['images'] = array_values(array_unique(array_filter($group['images'])));
+            $group['variantIds'] = array_values(array_unique(array_filter($group['variantIds'])));
+            $group['bestsellerToggle'] = $this->renderClotheBestsellerToggle(
+                $mainClothe,
+                $csrfTokenManager,
+                (string) $group['toggleIdSuffix'],
+                (string) $group['slug'],
+                $group['variantIds'],
+                (bool) $group['isBestseller'],
+            );
+            $group['featuredToggle'] = $this->renderClotheFeaturedToggle(
+                $mainClothe,
+                $csrfTokenManager,
+                (string) $group['toggleIdSuffix'],
+                (string) $group['slug'],
+                $group['variantIds'],
+                (bool) $group['isInCarousel'],
+            );
+            unset($group['toggleIdSuffix']);
+        }
+        unset($group);
 
         return [
             'id' => $mainClothe->getId(),
             'name' => $mainClothe->getName(),
-            'slug' => $mainClothe->getSlug(),
+            'slug' => $variants[0]?->getSlug() ?? $mainClothe->getSlug(),
             'description' => $mainClothe->getDescription(),
+            'metadescription' => $metadescription,
             'collection' => $mainClothe->getCollection()?->getName(),
             'collectionId' => $mainClothe->getCollection()?->getId(),
             'category' => $mainClothe->getCollection()?->getCategory()?->getName(),
             'categoryId' => $mainClothe->getCollection()?->getCategory()?->getId(),
-            'color' => $mainClothe->getColor()?->getName(),
+            'color' => implode(', ', array_values($colors)),
             'price' => $mainClothe->getPrice(),
             'status' => $mainClothe->getStatus(),
             'isOnline' => $clotheOnlineGuard->isOnline($variants),
-            'isBestseller' => $isBestseller,
-            'isInCarousel' => $isInCarousel,
+            'isBestseller' => (bool) $mainClothe->isBestseller(),
+            'isInCarousel' => (bool) $mainClothe->isInCarousel(),
+            'totalStock' => $mainClothe->getTotalStock(),
+            'hasAvailableVariant' => $mainClothe->hasAvailableVariant(),
+            'highlightImage' => $highlightImage,
+            'bestsellerImage' => $bestsellerImage,
             'images' => array_values(array_unique(array_filter($images))),
             'sizes' => $sizes,
+            'variantGroups' => array_values($variantGroups),
             'sizeGuide' => $clotheSizeGuideService->buildView($mainClothe, $variants),
         ];
+    }
+
+    /**
+     * @param list<ClothesVariant> $variants
+     */
+    private function resolveMainClothe(array $variants): Clothes
+    {
+        $firstVariant = $variants[0] ?? null;
+        $clothe = $firstVariant instanceof ClothesVariant ? $firstVariant->getClothes() : null;
+
+        if (!$clothe instanceof Clothes) {
+            throw $this->createNotFoundException('Clothe not found.');
+        }
+
+        return $clothe;
+    }
+
+    private function assertUniqueVariantPayload(Clothes $clothe, ?EntityManagerInterface $entityManager = null): void
+    {
+        $combinations = [];
+        $skus = [];
+
+        foreach ($clothe->getVariants() as $variant) {
+            $colorName = (string) $variant->getColor()?->getName();
+            $sizeName = (string) $variant->getSize()?->getName();
+            $combinationKey = mb_strtolower($colorName.'|'.$sizeName);
+            $skuKey = mb_strtolower((string) $variant->getSku());
+
+            if (isset($combinations[$combinationKey])) {
+                throw new \InvalidArgumentException(sprintf(
+                    'Une variante existe deja pour la couleur %s et la taille %s.',
+                    $colorName,
+                    $sizeName,
+                ));
+            }
+
+            if (isset($skus[$skuKey])) {
+                throw new \InvalidArgumentException(sprintf('Le SKU %s est deja utilise.', (string) $variant->getSku()));
+            }
+
+            if ($entityManager instanceof EntityManagerInterface) {
+                $existingVariant = $entityManager->getRepository(ClothesVariant::class)->findOneBy(['sku' => $variant->getSku()]);
+                if ($existingVariant instanceof ClothesVariant && !$clothe->getVariants()->contains($existingVariant)) {
+                    throw new \InvalidArgumentException(sprintf('Le SKU %s est deja utilise.', (string) $variant->getSku()));
+                }
+            }
+
+            $combinations[$combinationKey] = true;
+            $skus[$skuKey] = true;
+        }
+    }
+
+    /**
+     * @param list<ClothesVariant> $variants
+     * @return list<ClothesVariant>
+     */
+    private function filterVariantsByColor(array $variants, ?int $colorId): array
+    {
+        if ($colorId === null) {
+            return $variants;
+        }
+
+        return array_values(array_filter(
+            $variants,
+            static fn (ClothesVariant $variant): bool => $variant->getColor()?->getId() === $colorId,
+        ));
+    }
+
+    private function createVariantSku(Clothes $clothe, ?Clothescolor $color, ?Clothessize $size): string
+    {
+        $slugger = new AsciiSlugger();
+
+        return strtoupper(sprintf(
+            '%s-%s-%s',
+            (string) $slugger->slug((string) $clothe->getName()),
+            (string) $slugger->slug((string) $color?->getName()),
+            (string) $slugger->slug((string) $size?->getName()),
+        ));
+    }
+
+    private function createVariantName(string $name, Clothescolor $color, Clothessize $size): string
+    {
+        return trim(sprintf('%s %s %s', $name, (string) $color->getName(), (string) $size->getName()));
+    }
+
+    private function createVariantSlug(string $name, Clothescolor $color): string
+    {
+        return strtolower((string) (new AsciiSlugger())->slug(trim(sprintf('%s %s', $name, (string) $color->getName()))));
+    }
+
+    private function normalizeVariantMetaDescription(mixed $value): ?string
+    {
+        $metaDescription = trim((string) $value);
+        if (mb_strlen($metaDescription) > 200) {
+            throw new \InvalidArgumentException('La meta description est limitee a 200 caracteres.');
+        }
+
+        return $metaDescription !== '' ? $metaDescription : null;
     }
 }

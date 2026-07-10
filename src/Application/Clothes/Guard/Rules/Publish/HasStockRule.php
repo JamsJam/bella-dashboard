@@ -8,6 +8,6 @@ final readonly class HasStockRule implements ClothePublishRuleInterface
 {
     public function validate(Clothes $clothe): ?string
     {
-        return ($clothe->getStock() ?? 0) > 0 ? null : 'Le stock doit etre renseigne et superieur a 0.';
+        return $clothe->getTotalStock() > 0 ? null : 'Au moins une variante doit avoir du stock.';
     }
 }

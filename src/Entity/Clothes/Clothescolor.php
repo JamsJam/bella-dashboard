@@ -22,14 +22,14 @@ class Clothescolor
 
     
     /**
-     * @var Collection<int, Clothes>
+     * @var Collection<int, ClothesVariant>
      */
-    #[ORM\OneToMany(targetEntity: Clothes::class, mappedBy: 'color', cascade: ['persist'])]
-    private Collection $clothes;
+    #[ORM\OneToMany(targetEntity: ClothesVariant::class, mappedBy: 'color', cascade: ['persist'])]
+    private Collection $variants;
 
     public function __construct()
     {
-        $this->clothes = new ArrayCollection();
+        $this->variants = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -42,26 +42,40 @@ class Clothescolor
      */
     public function getClothes(): Collection
     {
-        return $this->clothes;
+        $clothes = [];
+
+        foreach ($this->variants as $variant) {
+            $clothe = $variant->getClothes();
+            if ($clothe instanceof Clothes && $clothe->getId() !== null) {
+                $clothes[$clothe->getId()] = $clothe;
+            }
+        }
+
+        return new ArrayCollection(array_values($clothes));
     }
 
-    public function addClothes(Clothes $clothes): static
+    /**
+     * @return Collection<int, ClothesVariant>
+     */
+    public function getVariants(): Collection
     {
-        if (!$this->clothes->contains($clothes)) {
-            $this->clothes->add($clothes);
-            $clothes->setColor($this);
+        return $this->variants;
+    }
+
+    public function addVariant(ClothesVariant $variant): static
+    {
+        if (!$this->variants->contains($variant)) {
+            $this->variants->add($variant);
+            $variant->setColor($this);
         }
 
         return $this;
     }
 
-    public function removeClothes(Clothes $clothes): static
+    public function removeVariant(ClothesVariant $variant): static
     {
-        if ($this->clothes->removeElement($clothes)) {
-            // set the owning side to null (unless already changed)
-            if ($clothes->getColor() === $this) {
-                $clothes->setColor(null);
-            }
+        if ($this->variants->removeElement($variant) && $variant->getColor() === $this) {
+            $variant->setColor(null);
         }
 
         return $this;

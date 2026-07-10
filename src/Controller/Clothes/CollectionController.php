@@ -397,13 +397,15 @@ final class CollectionController extends AbstractController
                 ];
             }
 
-            $size = $clothe->getSize()?->getName();
-            if ($size !== null && $size !== '') {
-                $items[$slug]['sizes'][$size] = [
-                    'name' => $size,
-                    'isOnline' => (bool) $clothe->isOnline(),
-                    'stock' => $clothe->getStock() ?? 0,
-                ];
+            foreach ($clothe->getVariants() as $variant) {
+                $size = $variant->getSize()?->getName();
+                if ($size !== null && $size !== '') {
+                    $items[$slug]['sizes'][$size] = [
+                        'name' => $size,
+                        'isOnline' => (bool) $variant->isOnline(),
+                        'stock' => $variant->getStock(),
+                    ];
+                }
             }
         }
 

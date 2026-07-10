@@ -54,6 +54,8 @@ final readonly class StripeCheckoutSessionMessageHandler
             ->setStripeCheckoutSessionId($message->checkoutSessionId)
             ->setStripePaymentIntentId($message->paymentIntentId);
 
+        $this->decrementVariantStock($cart);
+
         if (!$cart->getOrder() instanceof Orders) {
             $this->entityManager->persist($this->createOrderFromCart($cart));
         }
@@ -68,6 +70,25 @@ final readonly class StripeCheckoutSessionMessageHandler
                 template: 'email/StripeMail.html.twig',
                 context: ['invoiceUrl' => $invoiceUrl],
             );
+        }
+    }
+
+    private function decrementVariantStock(Cart $cart): void
+    {
+        foreach ($cart->getItems() as $item) {
+            $variant = $item->getVariant();
+            if ($variant === null) {
+                continue;
+            }
+
+            $stock = max(0, $variant->getStock() - (int) $item->getQuantity());
+            $variant
+                ->setStock($stock)
+                ->setEditedAt(new \DateTimeImmutable());
+
+            if ($stock === 0) {
+                $variant->setIsOnline(false);
+            }
         }
     }
 

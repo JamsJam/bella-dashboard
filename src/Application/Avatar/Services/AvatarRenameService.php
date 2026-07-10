@@ -109,14 +109,9 @@ final readonly class AvatarRenameService
         }
 
         $repository = $this->entityManager->getRepository(Clothes::class);
-        if (method_exists($repository, 'findVariantsBySlug')) {
-            return array_values(array_filter(
-                $repository->findVariantsBySlug($slug),
-                fn (mixed $clothe): bool => $clothe instanceof Clothes,
-            ));
-        }
+        $clothe = $repository->findOneBy(['slug' => $slug]);
 
-        return [];
+        return $clothe instanceof Clothes ? [$clothe] : [];
     }
 
     private function resolveClothesSlug(mixed $value): string

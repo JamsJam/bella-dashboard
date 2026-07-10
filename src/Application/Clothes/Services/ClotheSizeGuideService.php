@@ -3,6 +3,7 @@
 namespace App\Application\Clothes\Services;
 
 use App\Entity\Clothes\Clothes;
+use App\Entity\Clothes\ClothesVariant;
 use App\Entity\MeasurementType;
 use App\Entity\SizeGuide;
 use App\Entity\SizeGuideMeasurement;
@@ -31,7 +32,7 @@ final readonly class ClotheSizeGuideService
     }
 
     /**
-     * @param list<Clothes> $variants
+     * @param list<ClothesVariant> $variants
      * @param array<string, array<string, mixed>> $measurements
      * @param list<string> $selectedTypeCodes
      */
@@ -81,7 +82,7 @@ final readonly class ClotheSizeGuideService
     }
 
     /**
-     * @param list<Clothes> $variants
+     * @param list<ClothesVariant> $variants
      * @param list<string> $selectedTypeCodes
      * @param array<string, array<string, mixed>> $submittedMeasurements
      * @return array{
@@ -111,7 +112,7 @@ final readonly class ClotheSizeGuideService
     }
 
     /**
-     * @param list<Clothes> $variants
+     * @param list<ClothesVariant> $variants
      * @return array{
      *     unit: string,
      *     availableTypes: list<array{code: string, label: string, selected: bool}>,
@@ -154,7 +155,7 @@ final readonly class ClotheSizeGuideService
     }
 
     /**
-     * @param list<Clothes> $variants
+     * @param list<ClothesVariant> $variants
      */
     private function ensureGuideForVariants(Clothes $mainClothe, array $variants): SizeGuide
     {
@@ -173,9 +174,7 @@ final readonly class ClotheSizeGuideService
         }
 
         foreach ($variants as $variant) {
-            if ($variant instanceof Clothes && $variant->getSlug() === $mainClothe->getSlug()) {
-                $variant->setSizeGuide($guide);
-            }
+            $mainClothe->setSizeGuide($guide);
         }
 
         return $guide;
@@ -403,7 +402,7 @@ final readonly class ClotheSizeGuideService
         $typeCodes = array_column($types, 'code');
 
         foreach ($variants as $variant) {
-            if (!$variant instanceof Clothes || $variant->getSize()?->getName() === null) {
+            if (!$variant instanceof ClothesVariant || $variant->getSize()?->getName() === null) {
                 continue;
             }
 
@@ -436,7 +435,7 @@ final readonly class ClotheSizeGuideService
         }
 
         foreach ($variants as $variant) {
-            if (!$variant instanceof Clothes || $variant->getSize()?->getName() === null) {
+            if (!$variant instanceof ClothesVariant || $variant->getSize()?->getName() === null) {
                 continue;
             }
 

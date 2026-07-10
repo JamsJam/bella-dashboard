@@ -1,0 +1,76 @@
+<div class="modal-backdrop" {{ stimulus_controller('collection-form') }}>
+    <dialog class="modal" open aria-labelledby="clothe-variants-manage-modal-title">
+        <header class="modal__header">
+            <h2 id="clothe-variants-manage-modal-title">Gerer les variantes</h2>
+            <button type="button" class="modal__close" onclick="this.closest('.modal-backdrop').remove()" aria-label="Fermer">
+                &times;
+            </button>
+        </header>
+
+        <div class="modal__body">
+            {% if groupEditUrl %}
+                <div class="clothe-show__variant-actions">
+                    <a href="{{ groupEditUrl }}" class="clothe-show__button" data-turbo-stream>
+                        Modifier les informations globales
+                    </a>
+                </div>
+            {% endif %}
+
+            <div class="clothe-show__sizes">
+                {% for variant in variants %}
+                    <article class="clothe-show__size">
+                        <strong>{{ variant.color.name|default('Couleur inconnue') }} {{ variant.size.name|default('Taille inconnue') }}</strong>
+                        <span>{{ variant.sku }}</span>
+                        <span>{{ variant.stock }} en stock</span>
+                        <span>{{ variant.online ? 'En ligne' : 'Hors ligne' }}</span>
+                        <div class="clothe-show__variant-actions">
+                            <a href="{{ path('app_clothes_variant_edit_modal', { id: variant.id }) }}" class="clothe-show__button" data-turbo-stream>
+                                Modifier
+                            </a>
+                            <form method="post" action="{{ path('app_clothes_variant_delete', { id: variant.id }) }}" data-turbo="false" onsubmit="return confirm('Supprimer cette variante ?')">
+                                <input type="hidden" name="_csrf_token" value="{{ csrf_token('clothe_variant_delete_' ~ variant.id) }}">
+                                <button type="submit" class="clothe-show__button clothe-show__button--danger">
+                                    Supprimer
+                                </button>
+                            </form>
+                        </div>
+                    </article>
+                {% endfor %}
+            </div>
+
+            <form method="post" action="{{ createAction }}" data-turbo="false">
+                <input type="hidden" name="_csrf_token" value="{{ createCsrfToken }}">
+
+                <fieldset class="collection-form__variant">
+                    <legend>Ajouter une variante</legend>
+
+                    <div class="collection-form__grid">
+                        <label class="collection-form__field">
+                            <span>Taille</span>
+                            <select name="size" required>
+                                <option value="">Selectionner une taille</option>
+                                {% for size in availableSizes %}
+                                    <option value="{{ size }}">{{ size }}</option>
+                                {% endfor %}
+                            </select>
+                        </label>
+
+                        <label class="collection-form__field">
+                            <span>Stock</span>
+                            <input type="number" name="stock" min="0" step="1" value="0" required>
+                        </label>
+                    </div>
+                </fieldset>
+
+                <footer class="modal__actions">
+                    <button type="button" class="clothe-show__button" onclick="this.closest('.modal-backdrop').remove()">
+                        Annuler
+                    </button>
+                    <button type="submit" class="clothe-show__button clothe-show__button--primary">
+                        Ajouter
+                    </button>
+                </footer>
+            </form>
+        </div>
+    </dialog>
+</div>

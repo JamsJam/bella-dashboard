@@ -6,6 +6,7 @@ use App\Application\Clothes\DTO\ClotheImageInput;
 use App\Application\Clothes\Guard\ClotheNameGuard;
 use App\Application\Clothes\Services\ClotheService;
 use App\Entity\Clothes\Clothes;
+use App\Entity\Clothes\ClothesVariant;
 use App\Entity\Clothes\Clothescolor;
 use App\Entity\Clothes\Clothessize;
 use App\Entity\Collections\Collections;
@@ -49,30 +50,9 @@ final class ClothesPersister
     private function createClotheForCollection(array $data, array $uploadedImages, Collections $collection, array &$reservedSlugs): void
     {
         $description = trim((string) ($data['description'] ?? ''));
-        $metaDescription = trim((string) ($data['metadescription'] ?? ''));
-        if (mb_strlen($metaDescription) > 180) {
-            throw new \InvalidArgumentException('La meta description est limitee a 180 caracteres.');
-        }
-
         $price = (int) ($data['price'] ?? 0);
         if ($price <= 0) {
             throw new \InvalidArgumentException('Le prix du vetement doit etre superieur a 0.');
-        }
-
-        $stock = (int) ($data['stock'] ?? 0);
-        if ($stock < 0) {
-            throw new \InvalidArgumentException('Le stock du vetement ne peut pas etre negatif.');
-        }
-
-        $selectedSizes = $data['sizes'] ?? [];
-        $sizes = array_values(array_intersect(ClotheService::AVAILABLE_SIZES, is_array($selectedSizes) ? $selectedSizes : []));
-        if ($sizes === []) {
-            throw new \InvalidArgumentException('Selectionne au moins une taille pour le vetement.');
-        }
-
-        $color = $this->resolveClotheColorFromData($data);
-        if (!$color instanceof Clothescolor) {
-            throw new \InvalidArgumentException('Selectionne une couleur ou cree une nouvelle couleur.');
         }
 
         $name = $this->clotheNameGuard->assertNameAvailable((string) ($data['name'] ?? ''));
@@ -86,30 +66,114 @@ final class ClothesPersister
         if ($images === []) {
             throw new \InvalidArgumentException('Ajoute au moins une image pour le vetement.');
         }
+        $imagePaths = array_map(static fn (ClotheImageInput $image): string => $image->path, $images);
 
-        foreach ($sizes as $sizeName) {
+        $now = new \DateTimeImmutable();
+        $clothe = (new Clothes())
+            ->setName($name)
+            ->setPrice($price)
+            ->setCollection($collection)
+            ->setIsOnline(false)
+            ->setCreatedAt($now)
+            ->setEditedAt($now);
+
+        $variantPayloads = $this->normalizeVariantPayloads($data);
+        if ($variantPayloads === []) {
+            throw new \InvalidArgumentException('Ajoute au moins une variante au vetement.');
+        }
+
+        foreach ($variantPayloads as $variantData) {
+            $stock = filter_var($variantData['stock'] ?? 0, FILTER_VALIDATE_INT);
+            if ($stock === false || $stock < 0) {
+                throw new \InvalidArgumentException('Le stock de chaque variante doit etre un entier positif ou nul.');
+            }
+
+            $color = $this->resolveClotheColorFromData($variantData);
+            if (!$color instanceof Clothescolor) {
+                throw new \InvalidArgumentException('Selectionne une couleur pour chaque variante.');
+            }
+
+            $sizeName = trim((string) ($variantData['size'] ?? ''));
+            if (!in_array($sizeName, ClotheService::AVAILABLE_SIZES, true)) {
+                throw new \InvalidArgumentException('Selectionne une taille valide pour chaque variante.');
+            }
+
+            $metaDescription = $this->normalizeVariantMetaDescription($variantData['metadescription'] ?? null);
             $size = $this->findOrCreateSize($sizeName);
-            $clothe = (new Clothes())
-                ->setName($name)
-                ->setDescription($description !== '' ? $description : null)
-                ->setMetadescription($metaDescription !== '' ? $metaDescription : null)
-                ->setPrice($price)
+            $variantName = $this->createVariantName($name, $color, $size);
+
+            $variant = (new ClothesVariant())
+                ->setName($variantName)
+                ->setSlug($this->createVariantSlug($name, $color))
                 ->setStock($stock)
-                ->setImages(array_map(static fn (ClotheImageInput $image): string => $image->path, $images))
-                ->setCollection($collection)
                 ->setColor($color)
                 ->setSize($size)
-                ->setSku($this->createSku($slug, $sizeName))
-                ->setSlug($slug)
-                ->setStatus('draft')
-                ->setIsOnline(false)
-                ->setIsBestseller(false)
-                ->setIsInCarousel(false)
-                ->setCreatedAt(new \DateTimeImmutable())
-                ->setEditedAt(new \DateTimeImmutable());
+                ->setSku($this->createSku($name, $color, $size))
+                ->setDescription($description !== '' ? $description : null)
+                ->setMetadescription($metaDescription)
+                ->setImages($imagePaths)
+                ->setHighlightImage($imagePaths[0] ?? null)
+                ->setBestsellerImage($imagePaths[0] ?? null)
+                ->setIsOnline((bool) ($variantData['isOnline'] ?? false));
 
-            $this->entityManager->persist($clothe);
+            $clothe->addVariant($variant);
         }
+
+        $this->assertUniqueVariants($clothe);
+
+        $this->entityManager->persist($clothe);
+    }
+
+    /**
+     * @param array<string, mixed> $data
+     * @return list<array<string, mixed>>
+     */
+    private function normalizeVariantPayloads(array $data): array
+    {
+        $variants = $data['variants'] ?? [];
+        if (is_array($variants) && $variants !== []) {
+            $normalizedVariants = [];
+
+            foreach ($variants as $variant) {
+                if (!is_array($variant)) {
+                    continue;
+                }
+
+                $selectedSizes = $variant['sizes'] ?? ($variant['size'] ?? []);
+                if (is_string($selectedSizes)) {
+                    $selectedSizes = [$selectedSizes];
+                }
+
+                $sizes = array_values(array_intersect(
+                    ClotheService::AVAILABLE_SIZES,
+                    is_array($selectedSizes) ? $selectedSizes : [],
+                ));
+
+                foreach ($sizes as $size) {
+                    $variant['size'] = $size;
+                    $normalizedVariants[] = $variant;
+                }
+            }
+
+            return $normalizedVariants;
+        }
+
+        $selectedSizes = $data['sizes'] ?? [];
+        $sizes = array_values(array_intersect(ClotheService::AVAILABLE_SIZES, is_array($selectedSizes) ? $selectedSizes : []));
+
+        return array_map(
+            static fn (string $size): array => [
+                'color' => $data['color'] ?? null,
+                'newColorName' => $data['newColorName'] ?? null,
+                'newColorHex' => $data['newColorHex'] ?? null,
+                'size' => $size,
+                'stock' => $data['stock'] ?? 0,
+                'sku' => null,
+                'isOnline' => false,
+                'metadescription' => $data['metadescription'] ?? null,
+            ],
+            $sizes,
+        );
     }
 
     /**
@@ -220,8 +284,68 @@ final class ClothesPersister
             && in_array($mimeType, self::IMAGE_MIME_TYPES, true);
     }
 
-    private function createSku(string $slug, string $sizeName): string
+    private function createSku(string $clotheName, Clothescolor $color, Clothessize $size): string
     {
-        return strtoupper(sprintf('%s-%s-%s', $slug, $sizeName, bin2hex(random_bytes(2))));
+        $slugger = new AsciiSlugger();
+
+        return strtoupper(sprintf(
+            '%s-%s-%s',
+            (string) $slugger->slug($clotheName),
+            (string) $slugger->slug((string) $color->getName()),
+            (string) $slugger->slug((string) $size->getName()),
+        ));
+    }
+
+    private function normalizeVariantMetaDescription(mixed $value): ?string
+    {
+        $metaDescription = trim((string) $value);
+        if (mb_strlen($metaDescription) > 200) {
+            throw new \InvalidArgumentException('La meta description est limitee a 200 caracteres.');
+        }
+
+        return $metaDescription !== '' ? $metaDescription : null;
+    }
+
+    private function createVariantName(string $name, Clothescolor $color, Clothessize $size): string
+    {
+        return trim(sprintf('%s %s %s', $name, (string) $color->getName(), (string) $size->getName()));
+    }
+
+    private function createVariantSlug(string $name, Clothescolor $color): string
+    {
+        return strtolower((string) (new AsciiSlugger())->slug(trim(sprintf('%s %s', $name, (string) $color->getName()))));
+    }
+
+    private function assertUniqueVariants(Clothes $clothe): void
+    {
+        $combinations = [];
+        $skus = [];
+
+        foreach ($clothe->getVariants() as $variant) {
+            $colorName = (string) $variant->getColor()?->getName();
+            $sizeName = (string) $variant->getSize()?->getName();
+            $combinationKey = mb_strtolower($colorName.'|'.$sizeName);
+            $skuKey = mb_strtolower((string) $variant->getSku());
+
+            if (isset($combinations[$combinationKey])) {
+                throw new \InvalidArgumentException(sprintf(
+                    'Une variante existe deja pour la couleur %s et la taille %s.',
+                    $colorName,
+                    $sizeName,
+                ));
+            }
+
+            if (isset($skus[$skuKey])) {
+                throw new \InvalidArgumentException(sprintf('Le SKU %s est deja utilise.', (string) $variant->getSku()));
+            }
+
+            $existingVariant = $this->entityManager->getRepository(ClothesVariant::class)->findOneBy(['sku' => $variant->getSku()]);
+            if ($existingVariant instanceof ClothesVariant && !$clothe->getVariants()->contains($existingVariant)) {
+                throw new \InvalidArgumentException(sprintf('Le SKU %s est deja utilise.', (string) $variant->getSku()));
+            }
+
+            $combinations[$combinationKey] = true;
+            $skus[$skuKey] = true;
+        }
     }
 }

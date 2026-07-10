@@ -1,3 +1,5 @@
 framework:
     mailer:
-        dsn: '%env(MAILER_DSN)%'
+        dsn: '%env(MAILER_TRANSPORT)%://%env(MAILER_USERNAME)%:%env(MAILER_PASSWORD)%@%env(MAILER_HOST)%:%env(MAILER_PORT)%' #example: 'smtp://localhost:1025'
+ 
+

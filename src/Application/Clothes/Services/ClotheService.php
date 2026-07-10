@@ -4,6 +4,7 @@ namespace App\Application\Clothes\Services;
 
 use App\Application\Clothes\Provider\ClotheProvider\ClotheProvider;
 use App\Entity\Clothes\Clothes;
+use App\Entity\Clothes\ClothesVariant;
 use App\Entity\Clothes\Clothessize;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\String\Slugger\AsciiSlugger;
@@ -52,10 +53,7 @@ final class ClotheService
 
     public function getBestselledClothe(?int $limit = null) : array
     {
-
-        $clothes = $this->clotheProvider->getBestSellers($limit) ?? [];
-        // $clothes = [];
-        return $clothes;
+        return $this->clotheProvider->getBestSellerEntities($limit) ?? [];
     }
 
     public function getClotheInCarousel(?int $limit = null) : array
@@ -94,12 +92,16 @@ final class ClotheService
             throw new \InvalidArgumentException('Clothe not found.');
         }
 
-        /** @var Clothes $mainClothe */
-        $mainClothe = $variants[0];
+        $firstVariant = $variants[0] ?? null;
+        if (!$firstVariant instanceof ClothesVariant || !$firstVariant->getClothes() instanceof Clothes) {
+            throw new \InvalidArgumentException('Clothe not found.');
+        }
+
+        $mainClothe = $firstVariant->getClothes();
         $variantsBySize = [];
 
         foreach ($variants as $variant) {
-            if ($variant instanceof Clothes && $variant->getSize()?->getName() !== null) {
+            if ($variant instanceof ClothesVariant && $variant->getSize()?->getName() !== null) {
                 $variantsBySize[$variant->getSize()->getName()] = $variant;
             }
         }
@@ -118,42 +120,33 @@ final class ClotheService
                 continue;
             }
 
-            $this->entityManager->persist($this->createVariantForSize($mainClothe, $sizeName));
+            $mainClothe->addVariant($this->createVariantForSize($mainClothe, $sizeName));
         }
 
         $this->entityManager->flush();
     }
 
-    private function createVariantForSize(Clothes $source, string $sizeName): Clothes
+    private function createVariantForSize(Clothes $source, string $sizeName): ClothesVariant
     {
         $size = $this->findOrCreateSize($sizeName);
+        $variantName = trim(sprintf(
+            '%s %s %s',
+            (string) $source->getName(),
+            (string) $source->getColor()?->getName(),
+            $sizeName,
+        ));
 
-        $variant = (new Clothes())
-            ->setName((string) $source->getName())
-            ->setDescription($source->getDescription())
-            ->setPrice($source->getPrice())
+        return (new ClothesVariant())
+            ->setName($variantName)
+            ->setSlug(strtolower((string) (new AsciiSlugger())->slug($variantName)))
             ->setStock(0)
-            ->setImages($source->getImages())
-            ->setCollection($source->getCollection())
             ->setColor($source->getColor())
-            ->setMetadescription($source->getMetadescription())
             ->setSize($size)
             ->setSku($this->buildSku($source, $sizeName))
-            ->setSlug((string) $source->getSlug())
-            ->setStatus((string) $source->getStatus())
-            ->setIsOnline(false)
-            ->setIsBestseller((bool) $source->isBestseller())
-            ->setIsInCarousel((bool) $source->isInCarousel());
-
-        if (method_exists($variant, 'setCreatedAt')) {
-            $variant->setCreatedAt(new \DateTimeImmutable());
-        }
-
-        if (method_exists($variant, 'setEditedAt')) {
-            $variant->setEditedAt(new \DateTimeImmutable());
-        }
-
-        return $variant;
+            ->setImages($source->getImages())
+            ->setHighlightImage(($source->getImages() ?? [])[0] ?? null)
+            ->setBestsellerImage(($source->getImages() ?? [])[0] ?? null)
+            ->setIsOnline(false);
     }
 
     private function findOrCreateSize(string $sizeName): Clothessize

@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Entity\Clothes\Clothes;
+use App\Entity\Clothes\ClothesVariant;
 use App\Entity\Traits\DateFieldsTrait;
 use App\Repository\SizeGuideRepository;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -20,10 +21,10 @@ class SizeGuide
     private ?int $id = null;
 
     /**
-     * @var Collection<int, Clothes>
+     * @var Collection<int, ClothesVariant>
      */
-    #[ORM\OneToMany(targetEntity: Clothes::class, mappedBy: 'sizeGuide')]
-    private Collection $clothes;
+    #[ORM\OneToMany(targetEntity: ClothesVariant::class, mappedBy: 'sizeGuide')]
+    private Collection $variants;
 
     #[ORM\Column(length: 8)]
     private ?string $unit = null;
@@ -36,7 +37,7 @@ class SizeGuide
 
     public function __construct()
     {
-        $this->clothes = new ArrayCollection();
+        $this->variants = new ArrayCollection();
         $this->sizes = new ArrayCollection();
     }
 
@@ -50,14 +51,29 @@ class SizeGuide
      */
     public function getClothes(): Collection
     {
-        return $this->clothes;
+        $clothes = [];
+
+        foreach ($this->variants as $variant) {
+            $clothe = $variant->getClothes();
+            if (!$clothe instanceof Clothes) {
+                continue;
+            }
+
+            if ($clothe->getId() !== null) {
+                $clothes[$clothe->getId()] = $clothe;
+                continue;
+            }
+
+            $clothes[] = $clothe;
+        }
+
+        return new ArrayCollection(array_values($clothes));
     }
 
     public function addClothes(Clothes $clothes): static
     {
-        if (!$this->clothes->contains($clothes)) {
-            $this->clothes->add($clothes);
-            $clothes->setSizeGuide($this);
+        foreach ($clothes->getVariants() as $variant) {
+            $this->addVariant($variant);
         }
 
         return $this;
@@ -65,8 +81,35 @@ class SizeGuide
 
     public function removeClothes(Clothes $clothes): static
     {
-        if ($this->clothes->removeElement($clothes) && $clothes->getSizeGuide() === $this) {
-            $clothes->setSizeGuide(null);
+        foreach ($clothes->getVariants() as $variant) {
+            $this->removeVariant($variant);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, ClothesVariant>
+     */
+    public function getVariants(): Collection
+    {
+        return $this->variants;
+    }
+
+    public function addVariant(ClothesVariant $variant): static
+    {
+        if (!$this->variants->contains($variant)) {
+            $this->variants->add($variant);
+            $variant->setSizeGuide($this);
+        }
+
+        return $this;
+    }
+
+    public function removeVariant(ClothesVariant $variant): static
+    {
+        if ($this->variants->removeElement($variant) && $variant->getSizeGuide() === $this) {
+            $variant->setSizeGuide(null);
         }
 
         return $this;

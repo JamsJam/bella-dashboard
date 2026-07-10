@@ -6,6 +6,7 @@ use App\DataFixtures\AbstractBaseFixtures;
 use App\DataFixtures\FixtureReferences;
 use App\Entity\Category\Category;
 use App\Entity\Clothes\Clothes;
+use App\Entity\Clothes\ClothesVariant;
 use App\Entity\Clothes\Clothescolor;
 use App\Entity\Clothes\Clothessize;
 use App\Entity\Collections\Collections;
@@ -201,33 +202,47 @@ final class ClothesFixtures extends AbstractBaseFixtures
                     $this->isBottomCollection($collection) ? self::BOTTOM_GUIDE : self::TOP_GUIDE,
                     $measurementTypes,
                 );
+                $description = $this->faker->sentence(12);
+                $metaDescription = sprintf('%s en %s', $collection->getName(), $color->getName());
+                $isBestseller = $referenceIndex % 5 === 0;
+                $isInCarousel = $referenceIndex % 7 === 0;
+
+                $clothe = (new Clothes())
+                    ->setName($name)
+                    ->setPrice($this->faker->randomElement([1990, 2490, 2990, 3990]))
+                    ->setCollection($collection)
+                    ->setIsOnline(true);
 
                 foreach ($sizes as $size) {
-                    $clothe = (new Clothes())
-                        ->setName($name)
-                        ->setSlug($slug)
-                        ->setSku(sprintf('%s-%s-%s-%04d', strtoupper($this->slug($collection->getName())), strtoupper($color->getName()), strtoupper($size->getName()), $referenceIndex + 1))
-                        ->setDescription($this->faker->sentence(12))
-                        ->setMetadescription(sprintf('%s en %s', $collection->getName(), $color->getName()))
-                        ->setPrice($this->faker->randomElement([1990, 2490, 2990, 3990]))
-                        ->setStock($this->faker->numberBetween(0, 50))
-                        ->setImages([
-                            sprintf('/fixtures/clothes/%s/%s/front.png', $slug, strtolower((string) $size->getName())),
-                            sprintf('/fixtures/clothes/%s/%s/back.png', $slug, strtolower((string) $size->getName())),
-                        ])
-                        ->setCollection($collection)
+                    $variantName = trim(sprintf('%s %s', $name, (string) $size->getName()));
+                    $variantSlug = $this->slug($name);
+                    $variantImages = [
+                        sprintf('/fixtures/clothes/%s/%s/front.png', $slug, strtolower((string) $size->getName())),
+                        sprintf('/fixtures/clothes/%s/%s/back.png', $slug, strtolower((string) $size->getName())),
+                    ];
+                    $variant = (new ClothesVariant())
+                        ->setName($variantName)
+                        ->setSlug($variantSlug)
                         ->setColor($color)
                         ->setSize($size)
-                        ->setStatus($this->faker->randomElement(['draft', 'published']))
-                        ->setIsOnline(true)
-                        ->setIsBestseller($referenceIndex % 5 === 0)
-                        ->setIsInCarousel($referenceIndex % 7 === 0)
-                        ->setSizeGuide($sizeGuide);
+                        ->setSizeGuide($sizeGuide)
+                        ->setSku(sprintf('%s-%s-%s', strtoupper($this->slug($name)), strtoupper($this->slug((string) $color->getName())), strtoupper($this->slug((string) $size->getName()))))
+                        ->setStock($this->faker->numberBetween(0, 50))
+                        ->setDescription($description)
+                        ->setMetadescription($metaDescription)
+                        ->setImages($variantImages)
+                        ->setHighlightImage($variantImages[0])
+                        ->setBestsellerImage($variantImages[0])
+                        ->setIsBestseller($isBestseller)
+                        ->setIsInCarousel($isInCarousel)
+                        ->setIsOnline(true);
 
-                    $this->persistTouched($manager, $clothe);
+                    $clothe->addVariant($variant);
                     $this->addReference(FixtureReferences::CLOTHES.$referenceIndex, $clothe);
                     $referenceIndex++;
                 }
+
+                $this->persistTouched($manager, $clothe);
             }
         }
     }
