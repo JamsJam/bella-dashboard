@@ -51,7 +51,6 @@ jobs:
           username: ${{ secrets.APP_USER }}
           password: ${{ secrets.APP_PASS }}
           port: ${{ secrets.APP_PORT }}
-
           envs: >-
             APP_DOMAIN,
             APP_SECRET_SOURCE,
