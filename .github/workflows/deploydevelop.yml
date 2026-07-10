@@ -17,7 +17,12 @@ jobs:
       - name: Recuperer le depot
         uses: actions/checkout@v6
       
-
+      # - name: Générer un sous-domaine temporaire
+      #   id: hash
+      #   run: |
+      #     set -e
+      #     HASH=$(head /dev/urandom | tr -dc a-z0-9 | head -c 10)
+      #     echo "hash=$HASH" >> "$GITHUB_OUTPUT"```yaml
       - name: Deployer sur le serveur de test
         uses: appleboy/ssh-action@v1.2.5
 
@@ -63,7 +68,7 @@ jobs:
             MAILER_ENCRYPTION_SOURCE,
             JWT_SECRET_KEY_SOURCE,
             JWT_PUBLIC_KEY_SOURCE,
-            JWT_PASSPHRASE_SOURCE;
+            JWT_PASSPHRASE_SOURCE
 
           script: |
             set -Eeuo pipefail
