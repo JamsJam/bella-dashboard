@@ -17,12 +17,7 @@ jobs:
       - name: Recuperer le depot
         uses: actions/checkout@v6
       
-      # - name: Générer un sous-domaine temporaire
-      #   id: hash
-      #   run: |
-      #     set -e
-      #     HASH=$(head /dev/urandom | tr -dc a-z0-9 | head -c 10)
-      #     echo "hash=$HASH" >> "$GITHUB_OUTPUT"```yaml
+
       - name: Deployer sur le serveur de test
         uses: appleboy/ssh-action@v1.2.5
 
@@ -129,7 +124,6 @@ jobs:
             git checkout develop
             git pull --ff-only origin develop
 
-            ```bash
             echo "[4/11] Mise a jour de la configuration de test"
 
             dotenv_quote() {
