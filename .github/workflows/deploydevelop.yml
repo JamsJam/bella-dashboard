@@ -28,16 +28,23 @@ jobs:
 
         env:
           APP_DOMAIN: ${{ secrets.APP_DOMAIN }}
+          JWT_PASSPHRASE_SOURCE: ${{ secrets.JWT_PASSPHRASE }}
+          JWT_SECRET_KEY_SOURCE: ${{ secrets.JWT_SECRET_KEY }}
+          JWT_PUBLIC_KEY_SOURCE: ${{ secrets.JWT_PUBLIC_KEY }}
           APP_SECRET_SOURCE: ${{ secrets.APP_TEST_SECRET }}
           DATABASE_URL_SOURCE: ${{ secrets.DATABASE_TEST_URL }}
-          # APP_TOKEN_SOURCE: ${{ secrets.APP_TEST_TOKEN }}
-          MAILER_DSN_SOURCE: ${{ secrets.MAILER_TEST_DSN }}
           MESSENGER_TRANSPORT_DSN_SOURCE: ${{ secrets.MESSENGER_TEST_TRANSPORT_DSN }}
           CORS_ALLOW_ORIGIN_SOURCE: ${{ secrets.CORS_ALLOW_ORIGIN_TEST }}
-          JWT_PASSPHRASE_SOURCE: ${{ secrets.JWT_TEST_PASSPHRASE }}
           STRIPE_SECRET_KEY_SOURCE: ${{ secrets.STRIPE_TEST_SECRET_KEY }}
           STRIPE_WEBHOOK_SECRET_SOURCE: ${{ secrets.STRIPE_TEST_WEBHOOK_SECRET }}
           FRONT_APP_URL_SOURCE: ${{ secrets.FRONT_TEST_APP_URL }}
+          MAILER_TRANSPORT_SOURCE: ${{ secrets.MAILER_TEST_TRANSPORT }}
+          MAILER_USERNAME_SOURCE: ${{ secrets.MAILER_TEST_USERNAME }}
+          MAILER_PASSWORD_SOURCE: ${{ secrets.MAILER_TEST_PASSWORD }}
+          MAILER_HOST_SOURCE: ${{ secrets.MAILER_TEST_HOST }}
+          MAILER_PORT_SOURCE: ${{ secrets.MAILER_TEST_PORT }}
+          MAILER_ENCRYPTION_SOURCE: ${{ secrets.MAILER_TEST_ENCRYPTION }}
+
 
         with:
           host: ${{ secrets.APP_SERVER }}
@@ -49,12 +56,20 @@ jobs:
             APP_DOMAIN,
             APP_SECRET_SOURCE,
             DATABASE_URL_SOURCE,
-            MAILER_DSN_SOURCE,
             MESSENGER_TRANSPORT_DSN_SOURCE,
             CORS_ALLOW_ORIGIN_SOURCE,
             STRIPE_SECRET_KEY_SOURCE,
             STRIPE_WEBHOOK_SECRET_SOURCE,
-            FRONT_APP_URL_SOURCE
+            FRONT_APP_URL_SOURCE,
+            MAILER_TRANSPORT_SOURCE,
+            MAILER_USERNAME_SOURCE,
+            MAILER_PASSWORD_SOURCE,
+            MAILER_HOST_SOURCE,
+            MAILER_PORT_SOURCE,
+            MAILER_ENCRYPTION_SOURCE
+            JWT_SECRET_KEY_SOURCE,
+            JWT_PUBLIC_KEY_SOURCE,
+            JWT_PASSPHRASE_SOURCE
 
           script: |
             set -Eeuo pipefail
@@ -67,18 +82,36 @@ jobs:
               APP_DOMAIN
               APP_SECRET_SOURCE
               DATABASE_URL_SOURCE
-              MAILER_DSN_SOURCE
+
               MESSENGER_TRANSPORT_DSN_SOURCE
               CORS_ALLOW_ORIGIN_SOURCE
+
               STRIPE_SECRET_KEY_SOURCE
               STRIPE_WEBHOOK_SECRET_SOURCE
+
               FRONT_APP_URL_SOURCE
+
+              MAILER_TRANSPORT_SOURCE
+              MAILER_USERNAME_SOURCE
+              MAILER_PASSWORD_SOURCE
+              MAILER_HOST_SOURCE
+              MAILER_PORT_SOURCE
+              MAILER_ENCRYPTION_SOURCE
+
+              JWT_SECRET_KEY_SOURCE
+              JWT_PUBLIC_KEY_SOURCE
+              JWT_PASSPHRASE_SOURCE
             )
 
+            INDEX=0
             for VARIABLE_NAME in "${REQUIRED_VARIABLES[@]}"; do
+              INDEX=$((INDEX + 1))
               if [ -z "${!VARIABLE_NAME:-}" ]; then
                 echo "Erreur : la variable ${VARIABLE_NAME} est absente ou vide." >&2
                 exit 1
+              else
+                echo "Variable ${VARIABLE_NAME} : OK"
+                echo "${INDEX} sur ${#REQUIRED_VARIABLES[@]} variables verifiees"
               fi
             done
 
@@ -97,50 +130,77 @@ jobs:
             git checkout develop
             git pull --ff-only origin develop
 
+            ```bash
             echo "[4/11] Mise a jour de la configuration de test"
 
             dotenv_quote() {
-              php -r '
-                echo json_encode(
-                  $argv[1],
-                  JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
-                );
-              ' "$1"
+            php -r '
+            echo json_encode(
+              $argv[1],
+              JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+            );
+            ' "$1"
             }
 
             DEFAULT_URI_VALUE="$(dotenv_quote "https://test-${APP_DOMAIN}")"
             DATABASE_URL_VALUE="$(dotenv_quote "$DATABASE_URL_SOURCE")"
             APP_SECRET_VALUE="$(dotenv_quote "$APP_SECRET_SOURCE")"
-            MAILER_DSN_VALUE="$(dotenv_quote "$MAILER_DSN_SOURCE")"
+
+            MAILER_TRANSPORT_VALUE="$(dotenv_quote "$MAILER_TRANSPORT_SOURCE")"
+            MAILER_USERNAME_VALUE="$(dotenv_quote "$MAILER_USERNAME_SOURCE")"
+            MAILER_PASSWORD_VALUE="$(dotenv_quote "$MAILER_PASSWORD_SOURCE")"
+            MAILER_HOST_VALUE="$(dotenv_quote "$MAILER_HOST_SOURCE")"
+            MAILER_PORT_VALUE="$(dotenv_quote "$MAILER_PORT_SOURCE")"
+            MAILER_ENCRYPTION_VALUE="$(dotenv_quote "$MAILER_ENCRYPTION_SOURCE")"
+
             MESSENGER_TRANSPORT_DSN_VALUE="$(dotenv_quote "$MESSENGER_TRANSPORT_DSN_SOURCE")"
             CORS_ALLOW_ORIGIN_VALUE="$(dotenv_quote "$CORS_ALLOW_ORIGIN_SOURCE")"
+
+            JWT_SECRET_KEY_VALUE="$(dotenv_quote "$JWT_SECRET_KEY_SOURCE")"
+            JWT_PUBLIC_KEY_VALUE="$(dotenv_quote "$JWT_PUBLIC_KEY_SOURCE")"
             JWT_PASSPHRASE_VALUE="$(dotenv_quote "$JWT_PASSPHRASE_SOURCE")"
+
             STRIPE_SECRET_KEY_VALUE="$(dotenv_quote "$STRIPE_SECRET_KEY_SOURCE")"
             STRIPE_WEBHOOK_SECRET_VALUE="$(dotenv_quote "$STRIPE_WEBHOOK_SECRET_SOURCE")"
+
             FRONT_APP_URL_VALUE="$(dotenv_quote "$FRONT_APP_URL_SOURCE")"
 
             cat > .env.local <<EOF
             APP_ENV=prod
             APP_DEBUG=0
 
+            # Configuration de l'application
             DEFAULT_URI=${DEFAULT_URI_VALUE}
             DATABASE_URL=${DATABASE_URL_VALUE}
-
             APP_SECRET=${APP_SECRET_VALUE}
 
+            # Configuration du mailer
+            MAILER_TRANSPORT=${MAILER_TRANSPORT_VALUE}
+            MAILER_USERNAME=${MAILER_USERNAME_VALUE}
+            MAILER_PASSWORD=${MAILER_PASSWORD_VALUE}
+            MAILER_HOST=${MAILER_HOST_VALUE}
+            MAILER_PORT=${MAILER_PORT_VALUE}
+            MAILER_ENCRYPTION=${MAILER_ENCRYPTION_VALUE}
 
-            MAILER_DSN=${MAILER_DSN_VALUE}
+            # Configuration Messenger
             MESSENGER_TRANSPORT_DSN=${MESSENGER_TRANSPORT_DSN_VALUE}
 
+            # Configuration CORS
             CORS_ALLOW_ORIGIN=${CORS_ALLOW_ORIGIN_VALUE}
 
+            # Configuration JWT
+            JWT_SECRET_KEY=${JWT_SECRET_KEY_VALUE}
+            JWT_PUBLIC_KEY=${JWT_PUBLIC_KEY_VALUE}
             JWT_PASSPHRASE=${JWT_PASSPHRASE_VALUE}
 
+            # Configuration Stripe
             STRIPE_SECRET_KEY_PROD=${STRIPE_SECRET_KEY_VALUE}
             STRIPE_WEBHOOK_SECRET_PROD=${STRIPE_WEBHOOK_SECRET_VALUE}
 
+            # Configuration du front-end
             FRONT_APP_URL=${FRONT_APP_URL_VALUE}
             EOF
+
 
             chmod 600 .env.local
 
