@@ -30,7 +30,7 @@ jobs:
           APP_DOMAIN: ${{ secrets.APP_DOMAIN }}
           APP_SECRET_SOURCE: ${{ secrets.APP_TEST_SECRET }}
           DATABASE_URL_SOURCE: ${{ secrets.DATABASE_TEST_URL }}
-          APP_TOKEN_SOURCE: ${{ secrets.APP_TEST_TOKEN }}
+          # APP_TOKEN_SOURCE: ${{ secrets.APP_TEST_TOKEN }}
           MAILER_DSN_SOURCE: ${{ secrets.MAILER_TEST_DSN }}
           MESSENGER_TRANSPORT_DSN_SOURCE: ${{ secrets.MESSENGER_TEST_TRANSPORT_DSN }}
           CORS_ALLOW_ORIGIN_SOURCE: ${{ secrets.CORS_ALLOW_ORIGIN_TEST }}
@@ -49,7 +49,6 @@ jobs:
             APP_DOMAIN,
             APP_SECRET_SOURCE,
             DATABASE_URL_SOURCE,
-            APP_TOKEN_SOURCE,
             MAILER_DSN_SOURCE,
             MESSENGER_TRANSPORT_DSN_SOURCE,
             CORS_ALLOW_ORIGIN_SOURCE,
@@ -69,7 +68,6 @@ jobs:
               APP_DOMAIN
               APP_SECRET_SOURCE
               DATABASE_URL_SOURCE
-              APP_TOKEN_SOURCE
               MAILER_DSN_SOURCE
               MESSENGER_TRANSPORT_DSN_SOURCE
               CORS_ALLOW_ORIGIN_SOURCE
@@ -115,7 +113,6 @@ jobs:
             DEFAULT_URI_VALUE="$(dotenv_quote "https://test-${APP_DOMAIN}")"
             DATABASE_URL_VALUE="$(dotenv_quote "$DATABASE_URL_SOURCE")"
             APP_SECRET_VALUE="$(dotenv_quote "$APP_SECRET_SOURCE")"
-            APP_TOKEN_VALUE="$(dotenv_quote "$APP_TOKEN_SOURCE")"
             MAILER_DSN_VALUE="$(dotenv_quote "$MAILER_DSN_SOURCE")"
             MESSENGER_TRANSPORT_DSN_VALUE="$(dotenv_quote "$MESSENGER_TRANSPORT_DSN_SOURCE")"
             CORS_ALLOW_ORIGIN_VALUE="$(dotenv_quote "$CORS_ALLOW_ORIGIN_SOURCE")"
@@ -132,7 +129,7 @@ jobs:
             DATABASE_URL=${DATABASE_URL_VALUE}
 
             APP_SECRET=${APP_SECRET_VALUE}
-            APP_TOKEN=${APP_TOKEN_VALUE}
+
 
             MAILER_DSN=${MAILER_DSN_VALUE}
             MESSENGER_TRANSPORT_DSN=${MESSENGER_TRANSPORT_DSN_VALUE}
