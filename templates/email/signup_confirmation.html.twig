@@ -1,0 +1,9 @@
+<p>Votre code de confirmation est :</p>
+
+<p style="font-size: 24px; font-weight: 700; letter-spacing: 4px;">{{ code }}</p>
+
+<p>Ce code est valable 20 minutes.</p>
+
+{% if expiresAt %}
+    <p>Expiration : {{ expiresAt|date('d/m/Y H:i') }}</p>
+{% endif %}

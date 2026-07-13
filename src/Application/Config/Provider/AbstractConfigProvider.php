@@ -28,14 +28,21 @@ abstract readonly class AbstractConfigProvider
     {
         $cacheKey = $this->cacheKey($fileName);
         $item = $this->cache->getItem($cacheKey);
+        $path = $this->path($fileName);
+        $modifiedAt = is_file($path) ? filemtime($path) : null;
 
         if ($item->isHit()) {
-            $data = $item->get();
+            $cached = $item->get();
 
-            return is_array($data) ? $data : [];
+            if (
+                is_array($cached)
+                && ($cached['_config_mtime'] ?? null) === $modifiedAt
+                && isset($cached['data'])
+                && is_array($cached['data'])
+            ) {
+                return $cached['data'];
+            }
         }
-
-        $path = $this->path($fileName);
 
         try {
             $data = $this->yamlLoaderService->load($path);
@@ -45,10 +52,14 @@ abstract readonly class AbstractConfigProvider
             $data = [];
         }
 
-        $item->set(is_array($data) ? $data : []);
+        $data = is_array($data) ? $data : [];
+        $item->set([
+            '_config_mtime' => $modifiedAt,
+            'data' => $data,
+        ]);
         $this->cache->save($item);
 
-        return is_array($data) ? $data : [];
+        return $data;
     }
 
     /**

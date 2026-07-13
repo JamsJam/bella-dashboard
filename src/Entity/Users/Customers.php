@@ -46,6 +46,15 @@ class Customers implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: Orders::class, mappedBy: 'customer')]
     private Collection $orders;
 
+    #[ORM\Column]
+    private bool $isSignupConfirmed = true;
+
+    #[ORM\Column(length: 6, nullable: true)]
+    private ?string $signupVerificationCode = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $signupVerificationExpiresAt = null;
+
     public function __construct()
     {
         $this->orders = new ArrayCollection();
@@ -77,6 +86,42 @@ class Customers implements UserInterface, PasswordAuthenticatedUserInterface
                 $order->setCustomer(null);
             }
         }
+
+        return $this;
+    }
+
+    public function isSignupConfirmed(): bool
+    {
+        return $this->isSignupConfirmed;
+    }
+
+    public function setIsSignupConfirmed(bool $isSignupConfirmed): static
+    {
+        $this->isSignupConfirmed = $isSignupConfirmed;
+
+        return $this;
+    }
+
+    public function getSignupVerificationCode(): ?string
+    {
+        return $this->signupVerificationCode;
+    }
+
+    public function setSignupVerificationCode(?string $signupVerificationCode): static
+    {
+        $this->signupVerificationCode = $signupVerificationCode;
+
+        return $this;
+    }
+
+    public function getSignupVerificationExpiresAt(): ?\DateTimeImmutable
+    {
+        return $this->signupVerificationExpiresAt;
+    }
+
+    public function setSignupVerificationExpiresAt(?\DateTimeImmutable $signupVerificationExpiresAt): static
+    {
+        $this->signupVerificationExpiresAt = $signupVerificationExpiresAt;
 
         return $this;
     }
