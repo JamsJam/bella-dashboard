@@ -405,6 +405,7 @@ final class ClotheController extends AbstractController
         }
 
         $mainClothe = $this->resolveMainClothe($variants);
+        $publicationValidation = $clotheOnlineGuard->canPublish($mainClothe);
 
         return $this->render('clothes/show.html.twig', [
             'breadscrumbs' => $breadscrumbs->resolve(
@@ -428,6 +429,8 @@ final class ClotheController extends AbstractController
             'sizeGuideUpdateUrl' => $this->generateUrl('app_clothes_size_guide_update', ['slug' => $slug]),
             'sizeGuidePreviewUrl' => $this->generateUrl('app_clothes_size_guide_preview', ['slug' => $slug]),
             'sizeGuideCsrfToken' => $csrfTokenManager->getToken('clothe_size_guide_'.$slug)->getValue(),
+            'canPublish' => $publicationValidation->canPublish(),
+            'publicationErrors' => $publicationValidation->getErrors(),
         ]);
     }
 

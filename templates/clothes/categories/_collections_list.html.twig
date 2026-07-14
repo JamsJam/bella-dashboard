@@ -1,5 +1,6 @@
 <ul class="category-show__collections" data-category-online-target="collectionsList">
     {% for collection in category.collections %}
+        {% set publicationState = collectionPublicationStates[collection.id]|default(null) %}
         <li class="category-show__collection">
             <a href="{{ path('app_clothes_collection', { id: collection.id }) }}">
                 {% if collection.image %}
@@ -11,6 +12,11 @@
                     <strong>{{ collection.name }}</strong>
                     <span>{{ collection.isOnline ? 'En ligne' : 'Hors ligne' }}</span>
                     <span>{{ collection.clothes|length }} vetement(s)</span>
+                    {% if not collection.isOnline and publicationState %}
+                        <span class="category-show__collection-publication category-show__collection-publication--{{ publicationState.canPublish ? 'valid' : 'invalid' }}">
+                            {{ publicationState.canPublish ? 'Publiable' : 'Non publiable' }}
+                        </span>
+                    {% endif %}
                 </div>
             </a>
         </li>

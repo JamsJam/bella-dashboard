@@ -8,5 +8,7 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 #[AutoconfigureTag(self::class)]
 interface CategoryPublishRuleInterface
 {
+    public function getLabel(): string;
+
     public function validate(Category $category): ?string;
 }

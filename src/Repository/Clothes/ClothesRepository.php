@@ -425,9 +425,9 @@ class ClothesRepository extends ServiceEntityRepository
             return [];
         }
 
-        return $this->createQueryBuilder('c')
+        return $this->getEntityManager()->createQueryBuilder()
             ->select('variants')
-            ->join('c.variants', 'variants')
+            ->from(ClothesVariant::class, 'variants')
             ->andWhere('variants.slug IN (:slugs)')
             ->setParameter('slugs', $slugs)
             ->orderBy('variants.slug', 'ASC')
@@ -441,9 +441,9 @@ class ClothesRepository extends ServiceEntityRepository
      */
     public function findBestsellerVariants(): array
     {
-        return $this->createQueryBuilder('c')
+        return $this->getEntityManager()->createQueryBuilder()
             ->select('variants')
-            ->join('c.variants', 'variants')
+            ->from(ClothesVariant::class, 'variants')
             ->andWhere('variants.isBestseller = true')
             ->orderBy('variants.slug', 'ASC')
             ->addOrderBy('variants.id', 'ASC')
@@ -481,9 +481,9 @@ class ClothesRepository extends ServiceEntityRepository
      */
     public function findFeaturedVariants(): array
     {
-        return $this->createQueryBuilder('c')
+        return $this->getEntityManager()->createQueryBuilder()
             ->select('variants')
-            ->join('c.variants', 'variants')
+            ->from(ClothesVariant::class, 'variants')
             ->andWhere('variants.isInCarousel = true')
             ->orderBy('variants.slug', 'ASC')
             ->addOrderBy('variants.id', 'ASC')

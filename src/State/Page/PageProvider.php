@@ -49,13 +49,13 @@ final readonly class PageProvider implements ProviderInterface
             $data['sections'] = is_array($data['sections'] ?? null) ? $data['sections'] : [];
             $data['sections']['bestseller'] = [
                 'products' => array_map(
-                    fn (ClothesVariant $variant): array => $this->mapProduct($variant, true),
+                    fn (ClothesVariant $variant): array => $this->mapBestsellerGroup($variant),
                     $this->variantRepository->findHomepageBestsellers(),
                 ),
             ];
             $data['sections']['highlights'] = [
                 'products' => array_map(
-                    fn (ClothesVariant $variant): array => $this->mapProduct($variant, false),
+                    fn (ClothesVariant $variant): array => $this->mapHighlight($variant),
                     $this->variantRepository->findHomepageHighlights(),
                 ),
             ];
@@ -78,14 +78,30 @@ final readonly class PageProvider implements ProviderInterface
     /**
      * @return array{id: int|null, slug: string|null, name: string, price: int|null, images: string|null}
      */
-    private function mapProduct(ClothesVariant $variant, bool $bestseller): array
+    private function mapBestsellerGroup(ClothesVariant $variant): array
+    {
+        $clothes = $variant->getClothes();
+
+        return [
+            'id' => $clothes?->getId(),
+            'slug' => $variant->getSlug(),
+            'name' => (string) $clothes?->getName(),
+            'price' => $clothes?->getPrice(),
+            'images' => $variant->getBestsellerImage(),
+        ];
+    }
+
+    /**
+     * @return array{id: int|null, slug: string|null, name: string, price: int|null, images: string|null}
+     */
+    private function mapHighlight(ClothesVariant $variant): array
     {
         return [
             'id' => $variant->getId(),
             'slug' => $variant->getSlug(),
             'name' => $variant->getDisplayName(),
             'price' => $variant->getClothes()?->getPrice(),
-            'images' => $bestseller ? $variant->getBestsellerImage() : $variant->getHighlightImage(),
+            'images' => $variant->getHighlightImage(),
         ];
     }
 

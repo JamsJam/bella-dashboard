@@ -20,15 +20,21 @@ final readonly class CategoryOnlineGuard
     public function canPublish(Category $category): CategoryPublishValidationResult
     {
         $errors = [];
+        $checks = [];
 
         foreach ($this->publishRules as $rule) {
             $error = $rule->validate($category);
+            $checks[] = [
+                'label' => $rule->getLabel(),
+                'isValid' => $error === null,
+                'error' => $error,
+            ];
 
             if ($error !== null) {
                 $errors[] = $error;
             }
         }
 
-        return new CategoryPublishValidationResult($errors === [], $errors);
+        return new CategoryPublishValidationResult($errors === [], $errors, $checks);
     }
 }

@@ -6,6 +6,11 @@ use App\Entity\Category\Category;
 
 final readonly class HasSlugRule implements CategoryPublishRuleInterface
 {
+    public function getLabel(): string
+    {
+        return 'Slug de la catégorie renseigné';
+    }
+
     public function validate(Category $category): ?string
     {
         return trim((string) $category->getSlug()) !== ''

@@ -1078,6 +1078,98 @@
     margin: 0;
 }
 
+.category-publication {
+    padding: 1rem;
+    border: 1px solid var(--border);
+    border-radius: 0.5rem;
+    background: var(--bg-light);
+}
+
+.category-publication__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.category-publication__header p {
+    margin: 0.25rem 0 0;
+    color: var(--text-muted);
+    font-size: 0.88rem;
+}
+
+.category-publication__summary {
+    flex: 0 0 auto;
+    border: 1px solid currentColor;
+    border-radius: 999px;
+    padding: 0.35rem 0.6rem;
+    font-size: 0.75rem;
+    font-weight: 800;
+}
+
+.category-publication__summary--valid {
+    color: var(--success);
+}
+
+.category-publication__summary--invalid {
+    color: var(--danger);
+}
+
+.category-publication__list {
+    display: grid;
+    gap: 0.6rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.category-publication__item {
+    display: grid;
+    grid-template-columns: 2rem minmax(0, 1fr);
+    align-items: center;
+    gap: 0.7rem;
+    padding: 0.7rem;
+    border: 1px solid var(--border-muted);
+    border-radius: 0.4rem;
+    background: var(--bg);
+}
+
+.category-publication__indicator {
+    display: grid;
+    place-items: center;
+    inline-size: 2rem;
+    block-size: 2rem;
+    border: 1px solid currentColor;
+    border-radius: 50%;
+    font-size: 1.1rem;
+    font-weight: 900;
+}
+
+.category-publication__item--valid .category-publication__indicator {
+    color: var(--success);
+}
+
+.category-publication__item--invalid .category-publication__indicator {
+    color: var(--danger);
+}
+
+.category-publication__item div {
+    display: flex;
+    flex-direction: column;
+    min-inline-size: 0;
+    gap: 0.15rem;
+}
+
+.category-publication__item strong {
+    color: var(--text);
+    font-size: 0.9rem;
+}
+
+.category-publication__item div span {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+}
+
 .category-show__collections {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 1fr));
@@ -1148,6 +1240,23 @@
 .category-show__collection span {
     color: var(--text-muted);
     font-size: 0.9rem;
+}
+
+.category-show__collection .category-show__collection-publication {
+    inline-size: fit-content;
+    border: 1px solid currentColor;
+    border-radius: 999px;
+    padding: 0.2rem 0.45rem;
+    font-size: 0.72rem;
+    font-weight: 800;
+}
+
+.category-show__collection .category-show__collection-publication--valid {
+    color: var(--success);
+}
+
+.category-show__collection .category-show__collection-publication--invalid {
+    color: var(--danger);
 }
 
 .collection-show {
@@ -1350,6 +1459,23 @@
 
 .collection-show__clothe .collection-show__size-tag--online.collection-show__size-tag--out-of-stock {
     border-color: hsl(from var(--success) h calc(s * 0.35) l);
+}
+
+.collection-show__clothe .collection-show__clothe-publication {
+    inline-size: fit-content;
+    border: 1px solid currentColor;
+    border-radius: 999px;
+    padding: 0.2rem 0.45rem;
+    font-size: 0.72rem;
+    font-weight: 800;
+}
+
+.collection-show__clothe .collection-show__clothe-publication--valid {
+    color: var(--success);
+}
+
+.collection-show__clothe .collection-show__clothe-publication--invalid {
+    color: var(--danger);
 }
 
 @container main (max-width: 760px) {

@@ -49,6 +49,40 @@
                     </div>
                 </dl>
 
+                <section class="collection-show__section category-publication" aria-labelledby="collection-publication-title">
+                    <header class="category-publication__header">
+                        <div>
+                            <h2 id="collection-publication-title" class="collection-show__section-title">Conditions de mise en ligne</h2>
+                            <p>Éléments nécessaires pour publier cette collection.</p>
+                        </div>
+                        <span class="category-publication__summary category-publication__summary--{{ canPublish ? 'valid' : 'invalid' }}">
+                            {{ canPublish ? 'Prête à publier' : 'Configuration incomplète' }}
+                        </span>
+                    </header>
+
+                    {% if canPublish %}
+                        <div class="category-publication__item category-publication__item--valid">
+                            <span class="category-publication__indicator" aria-hidden="true">✓</span>
+                            <div>
+                                <strong>Toutes les conditions sont remplies</strong>
+                                <span>Cette collection peut être mise en ligne.</span>
+                            </div>
+                        </div>
+                    {% else %}
+                        <ul class="category-publication__list">
+                            {% for error in publicationErrors %}
+                                <li class="category-publication__item category-publication__item--invalid">
+                                    <span class="category-publication__indicator" aria-hidden="true">×</span>
+                                    <div>
+                                        <strong>Élément manquant</strong>
+                                        <span>{{ error }}</span>
+                                    </div>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </section>
+
                 <section class="collection-show__section" aria-labelledby="collection-clothes-title">
                     <h2 id="collection-clothes-title" class="collection-show__section-title">Vetements de la collection</h2>
                     {% include 'clothes/collections/_clothes_list.html.twig' with { clothes: clothes } only %}

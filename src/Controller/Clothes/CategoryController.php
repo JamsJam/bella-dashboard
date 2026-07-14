@@ -3,6 +3,9 @@
 namespace App\Controller\Clothes;
 
 use App\Entity\Category\Category;
+use App\Application\Clothes\Guard\Category\CategoryOnlineGuard;
+use App\Application\Clothes\Guard\Collection\CollectionOnlineGuard;
+use App\Entity\Collections\Collections;
 use App\Application\Clothes\Services\CategoryPublicationService;
 use App\Notifier\Services\FlashService;
 use App\Service\BreadscrumbsService;
@@ -147,6 +150,7 @@ final class CategoryController extends AbstractController
         Request $request,
         CsrfTokenManagerInterface $csrfTokenManager,
         CategoryPublicationService $categoryPublicationService,
+        CollectionOnlineGuard $collectionOnlineGuard,
         LoggerService $logger,
     ): JsonResponse {
         $tokenId = $this->getOnlineCsrfTokenId($category);
@@ -181,6 +185,7 @@ final class CategoryController extends AbstractController
             'isOnline' => $category->isOnline(),
             'collectionsHtml' => $this->renderView('clothes/categories/_collections_list.html.twig', [
                 'category' => $category,
+                'collectionPublicationStates' => $this->getCollectionPublicationStates($category, $collectionOnlineGuard),
             ]),
         ]);
     }
@@ -189,7 +194,11 @@ final class CategoryController extends AbstractController
     public function show(
         Category $category,
         CsrfTokenManagerInterface $csrfTokenManager,
+        CategoryOnlineGuard $categoryOnlineGuard,
+        CollectionOnlineGuard $collectionOnlineGuard,
     ): Response {
+        $publicationValidation = $categoryOnlineGuard->canPublish($category);
+
         return $this->render('clothes/categories/show.html.twig', [
             'breadscrumbs' => [
                 ['label' => 'Dashboard', 'route' => 'app_dashboard'],
@@ -202,6 +211,9 @@ final class CategoryController extends AbstractController
             'onlineToggle' => $this->renderCategoryOnlineToggle($category, $csrfTokenManager),
             'imageUploadAction' => $this->generateUrl('app_clothe_category_image_update', ['id' => $category->getId()]),
             'imageUploadToken' => $csrfTokenManager->getToken($this->getImageCsrfTokenId($category))->getValue(),
+            'publicationRequirements' => $publicationValidation->getChecks(),
+            'canPublish' => $publicationValidation->canPublish(),
+            'collectionPublicationStates' => $this->getCollectionPublicationStates($category, $collectionOnlineGuard),
         ]);
     }
 
@@ -602,5 +614,27 @@ final class CategoryController extends AbstractController
     private function getCategoryRowId(Category $category): string
     {
         return 'category-row-'.((string) $category->getId());
+    }
+
+    /**
+     * @return array<int, array{canPublish: bool, errors: list<string>}>
+     */
+    private function getCollectionPublicationStates(Category $category, CollectionOnlineGuard $guard): array
+    {
+        $states = [];
+
+        foreach ($category->getCollections() as $collection) {
+            if (!$collection instanceof Collections || $collection->isOnline()) {
+                continue;
+            }
+
+            $validation = $guard->canPublish($collection);
+            $states[(int) $collection->getId()] = [
+                'canPublish' => $validation->canPublish(),
+                'errors' => $validation->getErrors(),
+            ];
+        }
+
+        return $states;
     }
 }

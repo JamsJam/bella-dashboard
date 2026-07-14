@@ -10,6 +10,11 @@
                     {% endif %}
                     <div>
                         <strong>{{ clothe.name }}</strong>
+                        {% if not clothe.isOnline %}
+                            <span class="collection-show__clothe-publication collection-show__clothe-publication--{{ clothe.canPublish ? 'valid' : 'invalid' }}">
+                                {{ clothe.canPublish ? 'Publiable' : 'Non publiable' }}
+                            </span>
+                        {% endif %}
                         <span class="collection-show__size-tags">
                             {% for size in clothe.sizes %}
                                 <span

@@ -45,9 +45,36 @@
                     </div>
                 </dl>
 
+                <section class="category-show__section category-publication" aria-labelledby="category-publication-title">
+                    <header class="category-publication__header">
+                        <div>
+                            <h2 id="category-publication-title" class="category-show__section-title">Conditions de mise en ligne</h2>
+                            <p>Vérifie les éléments nécessaires avant de publier cette catégorie.</p>
+                        </div>
+                        <span class="category-publication__summary category-publication__summary--{{ canPublish ? 'valid' : 'invalid' }}">
+                            {{ canPublish ? 'Prête à publier' : 'Configuration incomplète' }}
+                        </span>
+                    </header>
+
+                    <ul class="category-publication__list">
+                        {% for requirement in publicationRequirements %}
+                            <li class="category-publication__item category-publication__item--{{ requirement.isValid ? 'valid' : 'invalid' }}">
+                                <span class="category-publication__indicator" aria-hidden="true">{{ requirement.isValid ? '✓' : '×' }}</span>
+                                <div>
+                                    <strong>{{ requirement.label }}</strong>
+                                    <span>{{ requirement.isValid ? 'Condition remplie' : requirement.error }}</span>
+                                </div>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </section>
+
                 <section class="category-show__section" aria-labelledby="category-collections-title">
                     <h2 id="category-collections-title" class="category-show__section-title">Collections de la categorie</h2>
-                    {% include 'clothes/categories/_collections_list.html.twig' with { category: category } only %}
+                    {% include 'clothes/categories/_collections_list.html.twig' with {
+                        category: category,
+                        collectionPublicationStates: collectionPublicationStates
+                    } only %}
                 </section>
             </div>
         </section>

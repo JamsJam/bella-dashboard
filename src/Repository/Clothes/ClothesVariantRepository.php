@@ -50,7 +50,7 @@ class ClothesVariantRepository extends ServiceEntityRepository
      */
     public function findHomepageBestsellers(): array
     {
-        return $this->findHomepageVariantsByFlag('isBestseller');
+        return $this->findGroupsBySlug(bestsellerOnly: true);
     }
 
     /**

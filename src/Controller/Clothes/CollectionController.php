@@ -2,6 +2,8 @@
 
 namespace App\Controller\Clothes;
 
+use App\Application\Clothes\Guard\Collection\CollectionOnlineGuard;
+use App\Application\Clothes\Guard\ClotheOnlineGuard;
 use App\Application\Clothes\Services\ClothesCreationService;
 use App\Application\Clothes\Services\ClotheService;
 use App\Application\Clothes\Services\CollectionCreationService;
@@ -134,8 +136,15 @@ final class CollectionController extends AbstractController
 
 
     #[Route('/collections/{id}', name: 'app_clothes_collection', requirements: ['id' => '\d+'], methods: ['GET'])]
-    public function show(Collections $collection, CsrfTokenManagerInterface $csrfTokenManager): Response
+    public function show(
+        Collections $collection,
+        CsrfTokenManagerInterface $csrfTokenManager,
+        CollectionOnlineGuard $collectionOnlineGuard,
+        ClotheOnlineGuard $clotheOnlineGuard,
+    ): Response
     {
+        $publicationValidation = $collectionOnlineGuard->canPublish($collection);
+
         return $this->render('clothes/collections/show.html.twig', [
             'breadscrumbs' => [
                 ['label' => 'Dashboard', 'route' => 'app_dashboard'],
@@ -153,16 +162,18 @@ final class CollectionController extends AbstractController
             ],
             'collection' => $collection,
             // dd($collection->getClothes()->toArray()),
-            'clothes' => $this->mapDistinctClothes($collection),
+            'clothes' => $this->mapDistinctClothes($collection, $clotheOnlineGuard),
             'onlineToggle' => $this->renderCollectionOnlineToggle($collection, $csrfTokenManager),
+            'canPublish' => $publicationValidation->canPublish(),
+            'publicationErrors' => $publicationValidation->getErrors(),
         ]);
     }
 
     #[Route('/collections/{id}/clothes', name: 'app_clothes_collection_clothes', requirements: ['id' => '\d+'], methods: ['GET'])]
-    public function clothes(Collections $collection): Response
+    public function clothes(Collections $collection, ClotheOnlineGuard $clotheOnlineGuard): Response
     {
         return $this->render('clothes/collections/_clothes_list.html.twig', [
-            'clothes' => $this->mapDistinctClothes($collection),
+            'clothes' => $this->mapDistinctClothes($collection, $clotheOnlineGuard),
         ]);
     }
 
@@ -370,10 +381,12 @@ final class CollectionController extends AbstractController
      *     name: string,
      *     slug: string,
      *     image: ?string,
+     *     isOnline: bool,
+     *     canPublish: bool,
      *     sizes: list<array{name: string, isOnline: bool, stock: int}>
      * }>
      */
-    private function mapDistinctClothes(Collections $collection): array
+    private function mapDistinctClothes(Collections $collection, ClotheOnlineGuard $clotheOnlineGuard): array
     {
         $items = [];
 
@@ -393,6 +406,8 @@ final class CollectionController extends AbstractController
                     'name' => (string) $clothe->getName(),
                     'slug' => $slug,
                     'image' => $images[0] ?? $collection->getImage(),
+                    'isOnline' => $clotheOnlineGuard->isOnline($clothe->getVariants()->toArray()),
+                    'canPublish' => $clotheOnlineGuard->canPublish($clothe)->canPublish(),
                     'sizes' => [],
                 ];
             }

@@ -13,6 +13,11 @@ final readonly class HasPublishableCollectionRule implements CategoryPublishRule
     ) {
     }
 
+    public function getLabel(): string
+    {
+        return 'Au moins une collection publiable';
+    }
+
     public function validate(Category $category): ?string
     {
         foreach ($category->getCollections() as $collection) {

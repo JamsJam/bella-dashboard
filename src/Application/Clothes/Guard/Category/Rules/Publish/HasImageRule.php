@@ -6,6 +6,11 @@ use App\Entity\Category\Category;
 
 final readonly class HasImageRule implements CategoryPublishRuleInterface
 {
+    public function getLabel(): string
+    {
+        return 'Image de la catégorie ajoutée';
+    }
+
     public function validate(Category $category): ?string
     {
         return trim((string) $category->getImage()) !== ''
