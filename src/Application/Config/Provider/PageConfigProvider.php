@@ -36,7 +36,7 @@ final readonly class PageConfigProvider extends AbstractConfigProvider
      */
     public function all(): array
     {
-        $slugs = ['home'];
+        $slugs = ['home', 'homepage'];
 
         foreach ($this->read(self::FILE_NAME) as $slug => $page) {
             if (is_string($slug) && is_array($page)) {

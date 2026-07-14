@@ -9,6 +9,8 @@ export default class extends Controller {
         'imageField',
         'preview',
         'previewFrame',
+        'previewLabel',
+        'previewName',
         'section',
     ];
 
@@ -71,6 +73,8 @@ export default class extends Controller {
         const field = this.findClosestTarget(this.imageFieldTargets, input);
         const previewFrame = this.previewFrameTargets.find((target) => field?.contains(target));
         const preview = this.previewTargets.find((target) => field?.contains(target));
+        const previewLabel = this.previewLabelTargets.find((target) => field?.contains(target));
+        const previewName = this.previewNameTargets.find((target) => field?.contains(target));
         const file = input.files?.[0];
 
         if (!preview || !file) {
@@ -83,6 +87,12 @@ export default class extends Controller {
         if (previewFrame) {
             previewFrame.hidden = false;
             previewFrame.style.display = '';
+        }
+        if (previewLabel) {
+            previewLabel.textContent = 'Nouvelle image';
+        }
+        if (previewName) {
+            previewName.textContent = file.name;
         }
     }
 

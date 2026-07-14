@@ -5,6 +5,7 @@
 
 .main {
     height: calc(100dvh - 5rem);
+    min-height: 100dvh;
     padding: 2rem;
 
     container-type: inline-size;

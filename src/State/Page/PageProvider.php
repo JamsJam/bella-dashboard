@@ -4,134 +4,114 @@ namespace App\State\Page;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
-use App\ApiResource\Pages\Page as PageDTO;
-use App\Application\Clothes\Services\ClotheService;
-use App\Entity\Clothes\Clothes;
+use App\Application\Page\Service\PageContentCache;
 use App\Entity\Clothes\ClothesVariant;
-use App\Service\YamlLoaderService;
+use App\Repository\Clothes\ClothesVariantRepository;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
-class PageProvider implements ProviderInterface
+/**
+ * @implements ProviderInterface<array<string, mixed>>
+ */
+final readonly class PageProvider implements ProviderInterface
 {
-
     public function __construct(
         private ParameterBagInterface $parameterBag,
-        private YamlLoaderService $yamlLoader,
-        private ClotheService $clotheService
-    ) {}
-
-    public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
-    {
-
-        $slug = $uriVariables['slug'];
-
-        $ymlPagePath = $this->parameterBag->get('kernel.project_dir') . '/pages/api/'.$slug.'.yaml';
-        
-        $data = $this->yamlLoader->load($ymlPagePath);
-        foreach ($data["sections"] as &$section) {
-            if ($section["type"] === "product_list") {
-                
-                $section['content']["products"] = array_map(
-                    fn (Clothes $clothe): array => $this->mapProduct($clothe),
-                    $this->clotheService->getBestselledClothe(4),
-                );
-                
-                
-            }
-        }
-
-        $page = new PageDTO;
-        $page->slug = $data["slug"];
-        $page->seo = $data["seo"];
-        $page->section = $data["sections"];
-
-
-
-
-
-
-
-        // Retrieve the state from somewhere
-        return $page;
+        private PageContentCache $pageContentCache,
+        private ClothesVariantRepository $variantRepository,
+        private RequestStack $requestStack,
+    ) {
     }
 
     /**
      * @return array<string, mixed>
      */
-    private function mapProduct(Clothes $clothe): array
+    public function provide(Operation $operation, array $uriVariables = [], array $context = []): array
     {
-        $variants = array_values(array_filter(
-            $clothe->getVariants()->toArray(),
-            static fn (mixed $variant): bool => $variant instanceof ClothesVariant,
-        ));
-        $defaultVariant = $this->findDefaultVariant($variants);
+        $page = $uriVariables['page'] ?? null;
 
-        return [
-            'id' => $clothe->getId(),
-            'name' => $clothe->getName(),
-            'slug' => $clothe->getSlug(),
-            'description' => $clothe->getDescription(),
-            'metadescription' => $defaultVariant?->getMetadescription(),
-            'price' => $clothe->getPrice(),
-            'collection' => $clothe->getCollection()?->getName(),
-            'category' => $clothe->getCollection()?->getCategory()?->getName(),
-            'isOnline' => (bool) $clothe->isOnline(),
-            'isBestseller' => (bool) $clothe->isBestseller(),
-            'isInCarousel' => (bool) $clothe->isInCarousel(),
-            'images' => [
-                'highlight' => $defaultVariant?->getHighlightImage(),
-                'bestseller' => $defaultVariant?->getBestsellerImage(),
-                'gallery' => $defaultVariant?->getImages() ?? [],
-            ],
-            'variants' => array_map(
-                fn (ClothesVariant $variant): array => $this->mapVariant($variant),
-                $variants,
-            ),
-        ];
-    }
-
-    /**
-     * @param list<ClothesVariant> $variants
-     */
-    private function findDefaultVariant(array $variants): ?ClothesVariant
-    {
-        foreach ($variants as $variant) {
-            if ($variant->isAvailable()) {
-                return $variant;
-            }
+        if (!is_string($page) || !preg_match('/^[a-zA-Z0-9_-]+$/', $page)) {
+            throw new NotFoundHttpException('Page introuvable.');
         }
 
-        return $variants[0] ?? null;
+        $path = sprintf('%s/pages/api/%s.yaml', $this->parameterBag->get('kernel.project_dir'), $page);
+        if (!is_file($path)) {
+            throw new NotFoundHttpException(sprintf('La page "%s" est introuvable.', $page));
+        }
+
+        $data = $this->pageContentCache->load($page, $path);
+
+        if ($page === 'homepage') {
+            $data['sections'] = is_array($data['sections'] ?? null) ? $data['sections'] : [];
+            $data['sections']['bestseller'] = [
+                'products' => array_map(
+                    fn (ClothesVariant $variant): array => $this->mapProduct($variant, true),
+                    $this->variantRepository->findHomepageBestsellers(),
+                ),
+            ];
+            $data['sections']['highlights'] = [
+                'products' => array_map(
+                    fn (ClothesVariant $variant): array => $this->mapProduct($variant, false),
+                    $this->variantRepository->findHomepageHighlights(),
+                ),
+            ];
+        }
+
+        return $this->withAbsoluteImageUrls($data);
     }
 
     /**
-     * @return array<string, mixed>
+     * @return array{id: int|null, slug: string|null, name: string, price: int|null, images: string|null}
      */
-    private function mapVariant(ClothesVariant $variant): array
+    private function mapProduct(ClothesVariant $variant, bool $bestseller): array
     {
         return [
             'id' => $variant->getId(),
+            'slug' => $variant->getSlug(),
             'name' => $variant->getDisplayName(),
-            'sku' => $variant->getSku(),
-            'description' => $variant->getDescription() ?? $variant->getClothes()?->getDescription(),
-            'metadescription' => $variant->getMetadescription(),
-            'color' => [
-                'id' => $variant->getColor()?->getId(),
-                'name' => $variant->getColor()?->getName(),
-                'hexa' => $variant->getColor()?->getHexa(),
-            ],
-            'size' => [
-                'id' => $variant->getSize()?->getId(),
-                'name' => $variant->getSize()?->getName(),
-            ],
-            'stock' => $variant->getStock(),
-            'isOnline' => $variant->isOnline(),
-            'isAvailable' => $variant->isAvailable(),
-            'images' => [
-                'highlight' => $variant->getHighlightImage(),
-                'bestseller' => $variant->getBestsellerImage(),
-                'gallery' => $variant->getImages() ?? [],
-            ],
+            'price' => $variant->getClothes()?->getPrice(),
+            'images' => $bestseller ? $variant->getBestsellerImage() : $variant->getHighlightImage(),
         ];
+    }
+
+    /**
+     * @param array<string|int, mixed> $data
+     *
+     * @return array<string|int, mixed>
+     */
+    private function withAbsoluteImageUrls(array $data): array
+    {
+        foreach ($data as $key => $value) {
+            if (is_array($value)) {
+                $data[$key] = $this->withAbsoluteImageUrls($value);
+                continue;
+            }
+
+            if (
+                is_string($key)
+                && in_array($key, ['image', 'images', 'icon', 'ogImage'], true)
+                && is_string($value)
+                && $value !== ''
+            ) {
+                $data[$key] = $this->absoluteUrl($value);
+            }
+        }
+
+        return $data;
+    }
+
+    private function absoluteUrl(string $path): string
+    {
+        if (preg_match('#^https?://#i', $path) === 1 || str_starts_with($path, '//')) {
+            return $path;
+        }
+
+        $request = $this->requestStack->getCurrentRequest();
+        if ($request === null) {
+            return $path;
+        }
+
+        return $request->getSchemeAndHttpHost().'/'.ltrim($path, '/');
     }
 }

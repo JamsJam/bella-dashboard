@@ -48,6 +48,40 @@ class ClothesVariantRepository extends ServiceEntityRepository
     /**
      * @return list<ClothesVariant>
      */
+    public function findHomepageBestsellers(): array
+    {
+        return $this->findHomepageVariantsByFlag('isBestseller');
+    }
+
+    /**
+     * `isInCarousel` est l'indicateur actuellement persisté pour les highlights.
+     *
+     * @return list<ClothesVariant>
+     */
+    public function findHomepageHighlights(): array
+    {
+        return $this->findHomepageVariantsByFlag('isInCarousel');
+    }
+
+    /**
+     * @return list<ClothesVariant>
+     */
+    private function findHomepageVariantsByFlag(string $flag): array
+    {
+        return $this->createQueryBuilder('v')
+            ->addSelect('clothes', 'color', 'size')
+            ->join('v.clothes', 'clothes')
+            ->join('v.color', 'color')
+            ->join('v.size', 'size')
+            ->andWhere(sprintf('v.%s = true', $flag))
+            ->orderBy('v.id', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * @return list<ClothesVariant>
+     */
     public function findGroupsBySlug(
         ?string $orderBy = 'c.name',
         ?string $direction = 'asc',

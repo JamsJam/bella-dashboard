@@ -1,0 +1,30 @@
+<div
+    class="config-field config-field--imageFile homepage-image-upload"
+    {{ stimulus_target('config-image-upload', 'imageField') }}
+>
+    <div class="homepage-image-upload__field">
+        {{ form_label(field) }}
+        {{ form_widget(field, {
+            attr: field.vars.attr|merge(stimulus_action('config-image-upload', 'preview', 'change').toArray())
+        }) }}
+        {{ form_help(field) }}
+        {{ form_errors(field) }}
+    </div>
+
+    <figure
+        class="homepage-image-upload__preview"
+        {{ stimulus_target('config-image-upload', 'previewFrame') }}
+        {% if not currentImage %} hidden{% endif %}
+    >
+        <img
+            {% if currentImage %}src="{{ currentImage }}"{% endif %}
+            alt="Aperçu de l’image"
+            {{ stimulus_target('config-image-upload', 'preview') }}
+            {% if not currentImage %} hidden{% endif %}
+        >
+        <figcaption>
+            <span {{ stimulus_target('config-image-upload', 'previewLabel') }}>Image actuelle</span>
+            <strong {{ stimulus_target('config-image-upload', 'previewName') }}>{{ currentImage ? currentImage|split('/')|last : '' }}</strong>
+        </figcaption>
+    </figure>
+</div>

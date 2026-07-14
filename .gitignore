@@ -29,6 +29,7 @@
 
 ###> uploads ###
 public/images/*
+/public/image/front/
 ###< uploads ###
 
 ###> lexik/jwt-authentication-bundle ###

@@ -14,10 +14,14 @@
         </header>
 
         <section class="config-page__content">
-            {{ form_start(form, { attr: stimulus_controller('config-image-upload').toArray()|merge({ class: 'config-card' }) }) }}
+            {{ form_start(form, { attr: stimulus_controller('config-image-upload').toArray()|merge({
+                class: homepage_form|default(false) ? 'config-card config-card--homepage' : 'config-card'
+            }) }) }}
                 {{ form_errors(form) }}
 
-                {% if form.sections is defined and form.openGraphYaml is defined %}
+                {% if homepage_form|default(false) %}
+                    {% include 'config/_homepage_config_fields.html.twig' with { form: form } only %}
+                {% elseif form.sections is defined and form.openGraphYaml is defined %}
                     {% include 'config/_page_config_fields.html.twig' with { form: form } only %}
                 {% else %}
                     {% for child in form %}

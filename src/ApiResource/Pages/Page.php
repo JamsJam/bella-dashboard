@@ -1,6 +1,6 @@
 <?php
 
-Namespace App\ApiResource\Pages;
+namespace App\ApiResource\Pages;
 
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
@@ -9,17 +9,13 @@ use App\State\Page\PageProvider;
 #[ApiResource(
     operations: [
         new Get(
-            uriTemplate: "page/{slug}",
-            uriVariables: ["slug"],
-            provider: PageProvider::class
+            uriTemplate: '/page/{page}',
+            requirements: ['page' => '[a-zA-Z0-9_-]+'],
+            provider: PageProvider::class,
         ),
     ],
-    formats: ['json' => ['application/json']]
+    formats: ['json' => ['application/json']],
 )]
 final class Page
 {
-    
-    public string $slug; 
-    public array $section = []; 
-    public array $seo = []; 
 }
