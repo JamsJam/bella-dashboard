@@ -109,6 +109,11 @@ abstract readonly class AbstractConfigProvider
         ));
     }
 
+    protected function projectDirectory(): string
+    {
+        return $this->projectDir;
+    }
+
     private function path(string $fileName): string
     {
         return $this->configDirectory().'/'.$fileName.'.yaml';

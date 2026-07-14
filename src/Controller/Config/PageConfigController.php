@@ -3,12 +3,15 @@
 namespace App\Controller\Config;
 
 use App\Application\Config\Dto\PageConfigDto;
+use App\Application\Config\Dto\Page\Categories\CategoriesConfigDto;
 use App\Application\Config\Dto\Page\Homepage\HomepageConfigDto;
 use App\Application\Config\Dto\Page\Homepage\Item\ManualItemDto;
 use App\Application\Config\Dto\Page\Homepage\Item\ReturnStepDto;
 use App\Application\Config\Form\PageConfigType;
+use App\Application\Config\Form\Page\Categories\CategoriesConfigType;
 use App\Application\Config\Form\Page\Homepage\HomepageConfigType;
 use App\Application\Config\Provider\HomepageConfigProvider;
+use App\Application\Config\Provider\CategoriesConfigProvider;
 use App\Application\Config\Service\HomepageImageUploader;
 use App\Application\Config\Service\PageConfigService;
 use App\Notifier\Services\FlashService;
@@ -50,6 +53,7 @@ final class PageConfigController extends AbstractConfigController
         BreadscrumbsService $breadscrumbs,
         PageConfigService $configService,
         HomepageConfigProvider $homepageConfigProvider,
+        CategoriesConfigProvider $categoriesConfigProvider,
         HomepageImageUploader $homepageImageUploader,
         FlashService $flashService,
         ?string $slug = 'home',
@@ -59,6 +63,16 @@ final class PageConfigController extends AbstractConfigController
                 $request,
                 $breadscrumbs,
                 $homepageConfigProvider,
+                $homepageImageUploader,
+                $flashService,
+            );
+        }
+
+        if ($slug === 'categories') {
+            return $this->categories(
+                $request,
+                $breadscrumbs,
+                $categoriesConfigProvider,
                 $homepageImageUploader,
                 $flashService,
             );
@@ -79,6 +93,8 @@ final class PageConfigController extends AbstractConfigController
 
         return $this->renderFormPage($request, $breadscrumbs, 'Configuration shop', $form->createView(), [
             'subtitle' => sprintf('Page front : %s', $config->normalizedSlug()),
+            'back_url' => $this->generateUrl('app_config_pages'),
+            'back_label' => 'Retour aux pages',
         ]);
     }
 
@@ -159,8 +175,56 @@ final class PageConfigController extends AbstractConfigController
         }
 
         return $this->renderFormPage($request, $breadscrumbs, 'Configuration de la page d’accueil', $form->createView(), [
-            'subtitle' => 'Fichier : pages/api/homepage.yaml',
+            'back_url' => $this->generateUrl('app_config_pages'),
+            'back_label' => 'Retour aux pages',
             'homepage_form' => true,
+        ]);
+    }
+
+    private function categories(
+        Request $request,
+        BreadscrumbsService $breadscrumbs,
+        CategoriesConfigProvider $provider,
+        HomepageImageUploader $imageUploader,
+        FlashService $flashService,
+    ): Response {
+        $config = $provider->get();
+        $previousBannerPath = $config->bandeau->background;
+        $previousOpenGraphPath = $config->seo->ogImage;
+        $form = $this->createForm(CategoriesConfigType::class, $config);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            /** @var CategoriesConfigDto $config */
+            $config = $form->getData();
+            $bannerFile = $form->get('bandeau')->get('backgroundFile')->getData();
+            $openGraphFile = $form->get('seo')->get('ogImageFile')->getData();
+
+            if ($bannerFile instanceof UploadedFile) {
+                $config->bandeau->background = $imageUploader->uploadCategoriesBanner($bannerFile);
+            }
+            if ($openGraphFile instanceof UploadedFile) {
+                $config->seo->ogImage = $imageUploader->uploadCategoriesOpenGraphImage($openGraphFile);
+            }
+
+            $provider->save($config);
+
+            if ($bannerFile instanceof UploadedFile && $previousBannerPath !== $config->bandeau->background) {
+                $imageUploader->removePreviousImage($previousBannerPath);
+            }
+            if ($openGraphFile instanceof UploadedFile && $previousOpenGraphPath !== $config->seo->ogImage) {
+                $imageUploader->removePreviousImage($previousOpenGraphPath);
+            }
+
+            $flashService->success('Configuration de la page des catégories mise à jour.');
+
+            return $this->redirectToRoute('app_config_page', ['slug' => 'categories']);
+        }
+
+        return $this->renderFormPage($request, $breadscrumbs, 'Configuration des catégories', $form->createView(), [
+            'back_url' => $this->generateUrl('app_config_pages'),
+            'back_label' => 'Retour aux pages',
+            'categories_form' => true,
         ]);
     }
 

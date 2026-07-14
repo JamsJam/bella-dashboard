@@ -9,6 +9,10 @@
     max-inline-size: 52rem;
 }
 
+.config-page__back {
+    margin-block-start: 0.75rem;
+}
+
 .config-page:has(.config-card--homepage) .config-page__content {
     inline-size: 100%;
     max-inline-size: 76rem;

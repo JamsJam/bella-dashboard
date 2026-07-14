@@ -16,6 +16,19 @@ class CategoryRepository extends ServiceEntityRepository
         parent::__construct($registry, Category::class);
     }
 
+    /**
+     * @return list<Category>
+     */
+    public function findOnlineForPage(): array
+    {
+        return $this->createQueryBuilder('category')
+            ->andWhere('category.isOnline = true')
+            ->orderBy('category.name', 'ASC')
+            ->addOrderBy('category.id', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
     //    /**
     //     * @return Category[] Returns an array of Category objects
     //     */

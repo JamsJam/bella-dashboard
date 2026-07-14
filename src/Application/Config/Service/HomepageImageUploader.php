@@ -37,6 +37,16 @@ final readonly class HomepageImageUploader
         return $this->upload($file, 'open-graph');
     }
 
+    public function uploadCategoriesBanner(UploadedFile $file): string
+    {
+        return $this->upload($file, 'categories-banner');
+    }
+
+    public function uploadCategoriesOpenGraphImage(UploadedFile $file): string
+    {
+        return $this->upload($file, 'categories-open-graph');
+    }
+
     private function upload(UploadedFile $file, string $fallbackName): string
     {
         $directory = $this->projectDir.'/public'.self::PUBLIC_DIRECTORY;

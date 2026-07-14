@@ -51,6 +51,13 @@ final readonly class PageConfigProvider extends AbstractConfigProvider
             }
         }
 
+        foreach (glob($this->projectDirectory().'/pages/api/*.yaml') ?: [] as $path) {
+            $slug = basename($path, '.yaml');
+            if ($slug !== '') {
+                $slugs[] = $this->normalizeSlug($slug);
+            }
+        }
+
         $slugs = array_values(array_unique($slugs));
         sort($slugs);
 

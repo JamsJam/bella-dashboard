@@ -1,0 +1,52 @@
+{% set sections = {
+    bandeau: {
+        title: 'Bandeau',
+        eyebrow: 'Présentation',
+        description: 'Le bandeau affiché en haut de la page des catégories.'
+    },
+    seo: {
+        title: 'Référencement',
+        eyebrow: 'SEO',
+        description: 'Les métadonnées utilisées par les moteurs et les réseaux sociaux.'
+    }
+} %}
+
+<nav class="homepage-form__nav" aria-label="Sections de la page">
+    {% for name, section in sections %}
+        <a href="#categories-section-{{ name }}">{{ section.title }}</a>
+    {% endfor %}
+</nav>
+
+<div class="homepage-form__sections">
+    {% for name, section in sections %}
+        <fieldset id="categories-section-{{ name }}" class="homepage-section">
+            <legend class="homepage-section__legend">
+                <span class="homepage-section__eyebrow">{{ section.eyebrow }}</span>
+                <span class="homepage-section__title">{{ section.title }}</span>
+                <small>{{ section.description }}</small>
+            </legend>
+
+            <div class="homepage-section__fields">
+                {% for field in attribute(form, name) %}
+                    {% if field.vars.name in ['backgroundFile', 'ogImageFile'] %}
+                        {% set currentImage = field.vars.name == 'backgroundFile'
+                            ? attribute(form, name).vars.data.background|default('')
+                            : attribute(form, name).vars.data.ogImage|default('')
+                        %}
+                        {% include 'config/_homepage_image_upload.html.twig' with {
+                            field: field,
+                            currentImage: currentImage
+                        } only %}
+                    {% else %}
+                        <div class="config-field config-field--{{ field.vars.name }}">
+                            {{ form_label(field) }}
+                            {{ form_widget(field) }}
+                            {{ form_help(field) }}
+                            {{ form_errors(field) }}
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </fieldset>
+    {% endfor %}
+</div>

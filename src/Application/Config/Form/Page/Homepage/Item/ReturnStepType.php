@@ -20,12 +20,12 @@ final class ReturnStepType extends AbstractType
                 'label' => 'Icône',
                 'mapped' => false,
                 'required' => false,
-                'help' => 'JPEG ou PNG. Laisser vide pour conserver l’icône actuelle.',
-                'attr' => ['accept' => 'image/jpeg,image/png'],
+                'help' => 'JPEG, PNG ou SVG. Laisser vide pour conserver l’icône actuelle.',
+                'attr' => ['accept' => 'image/jpeg,image/png,image/svg+xml'],
                 'constraints' => [
                     new File(
-                        mimeTypes: ['image/jpeg', 'image/png'],
-                        mimeTypesMessage: 'Sélectionne une image JPEG ou PNG.',
+                        mimeTypes: ['image/jpeg', 'image/png', 'image/svg+xml'],
+                        mimeTypesMessage: 'Sélectionne une image JPEG, PNG ou SVG.',
                     ),
                 ],
             ]);

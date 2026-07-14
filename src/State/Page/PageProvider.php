@@ -5,7 +5,9 @@ namespace App\State\Page;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\Application\Page\Service\PageContentCache;
+use App\Entity\Category\Category;
 use App\Entity\Clothes\ClothesVariant;
+use App\Repository\Category\CategoryRepository;
 use App\Repository\Clothes\ClothesVariantRepository;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -20,6 +22,7 @@ final readonly class PageProvider implements ProviderInterface
         private ParameterBagInterface $parameterBag,
         private PageContentCache $pageContentCache,
         private ClothesVariantRepository $variantRepository,
+        private CategoryRepository $categoryRepository,
         private RequestStack $requestStack,
     ) {
     }
@@ -58,6 +61,17 @@ final readonly class PageProvider implements ProviderInterface
             ];
         }
 
+        if ($page === 'categories') {
+            $data['categories'] = array_map(
+                static fn (Category $category): array => [
+                    'name' => (string) $category->getName(),
+                    'slug' => (string) $category->getSlug(),
+                    'image' => (string) $category->getImage(),
+                ],
+                $this->categoryRepository->findOnlineForPage(),
+            );
+        }
+
         return $this->withAbsoluteImageUrls($data);
     }
 
@@ -90,7 +104,7 @@ final readonly class PageProvider implements ProviderInterface
 
             if (
                 is_string($key)
-                && in_array($key, ['image', 'images', 'icon', 'ogImage'], true)
+                && in_array($key, ['image', 'images', 'icon', 'ogImage', 'background'], true)
                 && is_string($value)
                 && $value !== ''
             ) {
