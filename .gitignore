@@ -32,6 +32,10 @@ public/images/*
 /public/image/front/
 ###< uploads ###
 
+###> user-managed page configuration ###
+/pages/api/
+###< user-managed page configuration ###
+
 ###> lexik/jwt-authentication-bundle ###
 /config/jwt/*.pem
 ###< lexik/jwt-authentication-bundle ###
