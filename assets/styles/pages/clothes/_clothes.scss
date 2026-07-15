@@ -609,6 +609,41 @@
     outline-offset: 2px;
 }
 
+.size-stocks {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+    gap: 0.75rem;
+    margin-block-start: 1.25rem;
+}
+
+.size-stocks h3 {
+    grid-column: 1 / -1;
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 1rem;
+}
+
+.size-stock {
+    display: grid;
+    gap: 0.35rem;
+    color: var(--text-muted);
+    font-weight: 700;
+}
+
+.size-stock input {
+    min-inline-size: 0;
+    padding: 0.65rem 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 0.55rem;
+    background: var(--bg-light);
+    color: var(--text);
+}
+
+.size-stock input:focus-visible {
+    border-color: var(--primary);
+    outline: 2px solid color-mix(in srgb, var(--primary) 30%, transparent);
+}
+
 .clothe-image-picker {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(6rem, 1fr));

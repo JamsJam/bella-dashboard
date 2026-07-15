@@ -83,7 +83,7 @@ final class ClotheService
         return $this->clotheProvider->getSameCollectionClothes($slug, $limit);
     }
 
-    public function syncClotheSizes(string $slug, array $selectedSizes, bool $confirmDelete = false): void
+    public function syncClotheSizes(string $slug, array $selectedSizes, array $stocks = [], bool $confirmDelete = false): void
     {
         $selectedSizes = array_values(array_intersect(self::AVAILABLE_SIZES, $selectedSizes));
         $variants = $this->getClotheVariantsBySlug($slug);
@@ -99,6 +99,16 @@ final class ClotheService
 
         $mainClothe = $firstVariant->getClothes();
         $variantsBySize = [];
+        $normalizedStocks = [];
+
+        foreach ($selectedSizes as $sizeName) {
+            $stock = filter_var($stocks[$sizeName] ?? 0, FILTER_VALIDATE_INT);
+            if ($stock === false || $stock < 0) {
+                throw new \InvalidArgumentException(sprintf('Le stock de la taille %s doit etre un entier positif ou nul.', $sizeName));
+            }
+
+            $normalizedStocks[$sizeName] = $stock;
+        }
 
         foreach ($variants as $variant) {
             if ($variant instanceof ClothesVariant && $variant->getSize()?->getName() !== null) {
@@ -117,36 +127,59 @@ final class ClotheService
 
         foreach ($selectedSizes as $sizeName) {
             if (isset($variantsBySize[$sizeName])) {
+                $variant = $variantsBySize[$sizeName];
+                $variant
+                    ->setStock($normalizedStocks[$sizeName])
+                    ->setIsOnline($normalizedStocks[$sizeName] > 0 && $variant->isOnline())
+                    ->setEditedAt(new \DateTimeImmutable());
                 continue;
             }
 
-            $mainClothe->addVariant($this->createVariantForSize($mainClothe, $sizeName));
+            $mainClothe->addVariant($this->createVariantForSize(
+                $mainClothe,
+                $firstVariant,
+                $sizeName,
+                $normalizedStocks[$sizeName],
+            ));
         }
 
+        $mainClothe->setEditedAt(new \DateTimeImmutable());
         $this->entityManager->flush();
     }
 
-    private function createVariantForSize(Clothes $source, string $sizeName): ClothesVariant
+    private function createVariantForSize(
+        Clothes $clothe,
+        ClothesVariant $sourceVariant,
+        string $sizeName,
+        int $stock,
+    ): ClothesVariant
     {
         $size = $this->findOrCreateSize($sizeName);
         $variantName = trim(sprintf(
             '%s %s %s',
-            (string) $source->getName(),
-            (string) $source->getColor()?->getName(),
+            (string) $clothe->getName(),
+            (string) $sourceVariant->getColor()?->getName(),
             $sizeName,
         ));
+        $now = new \DateTimeImmutable();
 
         return (new ClothesVariant())
             ->setName($variantName)
-            ->setSlug(strtolower((string) (new AsciiSlugger())->slug($variantName)))
-            ->setStock(0)
-            ->setColor($source->getColor())
+            ->setSlug((string) $sourceVariant->getSlug())
+            ->setStock($stock)
+            ->setColor($sourceVariant->getColor())
             ->setSize($size)
-            ->setSku($this->buildSku($source, $sizeName))
-            ->setImages($source->getImages())
-            ->setHighlightImage(($source->getImages() ?? [])[0] ?? null)
-            ->setBestsellerImage(($source->getImages() ?? [])[0] ?? null)
-            ->setIsOnline(false);
+            ->setSku($this->buildSku($sourceVariant, $sizeName))
+            ->setDescription($sourceVariant->getDescription())
+            ->setMetadescription($sourceVariant->getMetadescription())
+            ->setImages($sourceVariant->getImages())
+            ->setHighlightImage($sourceVariant->getHighlightImage())
+            ->setBestsellerImage($sourceVariant->getBestsellerImage())
+            ->setIsBestseller($sourceVariant->isBestseller())
+            ->setIsInCarousel($sourceVariant->isInCarousel())
+            ->setIsOnline(false)
+            ->setCreatedAt($now)
+            ->setEditedAt($now);
     }
 
     private function findOrCreateSize(string $sizeName): Clothessize
@@ -172,10 +205,10 @@ final class ClotheService
         return $size;
     }
 
-    private function buildSku(Clothes $source, string $sizeName): string
+    private function buildSku(ClothesVariant $sourceVariant, string $sizeName): string
     {
-        $slug = strtolower((string) (new AsciiSlugger())->slug((string) $source->getSlug()));
+        $slug = strtolower((string) (new AsciiSlugger())->slug((string) $sourceVariant->getSlug()));
 
-        return strtoupper(sprintf('%s-%s-%s', $slug, $sizeName, bin2hex(random_bytes(2))));
+        return strtoupper(sprintf('%s-%s', $slug, $sizeName));
     }
 }

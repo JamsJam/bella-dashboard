@@ -12,16 +12,6 @@
         </header>
 
         <section class="config-page__content">
-            <form class="config-card" method="post" action="{{ path('app_config_pages_create') }}">
-                <label class="config-field">
-                    <span>Nouvelle page</span>
-                    <input type="text" name="slug" placeholder="ex: about, faq, livraison">
-                </label>
-                <footer class="config-card__actions">
-                    <button type="submit" class="clothe-show__action">Configurer</button>
-                </footer>
-            </form>
-
             <ul class="config-page-list">
                 {% for page in pages %}
                     <li class="config-page-list__item">

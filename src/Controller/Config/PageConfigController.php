@@ -18,7 +18,6 @@ use App\Notifier\Services\FlashService;
 use App\Service\BreadscrumbsService;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
-use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -35,16 +34,6 @@ final class PageConfigController extends AbstractConfigController
             'pages' => $configService->all(),
             'breadscrumbs' => $breadscrumbs->resolve((string) $request->attributes->get('_route')),
         ]);
-    }
-
-    #[Route('/config/pages/create', name: 'app_config_pages_create', methods: ['POST'])]
-    public function create(Request $request): RedirectResponse
-    {
-        $slug = strtolower(trim((string) $request->request->get('slug', 'home')));
-        $slug = preg_replace('/[^a-z0-9_-]+/', '-', $slug) ?: 'home';
-        $slug = trim($slug, '-_') ?: 'home';
-
-        return $this->redirectToRoute('app_config_page', ['slug' => $slug]);
     }
 
     #[Route('/config/page/{slug}', name: 'app_config_page', methods: ['GET', 'POST'], defaults: ['slug' => 'home'])]

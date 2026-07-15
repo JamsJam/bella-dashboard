@@ -33,6 +33,23 @@
                         </label>
                     {% endfor %}
                 </fieldset>
+
+                <div class="size-stocks">
+                    <h3>Stock par taille</h3>
+                    {% for size in availableSizes %}
+                        <label class="size-stock">
+                            <span>{{ size }}</span>
+                            <input
+                                type="number"
+                                name="stocks[{{ size }}]"
+                                min="0"
+                                step="1"
+                                value="{{ stocks[size]|default(0) }}"
+                                aria-label="Stock de la taille {{ size }}"
+                            >
+                        </label>
+                    {% endfor %}
+                </div>
                 <div data-clothe-size-modal-target="confirmContainer"></div>
             </div>
 

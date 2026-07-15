@@ -20,34 +20,6 @@ use Symfony\Component\String\Slugger\AsciiSlugger;
 
 final class ClothesVariantController extends AbstractController
 {
-    #[Route('/clothes/{slug}/variants/modal', name: 'app_clothes_variants_manage_modal', methods: ['GET'])]
-    public function manageModal(
-        string $slug,
-        ClotheService $clotheService,
-        EntityManagerInterface $entityManager,
-        CsrfTokenManagerInterface $csrfTokenManager,
-    ): Response {
-        $variants = $clotheService->getClotheVariantsBySlug($slug);
-        $clothe = $this->resolveMainClothe($variants);
-
-        $html = $this->renderView('clothes/variants/_manage_modal.html.twig', [
-            'clothe' => $clothe,
-            'variants' => $variants,
-            'defaultVariant' => $variants[0] ?? null,
-            'availableSizes' => ClotheService::AVAILABLE_SIZES,
-            'createAction' => $this->generateUrl('app_clothes_variant_create', ['slug' => $slug]),
-            'createCsrfToken' => $csrfTokenManager->getToken('clothe_variant_create_'.$slug)->getValue(),
-            'groupEditUrl' => $variants[0] instanceof ClothesVariant && $variants[0]->getColor()?->getId() !== null
-                ? $this->generateUrl('app_clothes_variant_group_edit_modal', [
-                    'slug' => $slug,
-                    'color' => $variants[0]->getColor()?->getId(),
-                ])
-                : null,
-        ]);
-
-        return $this->renderModalStream($html);
-    }
-
     #[Route('/clothes/variants/{id}/edit/modal', name: 'app_clothes_variant_edit_modal', requirements: ['id' => '\d+'], methods: ['GET'])]
     public function editModal(
         ClothesVariant $variant,

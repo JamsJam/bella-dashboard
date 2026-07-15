@@ -25,7 +25,10 @@ final readonly class CategoriesConfigProvider
 
     public function save(CategoriesConfigDto $config): void
     {
-        if (file_put_contents($this->path(), Yaml::dump($config->toArray(), 10, 2), LOCK_EX) === false) {
+        $data = $config->toArray();
+        $data['last-modifyed'] = (new \DateTimeImmutable())->format(DATE_ATOM);
+
+        if (file_put_contents($this->path(), Yaml::dump($data, 10, 2), LOCK_EX) === false) {
             throw new \RuntimeException('Impossible d’enregistrer la configuration de la page des catégories.');
         }
 

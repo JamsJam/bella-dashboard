@@ -8,8 +8,8 @@ final readonly class HasAssociatedBodyRule implements ClothePublishRuleInterface
 {
     public function validate(Clothes $clothe): ?string
     {
-        return !$clothe->getBodies()->isEmpty()
-            ? null
-            : 'Au moins un avatar doit porter ce vetement.';
+        // Temporairement neutralisee : l'association a un avatar ne bloque plus
+        // la mise en ligne d'un vetement.
+        return null;
     }
 }

@@ -423,7 +423,7 @@ final class ClotheController extends AbstractController
                 'bestseller' => $this->generateUrl('app_clothes_highlight_image_modal', ['slug' => $slug, 'slot' => 'bestseller']),
                 'featured' => $this->generateUrl('app_clothes_highlight_image_modal', ['slug' => $slug, 'slot' => 'carousel']),
             ],
-            'variantsManageUrl' => $this->generateUrl('app_clothes_variants_manage_modal', ['slug' => $slug]),
+            'sizesManageUrl' => $this->generateUrl('app_clothes_sizes_modal', ['slug' => $slug]),
             'bestsellerToggle' => $this->renderClotheBestsellerToggle($mainClothe, $csrfTokenManager),
             'featuredToggle' => $this->renderClotheFeaturedToggle($mainClothe, $csrfTokenManager),
             'sizeGuideUpdateUrl' => $this->generateUrl('app_clothes_size_guide_update', ['slug' => $slug]),
@@ -1174,11 +1174,19 @@ final class ClotheController extends AbstractController
             fn (ClothesVariant $variant): ?string => $variant->getSize()?->getName(),
             $variants,
         )));
+        $stocks = [];
+        foreach ($variants as $variant) {
+            $sizeName = $variant->getSize()?->getName();
+            if ($sizeName !== null) {
+                $stocks[$sizeName] = $variant->getStock();
+            }
+        }
 
         $html = $this->renderView('clothes/_sizes_modal.html.twig', [
             'slug' => $slug,
             'availableSizes' => ClotheService::AVAILABLE_SIZES,
             'selectedSizes' => $selectedSizes,
+            'stocks' => $stocks,
             'action' => $this->generateUrl('app_clothes_sizes_update', ['slug' => $slug]),
             'csrfToken' => $csrfTokenManager->getToken('clothe_sizes_'.$slug)->getValue(),
         ]);
@@ -1209,13 +1217,25 @@ final class ClotheController extends AbstractController
         }
 
         $selectedSizes = $request->request->all('sizes');
+        $stocks = $request->request->all('stocks');
         $confirmDelete = $request->request->getBoolean('confirm_delete');
 
         try {
-            $clotheService->syncClotheSizes($slug, is_array($selectedSizes) ? $selectedSizes : [], $confirmDelete);
-            $flashService->success('Tailles mises a jour.');
+            $clotheService->syncClotheSizes(
+                $slug,
+                is_array($selectedSizes) ? $selectedSizes : [],
+                is_array($stocks) ? $stocks : [],
+                $confirmDelete,
+            );
+            $flashService->success('Tailles et stocks mis a jour.');
             $logger->info('Clothe sizes updated.', [
                 'slug' => $slug,
+            ]);
+        } catch (\InvalidArgumentException $exception) {
+            $flashService->error($exception->getMessage());
+            $logger->warning('Invalid clothe size stock.', [
+                'slug' => $slug,
+                'error' => $exception->getMessage(),
             ]);
         } catch (\RuntimeException $exception) {
             if ($exception->getMessage() === 'delete_confirmation_required') {
@@ -1244,13 +1264,6 @@ final class ClotheController extends AbstractController
                 'href' => $this->generateUrl('app_clothes_edit_modal', ['slug' => $slug]),
                 'isActive' => false,
                 'attr' => ['data-turbo-frame' => 'clothe-modal-component'],
-            ],
-            [
-                'id' => 'stock',
-                'label' => 'Variantes',
-                'href' => $this->generateUrl('app_clothes_variants_manage_modal', ['slug' => $slug]),
-                'isActive' => false,
-                'attr' => ['data-turbo-stream' => 'true'],
             ],
             [
                 'id' => 'sizes',

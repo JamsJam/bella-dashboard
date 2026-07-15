@@ -25,7 +25,9 @@ final readonly class HomepageConfigProvider
 
     public function save(HomepageConfigDto $config): void
     {
-        $yaml = Yaml::dump($config->toArray(), 10, 2);
+        $data = $config->toArray();
+        $data['last-modifyed'] = (new \DateTimeImmutable())->format(DATE_ATOM);
+        $yaml = Yaml::dump($data, 10, 2);
 
         if (file_put_contents($this->path(), $yaml, LOCK_EX) === false) {
             throw new \RuntimeException('Impossible d’enregistrer la configuration de la page d’accueil.');
