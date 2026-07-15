@@ -1,0 +1,92 @@
+slug: home
+last-modifyed: "2026-07-15T09:53:21+02:00"
+
+seo:
+  title: "Bella GP - Shop like Bella"
+  description: "Découvre un nouveau concept de shopping en ligne. Crée ton avatar et essaye tes vêtements avant de les acheter."
+  keywords:
+    - "shopping en ligne"
+    - "avatar"
+    - "mode femme"
+    - "essayage virtuel"
+    - "bella gp"
+
+  json_ld:
+    "@context": "https://schema.org"
+    "@type": "WebSite"
+    name: "Bella GP"
+    url: "https://bellagp.fr"
+    potentialAction:
+      "@type": "SearchAction"
+      target: "https://bellagp.fr/search?q={search_term_string}"
+      "query-input": "required name=search_term_string"
+
+sections:
+
+  - type: hero
+    content:
+      avatar: "/images/homepage/default_avatar_bella.png"
+      title:
+        - "Shop like Bella"
+        - "Un personnage"
+        - "à ton image"
+      description: |
+        Adepte du shopping en ligne ? Viens découvrir notre tout nouveau concept.
+        Un concept qui te permet de choisir tes vêtements et les essayer sur ton personnage.
+      cta:
+        label: "Commence ton shopping"
+        link: "/clothes"
+
+  - type: product_list
+    content:
+      title: "Best Sellers"
+      source: "best_sellers"
+
+  - type: about
+    content:
+      title: "Bella"
+      description: |
+        Nous proposons des vêtements pour diverses occasions. Une sortie entre copine, un brunch de dernière minute, une journée plage ou encore un dîner romantique, une de nos pièces pourrait certainement faire l'affaire.
+
+        Alors vis l'expérience Bella en créant un personnage à ton image pour voir le rendu de tes différents outfits. En fonction de ton mood du moment, sélectionne ce qui te plait et crée ton style.
+      cta:
+        label: "Commence ton shopping"
+        link: "/clothes"
+      featured_product:
+        id: 196
+
+  - type: steps
+    content:
+      title: "Mode d'emploi"
+      items:
+        - step: 1
+          title: "Inscris-toi"
+          image: "/images/homepage/manual/step1.png"
+
+        - step: 2
+          title: "Crée ton avatar"
+          image: "/images/homepage/manual/step2.png"
+
+        - step: 3
+          title: "Shop ta tenue"
+          image: "/images/homepage/manual/step3.png"
+
+        - step: 4
+          title: "Essaie-la"
+          image: "/images/homepage/manual/step4.png"
+
+        - step: 5
+          title: "Choisis ton mode de paiement"
+          image: "/images/homepage/manual/step5.png"
+
+      cta:
+        label: "Créer ton avatar"
+        link: "/avatar"
+
+  - type: delivery_info
+    content:
+      items:
+        - text: "Opte pour une adresse de livraison ou un point de retrait"
+        - text: "Renseigne tes informations de livraison ou choisis ton jour de retrait"
+        - text: "Conserve ton code reçu par mail"
+        - text: "Réceptionne ton colis"

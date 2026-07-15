@@ -1,0 +1,14 @@
+seo:
+  title: 'Nos catégories'
+  description: 'Découvrez les différentes catégories de vêtements BellaGP.'
+  keywords: 'mode, vêtements, catégories, BellaGP'
+  ogTitle: 'Nos catégories — BellaGP'
+  ogDescription: 'Parcourez les catégories de vêtements proposées par BellaGP.'
+  ogUrl: 'https://www.bellagp.com/category'
+  ogImage: /images/logos/bella_logo.png
+  jsonLd: '{"@context":"https://schema.org","@type":"WebPage","name":"Nos catégories","description":"Découvrez les différentes catégories de vêtements BellaGP.","url":"https://www.bellagp.com/category"}'
+bandeau:
+  title: 'Explore nos collections'
+  cta: 'Commence ton shopping'
+  background: /image/front/how-would-the-master-and-reverse-flash-get-along-v0-e4skaq0ew0uf1-1-3051d066b2c2.png
+last-modifyed: '2026-07-15T09:53:21+02:00'
