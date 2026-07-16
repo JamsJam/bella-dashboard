@@ -120,8 +120,9 @@ jobs:
 
             echo "[3/11] Recuperation du dernier code de develop"
 
+            git fetch origin develop
             git checkout develop
-            git pull --ff-only origin develop
+            git reset --hard origin/develop
 
             echo "[4/11] Mise a jour de la configuration de test"
 
