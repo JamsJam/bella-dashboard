@@ -96,6 +96,10 @@
         color: var(--success);
     }
 
+    &__status--publishable {
+        color: var(--success);
+    }
+
     &__status--offline {
         color: var(--warning);
     }

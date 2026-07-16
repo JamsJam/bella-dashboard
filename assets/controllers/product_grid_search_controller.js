@@ -195,6 +195,10 @@ export default class extends Controller {
     }
 
     renderStatusBadge(card) {
+        if (card.publicationStatus === 'publishable') {
+            return '<span class="product-grid-card__status product-grid-card__status--publishable">Publiable</span>';
+        }
+
         if (card.isOnline === true) {
             return '<span class="product-grid-card__status product-grid-card__status--online">En ligne</span>';
         }

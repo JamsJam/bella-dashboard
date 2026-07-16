@@ -52,6 +52,7 @@ final class ClotheController extends AbstractController
         CategoryRepository $categoryRepository,
         CollectionsRepository $collectionsRepository,
         CsrfTokenManagerInterface $csrfTokenManager,
+        ClotheOnlineGuard $clotheOnlineGuard,
     ): Response
     {
         $category = $request->query->getInt('category') ?: null;
@@ -73,7 +74,7 @@ final class ClotheController extends AbstractController
             'tabs' => $this->createTabs($bestsellerOnly),
             'gridData' => new ProductGridViewModel(
                 id: 'clothes-grid',
-                items: array_map(fn (ClothesVariant $variant): ProductGridItemModel => $this->mapVariantGroup($variant), $variantGroups),
+                items: array_map(fn (ClothesVariant $variant): ProductGridItemModel => $this->mapVariantGroup($variant, $clotheOnlineGuard), $variantGroups),
                 filters: $this->createFilters($categoryRepository, $collectionsRepository, $category, $collection, $online),
                 searchRoute: 'app_search_clothes',
                 title: 'Bibliotheque de vetements',
@@ -133,6 +134,7 @@ final class ClotheController extends AbstractController
         #[MapQueryParameter] ?bool $bestseller,
         #[MapQueryParameter] ?string $online,
         ClotheService $clotheService,
+        ClotheOnlineGuard $clotheOnlineGuard,
     ): JsonResponse {
         $variantGroups = $clotheService->getDistinctClotheByName(
             sortBy: 'name',
@@ -145,7 +147,7 @@ final class ClotheController extends AbstractController
         );
 
         return $this->json([
-            'items' => array_map(fn (ClothesVariant $variant): array => $this->mapVariantGroup($variant)->toArray(), $variantGroups),
+            'items' => array_map(fn (ClothesVariant $variant): array => $this->mapVariantGroup($variant, $clotheOnlineGuard)->toArray(), $variantGroups),
         ]);
     }
 
@@ -250,7 +252,7 @@ final class ClotheController extends AbstractController
         );
     }
 
-    private function mapVariantGroup(ClothesVariant $variant): ProductGridItemModel
+    private function mapVariantGroup(ClothesVariant $variant, ClotheOnlineGuard $clotheOnlineGuard): ProductGridItemModel
     {
         $clothe = $variant->getClothes();
         $images = $variant->getImages() ?? [];
@@ -261,12 +263,31 @@ final class ClotheController extends AbstractController
             $stock += $groupVariant->getStock();
         }
 
+        $isOnline = false;
+        $canPublish = false;
+
+        foreach ($groupVariants as $groupVariant) {
+            if ($clotheOnlineGuard->isOnline([$groupVariant])) {
+                $isOnline = true;
+                break;
+            }
+
+            if ($clotheOnlineGuard->canPublishVariants([$groupVariant])->canPublish()) {
+                $canPublish = true;
+            }
+        }
+
+        $publicationStatus = $isOnline
+            ? 'online'
+            : ($canPublish ? 'publishable' : 'offline');
+
         return new ProductGridItemModel(
             id: (string) $variant->getId(),
             name: trim(sprintf('%s %s', (string) $clothe?->getName(), (string) $variant->getColor()?->getName())),
             imageUrl: (string) ($images[0] ?? $clothe?->getCollection()?->getImage() ?? ''),
             slug: (string) $variant->getSlug(),
-            isOnline: $this->isVariantGroupEffectivelyOnline($variant),
+            isOnline: $isOnline,
+            publicationStatus: $publicationStatus,
             attributes: [
                 'collection' => $clothe?->getCollection()?->getName(),
                 'category' => $clothe?->getCollection()?->getCategory()?->getName(),
@@ -274,19 +295,6 @@ final class ClotheController extends AbstractController
                 'stock' => (string) $stock,
             ],
         );
-    }
-
-    private function isVariantGroupEffectivelyOnline(ClothesVariant $variant): bool
-    {
-        $clothe = $variant->getClothes();
-        $collection = $clothe?->getCollection();
-        $category = $collection?->getCategory();
-
-        return (bool) $category?->isOnline()
-            && (bool) $collection?->isOnline()
-            && (bool) $clothe?->isOnline()
-            && $variant->isOnline()
-            && $variant->getStock() > 0;
     }
 
     private function isEffectivelyOnline(Clothes $clothe): bool

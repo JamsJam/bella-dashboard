@@ -12,6 +12,7 @@ class ProductGridItemModel
         public array $attributes = [],
         public ?string $slug = null,
         public ?bool $isOnline = null,
+        public ?string $publicationStatus = null,
     ) {
     }
 
@@ -25,6 +26,7 @@ class ProductGridItemModel
             'attributes' => $this->attributes,
             'slug' => $this->slug,
             'isOnline' => $this->isOnline,
+            'publicationStatus' => $this->publicationStatus,
         ];
     }
 }

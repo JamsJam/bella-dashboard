@@ -30,7 +30,13 @@
 
             {#todo macro badge  #}
             {% set statusBadge = '' %}
-            {% if item.isOnline is same as(true) %}
+            {% if item.publicationStatus|default(null) == 'online' %}
+                {% set statusBadge = '<span class="product-grid-card__status product-grid-card__status--online">En ligne</span>' %}
+            {% elseif item.publicationStatus|default(null) == 'publishable' %}
+                {% set statusBadge = '<span class="product-grid-card__status product-grid-card__status--publishable">Publiable</span>' %}
+            {% elseif item.publicationStatus|default(null) == 'offline' %}
+                {% set statusBadge = '<span class="product-grid-card__status product-grid-card__status--offline">Hors ligne</span>' %}
+            {% elseif item.isOnline is same as(true) %}
                 {% set statusBadge = '<span class="product-grid-card__status product-grid-card__status--online">En ligne</span>' %}
             {% elseif item.isOnline is same as(false) %}
                 {% set statusBadge = '<span class="product-grid-card__status product-grid-card__status--offline">Hors ligne</span>' %}
