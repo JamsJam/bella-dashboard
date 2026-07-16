@@ -9,6 +9,7 @@ use App\Entity\Avatar\Eyebrows\Eyebrowshape;
 use App\Entity\Avatar\Eyes\Eyecolor;
 use App\Entity\Avatar\Eyes\Eyeshape;
 use App\Entity\Avatar\Faces\Faceshape;
+use App\Entity\Avatar\Faces\FaceAccessory;
 use App\Entity\Avatar\Hairs\Hairscolor;
 use App\Entity\Avatar\Hairs\Hairshape;
 use App\Entity\Avatar\Mouths\Mouthscolor;
@@ -47,6 +48,7 @@ final class AvatarFilterMapper
         'face' => [
             ['id' => 'skinColor', 'label' => 'Couleur de peau', 'source' => Skincolor::class, 'emptyLabel' => 'Toutes'],
             ['id' => 'shape', 'label' => 'Forme', 'source' => Faceshape::class, 'emptyLabel' => 'Toutes'],
+            ['id' => 'accessory', 'label' => 'Accessoire', 'source' => FaceAccessory::class, 'emptyLabel' => 'Sans accessoire', 'noneOption' => true],
         ],
         'eyebrows' => [
             ['id' => 'color', 'label' => 'Couleur', 'source' => Eyebrowscolor::class, 'emptyLabel' => 'Toutes'],
@@ -89,9 +91,14 @@ final class AvatarFilterMapper
             $filters[] = [
                 'id' => $filterDefinition['id'],
                 'label' => $filterDefinition['label'],
-                'options' => $filterDefinition['options'] ?? $this->createOptions($filterDefinition['source'], $filterDefinition['emptyLabel']),
+                'options' => $filterDefinition['options'] ?? $this->createOptions(
+                    $filterDefinition['source'],
+                    $filterDefinition['emptyLabel'],
+                    $filterDefinition['noneOption'] ?? false,
+                ),
                 'selected' => '',
                 'allowCreate' => $filterDefinition['allowCreate'] ?? true,
+                'isColor' => isset($filterDefinition['source']) && method_exists($filterDefinition['source'], 'setHexa'),
             ];
         }
 
@@ -158,13 +165,13 @@ final class AvatarFilterMapper
         ];
     }
 
-    private function createOptions(string $entityClass, string $emptyLabel): array
+    private function createOptions(string $entityClass, string $emptyLabel, bool $noneOption = false): array
     {
         if ($entityClass === Clothes::class) {
             return $this->createClothesSlugOptions($emptyLabel);
         }
 
-        $options = [['value' => '', 'label' => $emptyLabel]];
+        $options = [['value' => $noneOption ? '-none-' : '', 'label' => $emptyLabel]];
         $entities = $this->entityManager->getRepository($entityClass)->findBy([], ['id' => 'ASC']);
 
         foreach ($entities as $entity) {

@@ -82,11 +82,52 @@
                 {% for label, value in avatar.attributes %}
                     <div>
                         <dt>{{ label }}</dt>
-                        <dd>{{ value }}</dd>
+                        <dd>
+                            {% if value is iterable and value.name is defined %}
+                                <span class="avatar-show__color-value">
+                                    {% if value.hexa %}
+                                        <span
+                                            class="avatar-show__color-swatch"
+                                            style="--avatar-color: {{ value.hexa }}"
+                                            aria-label="Couleur {{ value.hexa }}"
+                                            title="{{ value.hexa }}"
+                                        ></span>
+                                    {% endif %}
+                                    <span>{{ value.name }}</span>
+                                    {% if value.hexa %}
+                                        <small>{{ value.hexa }}</small>
+                                    {% endif %}
+                                </span>
+                            {% else %}
+                                {{ value }}
+                            {% endif %}
+                        </dd>
                     </div>
                 {% endfor %}
             </dl>
         </section>
+
+        {% if showAccessoryFacesSection %}
+            <section class="avatar-show__similar" aria-labelledby="avatar-show-accessories-title">
+                <h2 id="avatar-show-accessories-title">Visages avec accessoires associés</h2>
+                <ul class="avatar-show__grid">
+                    {% for accessoryFace in accessoryFaces %}
+                        <li>
+                            <a class="avatar-show__card" href="{{ path('app_avatar_part_show', { part: 'face', id: accessoryFace.id }) }}">
+                                {% if accessoryFace.imageUrl %}
+                                    <img src="{{ accessoryFace.imageUrl }}" alt="{{ accessoryFace.name }}">
+                                {% else %}
+                                    <span class="avatar-show__placeholder">Aucune image</span>
+                                {% endif %}
+                                <span>{{ accessoryFace.name }}</span>
+                            </a>
+                        </li>
+                    {% else %}
+                        <li class="avatar-show__empty">Aucun visage avec accessoire associé.</li>
+                    {% endfor %}
+                </ul>
+            </section>
+        {% endif %}
 
         <section class="avatar-show__similar" aria-labelledby="avatar-show-similar-title">
             <h2 id="avatar-show-similar-title">Elements similaires</h2>

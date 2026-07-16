@@ -63,6 +63,7 @@ final class AvatarSearchProvider
             $morphotype = isset($filters['morphotype']) ? $filters['morphotype'] : null;
             $clothes = isset($filters['clothes']) ? $filters['clothes'] : null;
             $collection = isset($filters['collection']) ? $filters['collection'] : null;
+            $accessory = isset($filters['accessory']) ? $filters['accessory'] : null;
 
 
             $filters = [
@@ -73,7 +74,8 @@ final class AvatarSearchProvider
                 'morphologie' => $morphologie,
                 'morphotype' => $morphotype,
                 'clothes' => $clothes,
-                'collection' => $collection
+                'collection' => $collection,
+                'accessory' => $accessory,
             ];
 
             

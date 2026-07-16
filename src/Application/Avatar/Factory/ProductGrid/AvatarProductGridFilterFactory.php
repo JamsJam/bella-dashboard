@@ -48,6 +48,7 @@ class AvatarProductGridFilterFactory
                 options: $filter['options'],
                 selected: $filter['selected'] ?? null,
                 allowCreate: $filter['allowCreate'] ?? false,
+                isColor: $filter['isColor'] ?? false,
 
             );
         }, $filters);

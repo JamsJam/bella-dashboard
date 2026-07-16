@@ -75,33 +75,51 @@
             </section>
 
             <aside class="avatar-rename__panel" {{ stimulus_target('avatar-rename', 'panel') }} aria-hidden="true">
-                <button
-                    type="button"
-                    class="avatar-rename__panel-close"
-                    aria-label="Fermer le panneau"
-                    {{ stimulus_action('avatar-rename', 'closePanel', 'click') }}
-                >
-                    ×
-                </button>
-                <img class="avatar-rename__preview" alt="" {{ stimulus_target('avatar-rename', 'preview') }}>
-                <p class="avatar-rename__current" {{ stimulus_target('avatar-rename', 'currentName') }}></p>
+                <header class="avatar-rename__panel-header">
+                    <div>
+                        <span class="avatar-rename__panel-kicker">Édition</span>
+                        <h2>Renommer l’image</h2>
+                    </div>
+                    <button
+                        type="button"
+                        class="avatar-rename__panel-close"
+                        aria-label="Fermer le panneau"
+                        {{ stimulus_action('avatar-rename', 'closePanel', 'click') }}
+                    >
+                        ×
+                    </button>
+                </header>
 
-                <label class="avatar-rename__field">
-                    <span>Partie</span>
-                    <select {{ stimulus_target('avatar-rename', 'category') }} {{ stimulus_action('avatar-rename', 'onCategoryChange', 'change') }}>
-                        {% for value, label in partLabels %}
-                            <option value="{{ value }}">{{ label }}</option>
-                        {% endfor %}
-                    </select>
-                </label>
+                <div class="avatar-rename__panel-content">
+                    <figure class="avatar-rename__panel-media">
+                        <img class="avatar-rename__preview" alt="" {{ stimulus_target('avatar-rename', 'preview') }}>
+                        <figcaption class="avatar-rename__current" {{ stimulus_target('avatar-rename', 'currentName') }}></figcaption>
+                    </figure>
 
-                <div class="avatar-rename__filters" {{ stimulus_target('avatar-rename', 'filtersContainer') }}></div>
+                    <div class="avatar-rename__panel-form">
+                        <label class="avatar-rename__field">
+                            <span>Partie</span>
+                            <select {{ stimulus_target('avatar-rename', 'category') }} {{ stimulus_action('avatar-rename', 'onCategoryChange', 'change') }}>
+                                {% for value, label in partLabels %}
+                                    <option value="{{ value }}">{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </label>
 
-                <p class="avatar-rename__generated" {{ stimulus_target('avatar-rename', 'generatedName') }}></p>
+                        <div class="avatar-rename__filters" {{ stimulus_target('avatar-rename', 'filtersContainer') }}></div>
 
-                <button type="button" class="avatar-rename__button" {{ stimulus_action('avatar-rename', 'validateCurrent', 'click') }}>
-                    Valider
-                </button>
+                        <div class="avatar-rename__result">
+                            <span>Nouveau nom</span>
+                            <p class="avatar-rename__generated" {{ stimulus_target('avatar-rename', 'generatedName') }}></p>
+                        </div>
+                    </div>
+                </div>
+
+                <footer class="avatar-rename__panel-footer">
+                    <button type="button" class="avatar-rename__button" {{ stimulus_action('avatar-rename', 'validateCurrent', 'click') }}>
+                        Valider le renommage
+                    </button>
+                </footer>
             </aside>
 
             <section class="avatar-rename__validated" aria-labelledby="avatar-rename-validated-title">

@@ -187,6 +187,10 @@ final readonly class AvatarRenameService
                 continue;
             }
 
+            if ($message->category === 'face' && (string) $filterId === 'accessory' && $this->extractFilterName($filterValue) === '-none-') {
+                continue;
+            }
+
             $filterEntity = $this->filterValueResolver->resolve(
                 sourceClass: $sourceClass,
                 part: $message->category,

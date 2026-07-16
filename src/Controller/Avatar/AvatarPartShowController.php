@@ -3,6 +3,8 @@
 namespace App\Controller\Avatar;
 
 use App\Application\Avatar\Services\AvatarResolverService;
+use App\Entity\Avatar\Faces\Faces;
+use App\Repository\Avatar\Faces\FacesRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -31,7 +33,26 @@ final class AvatarPartShowController extends AbstractController
                 fn (object $similarAvatar): array => $this->mapAvatarPart($similarAvatar),
                 $this->findSimilarAvatars($entityManager, $entityClass, $avatarPart),
             ),
+            'accessoryFaces' => array_map(
+                fn (Faces $accessoryFace): array => $this->mapAvatarPart($accessoryFace),
+                $this->findAccessoryFaces($entityManager, $avatarPart),
+            ),
+            'showAccessoryFacesSection' => $avatarPart instanceof Faces && $avatarPart->getAccessory() === null,
         ]);
+    }
+
+    /**
+     * @return Faces[]
+     */
+    private function findAccessoryFaces(EntityManagerInterface $entityManager, object $avatarPart): array
+    {
+        if (!$avatarPart instanceof Faces || $avatarPart->getAccessory() !== null) {
+            return [];
+        }
+
+        $repository = $entityManager->getRepository(Faces::class);
+
+        return $repository instanceof FacesRepository ? $repository->findAccessorizedFor($avatarPart) : [];
     }
 
     private function findSimilarAvatars(EntityManagerInterface $entityManager, string $entityClass, object $avatarPart): array
@@ -52,7 +73,7 @@ final class AvatarPartShowController extends AbstractController
 
         $hasComparison = false;
 
-        foreach (['getShape', 'getColor', 'getSkincolor', 'getMorphotype'] as $getter) {
+        foreach (['getShape', 'getColor', 'getSkincolor', 'getMorphotype', 'getAccessory'] as $getter) {
             if (!method_exists($reference, $getter) || !method_exists($candidate, $getter)) {
                 continue;
             }
@@ -88,6 +109,7 @@ final class AvatarPartShowController extends AbstractController
             'Couleur de peau' => 'getSkincolor',
             'Forme' => 'getShape',
             'Morphotype' => 'getMorphotype',
+            'Accessoire' => 'getAccessory',
             'Vetements' => 'getClothes',
         ] as $label => $getter) {
             if (!method_exists($avatarPart, $getter)) {
@@ -109,15 +131,31 @@ final class AvatarPartShowController extends AbstractController
             }
 
             if (is_object($value)) {
-                $attributes[$label] = $this->resolveName($value);
+                $attributes[$label] = $this->mapAttributeValue($value);
             }
         }
 
-        if (method_exists($avatarPart, 'getChecksum')) {
-            $attributes['Checksum'] = (string) $avatarPart->getChecksum();
+        if ($avatarPart instanceof Faces && $avatarPart->getAccessory() === null) {
+            $attributes['Accessoire'] = '-none-';
         }
 
         return $attributes;
+    }
+
+    private function mapAttributeValue(object $value): string|array
+    {
+        $name = $this->resolveName($value);
+
+        if (!method_exists($value, 'getHexa')) {
+            return $name;
+        }
+
+        $hexa = strtoupper(ltrim((string) $value->getHexa(), '#'));
+
+        return [
+            'name' => $name,
+            'hexa' => preg_match('/^[0-9A-F]{6}$/', $hexa) === 1 ? '#'.$hexa : null,
+        ];
     }
 
     private function resolveTraversableNames(\Traversable $items): array

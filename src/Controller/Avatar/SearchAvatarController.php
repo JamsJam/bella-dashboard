@@ -25,6 +25,7 @@ final class SearchAvatarController extends AbstractController
         #[MapQueryParameter] ?int $morphotype,
         #[MapQueryParameter] ?string $clothes,
         #[MapQueryParameter] ?int $collection,
+        #[MapQueryParameter] ?string $accessory,
         Request $request, 
         SearchAvatarService $searchAvatarService
         ): JsonResponse
@@ -42,6 +43,7 @@ final class SearchAvatarController extends AbstractController
                 'morphotype' => $morphotype ?? 0,
                 'clothes' => $clothes ?? '',
                 'collection' => $collection ?? 0,
+                'accessory' => $accessory ?? 0,
 
             ]
             // $collection

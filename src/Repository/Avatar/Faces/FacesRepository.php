@@ -23,6 +23,7 @@ class FacesRepository extends ServiceEntityRepository implements AvatarPartModel
     public function findAllByFilters(
         ?int $skincolor = null,
         ?int $shape = null,
+        int|string|null $accessory = null,
     ): array {
         $qb = $this->createQueryBuilder('f');
 
@@ -38,6 +39,14 @@ class FacesRepository extends ServiceEntityRepository implements AvatarPartModel
                 ->setParameter('shape', $shape);
         }
 
+        if ($accessory === '-none-') {
+            $qb->andWhere('f.accessory IS NULL');
+        } elseif ($accessory !== 0 && $accessory !== null && $accessory !== '') {
+            $qb->leftJoin('f.accessory', 'a')
+                ->andWhere('a.id = :accessory')
+                ->setParameter('accessory', (int) $accessory);
+        }
+
         return $qb->getQuery()->getArrayResult();
     }
 
@@ -48,8 +57,29 @@ class FacesRepository extends ServiceEntityRepository implements AvatarPartModel
     {
         return $this->findAllByFilters(
             $filters['skinColor'] ?? null,
-            $filters['shape'] ?? null
+            $filters['shape'] ?? null,
+            $filters['accessory'] ?? null,
         );
+    }
+
+    /**
+     * @return Faces[]
+     */
+    public function findAccessorizedFor(Faces $face): array
+    {
+        if ($face->getSkincolor() === null || $face->getShape() === null) {
+            return [];
+        }
+
+        return $this->createQueryBuilder('f')
+            ->innerJoin('f.accessory', 'a')
+            ->andWhere('f.skincolor = :skincolor')
+            ->andWhere('f.shape = :shape')
+            ->setParameter('skincolor', $face->getSkincolor())
+            ->setParameter('shape', $face->getShape())
+            ->orderBy('a.name', 'ASC')
+            ->getQuery()
+            ->getResult();
     }
 
     /**

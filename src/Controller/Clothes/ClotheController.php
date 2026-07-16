@@ -405,7 +405,7 @@ final class ClotheController extends AbstractController
         }
 
         $mainClothe = $this->resolveMainClothe($variants);
-        $publicationValidation = $clotheOnlineGuard->canPublish($mainClothe);
+        $publicationValidation = $clotheOnlineGuard->canPublishVariants($variants);
 
         return $this->render('clothes/show.html.twig', [
             'breadscrumbs' => $breadscrumbs->resolve(
@@ -786,6 +786,7 @@ final class ClotheController extends AbstractController
         string $state,
         Request $request,
         CsrfTokenManagerInterface $csrfTokenManager,
+        ClotheOnlineGuard $clotheOnlineGuard,
         EntityManagerInterface $entityManager,
         LoggerService $logger,
     ): JsonResponse {
@@ -800,11 +801,16 @@ final class ClotheController extends AbstractController
             return $this->json(['success' => false, 'error' => 'Invalid CSRF token.'], Response::HTTP_FORBIDDEN);
         }
 
-        if ($state === 'on' && $variant->getStock() <= 0) {
-            return $this->json([
-                'success' => false,
-                'error' => 'Variant cannot be published without stock.',
-            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+        if ($state === 'on') {
+            $publicationValidation = $clotheOnlineGuard->canPublishVariant($variant);
+
+            if (!$publicationValidation->canPublish()) {
+                return $this->json([
+                    'success' => false,
+                    'error' => implode(' ', $publicationValidation->getErrors()),
+                    'errors' => $publicationValidation->getErrors(),
+                ], Response::HTTP_UNPROCESSABLE_ENTITY);
+            }
         }
 
         $variant
@@ -815,6 +821,7 @@ final class ClotheController extends AbstractController
         return $this->json([
             'success' => true,
             'isOnline' => $variant->isOnline(),
+            'isAvailable' => $variant->isAvailable(),
         ]);
     }
 
@@ -1164,16 +1171,16 @@ final class ClotheController extends AbstractController
         CsrfTokenManagerInterface $csrfTokenManager,
     ): Response
     {
-        $variants = $clotheService->getClotheVariantsBySlug($slug);
+        $variants = $clotheService->getClotheSizeVariantsBySlug($slug);
 
         if ($variants === []) {
             throw $this->createNotFoundException('Clothe not found.');
         }
 
-        $selectedSizes = array_values(array_filter(array_map(
+        $selectedSizes = array_values(array_unique(array_filter(array_map(
             fn (ClothesVariant $variant): ?string => $variant->getSize()?->getName(),
             $variants,
-        )));
+        ))));
         $stocks = [];
         foreach ($variants as $variant) {
             $sizeName = $variant->getSize()?->getName();
@@ -1996,7 +2003,6 @@ final class ClotheController extends AbstractController
             'categoryId' => $mainClothe->getCollection()?->getCategory()?->getId(),
             'color' => implode(', ', array_values($colors)),
             'price' => $mainClothe->getPrice(),
-            'status' => $mainClothe->getStatus(),
             'isOnline' => $clotheOnlineGuard->isOnline($variants),
             'isBestseller' => (bool) $mainClothe->isBestseller(),
             'isInCarousel' => (bool) $mainClothe->isInCarousel(),

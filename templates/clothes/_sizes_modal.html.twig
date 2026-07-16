@@ -5,7 +5,7 @@
             action="{{ action }}"
             data-turbo="false"
             {{ stimulus_controller('clothe-size-modal') }}
-            {{ stimulus_action('clothe-size-modal', 'confirmRemovedSizes', 'submit') }}
+            {{ stimulus_action('clothe-size-modal', 'confirmRemovedSizes', 'submit')|stimulus_action('clothe-size-modal', 'toggleStock', 'change') }}
         >
             <header class="modal__header">
                 <h2 id="clothe-sizes-modal-title">Modifier les tailles</h2>
@@ -28,16 +28,17 @@
                                 {% if size in selectedSizes %}checked{% endif %}
                                 data-clothe-size-modal-target="size"
                                 data-existing="{{ size in selectedSizes ? '1' : '0' }}"
+                                data-stock="{{ stocks[size]|default(0) }}"
                             >
                             <span>{{ size }}</span>
                         </label>
                     {% endfor %}
                 </fieldset>
 
-                <div class="size-stocks">
+                <div class="size-stocks" data-clothe-size-modal-target="stocksContainer">
                     <h3>Stock par taille</h3>
-                    {% for size in availableSizes %}
-                        <label class="size-stock">
+                    {% for size in selectedSizes %}
+                        <label class="size-stock" data-size="{{ size }}">
                             <span>{{ size }}</span>
                             <input
                                 type="number"

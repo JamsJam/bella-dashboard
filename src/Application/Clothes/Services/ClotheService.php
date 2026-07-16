@@ -78,6 +78,26 @@ final class ClotheService
         return $this->clotheProvider->getClotheVariantsBySlug($slug);
     }
 
+    /**
+     * @return list<ClothesVariant>
+     */
+    public function getClotheSizeVariantsBySlug(string $slug): array
+    {
+        $slugVariants = $this->getClotheVariantsBySlug($slug);
+        $sourceVariant = $slugVariants[0] ?? null;
+        $clothe = $sourceVariant instanceof ClothesVariant ? $sourceVariant->getClothes() : null;
+        $colorId = $sourceVariant instanceof ClothesVariant ? $sourceVariant->getColor()?->getId() : null;
+
+        if (!$clothe instanceof Clothes || $colorId === null) {
+            return [];
+        }
+
+        return array_values(array_filter(
+            $clothe->getVariants()->toArray(),
+            static fn (ClothesVariant $variant): bool => $variant->getColor()?->getId() === $colorId,
+        ));
+    }
+
     public function getSameCollectionClothes(string $slug, int $limit = 8): array
     {
         return $this->clotheProvider->getSameCollectionClothes($slug, $limit);
@@ -85,8 +105,8 @@ final class ClotheService
 
     public function syncClotheSizes(string $slug, array $selectedSizes, array $stocks = [], bool $confirmDelete = false): void
     {
-        $selectedSizes = array_values(array_intersect(self::AVAILABLE_SIZES, $selectedSizes));
-        $variants = $this->getClotheVariantsBySlug($slug);
+        $selectedSizes = array_values(array_unique(array_intersect(self::AVAILABLE_SIZES, $selectedSizes)));
+        $variants = $this->getClotheSizeVariantsBySlug($slug);
 
         if ($variants === []) {
             throw new \InvalidArgumentException('Clothe not found.');

@@ -219,9 +219,9 @@
                         <div class="clothe-show__stock-availability">
                             <span class="clothe-show__card-label">Statut</span>
                             {% if size.isAvailable %}
-                                <span class="clothe-show__status clothe-show__status--available">Disponible</span>
+                                <span class="clothe-show__status clothe-show__status--available" data-clothe-online-status-id="{{ size.id }}">Disponible</span>
                             {% else %}
-                                <span class="clothe-show__status">Indisponible</span>
+                                <span class="clothe-show__status" data-clothe-online-status-id="{{ size.id }}">Indisponible</span>
                             {% endif %}
                         </div>
                         <div class="clothe-show__stock-value">

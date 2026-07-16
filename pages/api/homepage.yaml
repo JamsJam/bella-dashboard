@@ -22,6 +22,9 @@ sections:
       -
         text: 'Étape 4: Confirmez votre commande'
         image: 'https://picsum.photos/200/200?random=12'
+      -
+        text: 'Étape 5: Confirmez votre commande'
+        image: 'https://picsum.photos/200/200?random=12'
   return:
     steps:
       -

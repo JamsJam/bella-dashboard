@@ -43,7 +43,7 @@ export default class extends Controller {
                 checked: canonicalChecked,
                 label: action.label,
             });
-            this.updateStatusLabel(id, canonicalChecked);
+            this.updateStatusLabel(id, this.resolveAvailabilityState(data, canonicalChecked));
         } catch {
             this.dispatchToggleEvent(event.target, 'toggle:error', {
                 id,
@@ -66,13 +66,18 @@ export default class extends Controller {
         }));
     }
 
-    updateStatusLabel(toggleId, isOnline) {
-        const clotheId = String(toggleId).replace('clothe-online-', '');
-        const status = this.element.querySelector(`[data-clothe-online-status-id="${CSS.escape(clotheId)}"]`);
+    updateStatusLabel(toggleId, isAvailable) {
+        const variantId = String(toggleId).replace('clothe-variant-online-', '');
+        const status = this.element.querySelector(`[data-clothe-online-status-id="${CSS.escape(variantId)}"]`);
 
         if (status) {
-            status.textContent = isOnline ? 'En ligne' : 'Hors ligne';
+            status.textContent = isAvailable ? 'Disponible' : 'Indisponible';
+            status.classList.toggle('clothe-show__status--available', isAvailable);
         }
+    }
+
+    resolveAvailabilityState(data, fallback) {
+        return typeof data.isAvailable === 'boolean' ? data.isAvailable : fallback;
     }
 
     resolveCheckedState(data, fallback) {

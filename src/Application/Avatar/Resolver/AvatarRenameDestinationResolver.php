@@ -20,11 +20,16 @@ final readonly class AvatarRenameDestinationResolver
 
     public function resolveWebDirectory(RenameAvatarMessage $message): string
     {
+        $categoryDirectory = $message->category;
+        if ($message->category === 'face') {
+            $categoryDirectory = $this->hasFaceAccessory($message) ? 'accessoire' : 'visage';
+        }
+
         $segments = [
             'images',
             'upload',
             'avatar',
-            $this->normalizeToken($message->category),
+            $this->normalizeToken($categoryDirectory),
         ];
 
         foreach ($this->avatarRenameFilterMapper->getStoragePathFilters($message->category) as $filterId) {
@@ -42,6 +47,13 @@ final readonly class AvatarRenameDestinationResolver
         }
 
         return '/'.implode('/', $segments);
+    }
+
+    private function hasFaceAccessory(RenameAvatarMessage $message): bool
+    {
+        $accessory = $this->extractFilterName($message->filters['accessory'] ?? null);
+
+        return $accessory !== '' && $accessory !== '-none-';
     }
 
     public function resolveAbsoluteDirectory(string $webDirectory): string

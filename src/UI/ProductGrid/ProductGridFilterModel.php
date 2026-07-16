@@ -10,6 +10,7 @@ class ProductGridFilterModel
         public array $options = [],
         public ?string $selected = null,
         public bool $allowCreate = false,
+        public bool $isColor = false,
     ) {}
 
     public function toArray(): array
@@ -20,6 +21,7 @@ class ProductGridFilterModel
             'options' => $this->options,
             'selected' => $this->selected,
             'allowCreate' => $this->allowCreate,
+            'isColor' => $this->isColor,
         ];
     }
 

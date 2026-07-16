@@ -6,7 +6,7 @@ final readonly class AvatarRenameFilterMapper
 {
     private const REQUIRED_FILTERS_BY_PART = [
         'body' => ['skinColor', 'morphologie', 'bodySize'],
-        'face' => ['shape'],
+        'face' => ['skinColor', 'shape', 'accessory'],
         'eyebrows' => ['color', 'shape'],
         'eyes' => ['color', 'shape'],
         'hair' => ['color', 'shape', 'side'],
@@ -16,7 +16,7 @@ final readonly class AvatarRenameFilterMapper
 
     private const CREATABLE_FILTERS_BY_PART = [
         'body' => ['skinColor', 'morphologie', 'bodySize'],
-        'face' => ['skinColor', 'shape'],
+        'face' => ['skinColor', 'shape', 'accessory'],
         'eyebrows' => ['color', 'shape'],
         'eyes' => ['color', 'shape'],
         'hair' => ['color', 'shape'],

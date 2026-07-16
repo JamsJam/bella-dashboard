@@ -295,8 +295,9 @@ export default class extends Controller {
 
     buildNewName() {
         const filters = this.collectFilterLabels();
+        const category = this.categoryTarget.value === 'face' ? 'visage' : this.categoryTarget.value;
         const parts = [
-            this.categoryTarget.value,
+            category,
             ...Object.values(filters),
         ];
 
@@ -311,6 +312,12 @@ export default class extends Controller {
             const customInput = this.newFilterTargets.find((input) => input.dataset.filterName === filterName);
             const customValue = customInput?.value.trim();
             const selectedLabel = select.selectedOptions[0]?.textContent || select.value;
+
+            if (filterName === 'accessory' && select.value === '-none-') {
+                filters[filterName] = '-none-';
+
+                return;
+            }
 
             filters[filterName] = select.value === this.constructor.newFilterValue ? customValue : selectedLabel;
         });
@@ -327,6 +334,7 @@ export default class extends Controller {
                 <select
                     data-avatar-rename-target="filter"
                     data-filter-name="${this.escapeAttribute(filter.id)}"
+                    data-is-color="${filter.isColor ? 'true' : 'false'}"
                     data-action="change->avatar-rename#onFilterChange"
                 >
                     ${filter.options.filter((option) => this.isUsableFilterOption(option)).map((option) => `
@@ -351,13 +359,17 @@ export default class extends Controller {
                             data-action="input->avatar-rename#generateName"
                         >
                         ${this.isColorFilterDefinition(filter) ? `
-                            <input
-                                type="color"
-                                value="#000000"
-                                aria-label="Code couleur"
-                                data-avatar-rename-target="newFilterColor"
-                                data-filter-name="${this.escapeAttribute(filter.id)}"
-                            >
+                            <span class="avatar-rename__color-picker">
+                                <input
+                                    type="color"
+                                    value="#000000"
+                                    aria-label="Choisir la couleur"
+                                    data-avatar-rename-target="newFilterColor"
+                                    data-filter-name="${this.escapeAttribute(filter.id)}"
+                                    data-action="input->avatar-rename#onColorChange"
+                                >
+                                <span class="avatar-rename__color-value">#000000</span>
+                            </span>
                         ` : ''}
                     </div>
                 ` : ''}
@@ -368,15 +380,20 @@ export default class extends Controller {
     }
 
     isColorFilter(select) {
-        return this.isColorFilterId(select.dataset.filterName);
+        return select.dataset.isColor === 'true';
     }
 
     isColorFilterDefinition(filter) {
-        return this.isColorFilterId(filter.id);
+        return filter.isColor === true;
     }
 
-    isColorFilterId(filterId) {
-        return ['color', 'skinColor'].includes(filterId);
+    onColorChange(event) {
+        const colorInput = event.currentTarget;
+        const value = colorInput.closest('.avatar-rename__color-picker')?.querySelector('.avatar-rename__color-value');
+
+        if (value) {
+            value.textContent = colorInput.value.toUpperCase();
+        }
     }
 
     renderEmptyStateIfNeeded() {
