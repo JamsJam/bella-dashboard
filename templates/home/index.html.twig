@@ -1,16 +1,73 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Hello HomeController!{% endblock %}
+{% block title %}Dashboard{% endblock %}
 
 {% block body %}
+    {% set statusLabels = {pending: 'En attente', paid: 'Payée', processing: 'En préparation', shipped: 'Expédiée'} %}
 
+    <article class="dashboard" aria-labelledby="dashboard-title">
+        <header class="dashboard__heading">
+            <div>
+                <p class="dashboard__eyebrow">Vue d’ensemble</p>
+                <h1 id="dashboard-title">Bonjour {{ app.user ? app.user.userIdentifier|split('@')|first|capitalize : 'Bella' }}</h1>
+                <p>Voici l’activité de votre boutique pour ce mois.</p>
+            </div>
+            <a class="dashboard__primary-action" href="{{ path('app_clothe_add') }}">
+                {{ ux_icon('ep:plus') }} Ajouter un produit
+            </a>
+        </header>
 
-<div >
-    <h1>Hello {{ controller_name }}! ✅</h1>
+        <section class="dashboard__stats" aria-label="Indicateurs principaux">
+            {% set stats = [
+                {class: ' dashboard-stat--primary', icon: 'ep:money', label: 'Chiffre d’affaires', value: (summary.revenue / 100)|number_format(2, ',', ' ') ~ ' €', note: 'Depuis le début du mois'},
+                {class: '', icon: 'ep:document', label: 'Commandes', value: summary.orders, note: summary.pending ~ ' à traiter'},
+                {class: '', icon: 'ep:user', label: 'Clients', value: customersCount, note: 'Comptes enregistrés'},
+                {class: '', icon: 'ep:goods', label: 'Produits', value: productsCount, note: onlineProductsCount ~ ' actuellement en ligne'}
+            ] %}
+            {% for stat in stats %}
+                <article class="dashboard-stat{{ stat.class }}">
+                    <div class="dashboard-stat__icon">{{ ux_icon(stat.icon) }}</div>
+                    <p>{{ stat.label }}</p><strong>{{ stat.value }}</strong><span>{{ stat.note }}</span>
+                </article>
+            {% endfor %}
+        </section>
 
-    This friendjbkjly message is coming from:
-    <ul>
-        <li>Your k:;,:,controller at </li>
-    </ul>
-</div>
+        <div class="dashboard__content-grid">
+            <section class="dashboard-panel" aria-labelledby="latest-orders-title">
+                <header class="dashboard-panel__header">
+                    <div><h2 id="latest-orders-title">Dernières commandes</h2><p>Les commandes reçues récemment</p></div>
+                    <a href="{{ path('app_orders') }}">Tout voir {{ ux_icon('ep:arrow-right') }}</a>
+                </header>
+                {% if latestOrders is not empty %}
+                    <div class="dashboard-orders">
+                        {% for order in latestOrders %}
+                            <article class="dashboard-order">
+                                <div class="dashboard-order__reference"><span>#{{ order.orderReference }}</span><small>{{ order.createdAt|date('d/m/Y à H:i') }}</small></div>
+                                <span class="dashboard-order__customer">{{ order.customer ? order.customer.email : 'Client invité' }}</span>
+                                <span class="dashboard-order__status dashboard-order__status--{{ order.status }}">{{ statusLabels[order.status] ?? order.status|capitalize }}</span>
+                                <strong>{{ (order.total / 100)|number_format(2, ',', ' ') }} €</strong>
+                            </article>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="dashboard-panel__empty">{{ ux_icon('ep:document') }}<p>Aucune commande pour le moment.</p></div>
+                {% endif %}
+            </section>
+
+            <aside class="dashboard-panel" aria-labelledby="actions-title">
+                <header class="dashboard-panel__header"><div><h2 id="actions-title">Actions rapides</h2><p>Accédez à l’essentiel</p></div></header>
+                <nav class="dashboard-actions" aria-label="Actions rapides">
+                    {% set actions = [
+                        {route: 'app_clothe_add', icon: 'ep:plus', title: 'Nouveau produit', note: 'Ajouter un vêtement'},
+                        {route: 'app_clothes', icon: 'ep:goods', title: 'Gérer le catalogue', note: lowStockCount ~ ' variante' ~ (lowStockCount > 1 ? 's' : '') ~ ' en stock faible'},
+                        {route: 'app_avatar_add', icon: 'ep:upload', title: 'Ajouter des avatars', note: 'Enrichir la bibliothèque'},
+                        {route: 'app_config_index', icon: 'ep:setting', title: 'Configuration', note: 'Paramètres de la boutique'}
+                    ] %}
+                    {% for action in actions %}
+                        <a href="{{ path(action.route) }}">{{ ux_icon(action.icon) }}<span><strong>{{ action.title }}</strong><small>{{ action.note }}</small></span>{{ ux_icon('ep:arrow-right') }}</a>
+                    {% endfor %}
+                </nav>
+            </aside>
+        </div>
+    </article>
 {% endblock %}

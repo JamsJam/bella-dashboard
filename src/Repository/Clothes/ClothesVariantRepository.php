@@ -19,6 +19,16 @@ class ClothesVariantRepository extends ServiceEntityRepository
         parent::__construct($registry, ClothesVariant::class);
     }
 
+    public function countLowStock(int $threshold = 5): int
+    {
+        return (int) $this->createQueryBuilder('v')
+            ->select('COUNT(v.id)')
+            ->andWhere('v.stock <= :threshold')
+            ->setParameter('threshold', $threshold)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
     public function findOneWithProduct(int $id): ?ClothesVariant
     {
         $variant = $this->createQueryBuilder('v')

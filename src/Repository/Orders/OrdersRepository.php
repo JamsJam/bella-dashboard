@@ -16,6 +16,34 @@ class OrdersRepository extends ServiceEntityRepository
         parent::__construct($registry, Orders::class);
     }
 
+    /** @return array{revenue: int, orders: int, pending: int} */
+    public function getDashboardSummary(\DateTimeImmutable $since): array
+    {
+        $summary = $this->createQueryBuilder('o')
+            ->select('COALESCE(SUM(o.total), 0) AS revenue')
+            ->addSelect('COUNT(o.id) AS orders')
+            ->addSelect("SUM(CASE WHEN o.status IN ('pending', 'processing') THEN 1 ELSE 0 END) AS pending")
+            ->andWhere('o.createdAt >= :since')
+            ->setParameter('since', $since)
+            ->getQuery()
+            ->getSingleResult();
+
+        return array_map('intval', $summary);
+    }
+
+    /** @return list<Orders> */
+    public function findLatest(int $limit = 5): array
+    {
+        return $this->createQueryBuilder('o')
+            ->addSelect('customer')
+            ->leftJoin('o.customer', 'customer')
+            ->orderBy('o.createdAt', 'DESC')
+            ->addOrderBy('o.id', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
+
     //    /**
     //     * @return Orders[] Returns an array of Orders objects
     //     */
