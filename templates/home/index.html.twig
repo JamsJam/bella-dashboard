@@ -12,9 +12,6 @@
                 <h1 id="dashboard-title">Bonjour {{ app.user ? app.user.userIdentifier|split('@')|first|capitalize : 'Bella' }}</h1>
                 <p>Voici l’activité de votre boutique pour ce mois.</p>
             </div>
-            <a class="dashboard__primary-action" href="{{ path('app_clothe_add') }}">
-                {{ ux_icon('ep:plus') }} Ajouter un produit
-            </a>
         </header>
 
         <section class="dashboard__stats" aria-label="Indicateurs principaux">
@@ -58,7 +55,6 @@
                 <header class="dashboard-panel__header"><div><h2 id="actions-title">Actions rapides</h2><p>Accédez à l’essentiel</p></div></header>
                 <nav class="dashboard-actions" aria-label="Actions rapides">
                     {% set actions = [
-                        {route: 'app_clothe_add', icon: 'ep:plus', title: 'Nouveau produit', note: 'Ajouter un vêtement'},
                         {route: 'app_clothes', icon: 'ep:goods', title: 'Gérer le catalogue', note: lowStockCount ~ ' variante' ~ (lowStockCount > 1 ? 's' : '') ~ ' en stock faible'},
                         {route: 'app_avatar_add', icon: 'ep:upload', title: 'Ajouter des avatars', note: 'Enrichir la bibliothèque'},
                         {route: 'app_config_index', icon: 'ep:setting', title: 'Configuration', note: 'Paramètres de la boutique'}

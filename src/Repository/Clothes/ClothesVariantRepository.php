@@ -58,6 +58,33 @@ class ClothesVariantRepository extends ServiceEntityRepository
     /**
      * @return list<ClothesVariant>
      */
+    public function findOnlineByCategory(int $categoryId): array
+    {
+        return $this->createQueryBuilder('variant')
+            ->addSelect('clothes', 'color', 'size', 'collection', 'category')
+            ->join('variant.clothes', 'clothes')
+            ->join('variant.color', 'color')
+            ->join('variant.size', 'size')
+            ->join('clothes.collection', 'collection')
+            ->join('collection.category', 'category')
+            ->andWhere('category.id = :category')
+            ->andWhere('category.isOnline = true')
+            ->andWhere('collection.isOnline = true')
+            ->andWhere('clothes.isOnline = true')
+            ->andWhere('variant.isOnline = true')
+            ->andWhere('variant.stock > 0')
+            ->setParameter('category', $categoryId)
+            ->orderBy('clothes.name', 'ASC')
+            ->addOrderBy('color.name', 'ASC')
+            ->addOrderBy('size.name', 'ASC')
+            ->addOrderBy('variant.id', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * @return list<ClothesVariant>
+     */
     public function findHomepageBestsellers(): array
     {
         return $this->findGroupsBySlug(bestsellerOnly: true);
