@@ -48,39 +48,60 @@ final readonly class VariantSearchProvider implements ProviderInterface
         $sizes = $this->stringList($request?->query->all('size') ?? [], 'size');
         [$minimumPrice, $maximumPrice] = $this->priceRange($request?->query->all('price') ?? []);
 
-        return array_map(
-            fn (ClothesVariant $variant): VariantCardDTO => $this->mapVariant($variant),
-            $this->variantRepository->searchOnlineByCategory(
+        $variants = $this->variantRepository->searchOnlineByCategory(
                 categoryId: $category->getId(),
                 colors: $colors,
                 sizes: $sizes,
                 minimumPrice: $minimumPrice,
                 maximumPrice: $maximumPrice,
-            ),
+            );
+
+        return array_map(
+            fn (array $group): VariantCardDTO => $this->mapVariantGroup($group),
+            $this->groupBySlug($variants),
         );
     }
 
-    private function mapVariant(ClothesVariant $variant): VariantCardDTO
+    /**
+     * @param non-empty-list<ClothesVariant> $group
+     */
+    private function mapVariantGroup(array $group): VariantCardDTO
     {
-        $images = $this->absoluteUrls($variant->getImages() ?? []);
+        $variant = $group[0];
+        $availableGroup = [];
+        $imagePaths = [];
         $colors = [];
         $sizes = [];
 
         foreach ($variant->getClothes()?->getVariants() ?? [] as $availableVariant) {
-            if (!$availableVariant->isOnline() || $availableVariant->getStock() <= 0) {
-                continue;
+            if (
+                $availableVariant->getSlug() === $variant->getSlug()
+                && $availableVariant->isOnline()
+                && $availableVariant->getStock() > 0
+            ) {
+                $availableGroup[] = $availableVariant;
+            }
+        }
+
+        foreach ($availableGroup !== [] ? $availableGroup : $group as $groupVariant) {
+            foreach ($groupVariant->getImages() ?? [] as $path) {
+                if (is_string($path) && $path !== '') {
+                    $imagePaths[$path] = $path;
+                }
             }
 
-            $color = $availableVariant->getColor()?->getName();
+            $color = $groupVariant->getColor()?->getName();
             if (is_string($color) && $color !== '') {
                 $colors[$color] = $color;
             }
 
-            $size = $availableVariant->getSize()?->getName();
+            $size = $groupVariant->getSize()?->getName();
             if (is_string($size) && $size !== '') {
                 $sizes[$size] = $size;
             }
         }
+
+        $images = $this->absoluteUrls(array_values($imagePaths));
 
         return new VariantCardDTO(
             name: $variant->getDisplayName(),
@@ -91,6 +112,25 @@ final readonly class VariantSearchProvider implements ProviderInterface
             colors: array_values($colors),
             sizes: array_values($sizes),
         );
+    }
+
+    /**
+     * @param list<ClothesVariant> $variants
+     *
+     * @return list<non-empty-list<ClothesVariant>>
+     */
+    private function groupBySlug(array $variants): array
+    {
+        $groups = [];
+
+        foreach ($variants as $variant) {
+            $slug = $variant->getSlug();
+            if ($slug !== null && $slug !== '') {
+                $groups[$slug][] = $variant;
+            }
+        }
+
+        return array_values($groups);
     }
 
     /**

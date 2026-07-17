@@ -44,20 +44,62 @@ final readonly class CategoryListProvider implements ProviderInterface
             throw new NotFoundHttpException(sprintf('La catégorie "%s" est introuvable.', $categorySlug));
         }
 
+        $groups = $this->groupBySlug($this->variantRepository->findOnlineByCategory($category->getId()));
+
         return array_map(
-            function (ClothesVariant $variant): CategoryListDTO {
-                $images = $this->absoluteUrls($variant->getImages() ?? []);
+            function (array $group): CategoryListDTO {
+                $variant = $group[0];
+                $images = $this->groupImages($group);
 
                 return new CategoryListDTO(
                     name: $variant->getDisplayName(),
                     slug: (string) $variant->getSlug(),
                     image: $images[0] ?? null,
                     images: $images,
-                    colors: $this->colors($variant),
+                    colors: $this->colors($group),
                 );
             },
-            $this->variantRepository->findOnlineByCategory($category->getId()),
+            $groups,
         );
+    }
+
+    /**
+     * @param list<ClothesVariant> $variants
+     *
+     * @return list<non-empty-list<ClothesVariant>>
+     */
+    private function groupBySlug(array $variants): array
+    {
+        $groups = [];
+
+        foreach ($variants as $variant) {
+            $slug = $variant->getSlug();
+            if ($slug !== null && $slug !== '') {
+                $groups[$slug][] = $variant;
+            }
+        }
+
+        return array_values($groups);
+    }
+
+    /**
+     * @param non-empty-list<ClothesVariant> $variants
+     *
+     * @return list<string>
+     */
+    private function groupImages(array $variants): array
+    {
+        $paths = [];
+
+        foreach ($variants as $variant) {
+            foreach ($variant->getImages() ?? [] as $path) {
+                if (is_string($path) && $path !== '') {
+                    $paths[$path] = $path;
+                }
+            }
+        }
+
+        return $this->absoluteUrls(array_values($paths));
     }
 
     /**
@@ -81,14 +123,16 @@ final readonly class CategoryListProvider implements ProviderInterface
     }
 
     /**
+     * @param non-empty-list<ClothesVariant> $variants
+     *
      * @return list<string>
      */
-    private function colors(ClothesVariant $variant): array
+    private function colors(array $variants): array
     {
         $colors = [];
 
-        foreach ($variant->getClothes()?->getVariants() ?? [] as $clothesVariant) {
-            $color = $clothesVariant->getColor()?->getName();
+        foreach ($variants as $variant) {
+            $color = $variant->getColor()?->getName();
             if (is_string($color) && $color !== '') {
                 $colors[$color] = $color;
             }
