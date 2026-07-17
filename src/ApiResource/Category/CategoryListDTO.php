@@ -21,12 +21,14 @@ final readonly class CategoryListDTO
 {
     /**
      * @param list<string> $images
+     * @param list<string> $colors
      */
     public function __construct(
         public string $name,
         public string $slug,
         public ?string $image = null,
         public array $images = [],
+        public array $colors = [],
     ) {
     }
 }

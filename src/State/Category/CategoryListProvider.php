@@ -53,6 +53,7 @@ final readonly class CategoryListProvider implements ProviderInterface
                     slug: (string) $variant->getSlug(),
                     image: $images[0] ?? null,
                     images: $images,
+                    colors: $this->colors($variant),
                 );
             },
             $this->variantRepository->findOnlineByCategory($category->getId()),
@@ -77,6 +78,23 @@ final readonly class CategoryListProvider implements ProviderInterface
         }
 
         return $urls;
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function colors(ClothesVariant $variant): array
+    {
+        $colors = [];
+
+        foreach ($variant->getClothes()?->getVariants() ?? [] as $clothesVariant) {
+            $color = $clothesVariant->getColor()?->getName();
+            if (is_string($color) && $color !== '') {
+                $colors[$color] = $color;
+            }
+        }
+
+        return array_values($colors);
     }
 
     private function absoluteUrl(string $path): string

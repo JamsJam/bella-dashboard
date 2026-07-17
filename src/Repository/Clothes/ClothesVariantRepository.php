@@ -61,10 +61,12 @@ class ClothesVariantRepository extends ServiceEntityRepository
     public function findOnlineByCategory(int $categoryId): array
     {
         return $this->createQueryBuilder('variant')
-            ->addSelect('clothes', 'color', 'size', 'collection', 'category')
+            ->addSelect('clothes', 'color', 'size', 'collection', 'category', 'availableVariant', 'availableColor')
             ->join('variant.clothes', 'clothes')
             ->join('variant.color', 'color')
             ->join('variant.size', 'size')
+            ->leftJoin('clothes.variants', 'availableVariant')
+            ->leftJoin('availableVariant.color', 'availableColor')
             ->join('clothes.collection', 'collection')
             ->join('collection.category', 'category')
             ->andWhere('category.id = :category')
@@ -80,6 +82,68 @@ class ClothesVariantRepository extends ServiceEntityRepository
             ->addOrderBy('variant.id', 'ASC')
             ->getQuery()
             ->getResult();
+    }
+
+    /**
+     * @param list<string> $colors
+     * @param list<string> $sizes
+     *
+     * @return list<ClothesVariant>
+     */
+    public function searchOnlineByCategory(
+        int $categoryId,
+        array $colors = [],
+        array $sizes = [],
+        ?int $minimumPrice = null,
+        ?int $maximumPrice = null,
+    ): array {
+        $qb = $this->createQueryBuilder('variant')
+            ->addSelect('clothes', 'color', 'size', 'collection', 'category', 'availableVariant', 'availableColor', 'availableSize')
+            ->join('variant.clothes', 'clothes')
+            ->join('variant.color', 'color')
+            ->join('variant.size', 'size')
+            ->leftJoin('clothes.variants', 'availableVariant')
+            ->leftJoin('availableVariant.color', 'availableColor')
+            ->leftJoin('availableVariant.size', 'availableSize')
+            ->join('clothes.collection', 'collection')
+            ->join('collection.category', 'category')
+            ->andWhere('category.id = :category')
+            ->andWhere('category.isOnline = true')
+            ->andWhere('collection.isOnline = true')
+            ->andWhere('clothes.isOnline = true')
+            ->andWhere('variant.isOnline = true')
+            ->andWhere('variant.stock > 0')
+            ->setParameter('category', $categoryId)
+            ->orderBy('clothes.name', 'ASC')
+            ->addOrderBy('color.name', 'ASC')
+            ->addOrderBy('size.name', 'ASC')
+            ->addOrderBy('variant.id', 'ASC');
+
+        if ($colors !== []) {
+            $qb
+                ->andWhere('LOWER(color.name) IN (:colors)')
+                ->setParameter('colors', array_map(static fn (string $color): string => mb_strtolower($color), $colors));
+        }
+
+        if ($sizes !== []) {
+            $qb
+                ->andWhere('LOWER(size.name) IN (:sizes)')
+                ->setParameter('sizes', array_map(static fn (string $size): string => mb_strtolower($size), $sizes));
+        }
+
+        if ($minimumPrice !== null) {
+            $qb
+                ->andWhere('clothes.price >= :minimumPrice')
+                ->setParameter('minimumPrice', $minimumPrice);
+        }
+
+        if ($maximumPrice !== null) {
+            $qb
+                ->andWhere('clothes.price <= :maximumPrice')
+                ->setParameter('maximumPrice', $maximumPrice);
+        }
+
+        return $qb->getQuery()->getResult();
     }
 
     /**
