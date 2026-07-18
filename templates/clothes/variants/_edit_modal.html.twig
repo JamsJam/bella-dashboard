@@ -3,7 +3,7 @@
         <form method="post" action="{{ action }}" data-turbo="false">
             <header class="modal__header">
                 <h2 id="clothe-variant-edit-modal-title">
-                    {{ isGroup|default(false) ? 'Modifier les informations globales' : 'Modifier la taille' }}
+                    {{ isGroup|default(false) ? 'Modifier la couleur et les informations' : 'Modifier la taille' }}
                 </h2>
                 <button type="button" class="modal__close" onclick="this.closest('.modal-backdrop').remove()" aria-label="Fermer">
                     &times;
@@ -24,7 +24,7 @@
                                         {{ color.name }}
                                     </option>
                                 {% endfor %}
-                                <option value="__new__">Ajouter une couleur</option>
+                                <option value="__new__">Créer une nouvelle couleur</option>
                             </select>
                         </label>
 

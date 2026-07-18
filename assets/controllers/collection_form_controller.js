@@ -16,6 +16,7 @@ export default class extends Controller {
         this.variantIndex = 0;
         this.toggleNewCategoryField();
         this.ensureInitialVariant();
+        this.filterClotheNames();
     }
 
     toggleNewCategoryField() {
@@ -55,7 +56,10 @@ export default class extends Controller {
         }
 
         const nameInput = modal.querySelector('[data-collection-form-clothe-name-input]');
-        const name = nameInput?.value?.trim() || 'Vetement';
+        const newNameInput = modal.querySelector('[data-collection-form-new-clothe-name] input');
+        const name = nameInput?.value === '__new__'
+            ? (newNameInput?.value?.trim() || 'Vetement')
+            : (nameInput?.value?.trim() || 'Vetement');
         const summary = document.createElement('div');
         summary.className = 'collection-form__clothe-summary';
         summary.innerHTML = `
@@ -104,6 +108,43 @@ export default class extends Controller {
             if (!shouldShow) {
                 nameInput.value = '';
             }
+        }
+    }
+
+    toggleNewClotheNameField(event) {
+        const container = event.currentTarget.closest('.collection-form__clothe-modal') || this.element;
+        const field = container.querySelector('[data-collection-form-new-clothe-name]');
+        if (!field) {
+            return;
+        }
+
+        const shouldShow = event.currentTarget.value === '__new__';
+        field.hidden = !shouldShow;
+
+        const input = field.querySelector('input');
+        if (input) {
+            input.required = shouldShow;
+            if (!shouldShow) {
+                input.value = '';
+            }
+        }
+    }
+
+    filterClotheNames() {
+        const collectionSelect = this.element.querySelector('[data-collection-form-clothe-collection-select]');
+        const nameSelect = this.element.querySelector('[data-collection-form-clothe-name-input]');
+        if (!collectionSelect || !nameSelect) {
+            return;
+        }
+
+        const collectionId = collectionSelect.value;
+        nameSelect.querySelectorAll('option[data-collection-id]').forEach((option) => {
+            option.disabled = collectionId === '' || option.dataset.collectionId !== collectionId;
+        });
+
+        if (nameSelect.selectedOptions[0]?.disabled) {
+            nameSelect.value = '';
+            nameSelect.dispatchEvent(new Event('change', { bubbles: true }));
         }
     }
 

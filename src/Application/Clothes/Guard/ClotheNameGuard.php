@@ -35,7 +35,7 @@ final readonly class ClotheNameGuard
         return $slug;
     }
 
-    private function normalizeName(string $name): string
+    public function normalizeName(string $name): string
     {
         $name = trim($name);
 
@@ -43,9 +43,8 @@ final readonly class ClotheNameGuard
             throw new \InvalidArgumentException('Le nom du vetement est obligatoire.');
         }
 
-        if (mb_strlen($name) > 70) {
-            throw new \InvalidArgumentException('Le nom du vetement est limite a 70 caracteres.');
-        }
+        $name = preg_split('/\s+/u', $name, 2)[0] ?? '';
+        $name = mb_strtolower($name);
 
         return $name;
     }

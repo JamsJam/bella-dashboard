@@ -27,7 +27,12 @@
             <section class="collection-form__section">
                 <label class="collection-form__field">
                     <span>Collection</span>
-                    <select name="collection" required>
+                    <select
+                        name="collection"
+                        required
+                        data-collection-form-clothe-collection-select
+                        data-action="change->collection-form#filterClotheNames"
+                    >
                         <option value="">Selectionner une collection</option>
                         {% for collection in collections %}
                             <option value="{{ collection.id }}">
@@ -42,6 +47,7 @@
                 {% include 'clothes/_clothe_form_fields.html.twig' with {
                     prefix: 'clothe',
                     imageInputName: 'clotheImages[]',
+                    existingClothes: existingClothes,
                     colors: colors,
                     availableSizes: availableSizes
                 } only %}

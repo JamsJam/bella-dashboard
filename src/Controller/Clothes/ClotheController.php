@@ -1597,8 +1597,22 @@ final class ClotheController extends AbstractController
             throw new \InvalidArgumentException('Le prix du vetement doit etre superieur a 0.');
         }
 
-        $name = $clotheNameGuard->assertNameAvailable((string) ($data['name'] ?? ''));
-        $slug = $clotheNameGuard->createSlug($name);
+        $nameChoice = (string) ($data['name'] ?? '');
+        $existingClothe = null;
+        if (preg_match('/^existing:(\d+)$/', $nameChoice, $matches) === 1) {
+            $existingClothe = $entityManager->getRepository(Clothes::class)->find((int) $matches[1]);
+            if (!$existingClothe instanceof Clothes) {
+                throw new \InvalidArgumentException('Selectionne un vetement existant valide.');
+            }
+            if ($existingClothe->getCollection()?->getId() !== $collection->getId()) {
+                throw new \InvalidArgumentException('Le vetement existant appartient a une autre collection.');
+            }
+            $name = (string) $existingClothe->getName();
+        } else {
+            $submittedName = $nameChoice === '__new__' ? ($data['newName'] ?? '') : $nameChoice;
+            $name = $clotheNameGuard->assertNameAvailable((string) $submittedName);
+        }
+
         $images = $this->storeClotheImages($uploadedImages, $name);
         if ($images === []) {
             throw new \InvalidArgumentException('Ajoute au moins une image pour le vetement.');
@@ -1606,12 +1620,13 @@ final class ClotheController extends AbstractController
         $imagePaths = array_map(static fn (ClotheImageInput $image): string => $image->path, $images);
 
         $now = new \DateTimeImmutable();
-        $clothe = (new Clothes())
+        $clothe = $existingClothe ?? (new Clothes())
             ->setName($name)
-            ->setPrice($price)
             ->setCollection($collection)
             ->setIsOnline(false)
-            ->setCreatedAt($now)
+            ->setCreatedAt($now);
+        $clothe
+            ->setPrice($price)
             ->setEditedAt($now);
 
         $variantPayloads = $this->normalizeVariantPayloads($data);
@@ -1656,7 +1671,9 @@ final class ClotheController extends AbstractController
         }
 
         $this->assertUniqueVariantPayload($clothe, $entityManager);
-        $entityManager->persist($clothe);
+        if ($existingClothe === null) {
+            $entityManager->persist($clothe);
+        }
     }
 
     /**
@@ -1880,6 +1897,7 @@ final class ClotheController extends AbstractController
             'csrfToken' => $csrfTokenManager->getToken('clothe_create')->getValue(),
             'collections' => $entityManager->getRepository(Collections::class)->findBy([], ['name' => 'ASC']),
             'colors' => $entityManager->getRepository(Clothescolor::class)->findBy([], ['name' => 'ASC']),
+            'existingClothes' => $entityManager->getRepository(Clothes::class)->findBy([], ['name' => 'ASC']),
             'availableSizes' => ClotheService::AVAILABLE_SIZES,
         ]);
     }

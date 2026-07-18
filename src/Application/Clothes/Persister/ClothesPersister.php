@@ -55,7 +55,7 @@ final class ClothesPersister
             throw new \InvalidArgumentException('Le prix du vetement doit etre superieur a 0.');
         }
 
-        $name = $this->clotheNameGuard->assertNameAvailable((string) ($data['name'] ?? ''));
+        $name = $this->clotheNameGuard->assertNameAvailable($this->resolveSubmittedName($data));
         $slug = $this->clotheNameGuard->createSlug($name);
         if (isset($reservedSlugs[$slug])) {
             throw new \InvalidArgumentException('Un autre vetement utilise deja ce nom.');
@@ -174,6 +174,14 @@ final class ClothesPersister
             ],
             $sizes,
         );
+    }
+
+    /** @param array<string, mixed> $data */
+    private function resolveSubmittedName(array $data): string
+    {
+        return (string) (($data['name'] ?? '') === '__new__'
+            ? ($data['newName'] ?? '')
+            : ($data['name'] ?? ''));
     }
 
     /**

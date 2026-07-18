@@ -90,6 +90,7 @@
                                 {% include 'clothes/_clothe_form_fields.html.twig' with {
                                     prefix: 'clothes[__INDEX__]',
                                     imageInputName: 'clotheImages___INDEX__[]',
+                                    existingClothes: [],
                                     colors: colors,
                                     availableSizes: availableSizes,
                                     useIndexedTargets: true

@@ -67,7 +67,14 @@
                         </div>
                         <div>
                             <dt>Couleur</dt>
-                            <dd>{{ clothe.color ?: 'Non renseignee' }}</dd>
+                            <dd>
+                                {{ clothe.color ?: 'Non renseignee' }}
+                                {% if currentGroup %}
+                                    <a href="{{ currentGroup.editUrl }}" class="clothe-show__button" data-turbo-stream>
+                                        Modifier la couleur
+                                    </a>
+                                {% endif %}
+                            </dd>
                         </div>
                         <div>
                             <dt>Prix</dt>

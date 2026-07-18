@@ -1,7 +1,20 @@
 <div class="collection-form__grid">
     <label class="collection-form__field">
         <span>Nom du vetement</span>
-        <input type="text" name="{{ prefix }}[name]" maxlength="70" required data-collection-form-clothe-name-input>
+        <select
+            name="{{ prefix }}[name]"
+            required
+            data-collection-form-clothe-name-input
+            data-action="change->collection-form#toggleNewClotheNameField"
+        >
+            <option value="">Selectionner un nom</option>
+            {% for existingClothe in existingClothes|default([]) %}
+                <option value="existing:{{ existingClothe.id }}" data-collection-id="{{ existingClothe.collection.id }}">
+                    {{ existingClothe.name|capitalize }}
+                </option>
+            {% endfor %}
+            <option value="__new__">Créer un nouveau nom</option>
+        </select>
     </label>
 
     <label class="collection-form__field">
@@ -9,6 +22,11 @@
         <input type="number" name="{{ prefix }}[price]" min="1" step="1">
     </label>
 </div>
+
+<label class="collection-form__field" data-collection-form-new-clothe-name hidden>
+    <span>Nouveau nom</span>
+    <input type="text" name="{{ prefix }}[newName]" maxlength="70">
+</label>
 
 <label class="collection-form__field">
     <span>Description</span>
