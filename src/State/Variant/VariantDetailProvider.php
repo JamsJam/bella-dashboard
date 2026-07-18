@@ -183,11 +183,15 @@ final readonly class VariantDetailProvider implements ProviderInterface
 
     private function absoluteUrl(string $path): string
     {
-        if (preg_match('#^https?://#i', $path) === 1 || str_starts_with($path, '//')) {
+        if (preg_match('#^https?://#i', $path) === 1) {
             return $path;
         }
 
         $request = $this->requestStack->getCurrentRequest();
+
+        if (str_starts_with($path, '//')) {
+            return ($request?->getScheme() ?? 'https').':'.$path;
+        }
 
         return $request === null ? $path : $request->getSchemeAndHttpHost().'/'.ltrim($path, '/');
     }
