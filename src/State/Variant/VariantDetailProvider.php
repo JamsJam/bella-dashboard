@@ -4,6 +4,8 @@ namespace App\State\Variant;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
+use App\ApiResource\Variant\ClothesVariantItemDTO;
+use App\ApiResource\Variant\ClothesVariantsDTO;
 use App\ApiResource\Variant\RelatedVariantDTO;
 use App\ApiResource\Variant\SizeGuideDTO;
 use App\ApiResource\Variant\SizeGuideMeasurementDTO;
@@ -59,6 +61,10 @@ final readonly class VariantDetailProvider implements ProviderInterface
             category: new VariantCategoryDTO(
                 name: (string) $category->getName(),
                 slug: (string) $category->getSlug(),
+            ),
+            clothesVariant: new ClothesVariantsDTO(
+                name: (string) $clothes?->getName(),
+                variants: $this->clothesVariants($collectionVariants, $clothes?->getId()),
             ),
             description: $variant->getDescription(),
             metadescription: $variant->getMetadescription(),
@@ -127,6 +133,40 @@ final readonly class VariantDetailProvider implements ProviderInterface
         }
 
         return array_values($colors);
+    }
+
+    /**
+     * @param list<ClothesVariant> $variants
+     * @return list<ClothesVariantItemDTO>
+     */
+    private function clothesVariants(array $variants, ?int $clothesId): array
+    {
+        $items = [];
+        foreach ($variants as $variant) {
+            if ($variant->getClothes()?->getId() !== $clothesId) {
+                continue;
+            }
+
+            $slug = $variant->getSlug();
+            $name = $variant->getName();
+            $color = $variant->getColor()?->getName();
+            if (
+                !is_string($slug) || $slug === ''
+                || !is_string($name) || $name === ''
+                || !is_string($color) || $color === ''
+            ) {
+                continue;
+            }
+
+            $items[$slug] ??= new ClothesVariantItemDTO(
+                slug: $slug,
+                name: $name,
+                color: $color,
+                hexa: $variant->getColor()?->getHexa(),
+            );
+        }
+
+        return array_values($items);
     }
 
     /**
