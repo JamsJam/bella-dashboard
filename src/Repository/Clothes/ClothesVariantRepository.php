@@ -85,6 +85,62 @@ class ClothesVariantRepository extends ServiceEntityRepository
     }
 
     /**
+     * @return list<ClothesVariant>
+     */
+    public function findOnlineBySlug(string $slug): array
+    {
+        return $this->createQueryBuilder('variant')
+            ->addSelect('clothes', 'color', 'size', 'collection', 'category', 'sizeGuide', 'guideSize', 'measurement', 'measurementType')
+            ->join('variant.clothes', 'clothes')
+            ->join('variant.color', 'color')
+            ->join('variant.size', 'size')
+            ->join('clothes.collection', 'collection')
+            ->join('collection.category', 'category')
+            ->leftJoin('variant.sizeGuide', 'sizeGuide')
+            ->leftJoin('sizeGuide.sizes', 'guideSize')
+            ->leftJoin('guideSize.measurements', 'measurement')
+            ->leftJoin('measurement.type', 'measurementType')
+            ->andWhere('variant.slug = :slug')
+            ->andWhere('category.isOnline = true')
+            ->andWhere('collection.isOnline = true')
+            ->andWhere('clothes.isOnline = true')
+            ->andWhere('variant.isOnline = true')
+            ->andWhere('variant.stock > 0')
+            ->setParameter('slug', $slug)
+            ->orderBy('size.name', 'ASC')
+            ->addOrderBy('variant.id', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * @return list<ClothesVariant>
+     */
+    public function findOnlineByCollection(int $collectionId): array
+    {
+        return $this->createQueryBuilder('variant')
+            ->addSelect('clothes', 'color', 'size', 'collection', 'category')
+            ->join('variant.clothes', 'clothes')
+            ->join('variant.color', 'color')
+            ->join('variant.size', 'size')
+            ->join('clothes.collection', 'collection')
+            ->join('collection.category', 'category')
+            ->andWhere('collection.id = :collection')
+            ->andWhere('category.isOnline = true')
+            ->andWhere('collection.isOnline = true')
+            ->andWhere('clothes.isOnline = true')
+            ->andWhere('variant.isOnline = true')
+            ->andWhere('variant.stock > 0')
+            ->setParameter('collection', $collectionId)
+            ->orderBy('clothes.name', 'ASC')
+            ->addOrderBy('color.name', 'ASC')
+            ->addOrderBy('size.name', 'ASC')
+            ->addOrderBy('variant.id', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
      * @param list<string> $colors
      * @param list<string> $sizes
      *

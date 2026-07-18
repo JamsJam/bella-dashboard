@@ -90,6 +90,7 @@ final readonly class ThematicOpenApiFactory implements OpenApiFactoryInterface
             $parameters[$index] = $parameter->withDescription(match ($parameter->getName()) {
                 'category' => 'Slug de la catégorie dans laquelle rechercher les variantes.',
                 'page' => 'Nom de la page dont le contenu doit être chargé.',
+                'slug' => 'Slug de la déclinaison du vêtement à afficher.',
                 'id' => sprintf('Identifiant de la ressource %s.', mb_strtolower($tag)),
                 default => 'Identifiant utilisé pour sélectionner la ressource.',
             });
@@ -132,6 +133,11 @@ final readonly class ThematicOpenApiFactory implements OpenApiFactoryInterface
                 'Rechercher des variantes dans une catégorie',
                 'Retourne les données nécessaires aux cartes des variantes, filtrées par couleur, taille et plage de prix.',
                 'Les variantes correspondant aux filtres ont été retournées.',
+            ],
+            'GET /api/variant/{slug}' => [
+                'Consulter le détail d’une déclinaison',
+                'Regroupe les données du produit par slug avec ses tailles, son guide des tailles, ses autres couleurs et les produits de la même collection.',
+                'Le détail de la déclinaison a été retourné.',
             ],
             'POST /api/auth/login' => [
                 'Se connecter',
@@ -243,7 +249,7 @@ final readonly class ThematicOpenApiFactory implements OpenApiFactoryInterface
             str_starts_with($path, '/api/page') => 'Pages',
             str_starts_with($path, '/api/checkout') => 'Checkout',
             str_starts_with($path, '/api/customers') => 'Customers',
-            str_contains($path, '/clothes') || str_contains($path, '/collections') || str_contains($path, '/category') || str_contains($path, '/search') => 'Clothes',
+            str_contains($path, '/clothes') || str_contains($path, '/collections') || str_contains($path, '/category') || str_contains($path, '/search') || str_contains($path, '/variant') => 'Clothes',
             str_contains($path, '/avatar') || str_contains($path, '/morphotype') => 'Avatar',
             default => 'API',
         };
