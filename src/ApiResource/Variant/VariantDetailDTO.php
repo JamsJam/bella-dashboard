@@ -20,7 +20,7 @@ final readonly class VariantDetailDTO
 {
     /**
      * @param list<string> $images
-     * @param list<string> $sizes
+     * @param list<VariantSizeDTO> $sizes
      * @param list<VariantColorDTO> $colors
      * @param list<RelatedVariantDTO> $relatedProducts
      */

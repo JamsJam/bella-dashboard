@@ -13,6 +13,7 @@ use App\ApiResource\Variant\SizeGuideSizeDTO;
 use App\ApiResource\Variant\VariantColorDTO;
 use App\ApiResource\Variant\VariantCategoryDTO;
 use App\ApiResource\Variant\VariantDetailDTO;
+use App\ApiResource\Variant\VariantSizeDTO;
 use App\Entity\Clothes\ClothesVariant;
 use App\Entity\SizeGuide;
 use App\Repository\Clothes\ClothesVariantRepository;
@@ -95,15 +96,19 @@ final readonly class VariantDetailProvider implements ProviderInterface
     }
 
     /** @param list<ClothesVariant> $variants
-     *  @return list<string>
+     *  @return list<VariantSizeDTO>
      */
     private function sizes(array $variants): array
     {
         $sizes = [];
         foreach ($variants as $variant) {
             $size = $variant->getSize()?->getName();
-            if (is_string($size) && $size !== '') {
-                $sizes[$size] = $size;
+            $variantId = $variant->getId();
+            if (is_string($size) && $size !== '' && $variantId !== null) {
+                $sizes[$size] = new VariantSizeDTO(
+                    id: $variantId,
+                    name: $size,
+                );
             }
         }
 
