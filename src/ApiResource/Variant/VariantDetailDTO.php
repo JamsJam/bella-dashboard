@@ -28,6 +28,7 @@ final readonly class VariantDetailDTO
         public string $name,
         public string $slug,
         public int $price,
+        public VariantCategoryDTO $category,
         public ?string $description = null,
         public ?string $metadescription = null,
         public ?string $image = null,

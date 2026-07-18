@@ -9,6 +9,7 @@ use App\ApiResource\Variant\SizeGuideDTO;
 use App\ApiResource\Variant\SizeGuideMeasurementDTO;
 use App\ApiResource\Variant\SizeGuideSizeDTO;
 use App\ApiResource\Variant\VariantColorDTO;
+use App\ApiResource\Variant\VariantCategoryDTO;
 use App\ApiResource\Variant\VariantDetailDTO;
 use App\Entity\Clothes\ClothesVariant;
 use App\Entity\SizeGuide;
@@ -39,7 +40,13 @@ final readonly class VariantDetailProvider implements ProviderInterface
 
         $variant = $variants[0];
         $clothes = $variant->getClothes();
-        $collectionId = $clothes?->getCollection()?->getId();
+        $collection = $clothes?->getCollection();
+        $category = $collection?->getCategory();
+        if ($category === null) {
+            throw new NotFoundHttpException(sprintf('La catégorie de la déclinaison "%s" est introuvable.', $slug));
+        }
+
+        $collectionId = $collection?->getId();
         $collectionVariants = $collectionId === null
             ? $variants
             : $this->variantRepository->findOnlineByCollection($collectionId);
@@ -49,6 +56,10 @@ final readonly class VariantDetailProvider implements ProviderInterface
             name: $variant->getDisplayName(),
             slug: $slug,
             price: (int) $clothes?->getPrice(),
+            category: new VariantCategoryDTO(
+                name: (string) $category->getName(),
+                slug: (string) $category->getSlug(),
+            ),
             description: $variant->getDescription(),
             metadescription: $variant->getMetadescription(),
             image: $images[0] ?? null,
