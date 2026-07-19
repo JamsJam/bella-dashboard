@@ -14,6 +14,7 @@ class Schedule implements ScheduleProviderInterface
         private CacheInterface $cache,
     ) {
     }
+    
 
     public function getSchedule(): SymfonySchedule
     {
