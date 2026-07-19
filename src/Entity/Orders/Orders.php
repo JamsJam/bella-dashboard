@@ -10,6 +10,11 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity(repositoryClass: OrdersRepository::class)]
 class Orders
 {
+    public const STATUS_PENDING_PAYMENT = 'pending_payment';
+    public const STATUS_PAID = 'paid';
+    public const STATUS_PAYMENT_EXPIRED = 'payment_expired';
+    public const STATUS_CHECKOUT_CREATION_FAILED = 'checkout_creation_failed';
+
     use DateFieldsTrait;
 
     #[ORM\Id]
@@ -44,6 +49,25 @@ class Orders
 
     #[ORM\Column]
     private ?int $tva = null;
+
+    #[ORM\Column(length: 255, nullable: true, unique: true)]
+    private ?string $stripeCheckoutSessionId = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $stripePaymentIntentId = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $stripeInvoiceId = null;
+
+    #[ORM\Column(length: 2048, nullable: true)]
+    private ?string $stripeInvoiceUrl = null;
+
+    public function __construct()
+    {
+        $now = new \DateTimeImmutable();
+        $this->setCreatedAt($now);
+        $this->setEditedAt($now);
+    }
 
     public function getId(): ?int
     {
@@ -82,6 +106,7 @@ class Orders
     public function setStatus(string $status): static
     {
         $this->status = $status;
+        $this->setEditedAt(new \DateTimeImmutable());
 
         return $this;
     }
@@ -155,6 +180,54 @@ class Orders
     public function setTva(int $tva): static
     {
         $this->tva = $tva;
+
+        return $this;
+    }
+
+    public function getStripeCheckoutSessionId(): ?string
+    {
+        return $this->stripeCheckoutSessionId;
+    }
+
+    public function setStripeCheckoutSessionId(?string $stripeCheckoutSessionId): static
+    {
+        $this->stripeCheckoutSessionId = $stripeCheckoutSessionId;
+
+        return $this;
+    }
+
+    public function getStripePaymentIntentId(): ?string
+    {
+        return $this->stripePaymentIntentId;
+    }
+
+    public function setStripePaymentIntentId(?string $stripePaymentIntentId): static
+    {
+        $this->stripePaymentIntentId = $stripePaymentIntentId;
+
+        return $this;
+    }
+
+    public function getStripeInvoiceId(): ?string
+    {
+        return $this->stripeInvoiceId;
+    }
+
+    public function setStripeInvoiceId(?string $stripeInvoiceId): static
+    {
+        $this->stripeInvoiceId = $stripeInvoiceId;
+
+        return $this;
+    }
+
+    public function getStripeInvoiceUrl(): ?string
+    {
+        return $this->stripeInvoiceUrl;
+    }
+
+    public function setStripeInvoiceUrl(?string $stripeInvoiceUrl): static
+    {
+        $this->stripeInvoiceUrl = $stripeInvoiceUrl;
 
         return $this;
     }

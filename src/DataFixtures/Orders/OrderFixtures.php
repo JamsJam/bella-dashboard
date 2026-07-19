@@ -22,8 +22,7 @@ final class OrderFixtures extends AbstractBaseFixtures implements DependentFixtu
 
             $cart = (new Cart())
                 ->setCustomer($customer)
-                ->setCurrency('eur')
-                ->setStatus($customerIndex % 3 === 0 ? Cart::STATUS_PENDING : Cart::STATUS_PAID);
+                ->setCurrency('eur');
 
             for ($i = 0; $i < $this->faker->numberBetween(1, 4); $i++) {
                 $cart->addItem($this->createCartItem());
@@ -32,16 +31,12 @@ final class OrderFixtures extends AbstractBaseFixtures implements DependentFixtu
             $cart->recalculateTotals();
             $this->persistTouched($manager, $cart);
 
-            if ($cart->getStatus() !== Cart::STATUS_PAID) {
-                continue;
-            }
-
             $order = (new Orders())
                 ->setCart($cart)
                 ->setCustomer($customer)
                 ->setSubtotal($cart->getSubtotal())
                 ->setTotal($cart->getTotal())
-                ->setStatus($this->faker->randomElement(['paid', 'processing', 'shipped']))
+                ->setStatus($customerIndex % 3 === 0 ? Orders::STATUS_PENDING_PAYMENT : $this->faker->randomElement([Orders::STATUS_PAID, 'processing', 'shipped']))
                 ->setOrderReference(sprintf('ORDER-%s-%06d', (new \DateTimeImmutable())->format('Ymd'), $customerIndex + 1))
                 ->setFees(0)
                 ->setShippinfo([

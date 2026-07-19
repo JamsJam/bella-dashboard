@@ -15,7 +15,6 @@ final readonly class StripeWebhookEventDispatcher
     private const SUPPORTED_EVENTS = [
         'checkout.session.completed',
         'checkout.session.expired',
-        'checkout.session.async_payment_failed',
     ];
 
     public function __construct(
@@ -41,16 +40,17 @@ final readonly class StripeWebhookEventDispatcher
             return;
         }
 
-        $cartId = filter_var($session->metadata['cart_id'] ?? null, FILTER_VALIDATE_INT);
-        if ($cartId === false || $cartId <= 0) {
-            throw new \InvalidArgumentException('Stripe webhook missing cart_id metadata.');
+        $orderId = filter_var($session->metadata['order_id'] ?? null, FILTER_VALIDATE_INT);
+        if ($orderId === false || $orderId <= 0) {
+            throw new \InvalidArgumentException('Stripe webhook missing order_id metadata.');
         }
 
         $this->messageBus->dispatch(new StripeCheckoutSessionMessage(
             eventId: $event->id,
             eventType: $event->type,
-            cartId: $cartId,
+            orderId: $orderId,
             checkoutSessionId: $session->id,
+            paymentStatus: (string) $session->payment_status,
             paymentIntentId: is_string($session->payment_intent) ? $session->payment_intent : null,
             invoiceId: is_string($session->invoice) ? $session->invoice : null,
         ));

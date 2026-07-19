@@ -2,7 +2,7 @@
 
 namespace App\Payment\Stripe\Services;
 
-use App\Entity\Orders\Cart;
+use App\Entity\Orders\Orders;
 use App\Payment\Stripe\Client\StripeClientFactory;
 use App\Payment\Stripe\Config\StripeConfig;
 use App\Payment\Stripe\DTO\StripeCheckoutSessionResult;
@@ -19,14 +19,16 @@ final readonly class StripeCheckoutService
     ) {
     }
 
-    public function createSession(Cart $cart): StripeCheckoutSessionResult
+    public function createSession(Orders $order): StripeCheckoutSessionResult
     {
-        if ($cart->getId() === null) {
-            throw new \InvalidArgumentException('Cart must be persisted before creating a Stripe Checkout session.');
+        $cart = $order->getCart();
+        if ($order->getId() === null || $cart === null) {
+            throw new \InvalidArgumentException('Order must be persisted before creating a Stripe Checkout session.');
         }
 
         $session = $this->stripeClientFactory->create()->checkout->sessions->create([
             'mode' => 'payment',
+            'payment_method_types' => ['card'],
             'customer_email' => $cart->getCustomer()?->getEmail(),
             'line_items' => $this->lineItemsFactory->createFromCart($cart),
             'success_url' => $this->stripeConfig->getSuccessUrl().'?session_id={CHECKOUT_SESSION_ID}',
@@ -35,16 +37,19 @@ final readonly class StripeCheckoutService
                 'enabled' => true,
             ],
             'metadata' => [
+                'order_id' => (string) $order->getId(),
+                'order_reference' => (string) $order->getOrderReference(),
                 'cart_id' => (string) $cart->getId(),
             ],
             'payment_intent_data' => [
                 'metadata' => [
+                    'order_id' => (string) $order->getId(),
                     'cart_id' => (string) $cart->getId(),
                 ],
             ],
         ]);
 
-        $cart->setStripeCheckoutSessionId($session->id);
+        $order->setStripeCheckoutSessionId($session->id);
         $this->entityManager->flush();
 
         return new StripeCheckoutSessionResult(

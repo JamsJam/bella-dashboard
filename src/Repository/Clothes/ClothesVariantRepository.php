@@ -7,6 +7,7 @@ use App\Entity\Clothes\ClothesVariant;
 use App\Entity\Clothes\Clothescolor;
 use App\Entity\Clothes\Clothessize;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\DBAL\LockMode;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -41,6 +42,22 @@ class ClothesVariantRepository extends ServiceEntityRepository
             ->andWhere('v.id = :id')
             ->setParameter('id', $id)
             ->getQuery()
+            ->getOneOrNullResult();
+
+        return $variant instanceof ClothesVariant ? $variant : null;
+    }
+
+    public function findOneWithProductForUpdate(int $id): ?ClothesVariant
+    {
+        $variant = $this->createQueryBuilder('v')
+            ->addSelect('c', 'color', 'size')
+            ->join('v.clothes', 'c')
+            ->join('v.color', 'color')
+            ->join('v.size', 'size')
+            ->andWhere('v.id = :id')
+            ->setParameter('id', $id)
+            ->getQuery()
+            ->setLockMode(LockMode::PESSIMISTIC_WRITE)
             ->getOneOrNullResult();
 
         return $variant instanceof ClothesVariant ? $variant : null;

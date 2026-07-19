@@ -12,12 +12,6 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity(repositoryClass: CartRepository::class)]
 class Cart
 {
-    public const STATUS_PENDING = 'pending';
-    public const STATUS_PAID = 'paid';
-    public const STATUS_PAYMENT_FAILED = 'payment_failed';
-    public const STATUS_PAYMENT_EXPIRED = 'payment_expired';
-    public const STATUS_ABANDONED = 'abandoned';
-
     use DateFieldsTrait;
 
     #[ORM\Id]
@@ -38,9 +32,6 @@ class Cart
     #[ORM\OneToOne(mappedBy: 'cart', targetEntity: Orders::class)]
     private ?Orders $order = null;
 
-    #[ORM\Column(length: 40)]
-    private string $status = self::STATUS_PENDING;
-
     #[ORM\Column(length: 3)]
     private string $currency = 'eur';
 
@@ -49,18 +40,6 @@ class Cart
 
     #[ORM\Column]
     private int $total = 0;
-
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $stripeCheckoutSessionId = null;
-
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $stripePaymentIntentId = null;
-
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $stripeInvoiceId = null;
-
-    #[ORM\Column(length: 2048, nullable: true)]
-    private ?string $stripeInvoiceUrl = null;
 
     public function __construct()
     {
@@ -130,19 +109,6 @@ class Cart
         return $this;
     }
 
-    public function getStatus(): string
-    {
-        return $this->status;
-    }
-
-    public function setStatus(string $status): static
-    {
-        $this->status = $status;
-        $this->setEditedAt(new \DateTimeImmutable());
-
-        return $this;
-    }
-
     public function getCurrency(): string
     {
         return $this->currency;
@@ -163,54 +129,6 @@ class Cart
     public function getTotal(): int
     {
         return $this->total;
-    }
-
-    public function getStripeCheckoutSessionId(): ?string
-    {
-        return $this->stripeCheckoutSessionId;
-    }
-
-    public function setStripeCheckoutSessionId(?string $stripeCheckoutSessionId): static
-    {
-        $this->stripeCheckoutSessionId = $stripeCheckoutSessionId;
-
-        return $this;
-    }
-
-    public function getStripePaymentIntentId(): ?string
-    {
-        return $this->stripePaymentIntentId;
-    }
-
-    public function setStripePaymentIntentId(?string $stripePaymentIntentId): static
-    {
-        $this->stripePaymentIntentId = $stripePaymentIntentId;
-
-        return $this;
-    }
-
-    public function getStripeInvoiceId(): ?string
-    {
-        return $this->stripeInvoiceId;
-    }
-
-    public function setStripeInvoiceId(?string $stripeInvoiceId): static
-    {
-        $this->stripeInvoiceId = $stripeInvoiceId;
-
-        return $this;
-    }
-
-    public function getStripeInvoiceUrl(): ?string
-    {
-        return $this->stripeInvoiceUrl;
-    }
-
-    public function setStripeInvoiceUrl(?string $stripeInvoiceUrl): static
-    {
-        $this->stripeInvoiceUrl = $stripeInvoiceUrl;
-
-        return $this;
     }
 
     public function recalculateTotals(): void

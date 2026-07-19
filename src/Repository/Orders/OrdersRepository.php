@@ -4,6 +4,7 @@ namespace App\Repository\Orders;
 
 use App\Entity\Orders\Orders;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\DBAL\LockMode;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -42,6 +43,18 @@ class OrdersRepository extends ServiceEntityRepository
             ->setMaxResults($limit)
             ->getQuery()
             ->getResult();
+    }
+
+    public function findForUpdate(int $id): ?Orders
+    {
+        $order = $this->createQueryBuilder('orders')
+            ->andWhere('orders.id = :id')
+            ->setParameter('id', $id)
+            ->getQuery()
+            ->setLockMode(LockMode::PESSIMISTIC_WRITE)
+            ->getOneOrNullResult();
+
+        return $order instanceof Orders ? $order : null;
     }
 
     //    /**

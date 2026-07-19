@@ -7,6 +7,7 @@ use ApiPlatform\State\ProcessorInterface;
 use App\ApiResource\Orders\CheckoutCartInput;
 use App\ApiResource\Orders\CheckoutCartOutput;
 use App\Application\Orders\Services\CheckoutCartService;
+use App\Entity\Orders\Orders;
 use App\Entity\Users\Customers;
 use App\Payment\Stripe\Services\StripeCheckoutService;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -34,11 +35,20 @@ final readonly class CreateCheckoutCartProcessor implements ProcessorInterface
             throw new \RuntimeException('A connected customer is required to create a checkout cart.');
         }
 
-        $cart = $this->checkoutCartService->createPendingCart($data, $customer);
-        $stripeSession = $this->stripeCheckoutService->createSession($cart);
+        $order = $this->checkoutCartService->createPendingOrder($data, $customer);
+
+        try {
+            $stripeSession = $this->stripeCheckoutService->createSession($order);
+        } catch (\Throwable $exception) {
+            $this->checkoutCartService->releaseReservation($order, Orders::STATUS_CHECKOUT_CREATION_FAILED);
+
+            throw $exception;
+        }
 
         return new CheckoutCartOutput(
-            cartId: (int) $cart->getId(),
+            cartId: (int) $order->getCart()?->getId(),
+            orderId: (int) $order->getId(),
+            orderReference: (string) $order->getOrderReference(),
             checkoutSessionId: $stripeSession->sessionId,
             checkoutUrl: $stripeSession->checkoutUrl,
         );

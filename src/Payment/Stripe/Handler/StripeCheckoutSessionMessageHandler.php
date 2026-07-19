@@ -2,7 +2,7 @@
 
 namespace App\Payment\Stripe\Handler;
 
-use App\Entity\Orders\Cart;
+use App\Application\Orders\Services\CheckoutCartService;
 use App\Entity\Orders\Orders;
 use App\Notifier\Services\EmailNotificationService;
 use App\Payment\Stripe\Client\StripeClientFactory;
@@ -17,27 +17,31 @@ final readonly class StripeCheckoutSessionMessageHandler
         private EntityManagerInterface $entityManager,
         private StripeClientFactory $stripeClientFactory,
         private EmailNotificationService $emailNotificationService,
+        private CheckoutCartService $checkoutCartService,
     ) {
     }
 
     public function __invoke(StripeCheckoutSessionMessage $message): void
     {
-        $cart = $this->entityManager->find(Cart::class, $message->cartId);
-        if (!$cart instanceof Cart) {
+        $order = $this->entityManager->find(Orders::class, $message->orderId);
+        if (!$order instanceof Orders) {
             return;
         }
 
         match ($message->eventType) {
-            'checkout.session.completed' => $this->handleCompleted($cart, $message),
-            'checkout.session.expired' => $this->markCart($cart, Cart::STATUS_PAYMENT_EXPIRED),
-            'checkout.session.async_payment_failed' => $this->markCart($cart, Cart::STATUS_PAYMENT_FAILED),
+            'checkout.session.completed' => $this->handleCompleted($order, $message),
+            'checkout.session.expired' => $this->checkoutCartService->releaseReservation($order, Orders::STATUS_PAYMENT_EXPIRED),
             default => null,
         };
     }
 
-    private function handleCompleted(Cart $cart, StripeCheckoutSessionMessage $message): void
+    private function handleCompleted(Orders $order, StripeCheckoutSessionMessage $message): void
     {
-        if ($cart->getStatus() === Cart::STATUS_PAID && $cart->getOrder() instanceof Orders) {
+        if ($message->paymentStatus !== 'paid') {
+            return;
+        }
+
+        if ($order->getStatus() !== Orders::STATUS_PENDING_PAYMENT) {
             return;
         }
 
@@ -45,25 +49,28 @@ final readonly class StripeCheckoutSessionMessageHandler
         if ($message->invoiceId !== null) {
             $invoice = $this->stripeClientFactory->create()->invoices->retrieve($message->invoiceId);
             $invoiceUrl = is_string($invoice->hosted_invoice_url) ? $invoice->hosted_invoice_url : null;
-            $cart->setStripeInvoiceId($message->invoiceId);
-            $cart->setStripeInvoiceUrl($invoiceUrl);
         }
 
-        $cart
-            ->setStatus(Cart::STATUS_PAID)
-            ->setStripeCheckoutSessionId($message->checkoutSessionId)
-            ->setStripePaymentIntentId($message->paymentIntentId);
+        $processed = $this->entityManager->wrapInTransaction(function () use ($order, $message, $invoiceUrl): bool {
+            $lockedOrder = $this->entityManager->getRepository(Orders::class)->findForUpdate((int) $order->getId());
+            if (!$lockedOrder instanceof Orders || $lockedOrder->getStatus() !== Orders::STATUS_PENDING_PAYMENT) {
+                return false;
+            }
 
-        $this->decrementVariantStock($cart);
+            $lockedOrder
+                ->setStatus(Orders::STATUS_PAID)
+                ->setStripeCheckoutSessionId($message->checkoutSessionId)
+                ->setStripePaymentIntentId($message->paymentIntentId)
+                ->setStripeInvoiceId($message->invoiceId)
+                ->setStripeInvoiceUrl($invoiceUrl);
 
-        if (!$cart->getOrder() instanceof Orders) {
-            $this->entityManager->persist($this->createOrderFromCart($cart));
-        }
+            $this->entityManager->flush();
 
-        $this->entityManager->flush();
+            return true;
+        });
 
-        $customerEmail = $cart->getCustomer()?->getEmail();
-        if ($customerEmail !== null && $invoiceUrl !== null) {
+        $customerEmail = $order->getCustomer()?->getEmail();
+        if ($processed && $customerEmail !== null && $invoiceUrl !== null) {
             $this->emailNotificationService->sendTemplatedEmail(
                 to: $customerEmail,
                 subject: 'Votre facture',
@@ -73,59 +80,4 @@ final readonly class StripeCheckoutSessionMessageHandler
         }
     }
 
-    private function decrementVariantStock(Cart $cart): void
-    {
-        foreach ($cart->getItems() as $item) {
-            $variant = $item->getVariant();
-            if ($variant === null) {
-                continue;
-            }
-
-            $stock = max(0, $variant->getStock() - (int) $item->getQuantity());
-            $variant
-                ->setStock($stock)
-                ->setEditedAt(new \DateTimeImmutable());
-
-            if ($stock === 0) {
-                $variant->setIsOnline(false);
-            }
-        }
-    }
-
-    private function markCart(Cart $cart, string $status): void
-    {
-        if ($cart->getStatus() !== Cart::STATUS_PAID) {
-            $cart->setStatus($status);
-            $this->entityManager->flush();
-        }
-    }
-
-    private function createOrderFromCart(Cart $cart): Orders
-    {
-        $order = (new Orders())
-            ->setCart($cart)
-            ->setCustomer($cart->getCustomer())
-            ->setSubtotal($cart->getSubtotal())
-            ->setTotal($cart->getTotal())
-            ->setStatus('paid')
-            ->setOrderReference($this->createOrderReference($cart))
-            ->setFees(0)
-            ->setShippinfo([])
-            ->setTva(0);
-
-        if (method_exists($order, 'setCreatedAt')) {
-            $order->setCreatedAt(new \DateTimeImmutable());
-        }
-
-        if (method_exists($order, 'setEditedAt')) {
-            $order->setEditedAt(new \DateTimeImmutable());
-        }
-
-        return $order;
-    }
-
-    private function createOrderReference(Cart $cart): string
-    {
-        return sprintf('ORDER-%s-%06d', (new \DateTimeImmutable())->format('Ymd'), (int) $cart->getId());
-    }
 }
