@@ -1,0 +1,53 @@
+<div class="modal-backdrop" role="presentation">
+    <dialog class="modal modal--wide" open aria-labelledby="avatar-skin-colors-title">
+        <header class="modal__header">
+            <div>
+                <h2 id="avatar-skin-colors-title">Couleurs de peau</h2>
+                <p class="modal__subtitle">{{ skinColors|length }} couleur(s) disponible(s)</p>
+            </div>
+            <button type="button" class="modal__close" onclick="this.closest('.modal-backdrop').remove()" aria-label="Fermer">×</button>
+        </header>
+
+        <div class="modal__body">
+            {% if skinColors is not empty %}
+                <ul class="avatar-skin-colors">
+                    {% for item in skinColors %}
+                        {% set skinColor = item.entity %}
+                        {% set hasValidHexa = skinColor.hexa and skinColor.hexa matches '/^[0-9a-fA-F]{6}$/' %}
+                        <li class="avatar-skin-colors__item">
+                            <span
+                                class="avatar-skin-colors__swatch"
+                                style="background-color: {{ hasValidHexa ? '#' ~ skinColor.hexa : 'transparent' }}"
+                                aria-label="Couleur {{ skinColor.name }}"
+                            ></span>
+
+                            <span class="avatar-skin-colors__content">
+                                <strong>{{ skinColor.name }}</strong>
+                                <small>
+                                    {{ item.associatedCount }} élément{{ item.associatedCount > 1 ? 's' : '' }} associé{{ item.associatedCount > 1 ? 's' : '' }}
+                                </small>
+                            </span>
+
+                            <form
+                                method="post"
+                                action="{{ item.deleteUrl }}"
+                                {% if item.associatedCount > 0 %}
+                                    data-turbo-confirm="Cette couleur est associée à {{ item.associatedCount }} élément(s). La suppression effacera également ces éléments. Confirmer la suppression ?"
+                                {% endif %}
+                            >
+                                <input type="hidden" name="_csrf_token" value="{{ item.csrfToken }}">
+                                <button type="submit" class="avatar-skin-colors__delete">Supprimer</button>
+                            </form>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="modal__subtitle">Aucune couleur de peau enregistrée.</p>
+            {% endif %}
+        </div>
+
+        <footer class="modal__actions">
+            <button type="button" class="avatar-skin-colors__close" onclick="this.closest('.modal-backdrop').remove()">Fermer</button>
+        </footer>
+    </dialog>
+</div>

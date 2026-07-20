@@ -25,6 +25,85 @@
     max-width: 70ch;
 }
 
+.avatar-skin-colors {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.avatar-skin-colors__item {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 0.4rem;
+    background: var(--bg-light);
+}
+
+.avatar-skin-colors__swatch {
+    inline-size: 2.5rem;
+    block-size: 2.5rem;
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    box-shadow: inset 0 0 0 2px var(--bg);
+}
+
+.avatar-skin-colors__content {
+    display: flex;
+    min-inline-size: 0;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.avatar-skin-colors__content strong {
+    overflow-wrap: anywhere;
+    color: var(--text);
+}
+
+.avatar-skin-colors__content small {
+    color: var(--text-muted);
+}
+
+.avatar-skin-colors__delete,
+.avatar-skin-colors__close {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 0.3rem;
+    background: var(--bg);
+    color: var(--text);
+    cursor: pointer;
+}
+
+.avatar-skin-colors__delete {
+    border-color: var(--danger);
+    color: var(--danger);
+}
+
+.avatar-skin-colors__delete:hover,
+.avatar-skin-colors__delete:focus-visible {
+    background: color-mix(in srgb, var(--danger) 12%, var(--bg));
+    outline: none;
+}
+
+@media (max-width: 38rem) {
+    .avatar-skin-colors__item {
+        grid-template-columns: auto minmax(0, 1fr);
+    }
+
+    .avatar-skin-colors__item form {
+        grid-column: 1 / -1;
+    }
+
+    .avatar-skin-colors__delete {
+        inline-size: 100%;
+    }
+}
+
 .avatar-upload {
     @extend %flex-column-start-stretch;
     gap: 1rem;

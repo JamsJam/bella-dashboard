@@ -2,7 +2,14 @@
 
 {% set tabs = [
     { id: 'add', label: 'Ajouter', href: path("app_avatar_add"), isActive: false },
-    { id: 'rename', label: 'Renommer', href: path("app_avatar_rename"), isActive: false }
+    { id: 'rename', label: 'Renommer', href: path("app_avatar_rename"), isActive: false },
+    {
+        id: 'skin-colors',
+        label: 'Couleurs de peau',
+        href: path('app_avatar_skin_colors_modal'),
+        isActive: false,
+        attr: {'data-turbo-stream': ''}
+    }
 ] %}
 
 {% block title %}Gestion des avatars{% endblock %}

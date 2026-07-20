@@ -169,6 +169,11 @@ final readonly class ThematicOpenApiFactory implements OpenApiFactoryInterface
                 'Retourne tous les morphotypes disponibles pour la création d’un avatar.',
                 'La liste des morphotypes a été retournée.',
             ],
+            'GET /api/avatar/skin-colors' => [
+                'Lister les couleurs de peau',
+                'Retourne les couleurs de peau disponibles pour la création d’un avatar.',
+                'La liste des couleurs de peau a été retournée.',
+            ],
             'POST /api/morphotypes' => [
                 'Créer un morphotype',
                 'Ajoute un nouveau morphotype utilisable par les avatars.',
