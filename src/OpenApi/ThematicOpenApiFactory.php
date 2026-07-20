@@ -199,6 +199,11 @@ final readonly class ThematicOpenApiFactory implements OpenApiFactoryInterface
                 'Retourne les destinations configurées avec leur prix en centimes et leur drapeau.',
                 'La liste des destinations de livraison a été retournée.',
             ],
+            'GET /api/checkout/vat' => [
+                'Consulter la TVA',
+                'Retourne le taux de TVA configuré pour les commandes.',
+                'Le taux de TVA a été retourné.',
+            ],
             'GET /api/clothes' => [
                 'Lister les vêtements',
                 'Retourne la liste des vêtements disponibles dans le catalogue.',
