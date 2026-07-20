@@ -1,0 +1,18 @@
+vat: 20.0
+shipping_fees:
+    -
+        destination: Guadeloupe
+        flag: /images/checkout/flags/guadeloupe_flag.png
+        price_cents: 450
+    -
+        destination: Martinique
+        flag: /images/checkout/flags/martinique_flag.png
+        price_cents: 500
+    -
+        destination: Saint-Martin
+        flag: /images/checkout/flags/france_flag.png
+        price_cents: 600
+    -
+        destination: France
+        flag: /images/checkout/flags/france_flag.png
+        price_cents: 850

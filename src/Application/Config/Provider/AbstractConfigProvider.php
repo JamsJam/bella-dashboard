@@ -26,6 +26,8 @@ abstract readonly class AbstractConfigProvider
      */
     protected function read(string $fileName): array
     {
+        $this->restoreDefaultConfig($fileName);
+
         $cacheKey = $this->cacheKey($fileName);
         $item = $this->cache->getItem($cacheKey);
         $path = $this->path($fileName);
@@ -93,6 +95,8 @@ abstract readonly class AbstractConfigProvider
 
     protected function fileExists(string $fileName): bool
     {
+        $this->restoreDefaultConfig($fileName);
+
         return is_file($this->path($fileName));
     }
 
@@ -117,6 +121,32 @@ abstract readonly class AbstractConfigProvider
     private function path(string $fileName): string
     {
         return $this->configDirectory().'/'.$fileName.'.yaml';
+    }
+
+    private function restoreDefaultConfig(string $fileName): void
+    {
+        $path = $this->path($fileName);
+        if (is_file($path)) {
+            return;
+        }
+
+        $defaultPath = $this->projectDir.'/config/default_'.$fileName.'.yaml';
+        if (!is_file($defaultPath)) {
+            return;
+        }
+
+        $directory = $this->configDirectory();
+        if (!is_dir($directory) && !mkdir($directory, 0775, true) && !is_dir($directory)) {
+            throw new \RuntimeException(sprintf('Unable to create configuration directory "%s".', $directory));
+        }
+
+        if (!copy($defaultPath, $path) && !is_file($path)) {
+            throw new \RuntimeException(sprintf(
+                'Unable to restore configuration file "%s" from "%s".',
+                $path,
+                $defaultPath,
+            ));
+        }
     }
 
     private function configDirectory(): string
