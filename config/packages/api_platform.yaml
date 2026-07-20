@@ -7,3 +7,4 @@ api_platform:
             vary: ['Content-Type', 'Authorization', 'Origin']
     exception_to_status:
         App\Application\Orders\Exception\InsufficientVariantStockException: 409
+        App\Application\Orders\Exception\InvalidShippingDestinationException: 422

@@ -139,6 +139,11 @@ final readonly class ThematicOpenApiFactory implements OpenApiFactoryInterface
                 'Regroupe les données du produit par slug avec ses tailles, son guide des tailles, ses autres couleurs et les produits de la même collection.',
                 'Le détail de la déclinaison a été retourné.',
             ],
+            'GET /api/variants/{id}/stock' => [
+                'Consulter le stock d’une déclinaison',
+                'Retourne le stock actuel et la disponibilité de la déclinaison identifiée.',
+                'Le stock de la déclinaison a été retourné.',
+            ],
             'POST /api/auth/login' => [
                 'Se connecter',
                 'Vérifie les identifiants du client et génère son jeton d’authentification.',
@@ -188,6 +193,11 @@ final readonly class ThematicOpenApiFactory implements OpenApiFactoryInterface
                 'Créer une session de paiement',
                 'Valide le panier et prépare la session nécessaire à son paiement.',
                 'La session de paiement a été créée.',
+            ],
+            'GET /api/checkout/contry' => [
+                'Lister les destinations de livraison',
+                'Retourne les destinations configurées avec leur prix en centimes et leur drapeau.',
+                'La liste des destinations de livraison a été retournée.',
             ],
             'GET /api/clothes' => [
                 'Lister les vêtements',

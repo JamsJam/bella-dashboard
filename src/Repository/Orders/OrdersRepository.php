@@ -21,11 +21,12 @@ class OrdersRepository extends ServiceEntityRepository
     public function getDashboardSummary(\DateTimeImmutable $since): array
     {
         $summary = $this->createQueryBuilder('o')
-            ->select('COALESCE(SUM(o.total), 0) AS revenue')
+            ->select('COALESCE(SUM(CASE WHEN o.status = :paidStatus THEN o.total ELSE 0 END), 0) AS revenue')
             ->addSelect('COUNT(o.id) AS orders')
             ->addSelect("SUM(CASE WHEN o.status IN ('pending', 'processing') THEN 1 ELSE 0 END) AS pending")
             ->andWhere('o.createdAt >= :since')
             ->setParameter('since', $since)
+            ->setParameter('paidStatus', Orders::STATUS_PAID)
             ->getQuery()
             ->getSingleResult();
 

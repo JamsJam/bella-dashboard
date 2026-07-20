@@ -33,6 +33,21 @@ final readonly class StripeCheckoutService
             'line_items' => $this->lineItemsFactory->createFromCart($cart),
             'success_url' => $this->stripeConfig->getSuccessUrl().'?session_id={CHECKOUT_SESSION_ID}',
             'cancel_url' => $this->stripeConfig->getCancelUrl(),
+            'shipping_options' => [
+                [
+                    'shipping_rate_data' => [
+                        'type' => 'fixed_amount',
+                        'fixed_amount' => [
+                            'amount' => (int) $order->getFees(),
+                            'currency' => $cart->getCurrency(),
+                        ],
+                        'display_name' => sprintf(
+                            'Livraison - %s',
+                            (string) ($order->getShippinfo()['destination'] ?? 'Standard'),
+                        ),
+                    ],
+                ],
+            ],
             'invoice_creation' => [
                 'enabled' => true,
             ],

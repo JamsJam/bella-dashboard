@@ -15,4 +15,8 @@ final class CheckoutCartInput
 
     #[Assert\Currency]
     public string $currency = 'EUR';
+
+    #[Assert\NotBlank]
+    #[Assert\Length(max: 255)]
+    public string $shippingDestination = '';
 }

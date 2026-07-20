@@ -3,7 +3,10 @@
 namespace App\Application\Orders\Services;
 
 use App\ApiResource\Orders\CheckoutCartInput;
+use App\Application\Config\Dto\ShippingFeeDto;
+use App\Application\Config\Provider\OrdersConfigProvider;
 use App\Application\Orders\Exception\InsufficientVariantStockException;
+use App\Application\Orders\Exception\InvalidShippingDestinationException;
 use App\Entity\Clothes\ClothesVariant;
 use App\Entity\Orders\Cart;
 use App\Entity\Orders\CartItem;
@@ -15,14 +18,16 @@ final readonly class CheckoutCartService
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
+        private OrdersConfigProvider $ordersConfigProvider,
     ) {
     }
 
     public function createPendingOrder(CheckoutCartInput $input, Customers $customer): Orders
     {
         $quantitiesByVariant = $this->aggregateItems($input->items);
+        $shippingFee = $this->resolveShippingFee($input->shippingDestination);
 
-        return $this->entityManager->wrapInTransaction(function () use ($input, $customer, $quantitiesByVariant): Orders {
+        return $this->entityManager->wrapInTransaction(function () use ($input, $customer, $quantitiesByVariant, $shippingFee): Orders {
             $cart = (new Cart())
                 ->setCustomer($customer)
                 ->setCurrency($input->currency);
@@ -40,11 +45,11 @@ final readonly class CheckoutCartService
                 ->setCart($cart)
                 ->setCustomer($customer)
                 ->setSubtotal($cart->getSubtotal())
-                ->setTotal($cart->getTotal())
+                ->setTotal($cart->getTotal() + $shippingFee->priceCents)
                 ->setStatus(Orders::STATUS_PENDING_PAYMENT)
                 ->setOrderReference($this->createOrderReference($cart))
-                ->setFees(0)
-                ->setShippinfo([])
+                ->setFees($shippingFee->priceCents)
+                ->setShippinfo(['destination' => $shippingFee->destination])
                 ->setTva(0);
 
             $this->entityManager->persist($order);
@@ -52,6 +57,22 @@ final readonly class CheckoutCartService
 
             return $order;
         });
+    }
+
+    private function resolveShippingFee(string $destination): ShippingFeeDto
+    {
+        $normalizedDestination = mb_strtolower(trim($destination));
+
+        foreach ($this->ordersConfigProvider->get()->shippingFees as $shippingFee) {
+            if (
+                $shippingFee instanceof ShippingFeeDto
+                && mb_strtolower(trim($shippingFee->destination)) === $normalizedDestination
+            ) {
+                return $shippingFee;
+            }
+        }
+
+        throw new InvalidShippingDestinationException($destination);
     }
 
     /**
