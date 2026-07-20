@@ -44,7 +44,6 @@ class CustomersRepository extends ServiceEntityRepository implements PasswordUpg
             ->setParameter('now', new \DateTimeImmutable())
             ->getQuery()
             ->getResult();
-
     }
 
     //    /**
