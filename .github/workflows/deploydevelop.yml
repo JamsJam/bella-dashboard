@@ -124,7 +124,7 @@ jobs:
             git checkout develop
             git reset --hard origin/develop
 
-            echo "[4/11] Mise a jour de la configuration de test"
+            echo "[4/11] Mise a jour de la configuration de test "
 
             dotenv_quote() {
             php -r '
