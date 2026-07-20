@@ -4,7 +4,6 @@ namespace App\Application\Auth;
 
 use App\Entity\Users\Customers;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\Scheduler\Attribute\AsPeriodicTask;
 
 final readonly class ExpiredUnconfirmedCustomersPurger
 {
@@ -13,7 +12,6 @@ final readonly class ExpiredUnconfirmedCustomersPurger
     ) {
     }
 
-    #[AsPeriodicTask('5 minutes')]
     public function purge(): int
     {
         return (int) $this->entityManager

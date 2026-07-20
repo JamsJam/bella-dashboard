@@ -230,7 +230,8 @@ jobs:
             echo "[11/11] Redemarrage des workers Messenger"
             
             APP_ENV=prod APP_DEBUG=0 php bin/console messenger:stop-workers
-            supervisorctl start 'messenger-consume:*' \
+            supervisorctl start 'messenger-consume:* async' &&
+            supervisorctl start 'messenger-consume scheduler_*' \
               || systemctl --user restart 'messenger-consume@*.service'
 
             echo "Deploiement sur le serveur de test termine avec succes."
