@@ -231,9 +231,9 @@ jobs:
             
             APP_ENV=prod APP_DEBUG=0 php bin/console messenger:stop-workers
             supervisorctl start 'messenger-consume:*' \
-              || supervisorctl restart 'messenger-consume'
-            supervisorctl start 'scheduler-consume' \
-              || supervisorctl restart 'scheduler-consume'
+              || supervisorctl restart 'messengerconsume:*'
+            supervisorctl start 'schedulerconsume:*' \
+              || supervisorctl restart 'schedulerconsume:*'
 
             echo "Deploiement sur le serveur de test termine avec succes."
 
