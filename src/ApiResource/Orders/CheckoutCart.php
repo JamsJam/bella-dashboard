@@ -7,6 +7,7 @@ use ApiPlatform\Metadata\Post;
 use App\State\Orders\CreateCheckoutCartProcessor;
 
 #[ApiResource(
+    formats: ['json' => ['application/json']],
     operations: [
         new Post(
             uriTemplate: '/checkout/carts',
