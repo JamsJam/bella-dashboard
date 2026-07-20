@@ -19,6 +19,8 @@ final class BreadscrumbsService
         'config' => 'Configuration',
         'page' => 'Shop',
         'contact' => 'Contact',
+        'customers' => 'Clients',
+        'show' => 'Détail',
         'pending' => 'En attente',
         'rename' => 'Renommer',
         'index' => 'Index',
