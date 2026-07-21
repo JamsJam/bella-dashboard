@@ -1,5 +1,75 @@
 @use "../../abstract/" as *;
 
+.config-hub {
+    @extend %flex-column-start-stretch;
+    gap: 1.5rem;
+}
+
+.config-hub__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+    gap: 1rem;
+}
+
+.config-hub__card {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 1rem;
+    min-block-size: 8rem;
+    padding: 1.25rem;
+    border: 1px solid var(--border-muted);
+    border-radius: 0.85rem;
+    background: var(--bg-light);
+    color: var(--text);
+    box-shadow: $shadow;
+    transition: transform 150ms ease, border-color 150ms ease, background 150ms ease;
+}
+
+.config-hub__card:hover,
+.config-hub__card:focus-visible {
+    border-color: var(--primary);
+    outline: 0;
+    background: var(--bg);
+    transform: translateY(-2px);
+}
+
+.config-hub__icon {
+    display: grid;
+    place-items: center;
+    inline-size: 3rem;
+    block-size: 3rem;
+    border-radius: 0.75rem;
+    background: color-mix(in srgb, var(--primary) 14%, var(--bg));
+    color: var(--primary);
+}
+
+.config-hub__icon svg,
+.config-hub__arrow svg {
+    inline-size: 1.4rem;
+    block-size: 1.4rem;
+}
+
+.config-hub__content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.config-hub__content strong {
+    font-size: 1.05rem;
+}
+
+.config-hub__content small {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    line-height: 1.45;
+}
+
+.config-hub__arrow {
+    color: var(--text-muted);
+}
+
 .config-page {
     @extend %flex-column-start-stretch;
     gap: 1.5rem;

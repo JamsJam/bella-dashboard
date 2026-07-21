@@ -67,6 +67,12 @@ final class BreadscrumbsService
             return $breadcrumbs;
         }
 
+        if ($route === 'app_config_index') {
+            $breadcrumbs[] = ['label' => self::LABELS['config']];
+
+            return $breadcrumbs;
+        }
+
         /**
          * On enlève "app" du début.
          */

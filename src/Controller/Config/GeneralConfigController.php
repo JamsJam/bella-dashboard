@@ -14,7 +14,7 @@ use Symfony\Component\Routing\Attribute\Route;
 
 final class GeneralConfigController extends AbstractConfigController
 {
-    #[Route('/config', name: 'app_config_index', methods: ['GET', 'POST'])]
+    #[Route('/config/general', name: 'app_config_general', methods: ['GET', 'POST'])]
     public function index(
         Request $request,
         BreadscrumbsService $breadscrumbs,
@@ -42,11 +42,13 @@ final class GeneralConfigController extends AbstractConfigController
             );
             $flashService->success('Configuration générale mise à jour.');
 
-            return $this->redirectToRoute('app_config_index');
+            return $this->redirectToRoute('app_config_general');
         }
 
         return $this->renderFormPage($request, $breadscrumbs, 'Configuration générale', $form->createView(), [
             'subtitle' => 'Titre du site, logo et favicon.',
+            'back_url' => $this->generateUrl('app_config_index'),
+            'back_label' => 'Retour aux configurations',
         ]);
     }
 }
