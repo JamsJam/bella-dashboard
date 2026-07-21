@@ -21,9 +21,6 @@
                 <dl class="customer-show__meta">
                     <div><dt>Identifiant</dt><dd>#{{ customer.id }}</dd></div>
                     <div><dt>E-mail</dt><dd>{{ customer.email }}</dd></div>
-                    <div><dt>Rôles</dt><dd>{{ customer.roles|join(', ') }}</dd></div>
-                    <div><dt>Création</dt><dd>{{ customer.createdAt ? customer.createdAt|date('d/m/Y à H:i') : 'Non renseignée' }}</dd></div>
-                    <div><dt>Dernière modification</dt><dd>{{ customer.editedAt ? customer.editedAt|date('d/m/Y à H:i') : 'Non renseignée' }}</dd></div>
                     <div><dt>Commandes</dt><dd>{{ orders|length }}</dd></div>
                     {% if not customer.signupConfirmed %}
                         <div><dt>Code de confirmation</dt><dd>{{ customer.signupVerificationCode ?: 'Non généré' }}</dd></div>
@@ -82,11 +79,9 @@
                         <dl class="customer-show__meta customer-show__meta--order">
                             <div><dt>Sous-total</dt><dd>{{ (order.subtotal / 100)|number_format(2, ',', ' ') }} €</dd></div>
                             <div><dt>Frais</dt><dd>{{ (order.fees / 100)|number_format(2, ',', ' ') }} €</dd></div>
-                            <div><dt>TVA</dt><dd>{{ (order.tva / 100)|number_format(2, ',', ' ') }} €</dd></div>
+                            {% set includedVat = vatRate > 0 ? (order.subtotal * vatRate / (100 + vatRate))|round : 0 %}
+                            <div><dt>Dont TVA ({{ vatRate|number_format(1, ',', ' ') }} %)</dt><dd>{{ (includedVat / 100)|number_format(2, ',', ' ') }} €</dd></div>
                             <div><dt>Total</dt><dd>{{ (order.total / 100)|number_format(2, ',', ' ') }} €</dd></div>
-                            <div><dt>Dernière modification</dt><dd>{{ order.editedAt ? order.editedAt|date('d/m/Y à H:i') : 'Non renseignée' }}</dd></div>
-                            <div><dt>Session Stripe</dt><dd>{{ order.stripeCheckoutSessionId ?: 'Non renseignée' }}</dd></div>
-                            <div><dt>Payment Intent</dt><dd>{{ order.stripePaymentIntentId ?: 'Non renseigné' }}</dd></div>
                             <div><dt>Facture Stripe</dt><dd>{% if order.stripeInvoiceUrl %}<a href="{{ order.stripeInvoiceUrl }}" target="_blank" rel="noopener noreferrer">Ouvrir la facture</a>{% else %}Non disponible{% endif %}</dd></div>
                             <div class="customer-show__shipping"><dt>Livraison</dt><dd><pre>{{ order.shippinfo|json_encode(constant('JSON_PRETTY_PRINT')) }}</pre></dd></div>
                         </dl>

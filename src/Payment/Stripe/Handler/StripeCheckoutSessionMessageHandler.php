@@ -6,6 +6,7 @@ use App\Application\Orders\Services\CheckoutCartService;
 use App\Entity\Orders\Orders;
 use App\Notifier\Services\EmailNotificationService;
 use App\Payment\Stripe\Client\StripeClientFactory;
+use App\Payment\Stripe\Config\StripeConfig;
 use App\Payment\Stripe\Webhook\Message\StripeCheckoutSessionMessage;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
@@ -16,6 +17,7 @@ final readonly class StripeCheckoutSessionMessageHandler
     public function __construct(
         private EntityManagerInterface $entityManager,
         private StripeClientFactory $stripeClientFactory,
+        private StripeConfig $stripeConfig,
         private EmailNotificationService $emailNotificationService,
         private CheckoutCartService $checkoutCartService,
     ) {
@@ -30,7 +32,7 @@ final readonly class StripeCheckoutSessionMessageHandler
 
         match ($message->eventType) {
             'checkout.session.completed' => $this->handleCompleted($order, $message),
-            'checkout.session.expired' => $this->checkoutCartService->releaseReservation($order, Orders::STATUS_PAYMENT_EXPIRED),
+            'checkout.session.expired' => $this->handleExpired($order),
             default => null,
         };
     }
@@ -73,11 +75,37 @@ final readonly class StripeCheckoutSessionMessageHandler
         if ($processed && $customerEmail !== null && $invoiceUrl !== null) {
             $this->emailNotificationService->sendTemplatedEmail(
                 to: $customerEmail,
-                subject: 'Votre facture',
+                subject: sprintf('Merci pour votre commande %s', (string) $order->getOrderReference()),
                 template: 'email/StripeMail.html.twig',
-                context: ['invoiceUrl' => $invoiceUrl],
+                context: [
+                    'invoiceUrl' => $invoiceUrl,
+                    'order' => $order,
+                    'cart' => $order->getCart(),
+                ],
             );
         }
     }
 
+    private function handleExpired(Orders $order): void
+    {
+        if (!$this->checkoutCartService->releaseReservation($order, Orders::STATUS_PAYMENT_EXPIRED)) {
+            return;
+        }
+
+        $customerEmail = $order->getCustomer()?->getEmail();
+        if ($customerEmail === null) {
+            return;
+        }
+
+        $this->emailNotificationService->sendTemplatedEmail(
+            to: $customerEmail,
+            subject: 'Votre panier BellaGP vous attend',
+            template: 'email/checkout_expired.html.twig',
+            context: [
+                'order' => $order,
+                'cart' => $order->getCart(),
+                'cartUrl' => $this->stripeConfig->getCartUrl(),
+            ],
+        );
+    }
 }

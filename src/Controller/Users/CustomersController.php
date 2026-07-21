@@ -2,6 +2,7 @@
 
 namespace App\Controller\Users;
 
+use App\Application\Config\Provider\OrdersConfigProvider;
 use App\Entity\Users\Customers;
 use App\Service\BreadscrumbsService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -51,7 +52,12 @@ final class CustomersController extends AbstractController
     }
 
     #[Route('/customers/{id}', name: 'app_customers_show', requirements: ['id' => '\\d+'], methods: ['GET'])]
-    public function show(Customers $customer, Request $request, BreadscrumbsService $breadscrumbs): Response
+    public function show(
+        Customers $customer,
+        Request $request,
+        BreadscrumbsService $breadscrumbs,
+        OrdersConfigProvider $ordersConfigProvider,
+    ): Response
     {
         $orders = $customer->getOrders()->toArray();
         usort(
@@ -66,6 +72,7 @@ final class CustomersController extends AbstractController
             ),
             'customer' => $customer,
             'orders' => $orders,
+            'vatRate' => $ordersConfigProvider->get()->vat,
         ]);
     }
 

@@ -31,6 +31,7 @@ jobs:
           CORS_ALLOW_ORIGIN_SOURCE: ${{ secrets.CORS_ALLOW_ORIGIN_TEST }}
           STRIPE_SECRET_KEY_SOURCE: ${{ secrets.STRIPE_TEST_SECRET_KEY }}
           STRIPE_WEBHOOK_SECRET_SOURCE: ${{ secrets.STRIPE_WEBHOOK_SECRET_TEST }}
+          STRIPE_SUCCESS_SOURCE: ${{ secrets.STRIPE_TEST_SUCCESS }}
           FRONT_APP_URL_SOURCE: ${{ secrets.FRONT_TEST_APP_URL }}
           MAILER_TRANSPORT_SOURCE: ${{ secrets.MAILER_TEST_TRANSPORT }}
           MAILER_USERNAME_SOURCE: ${{ secrets.MAILER_TEST_USERNAME }}
@@ -53,6 +54,7 @@ jobs:
             CORS_ALLOW_ORIGIN_SOURCE,
             STRIPE_SECRET_KEY_SOURCE,
             STRIPE_WEBHOOK_SECRET_SOURCE,
+            STRIPE_SUCCESS_SOURCE,
             FRONT_APP_URL_SOURCE,
             MAILER_TRANSPORT_SOURCE,
             MAILER_USERNAME_SOURCE,
@@ -81,6 +83,7 @@ jobs:
 
               STRIPE_SECRET_KEY_SOURCE
               STRIPE_WEBHOOK_SECRET_SOURCE
+              STRIPE_SUCCESS_SOURCE
 
               FRONT_APP_URL_SOURCE
 
@@ -155,6 +158,7 @@ jobs:
 
             STRIPE_SECRET_KEY_VALUE="$(dotenv_quote "$STRIPE_SECRET_KEY_SOURCE")"
             STRIPE_WEBHOOK_SECRET_VALUE="$(dotenv_quote "$STRIPE_WEBHOOK_SECRET_SOURCE")"
+            STRIPE_SUCCESS_VALUE="$(dotenv_quote "$STRIPE_SUCCESS_SOURCE")"
 
             FRONT_APP_URL_VALUE="$(dotenv_quote "$FRONT_APP_URL_SOURCE")"
 
@@ -189,6 +193,7 @@ jobs:
             # Configuration Stripe
             STRIPE_SECRET_KEY_PROD=${STRIPE_SECRET_KEY_VALUE}
             STRIPE_WEBHOOK_SECRET_PROD=${STRIPE_WEBHOOK_SECRET_VALUE}
+            STRIPE_SUCCESS=${STRIPE_SUCCESS_VALUE}
 
             # Configuration du front-end
             FRONT_APP_URL=${FRONT_APP_URL_VALUE}
@@ -236,4 +241,3 @@ jobs:
               || supervisorctl restart 'scheduler-consume:*'
 
             echo "Deploiement sur le serveur de test termine avec succes."
-
