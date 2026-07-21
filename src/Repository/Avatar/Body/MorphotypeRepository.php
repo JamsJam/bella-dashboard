@@ -6,6 +6,7 @@ use App\Application\Avatar\Interface\AvatarFilterValueRepositoryInterface;
 use App\Entity\Avatar\Body\Bodysize;
 use App\Entity\Avatar\Body\Morphologie;
 use App\Entity\Avatar\Body\Morphotype;
+use App\Entity\Avatar\Skincolor;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -62,6 +63,26 @@ class MorphotypeRepository extends ServiceEntityRepository implements AvatarFilt
         $this->getEntityManager()->persist($morphotype);
 
         return $morphotype;
+    }
+
+    /** @return list<Morphotype> */
+    public function findAvailableForSkinColorAndMorphologie(
+        Skincolor $skinColor,
+        Morphologie $morphologie,
+    ): array {
+        return $this->createQueryBuilder('morphotype')
+            ->distinct()
+            ->addSelect('size')
+            ->join('morphotype.bodies', 'body')
+            ->join('morphotype.size', 'size')
+            ->andWhere('body.skincolor = :skinColor')
+            ->andWhere('morphotype.morphologie = :morphologie')
+            ->setParameter('skinColor', $skinColor)
+            ->setParameter('morphologie', $morphologie)
+            ->orderBy('size.name', 'ASC')
+            ->addOrderBy('morphotype.name', 'ASC')
+            ->getQuery()
+            ->getResult();
     }
 
     private function normalizeName(string $name): string

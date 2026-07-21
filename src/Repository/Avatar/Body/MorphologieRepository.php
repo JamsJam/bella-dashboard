@@ -3,6 +3,7 @@
 namespace App\Repository\Avatar\Body;
 
 use App\Application\Avatar\Interface\AvatarFilterValueRepositoryInterface;
+use App\Entity\Avatar\Skincolor;
 use App\Entity\Avatar\Body\Morphologie;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -38,6 +39,20 @@ class MorphologieRepository extends ServiceEntityRepository implements AvatarFil
         $this->getEntityManager()->persist($morphologie);
 
         return $morphologie;
+    }
+
+    /** @return list<Morphologie> */
+    public function findAvailableForSkinColor(Skincolor $skinColor): array
+    {
+        return $this->createQueryBuilder('morphologie')
+            ->distinct()
+            ->join('morphologie.morphotypes', 'morphotype')
+            ->join('morphotype.bodies', 'body')
+            ->andWhere('body.skincolor = :skinColor')
+            ->setParameter('skinColor', $skinColor)
+            ->orderBy('morphologie.name', 'ASC')
+            ->getQuery()
+            ->getResult();
     }
 
     private function findOneByNormalizedName(string $name): ?Morphologie

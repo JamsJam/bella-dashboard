@@ -229,6 +229,21 @@ final readonly class ThematicOpenApiFactory implements OpenApiFactoryInterface
                 'Retourne les corps associés à la couleur de peau demandée.',
                 'La liste des corps a été retournée.',
             ],
+            'GET /api/avatar/skin-colors/{id}/morphologies' => [
+                'Lister les morphologies par couleur de peau',
+                'Retourne les morphologies possédant au moins un corps pour la couleur de peau demandée.',
+                'La liste des morphologies a été retournée.',
+            ],
+            'GET /api/avatar/skin-colors/{id}/morphologies/{morphologyId}/morphotypes' => [
+                'Lister les morphotypes par couleur et morphologie',
+                'Retourne les morphotypes possédant au moins un corps pour la couleur de peau et la morphologie demandées.',
+                'La liste des morphotypes a été retournée.',
+            ],
+            'GET /api/avatar/skin-colors/{id}/morphologies/{morphologyId}/morphotypes/{morphotypeId}/bodies' => [
+                'Lister les corps selon tous les critères',
+                'Retourne les corps correspondant à la couleur de peau, à la morphologie et au morphotype sélectionnés.',
+                'La liste des corps compatibles a été retournée.',
+            ],
             'GET /api/avatar/skin-colors/{id}/morphotypes/{morphotypeId}/bodies' => [
                 'Lister les corps par couleur de peau et morphotype',
                 'Retourne les corps correspondant simultanément à la couleur de peau et au morphotype demandés.',

@@ -4,6 +4,8 @@ namespace App\Repository\Avatar\Body;
 
 use App\Application\Avatar\Interface\AvatarPartModelInterface;
 use App\Entity\Avatar\Body\Body;
+use App\Entity\Avatar\Body\Morphotype;
+use App\Entity\Avatar\Skincolor;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -15,6 +17,40 @@ class BodyRepository extends ServiceEntityRepository implements AvatarPartModelI
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Body::class);
+    }
+
+    /**
+     * @return list<Body>
+     */
+    public function findForAvatarSelection(
+        Skincolor $skinColor,
+        Morphotype $morphotype,
+        int|string|null $clothes = null,
+    ): array {
+        $queryBuilder = $this->createQueryBuilder('body')
+            ->andWhere('body.skincolor = :skinColor')
+            ->andWhere('body.morphotype = :morphotype')
+            ->setParameter('skinColor', $skinColor)
+            ->setParameter('morphotype', $morphotype)
+            ->orderBy('body.name', 'ASC');
+
+        if ($clothes !== null) {
+            $queryBuilder
+                ->distinct()
+                ->innerJoin('body.clothesVariants', 'clothesVariant');
+
+            if (is_int($clothes)) {
+                $queryBuilder
+                    ->andWhere('clothesVariant.id = :clothes')
+                    ->setParameter('clothes', $clothes);
+            } else {
+                $queryBuilder
+                    ->andWhere('clothesVariant.slug = :clothes')
+                    ->setParameter('clothes', $clothes);
+            }
+        }
+
+        return $queryBuilder->getQuery()->getResult();
     }
 
     //    /**
