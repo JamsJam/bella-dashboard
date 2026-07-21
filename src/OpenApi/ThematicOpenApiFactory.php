@@ -174,6 +174,26 @@ final readonly class ThematicOpenApiFactory implements OpenApiFactoryInterface
                 'Retourne les couleurs de peau disponibles pour la création d’un avatar.',
                 'La liste des couleurs de peau a été retournée.',
             ],
+            'GET /api/avatar/skin-colors/{id}/faces' => [
+                'Lister les visages par couleur de peau',
+                'Retourne les visages associés à la couleur de peau demandée.',
+                'La liste des visages a été retournée.',
+            ],
+            'GET /api/avatar/skin-colors/{id}/noses' => [
+                'Lister les nez par couleur de peau',
+                'Retourne les nez associés à la couleur de peau demandée.',
+                'La liste des nez a été retournée.',
+            ],
+            'GET /api/avatar/skin-colors/{id}/bodies' => [
+                'Lister les corps par couleur de peau',
+                'Retourne les corps associés à la couleur de peau demandée.',
+                'La liste des corps a été retournée.',
+            ],
+            'GET /api/avatar/skin-colors/{id}/morphotypes/{morphotypeId}/bodies' => [
+                'Lister les corps par couleur de peau et morphotype',
+                'Retourne les corps correspondant simultanément à la couleur de peau et au morphotype demandés.',
+                'La liste filtrée des corps a été retournée.',
+            ],
             'POST /api/morphotypes' => [
                 'Créer un morphotype',
                 'Ajoute un nouveau morphotype utilisable par les avatars.',
