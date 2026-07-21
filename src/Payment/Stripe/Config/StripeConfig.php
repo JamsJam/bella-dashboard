@@ -17,8 +17,8 @@ final readonly class StripeConfig
         private string $webhookSecretDev,
         #[Autowire('%env(STRIPE_WEBHOOK_SECRET_PROD)%')]
         private string $webhookSecretProd,
-        #[Autowire('%env(STRIPE_SUCCESS)%')]
-        private string $successUrl,
+        #[Autowire('%env(STRIPE_SUCCES)%')]
+        private string $successPath,
         #[Autowire('%env(FRONT_APP_URL)%')]
         private string $frontAppUrl,
     ) {
@@ -36,7 +36,7 @@ final readonly class StripeConfig
 
     public function getSuccessUrl(): string
     {
-        return $this->successUrl;
+        return rtrim($this->frontAppUrl, '/').'/'.ltrim($this->successPath, '/');
     }
 
     public function getCancelUrl(): string
