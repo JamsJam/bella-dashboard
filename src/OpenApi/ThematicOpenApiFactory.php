@@ -174,6 +174,26 @@ final readonly class ThematicOpenApiFactory implements OpenApiFactoryInterface
                 'Retourne les couleurs de peau disponibles pour la création d’un avatar.',
                 'La liste des couleurs de peau a été retournée.',
             ],
+            'GET /api/avatar/mouth-colors' => [
+                'Lister les couleurs de bouche',
+                'Retourne les couleurs disponibles pour les bouches des avatars.',
+                'La liste des couleurs de bouche a été retournée.',
+            ],
+            'GET /api/avatar/hair-colors' => [
+                'Lister les couleurs de cheveux',
+                'Retourne les couleurs disponibles pour les cheveux des avatars.',
+                'La liste des couleurs de cheveux a été retournée.',
+            ],
+            'GET /api/avatar/eyes-colors' => [
+                'Lister les couleurs des yeux',
+                'Retourne les couleurs disponibles pour les yeux des avatars.',
+                'La liste des couleurs des yeux a été retournée.',
+            ],
+            'GET /api/avatar/eyebrow-colors' => [
+                'Lister les couleurs de sourcils',
+                'Retourne les couleurs disponibles pour les sourcils des avatars.',
+                'La liste des couleurs de sourcils a été retournée.',
+            ],
             'GET /api/avatar/skin-colors/{id}/faces' => [
                 'Lister les visages par couleur de peau',
                 'Retourne les visages associés à la couleur de peau demandée.',
