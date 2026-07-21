@@ -184,6 +184,11 @@ final readonly class ThematicOpenApiFactory implements OpenApiFactoryInterface
                 'Retourne les couleurs disponibles pour les cheveux des avatars.',
                 'La liste des couleurs de cheveux a été retournée.',
             ],
+            'GET /api/avatar/hair-colors/{id}/hairs' => [
+                'Lister les cheveux par couleur',
+                'Retourne les coiffures associées à la couleur de cheveux demandée.',
+                'La liste des coiffures a été retournée.',
+            ],
             'GET /api/avatar/eyes-colors' => [
                 'Lister les couleurs des yeux',
                 'Retourne les couleurs disponibles pour les yeux des avatars.',
