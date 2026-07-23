@@ -27,6 +27,10 @@ sections:
         title: 'Étape 4'
         text: 'Confirmez votre commande'
         image: 'https://picsum.photos/200/200?random=12'
+      -
+        title: 'Étape 5'
+        text: 'Finalise ta commande et reçois tes articles'
+        image: 'https://picsum.photos/200/200?random=12'
   return:
     steps:
       -
