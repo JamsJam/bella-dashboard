@@ -9,18 +9,23 @@ sections:
     title: Bella
     text: "Nous proposons des vêtements pour diverses occasions. Une sortie entre copine, un brunch de dernière minute, une journée plage ou encore un dîner romantique, une de nos pièces pourrait certainement faire l'affaire.<br><br>Alors vis l'expérience Bella en créant un personnage à ton image pour voir le rendu de tes différents outfits. En fonction de ton mood du moment, sélectionne ce qui te plait et crée ton style."
   manual:
+    title: null
     list:
       -
-        text: 'Étape 1: Sélectionnez vos vêtements'
+        title: 'Étape 1'
+        text: 'Sélectionnez vos vêtements'
         image: 'https://picsum.photos/200/200?random=9'
       -
-        text: 'Étape 2: Ajoutez au panier'
+        title: 'Étape 2'
+        text: 'Ajoutez au panier'
         image: 'https://picsum.photos/200/200?random=10'
       -
-        text: 'Étape 3: Procédez au paiement'
+        title: 'Étape 3'
+        text: 'Procédez au paiement'
         image: 'https://picsum.photos/200/200?random=11'
       -
-        text: 'Étape 4: Confirmez votre commande'
+        title: 'Étape 4'
+        text: 'Confirmez votre commande'
         image: 'https://picsum.photos/200/200?random=12'
   return:
     steps:

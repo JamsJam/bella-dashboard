@@ -12,6 +12,7 @@ final readonly class PageContentCache
 
     public function __construct(
         private YamlLoaderService $yamlLoader,
+        private PageConfigSchemaNormalizer $schemaNormalizer,
         #[Autowire(service: 'cache.app')]
         private CacheItemPoolInterface $cache,
     ) {
@@ -24,14 +25,22 @@ final readonly class PageContentCache
     {
         $item = $this->cache->getItem($this->key($page));
         if ($item->isHit() && is_array($item->get())) {
-            return $item->get();
+            $data = $item->get();
+        } else {
+            $data = $this->yamlLoader->load($path);
+            $item->set($data);
+            $this->cache->save($item);
         }
 
-        $data = $this->yamlLoader->load($path);
-        $item->set($data);
-        $this->cache->save($item);
+        $defaultPath = dirname($path, 2).'/defaults/'.basename($path);
+        if (!is_file($defaultPath)) {
+            return $data;
+        }
 
-        return $data;
+        return $this->schemaNormalizer->normalize(
+            $this->yamlLoader->load($defaultPath),
+            $data,
+        );
     }
 
     public function invalidate(string $page): void

@@ -15,6 +15,7 @@ final class ManualItemType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
+            ->add('title', TextType::class, ['label' => 'Titre'])
             ->add('text', TextType::class, ['label' => 'Texte'])
             ->add('imageFile', FileType::class, [
                 'label' => 'Image',
