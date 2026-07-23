@@ -26,6 +26,7 @@ final readonly class CategoryListDTO
     public function __construct(
         public string $name,
         public string $slug,
+        public int $price,
         public ?string $image = null,
         public array $images = [],
         public array $colors = [],

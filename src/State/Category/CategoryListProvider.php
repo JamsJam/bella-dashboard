@@ -54,6 +54,7 @@ final readonly class CategoryListProvider implements ProviderInterface
                 return new CategoryListDTO(
                     name: $variant->getDisplayName(),
                     slug: (string) $variant->getSlug(),
+                    price: (int) $variant->getClothes()?->getPrice(),
                     image: $images[0] ?? null,
                     images: $images,
                     colors: $this->colors($group),

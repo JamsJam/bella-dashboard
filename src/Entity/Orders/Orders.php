@@ -4,6 +4,7 @@ namespace App\Entity\Orders;
 
 use App\Entity\Traits\DateFieldsTrait;
 use App\Entity\Users\Customers;
+use App\Enum\OrderStatus;
 use App\Repository\Orders\OrdersRepository;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -30,6 +31,9 @@ class Orders
 
     #[ORM\Column(length: 255)]
     private ?string $status = null;
+
+    #[ORM\Column(enumType: OrderStatus::class, options: ['default' => 0])]
+    private OrderStatus $orderStatus = OrderStatus::Created;
 
     #[ORM\ManyToOne(inversedBy: 'orders')]
     private ?Customers $customer = null;
@@ -106,6 +110,19 @@ class Orders
     public function setStatus(string $status): static
     {
         $this->status = $status;
+        $this->setEditedAt(new \DateTimeImmutable());
+
+        return $this;
+    }
+
+    public function getOrderStatus(): OrderStatus
+    {
+        return $this->orderStatus;
+    }
+
+    public function setOrderStatus(OrderStatus $orderStatus): static
+    {
+        $this->orderStatus = $orderStatus;
         $this->setEditedAt(new \DateTimeImmutable());
 
         return $this;
