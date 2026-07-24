@@ -30,6 +30,7 @@ final class AvatarFilterMapper
     private const PART_LABELS = [
         'body' => 'Corps',
         'face' => 'Visage',
+        'accessory' => 'Accessoire',
         'eyebrows' => 'Sourcils',
         'eyes' => 'Yeux',
         'hair' => 'Cheveux',
@@ -49,6 +50,11 @@ final class AvatarFilterMapper
             ['id' => 'skinColor', 'label' => 'Couleur de peau', 'source' => Skincolor::class, 'emptyLabel' => 'Toutes'],
             ['id' => 'shape', 'label' => 'Forme', 'source' => Faceshape::class, 'emptyLabel' => 'Toutes'],
             ['id' => 'accessory', 'label' => 'Accessoire', 'source' => FaceAccessory::class, 'emptyLabel' => 'Sans accessoire', 'noneOption' => true],
+        ],
+        'accessory' => [
+            ['id' => 'skinColor', 'label' => 'Couleur de peau', 'source' => Skincolor::class, 'emptyLabel' => 'Toutes'],
+            ['id' => 'shape', 'label' => 'Forme', 'source' => Faceshape::class, 'emptyLabel' => 'Toutes'],
+            ['id' => 'accessory', 'label' => 'Accessoire', 'source' => FaceAccessory::class, 'emptyLabel' => 'Tous'],
         ],
         'eyebrows' => [
             ['id' => 'color', 'label' => 'Couleur', 'source' => Eyebrowscolor::class, 'emptyLabel' => 'Toutes'],

@@ -3,6 +3,7 @@
 namespace App\Application\Avatar\Provider;
 
 use App\Application\Avatar\Services\AvatarResolverService;
+use App\Application\Avatar\Services\FaceAccessoryNameMatcher;
 use BadFunctionCallException;
 use Doctrine\ORM\EntityManagerInterface;
 use InvalidArgumentException;
@@ -12,6 +13,7 @@ final class AvatarSearchProvider
     public function __construct(
         private readonly AvatarResolverService $resolverService,
         private readonly EntityManagerInterface $entityManager,
+        private readonly FaceAccessoryNameMatcher $faceAccessoryNameMatcher,
     ) {
     }
 
@@ -33,10 +35,14 @@ final class AvatarSearchProvider
         if ($entityClass) {
             $repository = $this->entityManager->getRepository($entityClass);
             
-            $results[$partie] = $this->searchInRepository(
+            $partResults = $this->searchInRepository(
                 repository: $repository, 
                 filters: $filters
                 );
+
+            $results[$partie] = $partie === 'accessory'
+                ? $this->filterAccessories($partResults)
+                : $partResults;
         }
 
         return $results;
@@ -107,6 +113,20 @@ final class AvatarSearchProvider
 
             return stripos($name, $search) !== false;
         }));
+    }
+
+    private function filterAccessories(array $results): array
+    {
+        return array_values(array_filter(
+            $results,
+            function (array|object $result): bool {
+                $name = is_array($result)
+                    ? (string) ($result['name'] ?? '')
+                    : (method_exists($result, 'getName') ? (string) $result->getName() : '');
+
+                return $this->faceAccessoryNameMatcher->matches($name);
+            },
+        ));
     }
 
 

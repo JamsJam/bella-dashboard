@@ -43,9 +43,9 @@ final class AvatarRepositoryResolverTest extends TestCase
     {
         echo "Testing: Returns all available parts\n";
         $parts = $this->resolver->getAvailableParts();
-        $expectedParts = ['body', 'eyebrows', 'eyes', 'face', 'hair', 'mouth', 'nose'];
+        $expectedParts = ['body', 'eyebrows', 'eyes', 'face', 'accessory', 'hair', 'mouth', 'nose'];
         
-        $this->assertCount(7, $parts, 'Failed: Expected 7 available parts');
+        $this->assertCount(8, $parts, 'Failed: Expected 8 available parts');
         $this->assertEqualsCanonicalizing($expectedParts, $parts, 'Failed: Available parts do not match expected parts');
     }
 
@@ -56,6 +56,14 @@ final class AvatarRepositoryResolverTest extends TestCase
     {
         echo "Testing: Supports valid keys\n";
         $this->assertTrue($this->resolver->supports('mouth'), 'Failed: Resolver should support mouth key');
+    }
+
+    public function testResolvesAccessoryToFaceRepository(): void
+    {
+        $this->assertSame(
+            \App\Repository\Avatar\Faces\FacesRepository::class,
+            $this->resolver->resolve('accessory'),
+        );
     }
 
     /**
