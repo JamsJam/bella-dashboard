@@ -9,7 +9,8 @@ use App\State\Avatar\AccessorizedFaceProvider;
 #[ApiResource(
     operations: [
         new Get(
-            uriTemplate: '/avatar/faces/accessories',
+            uriTemplate: '/avatar/skin-colors/{id}/faces/accessories',
+            requirements: ['id' => '\\d+'],
             provider: AccessorizedFaceProvider::class,
         ),
     ],
@@ -19,6 +20,7 @@ final readonly class AccessorizedFaceList
 {
     /** @param list<AccessorizedFace> $items */
     public function __construct(
+        public int $skinColorId,
         public array $items,
     ) {
     }

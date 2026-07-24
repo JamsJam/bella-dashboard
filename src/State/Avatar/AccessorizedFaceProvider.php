@@ -8,8 +8,11 @@ use App\ApiResource\Avatar\AccessorizedFace;
 use App\ApiResource\Avatar\AccessorizedFaceList;
 use App\Application\Avatar\Services\FaceAccessoryNameMatcher;
 use App\Entity\Avatar\Faces\Faces;
+use App\Entity\Avatar\Skincolor;
 use App\Repository\Avatar\Faces\FacesRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /** @implements ProviderInterface<AccessorizedFaceList> */
 final readonly class AccessorizedFaceProvider implements ProviderInterface
@@ -18,14 +21,25 @@ final readonly class AccessorizedFaceProvider implements ProviderInterface
         private FacesRepository $facesRepository,
         private FaceAccessoryNameMatcher $faceAccessoryNameMatcher,
         private RequestStack $requestStack,
+        private EntityManagerInterface $entityManager,
     ) {
     }
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): AccessorizedFaceList
     {
+        $skinColorId = filter_var($uriVariables['id'] ?? null, FILTER_VALIDATE_INT);
+        if ($skinColorId === false || $skinColorId <= 0) {
+            throw new NotFoundHttpException('Couleur de peau introuvable.');
+        }
+
+        $skinColor = $this->entityManager->find(Skincolor::class, $skinColorId);
+        if (!$skinColor instanceof Skincolor) {
+            throw new NotFoundHttpException(sprintf('La couleur de peau %d est introuvable.', $skinColorId));
+        }
+
         $items = [];
 
-        foreach ($this->facesRepository->findBy([], ['name' => 'ASC']) as $face) {
+        foreach ($this->facesRepository->findBy(['skincolor' => $skinColor], ['name' => 'ASC']) as $face) {
             if (!$face instanceof Faces || !$this->faceAccessoryNameMatcher->matches((string) $face->getName())) {
                 continue;
             }
@@ -43,7 +57,10 @@ final readonly class AccessorizedFaceProvider implements ProviderInterface
             );
         }
 
-        return new AccessorizedFaceList($items);
+        return new AccessorizedFaceList(
+            skinColorId: $skinColorId,
+            items: $items,
+        );
     }
 
     private function absoluteUrl(string $path): string
