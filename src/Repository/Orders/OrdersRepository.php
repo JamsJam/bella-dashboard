@@ -3,6 +3,7 @@
 namespace App\Repository\Orders;
 
 use App\Entity\Orders\Orders;
+use App\Entity\Users\Customers;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\DBAL\LockMode;
 use Doctrine\Persistence\ManagerRegistry;
@@ -56,6 +57,23 @@ class OrdersRepository extends ServiceEntityRepository
             ->getOneOrNullResult();
 
         return $order instanceof Orders ? $order : null;
+    }
+
+    /** @return list<Orders> */
+    public function findPaidByCustomer(Customers $customer): array
+    {
+        return $this->createQueryBuilder('orders')
+            ->addSelect('cart', 'items')
+            ->innerJoin('orders.cart', 'cart')
+            ->leftJoin('cart.items', 'items')
+            ->andWhere('orders.customer = :customer')
+            ->andWhere('orders.status = :status')
+            ->setParameter('customer', $customer)
+            ->setParameter('status', Orders::STATUS_PAID)
+            ->orderBy('orders.createdAt', 'DESC')
+            ->addOrderBy('orders.id', 'DESC')
+            ->getQuery()
+            ->getResult();
     }
 
     //    /**
