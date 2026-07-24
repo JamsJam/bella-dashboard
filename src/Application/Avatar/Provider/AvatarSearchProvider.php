@@ -40,9 +40,11 @@ final class AvatarSearchProvider
                 filters: $filters
                 );
 
-            $results[$partie] = $partie === 'accessory'
-                ? $this->filterAccessories($partResults)
-                : $partResults;
+            $results[$partie] = match ($partie) {
+                'face' => $this->filterFacesWithoutAccessories($partResults),
+                'accessory' => $this->filterAccessories($partResults),
+                default => $partResults,
+            };
         }
 
         return $results;
@@ -117,16 +119,29 @@ final class AvatarSearchProvider
 
     private function filterAccessories(array $results): array
     {
-        return array_values(array_filter(
+        return $this->filterFacesByName(
             $results,
-            function (array|object $result): bool {
-                $name = is_array($result)
-                    ? (string) ($result['name'] ?? '')
-                    : (method_exists($result, 'getName') ? (string) $result->getName() : '');
+            fn (string $name): bool => $this->faceAccessoryNameMatcher->matches($name),
+        );
+    }
 
-                return $this->faceAccessoryNameMatcher->matches($name);
-            },
-        ));
+    private function filterFacesWithoutAccessories(array $results): array
+    {
+        return $this->filterFacesByName(
+            $results,
+            fn (string $name): bool => $this->faceAccessoryNameMatcher->matchesWithoutAccessory($name),
+        );
+    }
+
+    private function filterFacesByName(array $results, callable $matches): array
+    {
+        return array_values(array_filter($results, static function (array|object $result) use ($matches): bool {
+            $name = is_array($result)
+                ? (string) ($result['name'] ?? '')
+                : (method_exists($result, 'getName') ? (string) $result->getName() : '');
+
+            return $matches($name);
+        }));
     }
 
 

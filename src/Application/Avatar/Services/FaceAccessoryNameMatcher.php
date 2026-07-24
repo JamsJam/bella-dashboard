@@ -13,4 +13,9 @@ final readonly class FaceAccessoryNameMatcher
             && $accessory !== ''
             && $accessory !== '-none-';
     }
+
+    public function matchesWithoutAccessory(string $name): bool
+    {
+        return str_ends_with($name, '__-none-');
+    }
 }

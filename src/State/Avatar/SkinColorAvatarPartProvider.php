@@ -6,6 +6,7 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\ApiResource\Avatar\SkinColorAvatarPart;
 use App\ApiResource\Avatar\SkinColorAvatarPartList;
+use App\Application\Avatar\Services\FaceAccessoryNameMatcher;
 use App\Entity\Avatar\Body\Body;
 use App\Entity\Avatar\Body\Morphotype;
 use App\Entity\Avatar\Faces\Faces;
@@ -27,6 +28,7 @@ final readonly class SkinColorAvatarPartProvider implements ProviderInterface
     public function __construct(
         private EntityManagerInterface $entityManager,
         private RequestStack $requestStack,
+        private FaceAccessoryNameMatcher $faceAccessoryNameMatcher,
     ) {
     }
 
@@ -73,6 +75,13 @@ final readonly class SkinColorAvatarPartProvider implements ProviderInterface
                 !method_exists($part, 'getId')
                 || !method_exists($part, 'getName')
                 || !method_exists($part, 'getImage')
+            ) {
+                continue;
+            }
+
+            if (
+                $type === 'faces'
+                && !$this->faceAccessoryNameMatcher->matchesWithoutAccessory((string) $part->getName())
             ) {
                 continue;
             }

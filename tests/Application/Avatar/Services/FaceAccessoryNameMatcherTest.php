@@ -21,4 +21,18 @@ final class FaceAccessoryNameMatcherTest extends TestCase
         yield 'missing fourth part' => ['visage__clair__ovale', false];
         yield 'empty fourth part' => ['visage__clair__ovale__', false];
     }
+
+    #[DataProvider('namesWithoutAccessory')]
+    public function testItIdentifiesFacesWithoutAccessory(string $name, bool $expected): void
+    {
+        self::assertSame($expected, (new FaceAccessoryNameMatcher())->matchesWithoutAccessory($name));
+    }
+
+    public static function namesWithoutAccessory(): iterable
+    {
+        yield 'without accessory' => ['visage__clair__ovale__-none-', true];
+        yield 'with accessory' => ['visage__clair__ovale__lunettes', false];
+        yield 'none is not the suffix' => ['visage__clair__ovale__-none-__extra', false];
+        yield 'missing fourth part' => ['visage__clair__ovale', false];
+    }
 }
