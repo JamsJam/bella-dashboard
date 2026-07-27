@@ -314,11 +314,6 @@ final readonly class ThematicOpenApiFactory implements OpenApiFactoryInterface
                 'Ajoute un nouveau compte client.',
                 'Le client a été créé.',
             ],
-            'GET /api/customers/{id}' => [
-                'Consulter un client',
-                'Retourne les informations du client correspondant à l’identifiant demandé.',
-                'Les informations du client ont été retournées.',
-            ],
             'PUT /api/customers/{id}' => [
                 'Mettre à jour un client',
                 'Remplace les informations du client correspondant à l’identifiant demandé.',

@@ -3,7 +3,6 @@
 namespace App\Entity\Users;
 
 use ApiPlatform\Metadata\ApiResource;
-use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
 use App\Entity\Orders\Orders;
@@ -21,7 +20,6 @@ use Symfony\Component\Serializer\Attribute\Groups;
 #[ApiResource(
     operations: [
         new Post(processor: CustomerPasswordHasherProcessor::class),         // inscription
-        new Get(),          // accès à son profil
         new Put(),          // modification de son profil
     ],
     normalizationContext: ['groups' => ['customer:read']],
