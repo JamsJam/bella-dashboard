@@ -3,6 +3,7 @@
 namespace App\Application\Avatar\Provider;
 
 use App\Application\Avatar\Services\AvatarResolverService;
+use App\Application\Avatar\Services\AvatarPartSortService;
 use App\Application\Avatar\Services\FaceAccessoryNameMatcher;
 use BadFunctionCallException;
 use Doctrine\ORM\EntityManagerInterface;
@@ -14,6 +15,7 @@ final class AvatarSearchProvider
         private readonly AvatarResolverService $resolverService,
         private readonly EntityManagerInterface $entityManager,
         private readonly FaceAccessoryNameMatcher $faceAccessoryNameMatcher,
+        private readonly AvatarPartSortService $avatarPartSortService,
     ) {
     }
 
@@ -40,11 +42,17 @@ final class AvatarSearchProvider
                 filters: $filters
                 );
 
-            $results[$partie] = match ($partie) {
+            $partResults = match ($partie) {
                 'face' => $this->filterFacesWithoutAccessories($partResults),
                 'accessory' => $this->filterAccessories($partResults),
                 default => $partResults,
             };
+            $results[$partie] = $this->avatarPartSortService->sort(
+                $partResults,
+                $partie,
+                isset($filters['sort']) ? (string) $filters['sort'] : null,
+                isset($filters['direction']) ? (string) $filters['direction'] : null,
+            );
         }
 
         return $results;
@@ -72,6 +80,8 @@ final class AvatarSearchProvider
             $clothes = isset($filters['clothes']) ? $filters['clothes'] : null;
             $collection = isset($filters['collection']) ? $filters['collection'] : null;
             $accessory = isset($filters['accessory']) ? $filters['accessory'] : null;
+            $sort = isset($filters['sort']) ? $filters['sort'] : null;
+            $direction = isset($filters['direction']) ? $filters['direction'] : null;
 
 
             $filters = [
@@ -84,6 +94,8 @@ final class AvatarSearchProvider
                 'clothes' => $clothes,
                 'collection' => $collection,
                 'accessory' => $accessory,
+                'sort' => $sort,
+                'direction' => $direction,
             ];
 
             

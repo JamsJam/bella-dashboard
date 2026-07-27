@@ -2,6 +2,7 @@
 
 namespace App\Application\Avatar\Mapper;
 
+use App\Application\Avatar\Services\AvatarPartSortService;
 use App\Entity\Avatar\Body\Bodysize;
 use App\Entity\Avatar\Body\Morphologie;
 use App\Entity\Avatar\Eyebrows\Eyebrowscolor;
@@ -24,6 +25,7 @@ final class AvatarFilterMapper
 {
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
+        private readonly AvatarPartSortService $avatarPartSortService,
     ) {
     }
 
@@ -106,6 +108,26 @@ final class AvatarFilterMapper
                 'isColor' => isset($filterDefinition['source']) && method_exists($filterDefinition['source'], 'setHexa'),
             ];
         }
+
+        $filters[] = [
+            'id' => 'sort',
+            'label' => 'Trier par',
+            'options' => $this->avatarPartSortService->optionsFor($part),
+            'selected' => 'createdAt',
+            'allowCreate' => false,
+            'isColor' => false,
+        ];
+        $filters[] = [
+            'id' => 'direction',
+            'label' => 'Ordre',
+            'options' => [
+                ['value' => 'desc', 'label' => 'Décroissant'],
+                ['value' => 'asc', 'label' => 'Croissant'],
+            ],
+            'selected' => 'desc',
+            'allowCreate' => false,
+            'isColor' => false,
+        ];
 
         return $filters;
     }
