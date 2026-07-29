@@ -22,11 +22,6 @@ final class PageConfigType extends AbstractType
                 'required' => false,
                 'attr' => ['rows' => 3],
             ])
-            ->add('jsonLdYaml', TextareaType::class, [
-                'label' => 'JSON-LD',
-                'required' => false,
-                'attr' => ['rows' => 8],
-            ])
             ->add('openGraphYaml', TextareaType::class, [
                 'label' => 'OpenGraph',
                 'required' => false,

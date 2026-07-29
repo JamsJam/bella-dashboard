@@ -6,7 +6,6 @@ seo:
   ogDescription: 'Parcourez les catégories de vêtements proposées par BellaGP.'
   ogUrl: 'https://www.bellagp.com/category'
   ogImage: /images/logos/bella_logo.png
-  jsonLd: '{"@context":"https://schema.org","@type":"WebPage","name":"Nos catégories","description":"Découvrez les différentes catégories de vêtements BellaGP.","url":"https://www.bellagp.com/category"}'
 bandeau:
   title: 'Explore nos collections'
   cta: 'Commence ton shopping'

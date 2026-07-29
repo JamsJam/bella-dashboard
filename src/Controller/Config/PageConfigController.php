@@ -187,10 +187,13 @@ final class PageConfigController extends AbstractConfigController
             /** @var CategoriesConfigDto $config */
             $config = $form->getData();
             $bannerFile = $form->get('bandeau')->get('backgroundFile')->getData();
+            $removeBanner = (bool) $form->get('bandeau')->get('removeBackground')->getData();
             $openGraphFile = $form->get('seo')->get('ogImageFile')->getData();
 
             if ($bannerFile instanceof UploadedFile) {
                 $config->bandeau->background = $imageUploader->uploadCategoriesBanner($bannerFile);
+            } elseif ($removeBanner) {
+                $config->bandeau->background = null;
             }
             if ($openGraphFile instanceof UploadedFile) {
                 $config->seo->ogImage = $imageUploader->uploadCategoriesOpenGraphImage($openGraphFile);
@@ -198,7 +201,10 @@ final class PageConfigController extends AbstractConfigController
 
             $provider->save($config);
 
-            if ($bannerFile instanceof UploadedFile && $previousBannerPath !== $config->bandeau->background) {
+            if (
+                ($bannerFile instanceof UploadedFile || $removeBanner)
+                && $previousBannerPath !== $config->bandeau->background
+            ) {
                 $imageUploader->removePreviousImage($previousBannerPath);
             }
             if ($openGraphFile instanceof UploadedFile && $previousOpenGraphPath !== $config->seo->ogImage) {

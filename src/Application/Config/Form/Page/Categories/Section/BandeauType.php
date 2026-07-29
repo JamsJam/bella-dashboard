@@ -4,6 +4,7 @@ namespace App\Application\Config\Form\Page\Categories\Section;
 
 use App\Application\Config\Dto\Page\Categories\Section\BandeauDto;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -15,8 +16,16 @@ final class BandeauType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('title', TextType::class, ['label' => 'Titre'])
-            ->add('cta', TextType::class, ['label' => 'Appel à l’action'])
+            ->add('title', TextType::class, [
+                'label' => 'Titre',
+                'required' => false,
+                'empty_data' => null,
+            ])
+            ->add('cta', TextType::class, [
+                'label' => 'Appel à l’action',
+                'required' => false,
+                'empty_data' => null,
+            ])
             ->add('backgroundFile', FileType::class, [
                 'label' => 'Image de fond',
                 'mapped' => false,
@@ -27,6 +36,11 @@ final class BandeauType extends AbstractType
                     mimeTypes: ['image/jpeg', 'image/png'],
                     mimeTypesMessage: 'Sélectionne une image JPEG ou PNG.',
                 )],
+            ])
+            ->add('removeBackground', CheckboxType::class, [
+                'label' => 'Supprimer l’image de fond actuelle',
+                'mapped' => false,
+                'required' => false,
             ]);
     }
 

@@ -34,8 +34,7 @@ final class SeoType extends AbstractType
                         mimeTypesMessage: 'Sélectionne une image JPEG ou PNG.',
                     ),
                 ],
-            ])
-            ->add('jsonLd', TextareaType::class, ['label' => 'JSON-LD', 'attr' => ['rows' => 8]]);
+            ]);
     }
 
     public function configureOptions(OptionsResolver $resolver): void

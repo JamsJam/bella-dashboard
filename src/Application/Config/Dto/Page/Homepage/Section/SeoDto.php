@@ -12,7 +12,6 @@ final class SeoDto
         public string $ogDescription = '',
         public string $ogUrl = '',
         public string $ogImage = '',
-        public string $jsonLd = '',
     ) {
     }
 
@@ -20,7 +19,7 @@ final class SeoDto
     {
         return new self(...array_map(
             static fn (string $key): string => (string) ($data[$key] ?? ''),
-            ['title', 'description', 'keywords', 'ogTitle', 'ogDescription', 'ogUrl', 'ogImage', 'jsonLd'],
+            ['title', 'description', 'keywords', 'ogTitle', 'ogDescription', 'ogUrl', 'ogImage'],
         ));
     }
 

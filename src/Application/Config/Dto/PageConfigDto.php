@@ -13,7 +13,6 @@ final class PageConfigDto
         public string $slug = 'home',
         public string $seoTitle = '',
         public string $seoMetadescription = '',
-        public string $jsonLdYaml = '',
         public string $openGraphYaml = '',
         public array $sections = [],
     ) {
@@ -39,7 +38,6 @@ final class PageConfigDto
             slug: trim((string) ($data['slug'] ?? $slug)) ?: 'home',
             seoTitle: trim((string) ($seo['title'] ?? '')),
             seoMetadescription: trim((string) ($seo['metadescription'] ?? $seo['description'] ?? '')),
-            jsonLdYaml: Yaml::dump(is_array($seo['jsonLD'] ?? $seo['json_ld'] ?? null) ? ($seo['jsonLD'] ?? $seo['json_ld']) : [], 8, 2),
             openGraphYaml: Yaml::dump(is_array($seo['openGraph'] ?? $seo['open_graph'] ?? null) ? ($seo['openGraph'] ?? $seo['open_graph']) : [], 8, 2),
             sections: $sections,
         );
@@ -55,7 +53,6 @@ final class PageConfigDto
             'seo' => [
                 'title' => $this->seoTitle,
                 'metadescription' => $this->seoMetadescription,
-                'jsonLD' => $this->parseYamlBlock($this->jsonLdYaml, []),
                 'openGraph' => $this->parseYamlBlock($this->openGraphYaml, []),
             ],
             'page' => [
@@ -82,7 +79,6 @@ final class PageConfigDto
     #[Assert\Callback]
     public function validate(ExecutionContextInterface $context): void
     {
-        $this->validateYamlBlock($this->jsonLdYaml, 'jsonLdYaml', $context);
         $this->validateYamlBlock($this->openGraphYaml, 'openGraphYaml', $context);
     }
 

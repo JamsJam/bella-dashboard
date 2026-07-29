@@ -11,16 +11,6 @@ seo:
     - "essayage virtuel"
     - "bella gp"
 
-  json_ld:
-    "@context": "https://schema.org"
-    "@type": "WebSite"
-    name: "Bella GP"
-    url: "https://bellagp.fr"
-    potentialAction:
-      "@type": "SearchAction"
-      target: "https://bellagp.fr/search?q={search_term_string}"
-      "query-input": "required name=search_term_string"
-
 sections:
 
   - type: hero
