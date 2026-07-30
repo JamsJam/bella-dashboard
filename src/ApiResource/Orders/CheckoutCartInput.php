@@ -19,4 +19,8 @@ final class CheckoutCartInput
     #[Assert\NotBlank]
     #[Assert\Length(max: 255)]
     public string $shippingDestination = '';
+
+    #[Assert\NotNull]
+    #[Assert\Valid]
+    public ?CheckoutShippingAddressInput $shippingAddress = null;
 }

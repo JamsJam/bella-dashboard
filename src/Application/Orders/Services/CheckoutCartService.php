@@ -3,6 +3,7 @@
 namespace App\Application\Orders\Services;
 
 use App\ApiResource\Orders\CheckoutCartInput;
+use App\ApiResource\Orders\CheckoutShippingAddressInput;
 use App\Application\Config\Dto\ShippingFeeDto;
 use App\Application\Config\Provider\OrdersConfigProvider;
 use App\Application\Orders\Exception\InsufficientVariantStockException;
@@ -33,9 +34,10 @@ final readonly class CheckoutCartService
     {
         $quantitiesByVariant = $this->aggregateItems($input->items);
         $shippingFee = $this->resolveShippingFee($input->shippingDestination);
+        $shippingInfo = $this->createShippingInfo($input->shippingAddress, $shippingFee->destination);
         $vatRate = $this->ordersConfigProvider->get()->vat;
 
-        return $this->entityManager->wrapInTransaction(function () use ($input, $customer, $quantitiesByVariant, $shippingFee, $vatRate): Orders {
+        return $this->entityManager->wrapInTransaction(function () use ($input, $customer, $quantitiesByVariant, $shippingFee, $shippingInfo, $vatRate): Orders {
             $cart = (new Cart())
                 ->setCustomer($customer)
                 ->setCurrency($input->currency);
@@ -57,7 +59,7 @@ final readonly class CheckoutCartService
                 ->setStatus(Orders::STATUS_PENDING_PAYMENT)
                 ->setOrderReference($this->orderReferenceGenerator->generate())
                 ->setFees($shippingFee->priceCents)
-                ->setShippinfo(['destination' => $shippingFee->destination])
+                ->setShippinfo($shippingInfo)
                 ->setTva($this->includedVat($cart->getSubtotal(), $vatRate));
 
             $this->entityManager->persist($order);
@@ -65,6 +67,34 @@ final readonly class CheckoutCartService
 
             return $order;
         });
+    }
+
+    /**
+     * @return array{
+     *     destination: string,
+     *     firstName: string,
+     *     lastName: string,
+     *     phone: string,
+     *     address: string,
+     *     postcode: string,
+     *     city: string
+     * }
+     */
+    private function createShippingInfo(?CheckoutShippingAddressInput $address, string $destination): array
+    {
+        if (!$address instanceof CheckoutShippingAddressInput) {
+            throw new InvalidCheckoutRequestException('L’adresse de livraison ou d’expédition est obligatoire.');
+        }
+
+        return [
+            'destination' => $destination,
+            'firstName' => trim($address->firstName),
+            'lastName' => trim($address->lastName),
+            'phone' => trim($address->phone),
+            'address' => trim($address->address),
+            'postcode' => trim($address->postcode),
+            'city' => trim($address->city),
+        ];
     }
 
     private function includedVat(int $productsTotalTtc, float $vatRate): int
