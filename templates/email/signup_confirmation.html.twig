@@ -1,9 +1,30 @@
-<p>Votre code de confirmation est :</p>
-
-<p style="font-size: 24px; font-weight: 700; letter-spacing: 4px;">{{ code }}</p>
-
-<p>Ce code est valable 20 minutes.</p>
-
-{% if expiresAt %}
-    <p>Expiration : {{ expiresAt|date('d/m/Y H:i') }}</p>
-{% endif %}
+<!doctype html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Confirmation de votre inscription</title>
+</head>
+<body style="margin:0;background:#f4f6f8;color:#20242a;font-family:Arial,Helvetica,sans-serif;">
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f4f6f8;padding:32px 12px;">
+    <tr><td align="center">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:640px;background:#ffffff;border:1px solid #e4e7eb;border-radius:16px;overflow:hidden;box-shadow:0 8px 24px rgba(32,36,42,.08);">
+            <tr><td style="background:#ffffff;border-bottom:1px solid #e4e7eb;padding:28px 32px;">
+                <div style="font-size:24px;font-weight:800;letter-spacing:-.5px;color:#20242a;">BellaGP</div>
+                <div style="margin-top:6px;font-size:13px;color:#737b86;">Confirmation de votre compte</div>
+            </td></tr>
+            <tr><td style="padding:32px;text-align:center;">
+                <h1 style="margin:0 0 12px;font-size:26px;line-height:1.25;color:#20242a;">Votre code de confirmation</h1>
+                <p style="margin:0;color:#626b76;font-size:15px;line-height:1.65;">Saisissez ce code dans l’application pour confirmer votre inscription.</p>
+                <div style="display:inline-block;margin:28px 0;padding:16px 24px;border:1px solid #dfe3e7;border-radius:10px;background:#f9fafb;font-size:28px;font-weight:800;letter-spacing:6px;color:#20242a;">{{ code }}</div>
+                <p style="margin:0;color:#626b76;font-size:14px;line-height:1.6;">
+                    Ce code est valable 20 minutes.
+                    {% if expiresAt %}<br>Expiration : {{ expiresAt|date('d/m/Y H:i') }}{% endif %}
+                </p>
+            </td></tr>
+            <tr><td style="padding:20px 32px;background:#f9fafb;border-top:1px solid #e4e7eb;color:#8a929d;font-size:12px;text-align:center;">BellaGP · Ne partagez jamais ce code.</td></tr>
+        </table>
+    </td></tr>
+</table>
+</body>
+</html>

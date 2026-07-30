@@ -2,20 +2,34 @@
 <html lang="fr">
 <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Livraisons prévues demain</title>
 </head>
-<body>
-    <h1>Livraisons prévues demain</h1>
-
-    <p>
-        {{ ordersCount }} {{ ordersCount > 1 ? 'commandes doivent' : 'commande doit' }}
-        être livrée{{ ordersCount > 1 ? 's' : '' }}
-        le <strong>{{ deliveryDate|date('d/m/Y') }}</strong>.
-    </p>
-
-    <p>
-        Le fichier CSV joint contient les numéros de commande ainsi que les coordonnées
-        et les adresses de livraison des clients.
-    </p>
+<body style="margin:0;background:#f4f6f8;color:#20242a;font-family:Arial,Helvetica,sans-serif;">
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f4f6f8;padding:32px 12px;">
+    <tr><td align="center">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:640px;background:#ffffff;border:1px solid #e4e7eb;border-radius:16px;overflow:hidden;box-shadow:0 8px 24px rgba(32,36,42,.08);">
+            <tr><td style="background:#ffffff;border-bottom:1px solid #e4e7eb;padding:28px 32px;">
+                <div style="font-size:24px;font-weight:800;letter-spacing:-.5px;color:#20242a;">BellaGP</div>
+                <div style="margin-top:6px;font-size:13px;color:#737b86;">Planning du {{ deliveryDate|date('d/m/Y') }}</div>
+            </td></tr>
+            <tr><td style="padding:32px;">
+                <h1 style="margin:0 0 12px;font-size:26px;line-height:1.25;color:#20242a;">Livraisons prévues demain</h1>
+                <p style="margin:0 0 24px;color:#626b76;font-size:15px;line-height:1.65;">
+                    {{ ordersCount }} {{ ordersCount > 1 ? 'commandes doivent' : 'commande doit' }}
+                    être livrée{{ ordersCount > 1 ? 's' : '' }} le <strong>{{ deliveryDate|date('d/m/Y') }}</strong>.
+                </p>
+                <div style="padding:20px;border:1px solid #e4e7eb;border-radius:10px;background:#f9fafb;">
+                    <div style="font-size:13px;color:#737b86;">Livraisons programmées</div>
+                    <div style="margin-top:6px;font-size:24px;font-weight:800;color:#20242a;">{{ ordersCount }}</div>
+                </div>
+                <p style="margin:24px 0 0;color:#626b76;font-size:14px;line-height:1.6;">
+                    Le fichier CSV joint contient les commandes ainsi que les coordonnées et les adresses de livraison des clients.
+                </p>
+            </td></tr>
+            <tr><td style="padding:20px 32px;background:#f9fafb;border-top:1px solid #e4e7eb;color:#8a929d;font-size:12px;text-align:center;">BellaGP · Planning des livraisons</td></tr>
+        </table>
+    </td></tr>
+</table>
 </body>
 </html>
