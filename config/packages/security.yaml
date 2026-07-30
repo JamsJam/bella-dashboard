@@ -64,9 +64,7 @@ security:
 
     # Note: Only the *first* matching rule is applied
     access_control:
-        - { path: ^/api/auth/login, roles: PUBLIC_ACCESS }
-        - { path: ^/api/customers$, roles: PUBLIC_ACCESS, methods: [POST] }
-        - { path: ^/api, roles: ROLE_USER }
+        - { path: ^/api, roles: PUBLIC_ACCESS }
         - { path: ^/login$, roles: PUBLIC_ACCESS }
         - { path: ^/, roles: ROLE_ADMIN }
 

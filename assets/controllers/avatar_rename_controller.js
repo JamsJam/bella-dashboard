@@ -1,4 +1,5 @@
 import { Controller } from '@hotwired/stimulus';
+import { refreshFlashMessages } from '../lib/refresh_flash_messages.js';
 
 /* stimulusFetch: 'lazy' */
 export default class extends Controller {
@@ -107,6 +108,7 @@ export default class extends Controller {
             availability = await this.checkNameAvailability(payload);
         } catch (error) {
             console.error('Unable to check avatar name availability', error);
+            refreshFlashMessages();
 
             return;
         }
@@ -330,14 +332,18 @@ export default class extends Controller {
             (filter) => !['partie', 'collection', 'sort', 'direction'].includes(filter.id),
         );
 
-        this.filtersContainerTarget.innerHTML = filters.map((filter) => `
+        this.filtersContainerTarget.innerHTML = filters.map((filter) => {
+            const isRequired = !['accessory', 'clothes'].includes(filter.id);
+
+            return `
             <label class="avatar-rename__field">
-                <span>${this.escapeHtml(filter.label)}</span>
+                <span>${this.escapeHtml(filter.label)}${isRequired ? ' *' : ''}</span>
                 <select
                     data-avatar-rename-target="filter"
                     data-filter-name="${this.escapeAttribute(filter.id)}"
                     data-is-color="${filter.isColor ? 'true' : 'false'}"
                     data-action="change->avatar-rename#onFilterChange"
+                    ${isRequired ? 'required' : ''}
                 >
                     ${filter.options.filter((option) => this.isUsableFilterOption(option)).map((option) => `
                         <option value="${this.escapeAttribute(option.value)}">${this.escapeHtml(option.label)}</option>
@@ -376,7 +382,8 @@ export default class extends Controller {
                     </div>
                 ` : ''}
             </label>
-        `).join('');
+        `;
+        }).join('');
 
         this.filterTargets.forEach((select) => this.toggleNewFilterInput(select));
     }

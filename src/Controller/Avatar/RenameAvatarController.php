@@ -3,6 +3,7 @@
 namespace App\Controller\Avatar;
 
 use App\Application\Avatar\Mapper\AvatarFilterMapper;
+use App\Application\Avatar\Mapper\AvatarRenameFilterMapper;
 use App\Application\Avatar\Resolver\AvatarRenameDestinationResolver;
 use App\Entity\AvatarTemp;
 use App\Message\Avatar\RenameAvatarMessage;
@@ -54,6 +55,8 @@ final class RenameAvatarController extends AbstractController
     public function checkName(
         Request $request,
         AvatarRenameDestinationResolver $destinationResolver,
+        AvatarRenameFilterMapper $renameFilterMapper,
+        FlashService $flashService,
         LoggerService $logger,
     ): Response {
         $newName = (string) $request->query->get('name', '');
@@ -67,6 +70,24 @@ final class RenameAvatarController extends AbstractController
             ]);
 
             return $this->json(['available' => false, 'error' => 'Nom invalide.'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $missingFilters = $this->getMissingRequiredFilters($category, $filters, $renameFilterMapper);
+        if ($missingFilters !== []) {
+            $message = sprintf(
+                'Tous les paramètres sont obligatoires pour renommer cet avatar. Paramètre(s) manquant(s) : %s.',
+                implode(', ', $missingFilters),
+            );
+            $flashService->error($message);
+            $logger->warning('Avatar rename blocked by missing required filters.', [
+                'category' => $category,
+                'missing_filters' => $missingFilters,
+            ]);
+
+            return $this->json(
+                ['available' => false, 'error' => $message],
+                Response::HTTP_UNPROCESSABLE_ENTITY,
+            );
         }
 
         try {
@@ -104,6 +125,7 @@ final class RenameAvatarController extends AbstractController
         MessageBusInterface $messageBus,
         EntityManagerInterface $entityManager,
         FlashService $flashService,
+        AvatarRenameFilterMapper $renameFilterMapper,
         LoggerService $logger,
     ): RedirectResponse
     {
@@ -123,8 +145,19 @@ final class RenameAvatarController extends AbstractController
         }
 
         $dispatched = 0;
+        $hasConstraintViolation = false;
         foreach ($renames as $rename) {
             if (!$this->isRenamePayloadValid($rename)) {
+                continue;
+            }
+
+            if ($this->getMissingRequiredFilters(
+                (string) $rename['category'],
+                $rename['filters'],
+                $renameFilterMapper,
+            ) !== []) {
+                $hasConstraintViolation = true;
+
                 continue;
             }
 
@@ -151,9 +184,14 @@ final class RenameAvatarController extends AbstractController
             $logger->info('Avatar renames dispatched.', [
                 'dispatched_count' => $dispatched,
             ]);
-        } else {
+        } elseif (!$hasConstraintViolation) {
             $flashService->error('Aucun renommage valide a traiter.');
             $logger->warning('No valid avatar rename to dispatch.');
+        }
+
+        if ($hasConstraintViolation) {
+            $flashService->error('Tous les paramètres obligatoires doivent être renseignés avant le renommage.');
+            $logger->warning('One or more avatar renames were blocked by missing required filters.');
         }
 
         return $this->redirectToRoute('app_avatar_rename');
@@ -271,5 +309,29 @@ final class RenameAvatarController extends AbstractController
             && !str_contains($newName, '/')
             && !str_contains($newName, '\\')
             && !str_contains($newName, '..');
+    }
+
+    /**
+     * @param array<string, mixed> $filters
+     *
+     * @return list<string>
+     */
+    private function getMissingRequiredFilters(
+        string $category,
+        array $filters,
+        AvatarRenameFilterMapper $renameFilterMapper,
+    ): array {
+        return array_values(array_filter(
+            $renameFilterMapper->getRequiredFilters($category),
+            static function (string $filterId) use ($filters): bool {
+                $value = $filters[$filterId] ?? null;
+
+                if (is_array($value)) {
+                    $value = $value['name'] ?? null;
+                }
+
+                return !is_scalar($value) || trim((string) $value) === '';
+            },
+        ));
     }
 }
