@@ -326,7 +326,9 @@ export default class extends Controller {
     }
 
     async renderFilters(part) {
-        const filters = (await this.fetchFilters(part)).filter((filter) => !['partie', 'collection'].includes(filter.id));
+        const filters = (await this.fetchFilters(part)).filter(
+            (filter) => !['partie', 'collection', 'sort', 'direction'].includes(filter.id),
+        );
 
         this.filtersContainerTarget.innerHTML = filters.map((filter) => `
             <label class="avatar-rename__field">
