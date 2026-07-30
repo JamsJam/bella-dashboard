@@ -121,7 +121,7 @@ final readonly class CheckoutCartService
             'city' => trim($shippingInfo->city),
             'country' => strtoupper(trim($shippingInfo->country)),
             'deliveryDate' => $shippingInfo->deliveryDate,
-            'selectedDelivery' => (int) $shippingInfo->selectedDelivery,
+            'selectedDelivery' => (int) round((float) $shippingInfo->selectedDelivery),
         ];
     }
 

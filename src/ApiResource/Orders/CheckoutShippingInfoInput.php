@@ -53,5 +53,5 @@ final class CheckoutShippingInfoInput
 
     #[Assert\NotNull]
     #[Assert\PositiveOrZero]
-    public ?int $selectedDelivery = null;
+    public int|float|null $selectedDelivery = null;
 }
