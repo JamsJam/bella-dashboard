@@ -65,6 +65,7 @@ security:
     # Note: Only the *first* matching rule is applied
     access_control:
         - { path: ^/api, roles: PUBLIC_ACCESS }
+        - { path: ^/webhook/stripe$, roles: PUBLIC_ACCESS, methods: [POST] }
         - { path: ^/login$, roles: PUBLIC_ACCESS }
         - { path: ^/, roles: ROLE_ADMIN }
 
