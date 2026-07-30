@@ -76,21 +76,21 @@ final readonly class CheckoutCartService
      *     surname: string,
      *     firstName: string,
      *     lastName: string,
-     *     shippingTitle: string,
-     *     selectedTel: string,
+     *     shippingTitle: ?string,
+     *     selectedTel: ?string,
      *     tel: string,
      *     phone: string,
      *     shippingAddress: string,
-     *     shippingAddress2: string,
+     *     shippingAddress2: ?string,
      *     address: string,
-     *     address2: string,
-     *     lieuDit: string,
+     *     address2: ?string,
+     *     lieuDit: ?string,
      *     postalCode: string,
      *     postcode: string,
      *     city: string,
      *     country: string,
      *     deliveryDate: ?string,
-     *     selectedDelivery: int
+     *     selectedDelivery: ?int
      * }
      */
     private function createShippingInfo(?CheckoutShippingInfoInput $shippingInfo, string $destination): array
@@ -99,30 +99,41 @@ final readonly class CheckoutCartService
             throw new InvalidCheckoutRequestException('L’adresse de livraison ou d’expédition est obligatoire.');
         }
 
-        $phone = trim(sprintf('%s %s', $shippingInfo->selectedTel, $shippingInfo->tel));
+        $dialCode = trim((string) $shippingInfo->selectedTel);
+        $phoneNumber = trim((string) $shippingInfo->tel);
+        $phone = implode(' ', array_filter([$dialCode, $phoneNumber]));
 
         return [
             'destination' => $destination,
-            'name' => trim($shippingInfo->name),
-            'surname' => trim($shippingInfo->surname),
-            'firstName' => trim($shippingInfo->name),
-            'lastName' => trim($shippingInfo->surname),
-            'shippingTitle' => trim($shippingInfo->shippingTitle),
-            'selectedTel' => trim($shippingInfo->selectedTel),
-            'tel' => trim($shippingInfo->tel),
+            'name' => trim((string) $shippingInfo->name),
+            'surname' => trim((string) $shippingInfo->surname),
+            'firstName' => trim((string) $shippingInfo->name),
+            'lastName' => trim((string) $shippingInfo->surname),
+            'shippingTitle' => $this->nullableTrim($shippingInfo->shippingTitle),
+            'selectedTel' => $this->nullableTrim($shippingInfo->selectedTel),
+            'tel' => $phoneNumber,
             'phone' => $phone,
-            'shippingAddress' => trim($shippingInfo->shippingAddress),
-            'shippingAddress2' => trim($shippingInfo->shippingAddress2),
-            'address' => trim($shippingInfo->shippingAddress),
-            'address2' => trim($shippingInfo->shippingAddress2),
-            'lieuDit' => trim($shippingInfo->lieuDit),
-            'postalCode' => trim($shippingInfo->postalCode),
-            'postcode' => trim($shippingInfo->postalCode),
-            'city' => trim($shippingInfo->city),
-            'country' => strtoupper(trim($shippingInfo->country)),
+            'shippingAddress' => trim((string) $shippingInfo->shippingAddress),
+            'shippingAddress2' => $this->nullableTrim($shippingInfo->shippingAddress2),
+            'address' => trim((string) $shippingInfo->shippingAddress),
+            'address2' => $this->nullableTrim($shippingInfo->shippingAddress2),
+            'lieuDit' => $this->nullableTrim($shippingInfo->lieuDit),
+            'postalCode' => trim((string) $shippingInfo->postalCode),
+            'postcode' => trim((string) $shippingInfo->postalCode),
+            'city' => trim((string) $shippingInfo->city),
+            'country' => strtoupper(trim((string) $shippingInfo->country)),
             'deliveryDate' => $shippingInfo->deliveryDate,
-            'selectedDelivery' => (int) round((float) $shippingInfo->selectedDelivery),
+            'selectedDelivery' => $shippingInfo->selectedDelivery !== null
+                ? (int) round($shippingInfo->selectedDelivery)
+                : null,
         ];
+    }
+
+    private function nullableTrim(?string $value): ?string
+    {
+        $value = trim((string) $value);
+
+        return $value !== '' ? $value : null;
     }
 
     private function includedVat(int $productsTotalTtc, float $vatRate): int

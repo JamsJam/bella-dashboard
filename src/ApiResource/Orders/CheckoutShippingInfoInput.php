@@ -8,50 +8,47 @@ final class CheckoutShippingInfoInput
 {
     #[Assert\NotBlank]
     #[Assert\Length(max: 100)]
-    public string $name = '';
+    public ?string $name = null;
 
     #[Assert\NotBlank]
     #[Assert\Length(max: 100)]
-    public string $surname = '';
+    public ?string $surname = null;
 
-    #[Assert\NotBlank]
     #[Assert\Length(max: 100)]
-    public string $shippingTitle = '';
+    public ?string $shippingTitle = null;
 
     #[Assert\NotBlank]
     #[Assert\Length(max: 255)]
-    public string $shippingAddress = '';
+    public ?string $shippingAddress = null;
 
     #[Assert\Length(max: 255)]
-    public string $shippingAddress2 = '';
+    public ?string $shippingAddress2 = null;
 
     #[Assert\Length(max: 255)]
-    public string $lieuDit = '';
+    public ?string $lieuDit = null;
 
     #[Assert\NotBlank]
     #[Assert\Length(max: 32)]
-    public string $postalCode = '';
+    public ?string $postalCode = null;
 
     #[Assert\NotBlank]
     #[Assert\Length(max: 100)]
-    public string $city = '';
+    public ?string $city = null;
 
-    #[Assert\NotBlank]
     #[Assert\Length(max: 8)]
-    public string $selectedTel = '';
+    public ?string $selectedTel = null;
 
     #[Assert\NotBlank]
     #[Assert\Length(max: 32)]
-    public string $tel = '';
+    public ?string $tel = null;
 
     #[Assert\NotBlank]
     #[Assert\Country]
-    public string $country = '';
+    public ?string $country = null;
 
     #[Assert\Date]
     public ?string $deliveryDate = null;
 
-    #[Assert\NotNull]
     #[Assert\PositiveOrZero]
     public int|float|null $selectedDelivery = null;
 }
