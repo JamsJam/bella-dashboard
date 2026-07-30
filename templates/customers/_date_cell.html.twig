@@ -1,0 +1,4 @@
+<div class="customer-date">
+    <strong>{{ customer.createdAt ? customer.createdAt|date('d/m/Y') : '—' }}</strong>
+    {% if customer.createdAt %}<small>{{ customer.createdAt|date('H:i') }}</small>{% endif %}
+</div>

@@ -71,9 +71,9 @@
                 {% for order in orders %}
                     <details class="customer-show__order" {% if loop.first %}open{% endif %}>
                         <summary>
-                            <strong>{{ order.orderReference ?: '#' ~ order.id }}</strong>
+                            <a href="{{ path('app_orders_show', {id: order.id}) }}">{{ order.orderReference ?: '#' ~ order.id }}</a>
                             <span>{{ (order.total / 100)|number_format(2, ',', ' ') }} €</span>
-                            <span>{{ order.status }}</span>
+                            <span class="customer-show__order-status customer-show__order-status--{{ order.orderStatus.value }}">{{ order.orderStatus.label }}</span>
                             <span>{{ order.createdAt ? order.createdAt|date('d/m/Y à H:i') : '' }}</span>
                         </summary>
                         <dl class="customer-show__meta customer-show__meta--order">
@@ -83,7 +83,22 @@
                             <div><dt>Dont TVA ({{ vatRate|number_format(1, ',', ' ') }} %)</dt><dd>{{ (includedVat / 100)|number_format(2, ',', ' ') }} €</dd></div>
                             <div><dt>Total</dt><dd>{{ (order.total / 100)|number_format(2, ',', ' ') }} €</dd></div>
                             <div><dt>Facture Stripe</dt><dd>{% if order.stripeInvoiceUrl %}<a href="{{ order.stripeInvoiceUrl }}" target="_blank" rel="noopener noreferrer">Ouvrir la facture</a>{% else %}Non disponible{% endif %}</dd></div>
-                            <div class="customer-show__shipping"><dt>Livraison</dt><dd><pre>{{ order.shippinfo|json_encode(constant('JSON_PRETTY_PRINT')) }}</pre></dd></div>
+                            <div class="customer-show__shipping">
+                                <dt>Livraison</dt>
+                                <dd>
+                                    <address>
+                                        {{ order.shippinfo.firstName|default('') }} {{ order.shippinfo.lastName|default('') }}<br>
+                                        {{ order.shippinfo.address|default('Adresse non renseignée') }}<br>
+                                        {{ order.shippinfo.postcode|default('') }} {{ order.shippinfo.city|default('') }}<br>
+                                        {{ order.shippinfo.destination|default('Destination non renseignée') }}
+                                    </address>
+                                    {% if order.trackingNumber %}
+                                        <small>Expédition : {{ order.trackingNumber }}</small>
+                                    {% elseif order.deliveryDate %}
+                                        <small>Livraison prévue le {{ order.deliveryDate|date('d/m/Y') }}</small>
+                                    {% endif %}
+                                </dd>
+                            </div>
                         </dl>
                     </details>
                 {% else %}

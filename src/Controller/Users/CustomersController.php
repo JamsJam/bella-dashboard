@@ -14,17 +14,19 @@ use Symfony\Component\Routing\Attribute\Route;
 
 final class CustomersController extends AbstractController
 {
+    private const PAGE_SIZE = 20;
+
     private const COLUMNS = [
-        ['key' => 'id', 'label' => 'ID', 'sortable' => true],
-        ['key' => 'email', 'label' => 'Email', 'sortable' => true],
-        ['key' => 'ordersCount', 'label' => 'Commandes', 'sortable' => true],
-        ['key' => 'createdAt', 'label' => 'Date', 'sortable' => true],
+        ['key' => 'email', 'label' => 'Client', 'sortable' => true, 'raw' => true],
+        ['key' => 'confirmed', 'label' => 'Statut', 'sortable' => true, 'raw' => true],
+        ['key' => 'ordersCount', 'label' => 'Commandes', 'sortable' => true, 'raw' => true],
+        ['key' => 'createdAt', 'label' => 'Inscription', 'sortable' => true, 'raw' => true],
         ['key' => 'actions', 'label' => 'Actions', 'sortable' => false, 'raw' => true],
     ];
 
     private const SORTS = [
-        'id' => 'c.id',
         'email' => 'c.email',
+        'confirmed' => 'c.isSignupConfirmed',
         'ordersCount' => 'ordersCount',
         'createdAt' => 'c.createdAt',
     ];
@@ -35,6 +37,7 @@ final class CustomersController extends AbstractController
         return $this->render('customers/index.html.twig', [
             'breadscrumbs' => $breadscrumbs->resolve((string) $request->attributes->get('_route')),
             'table' => $this->createTableData($request, $entityManager),
+            'summary' => $this->createSummary($entityManager),
         ]);
     }
 
@@ -48,6 +51,10 @@ final class CustomersController extends AbstractController
                 'columns' => $table['columns'],
                 'rows' => $table['rows'],
             ]),
+            'pagination' => $this->renderView('ui/components/data-table/_pagination.html.twig', [
+                'pagination' => $table['pagination'],
+            ]),
+            'page' => $table['pagination']['page'],
         ]);
     }
 
@@ -139,6 +146,8 @@ final class CustomersController extends AbstractController
         $search = trim((string) $request->query->get('search', ''));
         $sort = $this->normalizeSort((string) $request->query->get('sort', 'createdAt'));
         $direction = $this->normalizeDirection((string) $request->query->get('direction', 'desc'));
+        $confirmation = $this->normalizeConfirmation((string) $request->query->get('confirmation', ''));
+        $requestedPage = max(1, $request->query->getInt('page', 1));
 
         $queryBuilder = $entityManager->getRepository(Customers::class)
             ->createQueryBuilder('c')
@@ -153,8 +162,25 @@ final class CustomersController extends AbstractController
                 ->setParameter('search', '%'.mb_strtolower($search).'%');
         }
 
+        if ($confirmation !== null) {
+            $queryBuilder
+                ->andWhere('c.isSignupConfirmed = :confirmed')
+                ->setParameter('confirmed', $confirmation === 'confirmed');
+        }
+
+        $countQueryBuilder = clone $queryBuilder;
+        $totalItems = (int) $countQueryBuilder
+            ->resetDQLPart('orderBy')
+            ->resetDQLPart('groupBy')
+            ->select('COUNT(DISTINCT c.id)')
+            ->getQuery()
+            ->getSingleScalarResult();
+        $totalPages = max(1, (int) ceil($totalItems / self::PAGE_SIZE));
+        $page = min($requestedPage, $totalPages);
+
         $results = $queryBuilder
-            ->setMaxResults(100)
+            ->setFirstResult(($page - 1) * self::PAGE_SIZE)
+            ->setMaxResults(self::PAGE_SIZE)
             ->getQuery()
             ->getResult();
 
@@ -165,6 +191,23 @@ final class CustomersController extends AbstractController
             'sort' => $sort,
             'direction' => $direction,
             'search' => $search,
+            'searchPlaceholder' => 'Rechercher par adresse e-mail',
+            'filters' => [[
+                'name' => 'confirmation',
+                'label' => 'Confirmation du compte',
+                'value' => $confirmation ?? '',
+                'options' => [
+                    ['value' => '', 'label' => 'Tous les comptes'],
+                    ['value' => 'confirmed', 'label' => 'Comptes confirmés'],
+                    ['value' => 'pending', 'label' => 'En attente de confirmation'],
+                ],
+            ]],
+            'pagination' => [
+                'page' => $page,
+                'totalPages' => $totalPages,
+                'totalItems' => $totalItems,
+                'pages' => range(max(1, $page - 2), min($totalPages, $page + 2)),
+            ],
         ];
     }
 
@@ -177,10 +220,12 @@ final class CustomersController extends AbstractController
         }
 
         return [
-            'id' => (string) $customer->getId(),
-            'email' => $customer->getEmail(),
-            'ordersCount' => (string) ($result['ordersCount'] ?? 0),
-            'createdAt' => $customer->getCreatedAt()?->format('d/m/Y H:i') ?? '',
+            'email' => $this->renderView('customers/_customer_cell.html.twig', ['customer' => $customer]),
+            'confirmed' => $this->renderView('customers/_status_badge.html.twig', ['customer' => $customer]),
+            'ordersCount' => $this->renderView('customers/_orders_count.html.twig', [
+                'count' => (int) ($result['ordersCount'] ?? 0),
+            ]),
+            'createdAt' => $this->renderView('customers/_date_cell.html.twig', ['customer' => $customer]),
             'actions' => $this->renderView('customers/_table_actions.html.twig', [
                 'customer' => $customer,
             ]),
@@ -195,5 +240,24 @@ final class CustomersController extends AbstractController
     private function normalizeDirection(string $direction): string
     {
         return strtolower($direction) === 'asc' ? 'asc' : 'desc';
+    }
+
+    private function normalizeConfirmation(string $confirmation): ?string
+    {
+        return in_array($confirmation, ['confirmed', 'pending'], true) ? $confirmation : null;
+    }
+
+    /** @return array{total: int, confirmed: int, pending: int} */
+    private function createSummary(EntityManagerInterface $entityManager): array
+    {
+        $repository = $entityManager->getRepository(Customers::class);
+        $total = $repository->count([]);
+        $confirmed = $repository->count(['isSignupConfirmed' => true]);
+
+        return [
+            'total' => $total,
+            'confirmed' => $confirmed,
+            'pending' => $total - $confirmed,
+        ];
     }
 }

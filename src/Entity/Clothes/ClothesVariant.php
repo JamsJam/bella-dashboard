@@ -12,9 +12,8 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ClothesVariantRepository::class)]
-#[ORM\Table(name: 'clothes_variant', indexes: [
-    new ORM\Index(name: 'IDX_CLOTHES_VARIANT_SLUG', columns: ['slug']),
-])]
+#[ORM\Table(name: 'clothes_variant')]
+#[ORM\Index(name: 'IDX_CLOTHES_VARIANT_SLUG', columns: ['slug'])]
 #[ORM\UniqueConstraint(name: 'UNIQ_CLOTHES_VARIANT_NAME', columns: ['name'])]
 #[ORM\UniqueConstraint(name: 'UNIQ_CLOTHES_VARIANT_SKU', columns: ['sku'])]
 class ClothesVariant
