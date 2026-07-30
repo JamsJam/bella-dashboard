@@ -43,7 +43,7 @@ final class CheckoutShippingInfoInput
     public ?string $tel = null;
 
     #[Assert\NotBlank]
-    #[Assert\Country]
+    #[Assert\Length(max: 100)]
     public ?string $country = null;
 
     #[Assert\Date]
