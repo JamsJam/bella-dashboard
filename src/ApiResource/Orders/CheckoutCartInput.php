@@ -22,5 +22,5 @@ final class CheckoutCartInput
 
     #[Assert\NotNull]
     #[Assert\Valid]
-    public ?CheckoutShippingAddressInput $shippingAddress = null;
+    public ?CheckoutShippingInfoInput $shippingInfo = null;
 }

@@ -3,7 +3,7 @@
 namespace App\Application\Orders\Services;
 
 use App\ApiResource\Orders\CheckoutCartInput;
-use App\ApiResource\Orders\CheckoutShippingAddressInput;
+use App\ApiResource\Orders\CheckoutShippingInfoInput;
 use App\Application\Config\Dto\ShippingFeeDto;
 use App\Application\Config\Provider\OrdersConfigProvider;
 use App\Application\Orders\Exception\InsufficientVariantStockException;
@@ -34,7 +34,7 @@ final readonly class CheckoutCartService
     {
         $quantitiesByVariant = $this->aggregateItems($input->items);
         $shippingFee = $this->resolveShippingFee($input->shippingDestination);
-        $shippingInfo = $this->createShippingInfo($input->shippingAddress, $shippingFee->destination);
+        $shippingInfo = $this->createShippingInfo($input->shippingInfo, $shippingFee->destination);
         $vatRate = $this->ordersConfigProvider->get()->vat;
 
         return $this->entityManager->wrapInTransaction(function () use ($input, $customer, $quantitiesByVariant, $shippingFee, $shippingInfo, $vatRate): Orders {
@@ -72,28 +72,56 @@ final readonly class CheckoutCartService
     /**
      * @return array{
      *     destination: string,
+     *     name: string,
+     *     surname: string,
      *     firstName: string,
      *     lastName: string,
+     *     shippingTitle: string,
+     *     selectedTel: string,
+     *     tel: string,
      *     phone: string,
+     *     shippingAddress: string,
+     *     shippingAddress2: string,
      *     address: string,
+     *     address2: string,
+     *     lieuDit: string,
+     *     postalCode: string,
      *     postcode: string,
-     *     city: string
+     *     city: string,
+     *     country: string,
+     *     deliveryDate: ?string,
+     *     selectedDelivery: int
      * }
      */
-    private function createShippingInfo(?CheckoutShippingAddressInput $address, string $destination): array
+    private function createShippingInfo(?CheckoutShippingInfoInput $shippingInfo, string $destination): array
     {
-        if (!$address instanceof CheckoutShippingAddressInput) {
+        if (!$shippingInfo instanceof CheckoutShippingInfoInput) {
             throw new InvalidCheckoutRequestException('L’adresse de livraison ou d’expédition est obligatoire.');
         }
 
+        $phone = trim(sprintf('%s %s', $shippingInfo->selectedTel, $shippingInfo->tel));
+
         return [
             'destination' => $destination,
-            'firstName' => trim($address->firstName),
-            'lastName' => trim($address->lastName),
-            'phone' => trim($address->phone),
-            'address' => trim($address->address),
-            'postcode' => trim($address->postcode),
-            'city' => trim($address->city),
+            'name' => trim($shippingInfo->name),
+            'surname' => trim($shippingInfo->surname),
+            'firstName' => trim($shippingInfo->name),
+            'lastName' => trim($shippingInfo->surname),
+            'shippingTitle' => trim($shippingInfo->shippingTitle),
+            'selectedTel' => trim($shippingInfo->selectedTel),
+            'tel' => trim($shippingInfo->tel),
+            'phone' => $phone,
+            'shippingAddress' => trim($shippingInfo->shippingAddress),
+            'shippingAddress2' => trim($shippingInfo->shippingAddress2),
+            'address' => trim($shippingInfo->shippingAddress),
+            'address2' => trim($shippingInfo->shippingAddress2),
+            'lieuDit' => trim($shippingInfo->lieuDit),
+            'postalCode' => trim($shippingInfo->postalCode),
+            'postcode' => trim($shippingInfo->postalCode),
+            'city' => trim($shippingInfo->city),
+            'country' => strtoupper(trim($shippingInfo->country)),
+            'deliveryDate' => $shippingInfo->deliveryDate,
+            'selectedDelivery' => (int) $shippingInfo->selectedDelivery,
         ];
     }
 
