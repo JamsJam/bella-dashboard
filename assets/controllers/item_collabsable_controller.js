@@ -7,35 +7,33 @@ import { Controller } from '@hotwired/stimulus';
 
 /* stimulusFetch: 'lazy' */
 export default class extends Controller {
-    static targets = ['collapsablebox']
+    static targets = ['collapsablebox', 'header']
+
     static values = {
         isCollapsed: {type: Boolean, default: true},
     }
 
-
-    isCollapsedValueChanged(current, old){
-
+    isCollapsedValueChanged(current) {
         if (current) {
-            this.collapse()
-        }else{
-            this.expend()
+            this.collapse();
+        } else {
+            this.expand();
         }
     }
 
-    collapse(){
-        this.collapsableboxTarget.classList.add("collapsed");
+    collapse() {
+        this.collapsableboxTarget.classList.add('collapsed');
+        this.headerTarget.classList.remove('open');
+        this.headerTarget.setAttribute('aria-expanded', 'false');
     }
 
-    expend(){
-        this.collapsableboxTarget.classList.remove("collapsed");;
+    expand() {
+        this.collapsableboxTarget.classList.remove('collapsed');
+        this.headerTarget.classList.add('open');
+        this.headerTarget.setAttribute('aria-expanded', 'true');
     }
 
-    //? eventlistner
-    handleCollapseToggle(){
-        const isCollapse = this.collapsableboxTarget.classList.contains('collapsed');
-        
-        this.isCollapsedValue = isCollapse ? false : true;
-
+    handleCollapseToggle() {
+        this.isCollapsedValue = !this.isCollapsedValue;
     }
-
 }

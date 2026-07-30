@@ -11,15 +11,21 @@
 		</a>
 
 	{% else %}
-		<div class="menuItem" {{ stimulus_controller("item_collabsable", { isCollapsed: not hasActiveChild }) }}>
-			<button class="menuItem__header {{ hasActiveChild ? 'open active' : '' }}" {{ stimulus_action("item_collabsable","handleCollapseToggle","click") }}>
+		<div class="menuItem" {{ stimulus_controller("item_collabsable", { isCollapsed: true }) }}>
+			<button
+				type="button"
+				class="menuItem__header {{ hasActiveChild ? 'active' : '' }}"
+				aria-expanded="false"
+				{{ stimulus_target("item_collabsable", "header") }}
+				{{ stimulus_action("item_collabsable","handleCollapseToggle","click") }}
+			>
 				<span class="menuItem__title">
 					{{item.title}}
 				</span>
 				{{ ux_icon('ep:arrow-right') }}
 			</button>
 
-			<ul class="menuItem__children {{ hasActiveChild ? '' : 'collapsed' }}" {{ stimulus_target("item_collabsable","collapsablebox") }}>
+			<ul class="menuItem__children collapsed" {{ stimulus_target("item_collabsable","collapsablebox") }}>
 
 				{% for child in item.children %}
 
