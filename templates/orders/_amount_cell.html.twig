@@ -1,0 +1,4 @@
+<div class="order-amount">
+    <strong>{{ (order.total / 100)|number_format(2, ',', ' ') }} €</strong>
+    <small>dont {{ (order.fees / 100)|number_format(2, ',', ' ') }} € de livraison</small>
+</div>

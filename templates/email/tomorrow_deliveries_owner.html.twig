@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <title>Livraisons prévues demain</title>
+</head>
+<body>
+    <h1>Livraisons prévues demain</h1>
+
+    <p>
+        {{ ordersCount }} {{ ordersCount > 1 ? 'commandes doivent' : 'commande doit' }}
+        être livrée{{ ordersCount > 1 ? 's' : '' }}
+        le <strong>{{ deliveryDate|date('d/m/Y') }}</strong>.
+    </p>
+
+    <p>
+        Le fichier CSV joint contient les numéros de commande ainsi que les coordonnées
+        et les adresses de livraison des clients.
+    </p>
+</body>
+</html>

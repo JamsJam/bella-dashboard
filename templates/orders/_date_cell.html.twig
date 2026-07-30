@@ -1,0 +1,8 @@
+<div class="order-date">
+    {% if order.createdAt %}
+        <strong>{{ order.createdAt|date('d/m/Y') }}</strong>
+        <small>{{ order.createdAt|date('H:i') }}</small>
+    {% else %}
+        <span>—</span>
+    {% endif %}
+</div>

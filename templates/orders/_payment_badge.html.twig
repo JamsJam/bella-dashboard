@@ -1,0 +1,8 @@
+{% set payment = {
+    pending_payment: ['En attente', 'pending'],
+    paid: ['Payée', 'paid'],
+    payment_expired: ['Expiré', 'expired'],
+    checkout_creation_failed: ['Échec checkout', 'failed']
+}[order.status]|default([order.status|replace({'_': ' '})|capitalize, 'neutral']) %}
+
+<span class="order-badge order-badge--{{ payment[1] }}">{{ payment[0] }}</span>

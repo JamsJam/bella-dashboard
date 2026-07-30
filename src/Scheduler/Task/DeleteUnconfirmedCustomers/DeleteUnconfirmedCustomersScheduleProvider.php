@@ -3,6 +3,7 @@
 namespace App\Scheduler\Task\DeleteUnconfirmedCustomers;
 
 use App\Repository\Users\CustomersRepository;
+use App\Scheduler\Task\TomorrowDeliveries\TomorrowDeliveriesMessage;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Scheduler\Attribute\AsSchedule;
 use Symfony\Component\Scheduler\Event\FailureEvent;
@@ -34,8 +35,15 @@ final class DeleteUnconfirmedCustomersScheduleProvider implements ScheduleProvid
                 RecurringMessage::every(
                     '5 minutes',
                     new CallbackMessageProvider([$this, 'getExpiredUnconfirmedCustomers']),
-                )
-                
+                ),
+                RecurringMessage::every(
+                    '1 day',
+                    new TomorrowDeliveriesMessage(),
+                    new \DateTimeImmutable(
+                        'tomorrow 06:00',
+                        new \DateTimeZone('Europe/Paris'),
+                    ),
+                ),
             )
             // ->add(RecurringMessage::every(
             //     '5 minutes',
@@ -45,6 +53,10 @@ final class DeleteUnconfirmedCustomersScheduleProvider implements ScheduleProvid
             ->processOnlyLastMissedRun(true)
             ->before(function(PreRunEvent $event) {
                 $message = $event->getMessage();
+                if (!$message instanceof DeleteUnconfirmedCustomersMessage) {
+                    return;
+                }
+
                 $customers = $message->getCustomers() ;
                 if (empty($customers)) {
                     $event->ShouldCancel(true);

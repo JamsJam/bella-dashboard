@@ -4,8 +4,10 @@ namespace App\Repository\Orders;
 
 use App\Entity\Orders\Orders;
 use App\Entity\Users\Customers;
+use App\Enum\OrderStatus;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\DBAL\LockMode;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -72,6 +74,42 @@ class OrdersRepository extends ServiceEntityRepository
             ->setParameter('status', Orders::STATUS_PAID)
             ->orderBy('orders.createdAt', 'DESC')
             ->addOrderBy('orders.id', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /** @return list<Orders> */
+    public function findPaidAwaitingDeliveryOn(\DateTimeImmutable $deliveryDate): array
+    {
+        return $this->createQueryBuilder('orders')
+            ->addSelect('customer')
+            ->leftJoin('orders.customer', 'customer')
+            ->andWhere('orders.deliveryDate = :deliveryDate')
+            ->andWhere('orders.orderStatus = :orderStatus')
+            ->andWhere('orders.status = :paymentStatus')
+            ->setParameter('deliveryDate', $deliveryDate, Types::DATE_IMMUTABLE)
+            ->setParameter('orderStatus', OrderStatus::AwaitingDelivery)
+            ->setParameter('paymentStatus', Orders::STATUS_PAID)
+            ->orderBy('orders.orderReference', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /** @return list<Orders> */
+    public function findPaidAwaitingDeliveryBetween(\DateTimeImmutable $start, \DateTimeImmutable $end): array
+    {
+        return $this->createQueryBuilder('orders')
+            ->addSelect('customer')
+            ->leftJoin('orders.customer', 'customer')
+            ->andWhere('COALESCE(orders.deliveryDate, orders.deliveredAt) BETWEEN :start AND :end')
+            ->andWhere('orders.orderStatus IN (:orderStatuses)')
+            ->andWhere('orders.status = :paymentStatus')
+            ->setParameter('start', $start, Types::DATE_IMMUTABLE)
+            ->setParameter('end', $end, Types::DATE_IMMUTABLE)
+            ->setParameter('orderStatuses', [OrderStatus::AwaitingDelivery, OrderStatus::Delivered])
+            ->setParameter('paymentStatus', Orders::STATUS_PAID)
+            ->orderBy('orders.deliveryDate', 'ASC')
+            ->addOrderBy('orders.orderReference', 'ASC')
             ->getQuery()
             ->getResult();
     }

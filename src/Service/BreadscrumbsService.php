@@ -20,6 +20,7 @@ final class BreadscrumbsService
         'page' => 'Shop',
         'contact' => 'Contact',
         'customers' => 'Clients',
+        'deliveries' => 'Livraisons',
         'show' => 'Détail',
         'pending' => 'En attente',
         'rename' => 'Renommer',

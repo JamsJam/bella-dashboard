@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <title>Nouvelle commande à traiter</title>
+</head>
+<body>
+    <h1>Une nouvelle commande est en attente de traitement</h1>
+
+    <p>
+        La commande <strong>{{ order.orderReference }}</strong> a été payée
+        et sa facture est disponible.
+    </p>
+
+    <p>
+        Montant :
+        <strong>
+            {{ (order.total / 100)|number_format(2, ',', ' ') }}
+            {{ cart.currency|upper }}
+        </strong>
+    </p>
+
+    <p>Son statut est maintenant « En attente de traitement ».</p>
+</body>
+</html>

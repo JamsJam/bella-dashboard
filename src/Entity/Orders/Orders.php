@@ -32,13 +32,13 @@ class Orders
     #[ORM\Column(length: 255)]
     private ?string $status = null;
 
-    #[ORM\Column(enumType: OrderStatus::class, options: ['default' => 0])]
+    #[ORM\Column(enumType: OrderStatus::class, options: ['default' => OrderStatus::Created->value])]
     private OrderStatus $orderStatus = OrderStatus::Created;
 
     #[ORM\ManyToOne(inversedBy: 'orders')]
     private ?Customers $customer = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255, unique: true)]
     private ?string $orderReference = null;
 
     #[ORM\Column]
@@ -65,6 +65,21 @@ class Orders
 
     #[ORM\Column(length: 2048, nullable: true)]
     private ?string $stripeInvoiceUrl = null;
+
+    #[ORM\Column(type: 'date_immutable', nullable: true)]
+    private ?\DateTimeImmutable $deliveryDate = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $deliveryReminderSentAt = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $trackingNumber = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $shippedAt = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $deliveredAt = null;
 
     public function __construct()
     {
@@ -126,6 +141,31 @@ class Orders
         $this->setEditedAt(new \DateTimeImmutable());
 
         return $this;
+    }
+
+    public function isPaid(): bool
+    {
+        return $this->status === self::STATUS_PAID;
+    }
+
+    public function hasInvoice(): bool
+    {
+        return $this->stripeInvoiceId !== null
+            && $this->stripeInvoiceId !== ''
+            && $this->stripeInvoiceUrl !== null
+            && $this->stripeInvoiceUrl !== '';
+    }
+
+    public function isShippingToGuadeloupe(): bool
+    {
+        return mb_strtolower(trim((string) ($this->shippinfo['destination'] ?? ''))) === 'guadeloupe';
+    }
+
+    public function isShippingOutsideGuadeloupe(): bool
+    {
+        $destination = mb_strtolower(trim((string) ($this->shippinfo['destination'] ?? '')));
+
+        return $destination !== '' && $destination !== 'guadeloupe';
     }
 
     public function getCustomer(): ?Customers
@@ -245,6 +285,70 @@ class Orders
     public function setStripeInvoiceUrl(?string $stripeInvoiceUrl): static
     {
         $this->stripeInvoiceUrl = $stripeInvoiceUrl;
+
+        return $this;
+    }
+
+    public function getDeliveryDate(): ?\DateTimeImmutable
+    {
+        return $this->deliveryDate;
+    }
+
+    public function setDeliveryDate(?\DateTimeImmutable $deliveryDate): static
+    {
+        $this->deliveryDate = $deliveryDate?->setTime(0, 0);
+        $this->setEditedAt(new \DateTimeImmutable());
+
+        return $this;
+    }
+
+    public function getDeliveryReminderSentAt(): ?\DateTimeImmutable
+    {
+        return $this->deliveryReminderSentAt;
+    }
+
+    public function setDeliveryReminderSentAt(?\DateTimeImmutable $deliveryReminderSentAt): static
+    {
+        $this->deliveryReminderSentAt = $deliveryReminderSentAt;
+
+        return $this;
+    }
+
+    public function getTrackingNumber(): ?string
+    {
+        return $this->trackingNumber;
+    }
+
+    public function setTrackingNumber(?string $trackingNumber): static
+    {
+        $this->trackingNumber = $trackingNumber !== null ? trim($trackingNumber) : null;
+        $this->setEditedAt(new \DateTimeImmutable());
+
+        return $this;
+    }
+
+    public function getShippedAt(): ?\DateTimeImmutable
+    {
+        return $this->shippedAt;
+    }
+
+    public function setShippedAt(?\DateTimeImmutable $shippedAt): static
+    {
+        $this->shippedAt = $shippedAt;
+        $this->setEditedAt(new \DateTimeImmutable());
+
+        return $this;
+    }
+
+    public function getDeliveredAt(): ?\DateTimeImmutable
+    {
+        return $this->deliveredAt;
+    }
+
+    public function setDeliveredAt(?\DateTimeImmutable $deliveredAt): static
+    {
+        $this->deliveredAt = $deliveredAt;
+        $this->setEditedAt(new \DateTimeImmutable());
 
         return $this;
     }

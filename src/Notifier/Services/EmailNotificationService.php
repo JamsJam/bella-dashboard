@@ -49,6 +49,36 @@ final readonly class EmailNotificationService
         $this->mailer->send($email);
     }
 
+    public function sendTemplatedAdminEmail(string $subject, string $template, array $context = []): void
+    {
+        $this->sendTemplatedEmail(
+            $this->notificationService->getAdminEmail(),
+            $subject,
+            $template,
+            $context,
+        );
+    }
+
+    public function sendTemplatedAdminEmailWithAttachment(
+        string $subject,
+        string $template,
+        array $context,
+        string $attachment,
+        string $filename,
+        string $contentType,
+    ): void {
+        $email = (new TemplatedEmail())
+            ->from($this->notificationService->getSenderEmail())
+            ->to($this->notificationService->getAdminEmail())
+            ->subject($subject)
+            ->htmlTemplate($template)
+            ->context($context)
+            ->attach($attachment, $filename, $contentType);
+
+        $this->debugTemplatedEmail($email);
+        $this->mailer->send($email);
+    }
+
     private function debugTemplatedEmail(TemplatedEmail $email): void
     {
         $this->logger->error('Templated email ready to send.', [

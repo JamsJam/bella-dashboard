@@ -1,0 +1,37 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Livraisons{% endblock %}
+
+{% block body %}
+    <article
+        class="deliveries-page"
+        aria-labelledby="deliveries-title"
+        {{ stimulus_controller('delivery-timeline', {
+            url: path('app_orders_deliveries_days'),
+            startDate: startDate,
+            endDate: endDate
+        }) }}
+    >
+        <header class="deliveries-page__header">
+            <div>
+                <p class="deliveries-page__eyebrow">Planning logistique</p>
+                <h1 id="deliveries-title">Livraisons prévues</h1>
+                <p>Faites défiler les journées pour consulter les commandes à livrer.</p>
+            </div>
+        </header>
+
+        <div
+            class="delivery-timeline"
+            {{ stimulus_target('delivery-timeline', 'viewport') }}
+            {{ stimulus_action('delivery-timeline', 'scroll', 'scroll') }}
+        >
+            <div class="delivery-timeline__days" {{ stimulus_target('delivery-timeline', 'days') }}>
+                {% include 'deliveries/_days.html.twig' with {days: days} only %}
+            </div>
+        </div>
+
+        <p class="delivery-timeline__loading" hidden {{ stimulus_target('delivery-timeline', 'loading') }}>
+            Chargement des journées…
+        </p>
+    </article>
+{% endblock %}

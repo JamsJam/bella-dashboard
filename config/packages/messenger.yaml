@@ -23,6 +23,8 @@ framework:
             Symfony\Component\Notifier\Message\SmsMessage: async
             App\Message\Avatar\RenameAvatarMessage: async
             App\Payment\Stripe\Webhook\Message\StripeCheckoutSessionMessage: async
+            App\Application\Orders\Delivery\DeliveryReminderMessage: async
+            App\Application\Orders\Delivery\AutoDeliverShippedOrderMessage: async
 
             # Route your messages to the transports
             # 'App\Message\YourMessage': async

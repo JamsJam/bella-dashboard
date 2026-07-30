@@ -8,18 +8,24 @@ use App\Application\Config\Provider\OrdersConfigProvider;
 use App\Application\Orders\Exception\InsufficientVariantStockException;
 use App\Application\Orders\Exception\InvalidCheckoutRequestException;
 use App\Application\Orders\Exception\InvalidShippingDestinationException;
+use App\Application\Orders\Workflow\OrderWorkflow;
 use App\Entity\Clothes\ClothesVariant;
 use App\Entity\Orders\Cart;
 use App\Entity\Orders\CartItem;
 use App\Entity\Orders\Orders;
 use App\Entity\Users\Customers;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\DependencyInjection\Attribute\Target;
+use Symfony\Component\Workflow\WorkflowInterface;
 
 final readonly class CheckoutCartService
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
         private OrdersConfigProvider $ordersConfigProvider,
+        private OrderReferenceGenerator $orderReferenceGenerator,
+        #[Target(OrderWorkflow::NAME)]
+        private WorkflowInterface $orderWorkflow,
     ) {
     }
 
@@ -49,7 +55,7 @@ final readonly class CheckoutCartService
                 ->setSubtotal($cart->getSubtotal())
                 ->setTotal($cart->getTotal() + $shippingFee->priceCents)
                 ->setStatus(Orders::STATUS_PENDING_PAYMENT)
-                ->setOrderReference($this->createOrderReference($cart))
+                ->setOrderReference($this->orderReferenceGenerator->generate())
                 ->setFees($shippingFee->priceCents)
                 ->setShippinfo(['destination' => $shippingFee->destination])
                 ->setTva($this->includedVat($cart->getSubtotal(), $vatRate));
@@ -202,14 +208,18 @@ final readonly class CheckoutCartService
             }
 
             $lockedOrder->setStatus($status);
+
+            if (
+                $status === Orders::STATUS_PAYMENT_EXPIRED
+                && $this->orderWorkflow->can($lockedOrder, OrderWorkflow::TRANSITION_CANCEL)
+            ) {
+                $this->orderWorkflow->apply($lockedOrder, OrderWorkflow::TRANSITION_CANCEL);
+            }
+
             $this->entityManager->flush();
 
             return true;
         });
     }
 
-    private function createOrderReference(Cart $cart): string
-    {
-        return sprintf('ORDER-%s-%06d', (new \DateTimeImmutable())->format('Ymd'), (int) $cart->getId());
-    }
 }

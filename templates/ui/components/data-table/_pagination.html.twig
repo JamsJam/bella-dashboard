@@ -1,0 +1,28 @@
+{% if pagination.totalPages > 1 %}
+    <nav class="data-table-pagination" aria-label="Pagination">
+        <p>{{ pagination.totalItems }} résultats · page {{ pagination.page }} sur {{ pagination.totalPages }}</p>
+        <div class="data-table-pagination__actions">
+            <button type="button" data-page="{{ pagination.page - 1 }}" {{ pagination.page <= 1 ? 'disabled' : '' }} data-action="data-table#paginate">
+                Précédent
+            </button>
+
+            {% for page in pagination.pages %}
+                <button
+                    type="button"
+                    data-page="{{ page }}"
+                    class="{{ page == pagination.page ? 'is-active' : '' }}"
+                    aria-current="{{ page == pagination.page ? 'page' : 'false' }}"
+                    data-action="data-table#paginate"
+                >
+                    {{ page }}
+                </button>
+            {% endfor %}
+
+            <button type="button" data-page="{{ pagination.page + 1 }}" {{ pagination.page >= pagination.totalPages ? 'disabled' : '' }} data-action="data-table#paginate">
+                Suivant
+            </button>
+        </div>
+    </nav>
+{% elseif pagination.totalItems > 0 %}
+    <p class="data-table-pagination__single">{{ pagination.totalItems }} résultat{{ pagination.totalItems > 1 ? 's' : '' }}</p>
+{% endif %}

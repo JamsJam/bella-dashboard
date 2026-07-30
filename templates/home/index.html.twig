@@ -55,6 +55,7 @@
                 <header class="dashboard-panel__header"><div><h2 id="actions-title">Actions rapides</h2><p>Accédez à l’essentiel</p></div></header>
                 <nav class="dashboard-actions" aria-label="Actions rapides">
                     {% set actions = [
+                        {route: 'app_orders', icon: 'ep:document', title: 'Gérer les commandes', note: 'Suivre les préparations et les livraisons'},
                         {route: 'app_clothes', icon: 'ep:goods', title: 'Gérer le catalogue', note: lowStockCount ~ ' variante' ~ (lowStockCount > 1 ? 's' : '') ~ ' en stock faible'},
                         {route: 'app_avatar_add', icon: 'ep:upload', title: 'Ajouter des avatars', note: 'Enrichir la bibliothèque'},
                         {route: 'app_config_index', icon: 'ep:setting', title: 'Configuration', note: 'Paramètres de la boutique'}

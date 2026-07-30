@@ -1,2 +1,31 @@
 framework:
-    workflows: null
+    workflows:
+        order:
+            type: state_machine
+            audit_trail:
+                enabled: true
+            marking_store:
+                type: method
+                property: orderStatus
+            supports:
+                - App\Entity\Orders\Orders
+            initial_marking: !php/enum App\Enum\OrderStatus::Created
+            places: !php/enum App\Enum\OrderStatus
+            transitions:
+                process:
+                    from: !php/enum App\Enum\OrderStatus::Created
+                    to: !php/enum App\Enum\OrderStatus::Processing
+                cancel:
+                    from: !php/enum App\Enum\OrderStatus::Created
+                    to: !php/enum App\Enum\OrderStatus::Cancelled
+                schedule_delivery:
+                    from: !php/enum App\Enum\OrderStatus::Processing
+                    to: !php/enum App\Enum\OrderStatus::AwaitingDelivery
+                ship:
+                    from: !php/enum App\Enum\OrderStatus::Processing
+                    to: !php/enum App\Enum\OrderStatus::Shipped
+                mark_delivered:
+                    from:
+                        - !php/enum App\Enum\OrderStatus::AwaitingDelivery
+                        - !php/enum App\Enum\OrderStatus::Shipped
+                    to: !php/enum App\Enum\OrderStatus::Delivered

@@ -10,7 +10,7 @@
 #}
 
 
-<nav class="tabs" role="tablist" aria-label="Actions avatar">
+<nav class="tabs" role="tablist" aria-label="{{ ariaLabel|default('Actions') }}">
     {% for tab in tabs %}
         <a
             role="tab"

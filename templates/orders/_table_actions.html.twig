@@ -1,0 +1,15 @@
+<div class="orders-table-actions">
+    <a class="orders-table-action orders-table-action--primary" href="{{ path('app_orders_show', {id: order.id}) }}">
+        Voir
+    </a>
+    {% if order.customer %}
+        <a class="orders-table-action" href="{{ path('app_customers_show', {id: order.customer.id}) }}">
+            Client
+        </a>
+    {% endif %}
+    {% if order.stripeInvoiceUrl %}
+        <a class="orders-table-action" href="{{ order.stripeInvoiceUrl }}" target="_blank" rel="noopener noreferrer">
+            Facture
+        </a>
+    {% endif %}
+</div>

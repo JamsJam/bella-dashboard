@@ -24,6 +24,7 @@ final class FixtureReferences
     public const CLOTHES_COLORS = 'clothes.color.';
     public const CLOTHES_SIZES = 'clothes.size.';
     public const CLOTHES = 'clothes.item.';
+    public const CLOTHES_VARIANTS = 'clothes.variant.';
 
     public const CUSTOMERS = 'customer.';
 }

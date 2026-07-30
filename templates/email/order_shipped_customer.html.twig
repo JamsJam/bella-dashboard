@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Votre commande a été expédiée</title>
+</head>
+<body style="margin:0;background:#f4f6f8;color:#20242a;font-family:Arial,Helvetica,sans-serif;">
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f4f6f8;padding:32px 12px;">
+    <tr><td align="center">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:640px;background:#ffffff;border:1px solid #e4e7eb;border-radius:16px;overflow:hidden;box-shadow:0 8px 24px rgba(32,36,42,.08);">
+            <tr><td style="padding:28px 32px;border-bottom:1px solid #e4e7eb;font-size:24px;font-weight:800;">BellaGP</td></tr>
+            <tr><td style="padding:32px;">
+                <h1 style="margin:0 0 12px;font-size:26px;line-height:1.25;">Votre commande est en route</h1>
+                <p style="margin:0 0 22px;color:#626b76;font-size:15px;line-height:1.65;">
+                    La commande <strong>{{ order.orderReference }}</strong> a été expédiée.
+                </p>
+                <div style="padding:18px;border:1px solid #e4e7eb;border-radius:10px;background:#f9fafb;">
+                    <div style="color:#737b86;font-size:12px;font-weight:700;text-transform:uppercase;">Numéro d’expédition</div>
+                    <div style="margin-top:7px;color:#20242a;font-size:19px;font-weight:800;letter-spacing:.04em;">{{ order.trackingNumber }}</div>
+                </div>
+                <p style="margin:24px 0 0;color:#626b76;font-size:14px;line-height:1.6;">
+                    Conservez ce numéro pour suivre l’acheminement de votre colis.
+                </p>
+            </td></tr>
+            <tr><td style="padding:20px 32px;background:#f9fafb;border-top:1px solid #e4e7eb;color:#8a929d;font-size:12px;text-align:center;">BellaGP · Merci pour votre confiance.</td></tr>
+        </table>
+    </td></tr>
+</table>
+</body>
+</html>

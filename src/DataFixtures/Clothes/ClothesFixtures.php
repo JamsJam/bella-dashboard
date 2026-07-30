@@ -15,8 +15,9 @@ use App\Entity\SizeGuide;
 use App\Entity\SizeGuideMeasurement;
 use App\Entity\SizeGuideSize;
 use Doctrine\Persistence\ObjectManager;
+use Doctrine\Bundle\FixturesBundle\FixtureGroupInterface;
 
-final class ClothesFixtures extends AbstractBaseFixtures
+final class ClothesFixtures extends AbstractBaseFixtures implements FixtureGroupInterface
 {
     public const CATEGORIES = [
         'T-shirts',
@@ -28,6 +29,8 @@ final class ClothesFixtures extends AbstractBaseFixtures
         'Bella Basic',
         'Urban Mood',
         'Soft Club',
+        'Island Days',
+        'Tropical Line',
     ];
 
     public const COLORS = [
@@ -239,12 +242,18 @@ final class ClothesFixtures extends AbstractBaseFixtures
 
                     $clothe->addVariant($variant);
                     $this->addReference(FixtureReferences::CLOTHES.$referenceIndex, $clothe);
+                    $this->addReference(FixtureReferences::CLOTHES_VARIANTS.$referenceIndex, $variant);
                     $referenceIndex++;
                 }
 
                 $this->persistTouched($manager, $clothe);
             }
         }
+    }
+
+    public static function getGroups(): array
+    {
+        return ['commerce-test'];
     }
 
     /**

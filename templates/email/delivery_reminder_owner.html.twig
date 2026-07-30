@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <title>Rappel de livraison</title>
+</head>
+<body>
+    <h1>Livraison prévue demain</h1>
+
+    <p>
+        La commande <strong>{{ order.orderReference }}</strong> doit être livrée
+        le <strong>{{ deliveryDate|date('d/m/Y') }}</strong>.
+    </p>
+
+    <p>Merci de vérifier que la commande est prête pour sa livraison.</p>
+</body>
+</html>
