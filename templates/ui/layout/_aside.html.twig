@@ -54,11 +54,6 @@
                 label: 'Liste des clients',
                 icon: 'ep:user',
                 path: 'app_customers'
-            },
-            {
-                label: 'Créer un client',
-                icon: 'ep:plus',
-                path: 'app_dashboard'
             }
         ]
     },
@@ -75,11 +70,6 @@
                 label: 'Livraisons',
                 icon: 'lucide:truck',
                 path: 'app_orders_deliveries'
-            },
-            {
-                label: 'Commandes en attente',
-                icon: null,
-                path: 'app_dashboard'
             }
         ]
     },
@@ -121,19 +111,8 @@
     },
     {
         title: 'Déconnexion',
-        path: 'app_dashboard',
-        children: [
-            {
-                label: 'Configuration',
-                icon: 'ep:setting',
-                path: 'app_dashboard'
-            },
-            {
-                label: 'Logs',
-                icon: 'ep:warning',
-                path: 'app_dashboard'
-            }
-        ]
+        path: 'app_logout',
+        children: []
     }
 ] %}
 

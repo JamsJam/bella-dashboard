@@ -27,15 +27,15 @@
 
         background-color: var(--bg);
         &.open,
-        &.active{
+        &.active {
             background-color: var(--bg-light);
             color: var(--text);
-            
+        }
+
+        &.open {
             svg{
-                
-                    transform: rotate(90deg)
-                }
-            
+                transform: rotate(90deg)
+            }
         }
         
         svg{
