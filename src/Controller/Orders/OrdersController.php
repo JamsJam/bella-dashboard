@@ -8,11 +8,10 @@ use App\Application\Orders\Delivery\DeliveryReminderMessage;
 use App\Application\Orders\Mapper\OrderStatusSortMapper;
 use App\Application\Orders\Workflow\OrderWorkflow;
 use App\Entity\Orders\Orders;
-use App\Entity\Reviews\Review;
 use App\Enum\OrderStatus;
-use App\Enum\ReviewStatus;
 use App\Service\BreadscrumbsService;
 use App\Notifier\Services\EmailNotificationService;
+use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\Attribute\Target;
@@ -74,6 +73,8 @@ final class OrdersController extends AbstractController
             throw $this->createNotFoundException('Commande introuvable.');
         }
 
+        $reviewSummaries = $this->reviewSummaries([$order], $entityManager);
+
         return $this->render('orders/show.html.twig', [
             'breadscrumbs' => $breadscrumbs->resolve(
                 route: (string) $request->attributes->get('_route'),
@@ -82,6 +83,7 @@ final class OrdersController extends AbstractController
             ),
             'order' => $order,
             'minimumDeliveryDate' => $deliveryDatePolicy->minimumDeliveryDate(),
+            'reviewSummary' => $reviewSummaries[$id] ?? ['total' => 0, 'average' => null, 'reviewUuids' => []],
         ]);
     }
 
@@ -433,7 +435,7 @@ final class OrdersController extends AbstractController
         ];
     }
 
-    /** @param array{total: int, average: float|null} $reviewSummary */
+    /** @param array{total: int, average: float|null, reviewUuids?: list<string>} $reviewSummary */
     private function mapOrder(Orders $order, DeliveryDatePolicy $deliveryDatePolicy, array $reviewSummary): array
     {
         return [
@@ -456,7 +458,7 @@ final class OrdersController extends AbstractController
 
     /**
      * @param list<Orders> $orders
-     * @return array<int, array{total: int, average: float|null}>
+     * @return array<int, array{total: int, average: float|null, reviewUuids: list<string>}>
      */
     private function reviewSummaries(array $orders, EntityManagerInterface $entityManager): array
     {
@@ -468,25 +470,45 @@ final class OrdersController extends AbstractController
             return [];
         }
 
-        $rows = $entityManager->getRepository(Review::class)
-            ->createQueryBuilder('review')
-            ->select('IDENTITY(review.order) AS orderId')
-            ->addSelect('COUNT(review.id) AS total')
-            ->addSelect('AVG(CASE WHEN review.status = :accepted THEN review.rating ELSE NULL END) AS average')
-            ->andWhere('review.order IN (:orders)')
-            ->setParameter('orders', $orderIds)
-            ->setParameter('accepted', ReviewStatus::Accepted)
-            ->groupBy('review.order')
-            ->getQuery()
-            ->getArrayResult();
+        $rows = $entityManager->getConnection()
+            ->createQueryBuilder()
+            ->select('review.order_id', 'review.review_uuid', 'review.rating')
+            ->from('review', 'review')
+            ->where('review.order_id IN (:orderIds)')
+            ->setParameter('orderIds', $orderIds, ArrayParameterType::INTEGER)
+            ->orderBy('review.id', 'ASC')
+            ->executeQuery()
+            ->fetchAllAssociative();
 
         $summaries = [];
         foreach ($rows as $row) {
-            $summaries[(int) $row['orderId']] = [
-                'total' => (int) $row['total'],
-                'average' => $row['average'] === null ? null : round((float) $row['average'], 1),
+            $orderId = (int) $row['order_id'];
+            $summaries[$orderId] ??= [
+                'total' => 0,
+                'average' => null,
+                'reviewUuids' => [],
+                '_ratingTotal' => 0,
+                '_ratingCount' => 0,
             ];
+            ++$summaries[$orderId]['total'];
+            $summaries[$orderId]['reviewUuids'][] = (string) $row['review_uuid'];
+
+            if ($row['rating'] !== null) {
+                $summaries[$orderId]['_ratingTotal'] += (int) $row['rating'];
+                ++$summaries[$orderId]['_ratingCount'];
+            }
         }
+
+        foreach ($summaries as &$summary) {
+            if ($summary['_ratingCount'] > 0) {
+                $summary['average'] = round(
+                    $summary['_ratingTotal'] / $summary['_ratingCount'],
+                    1,
+                );
+            }
+            unset($summary['_ratingTotal'], $summary['_ratingCount']);
+        }
+        unset($summary);
 
         return $summaries;
     }

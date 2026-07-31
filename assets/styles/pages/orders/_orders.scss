@@ -91,6 +91,10 @@
 .order-panel > header span { color: var(--text-muted); font-size: .7rem; }
 .order-panel address { margin: .9rem 0; color: var(--text-muted); font-style: normal; line-height: 1.6; }
 .order-panel > a { color: var(--primary); overflow-wrap: anywhere; }
+.order-panel--reviews .order-reviews { margin-top: .9rem; }
+.order-panel--reviews .order-reviews__stars { font-size: 1.25rem; }
+.order-panel--reviews .order-reviews strong { font-size: .85rem; }
+.order-panel--reviews .order-reviews__empty { display: block; margin-top: .9rem; }
 .order-items { display: flex; flex-direction: column; }
 .order-item { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .9rem 0; border-bottom: 1px solid var(--border-muted); }
 .order-item div { display: flex; flex-direction: column; gap: .3rem; }

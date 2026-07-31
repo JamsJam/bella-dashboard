@@ -42,6 +42,11 @@
             </main>
 
             <aside class="order-show__aside">
+                <section class="order-panel order-panel--reviews">
+                    <header><h2>Avis</h2><span>{{ reviewSummary.total }} avis</span></header>
+                    {% include 'orders/_reviews_cell.html.twig' with {order: order, reviewSummary: reviewSummary} only %}
+                </section>
+
                 <section class="order-panel">
                     <header><h2>Client</h2></header>
                     {% if order.customer %}
