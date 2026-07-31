@@ -24,7 +24,6 @@ final class Version20260731133629 extends AbstractMigration
         $this->addSql('ALTER TABLE review ADD CONSTRAINT FK_794381C64584665A FOREIGN KEY (product_id) REFERENCES clothes_variant (id) ON DELETE CASCADE');
         $this->addSql('ALTER TABLE review ADD CONSTRAINT FK_794381C68D9F6D38 FOREIGN KEY (order_id) REFERENCES orders (id) ON DELETE CASCADE');
         $this->addSql('ALTER TABLE review ADD CONSTRAINT FK_794381C6C3568B40 FOREIGN KEY (customers_id) REFERENCES customers (id) ON DELETE CASCADE');
-        $this->addSql('CREATE INDEX IDX_CLOTHES_VARIANT_SLUG ON clothes_variant (slug)');
     }
 
     public function down(Schema $schema): void
@@ -34,6 +33,6 @@ final class Version20260731133629 extends AbstractMigration
         $this->addSql('ALTER TABLE review DROP FOREIGN KEY FK_794381C68D9F6D38');
         $this->addSql('ALTER TABLE review DROP FOREIGN KEY FK_794381C6C3568B40');
         $this->addSql('DROP TABLE review');
-        $this->addSql('DROP INDEX IDX_CLOTHES_VARIANT_SLUG ON clothes_variant');
+        
     }
 }
