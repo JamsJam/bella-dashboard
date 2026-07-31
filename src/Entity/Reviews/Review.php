@@ -113,10 +113,26 @@ class Review
         $this->moderate(ReviewStatus::Rejected, $reply, $now);
     }
 
+    public function updateReply(string $reply, ?\DateTimeImmutable $now = null): void
+    {
+        if (!in_array($this->status, [ReviewStatus::Accepted, ReviewStatus::Rejected], true)) {
+            throw new \DomainException('Seul un avis déjà modéré peut recevoir une réponse.');
+        }
+
+        $reply = trim($reply);
+        if ($reply === '' || mb_strlen($reply) > 200) {
+            throw new \InvalidArgumentException('La réponse doit contenir entre 1 et 200 caractères.');
+        }
+
+        $this->reply = $reply;
+        $this->replyAt = $now ?? new \DateTimeImmutable();
+        $this->updatedAt = $this->replyAt;
+    }
+
     private function moderate(ReviewStatus $status, ?string $reply, ?\DateTimeImmutable $now): void
     {
-        if ($this->status !== ReviewStatus::Pending) {
-            throw new \DomainException('Seul un avis en attente peut être modéré.');
+        if ($this->status === ReviewStatus::Requested) {
+            throw new \DomainException('Un avis sans note ne peut pas être modéré.');
         }
         $reply = $reply === null ? null : trim($reply);
         if ($reply !== null && mb_strlen($reply) > 200) {

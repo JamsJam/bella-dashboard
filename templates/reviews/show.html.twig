@@ -30,21 +30,23 @@
 
             <section class="review-show__card">
                 <h2>Modération</h2>
-                {% if review.status.value == 'pending' %}
+                {% if review.status.value != 'requested' %}
                     <form class="review-show__form" method="post" action="{{ path('app_review_moderate', {id: review.id}) }}">
-                        <input type="hidden" name="_csrf_token" value="{{ csrf_token('moderate_review_' ~ review.id) }}">
-                        <label><span>Réponse au client <small>(facultative)</small></span><textarea name="reply" maxlength="200" rows="5" placeholder="Votre réponse…"></textarea></label>
+                        <input type="hidden" name="_csrf_token" value="{{ csrf_token('review_action_' ~ review.id) }}">
+                        {% if review.status.value != 'pending' %}
+                            <p class="review-show__decision">Décision actuelle : <strong>{{ review.status.label }}</strong>{% if review.replyAt %}, le {{ review.replyAt|date('d/m/Y à H:i') }}{% endif %}</p>
+                        {% endif %}
+                        <label><span>Réponse au client <small>(facultative)</small></span><textarea name="reply" maxlength="200" rows="5" placeholder="Votre réponse…">{{ review.reply }}</textarea></label>
                         <div class="review-show__actions">
-                            <button type="submit" name="decision" value="accepted" class="review-show__button review-show__button--accept">Accepter l’avis</button>
-                            <button type="submit" name="decision" value="rejected" class="review-show__button review-show__button--reject">Refuser l’avis</button>
+                            {% if review.status.value in ['accepted', 'rejected'] %}
+                                <button type="submit" formaction="{{ path('app_review_reply', {id: review.id}) }}" class="review-show__button review-show__button--reply">{{ review.reply ? 'Modifier la réponse' : 'Envoyer la réponse' }}</button>
+                            {% endif %}
+                            <button type="submit" name="decision" value="accepted" class="review-show__button review-show__button--accept">{{ review.status.value == 'accepted' ? 'Confirmer l’acceptation' : 'Accepter l’avis' }}</button>
+                            <button type="submit" name="decision" value="rejected" class="review-show__button review-show__button--reject">{{ review.status.value == 'rejected' ? 'Confirmer le refus' : 'Refuser l’avis' }}</button>
                         </div>
                     </form>
-                {% elseif review.status.value == 'requested' %}
-                    <p class="review-show__muted">Le client n’a pas encore répondu à la demande d’avis.</p>
                 {% else %}
-                    <p class="review-show__decision">Décision : <strong>{{ review.status.label }}</strong></p>
-                    {% if review.reply %}<p class="review-show__reply">{{ review.reply }}</p>{% endif %}
-                    <small class="review-show__muted">Traitée le {{ review.replyAt|date('d/m/Y à H:i') }}</small>
+                    <p class="review-show__muted">Le client n’a pas encore répondu à la demande d’avis.</p>
                 {% endif %}
             </section>
         </div>

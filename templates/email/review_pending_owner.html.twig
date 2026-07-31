@@ -1,6 +1,46 @@
-<!doctype html><html lang="fr"><body>
-<h1>Nouvel avis à modérer</h1>
-<p>Un nouvel avis a été envoyé pour la commande <strong>{{ review.order.orderReference }}</strong> par {{ review.customer.email }}.</p>
-<p><strong>{{ review.product.name }}</strong> — {{ review.rating }}/5</p>
-<p>{{ review.comment }}</p>
-</body></html>
+<!doctype html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Nouvel avis à modérer</title>
+</head>
+<body style="margin:0;background:#f4f6f8;color:#20242a;font-family:Arial,Helvetica,sans-serif;">
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f4f6f8;padding:32px 12px;">
+    <tr><td align="center">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:640px;background:#ffffff;border:1px solid #e4e7eb;border-radius:16px;overflow:hidden;box-shadow:0 8px 24px rgba(32,36,42,.08);">
+            <tr><td style="background:#ffffff;border-bottom:1px solid #e4e7eb;padding:28px 32px;">
+                <div style="font-size:24px;font-weight:800;letter-spacing:-.5px;color:#20242a;">BellaGP</div>
+                <div style="margin-top:6px;font-size:13px;color:#737b86;">Commande {{ review.order.orderReference }}</div>
+            </td></tr>
+            <tr><td style="padding:32px;">
+                <div style="display:inline-block;margin-bottom:18px;padding:6px 10px;border-radius:999px;background:#fff7d6;color:#735c00;font-size:12px;font-weight:800;">À MODÉRER</div>
+                <h1 style="margin:0 0 12px;font-size:26px;line-height:1.25;color:#20242a;">Nouvel avis client</h1>
+                <p style="margin:0 0 24px;color:#626b76;font-size:15px;line-height:1.65;">
+                    <strong style="color:#20242a;">{{ review.customer.email }}</strong> a publié un avis sur un article de la commande <strong style="color:#20242a;">{{ review.order.orderReference }}</strong>.
+                </p>
+
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-bottom:18px;border:1px solid #e4e7eb;border-radius:10px;background:#f9fafb;">
+                    <tr>
+                        <td style="padding:20px;">
+                            <div style="font-size:13px;color:#737b86;">Produit</div>
+                            <div style="margin-top:5px;font-size:17px;font-weight:800;color:#20242a;">{{ review.product.name }}</div>
+                            <div style="margin-top:12px;color:#d69e00;font-size:22px;letter-spacing:2px;" aria-label="{{ review.rating }} étoiles sur 5">
+                                {% for star in 1..5 %}{{ star <= review.rating ? '★' : '☆' }}{% endfor %}
+                                <span style="margin-left:6px;color:#20242a;font-size:14px;font-weight:800;letter-spacing:0;">{{ review.rating }}/5</span>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+
+                <div style="padding:20px;border-left:4px solid #005066;border-radius:4px 10px 10px 4px;background:#f5fafb;color:#343a42;font-size:15px;font-style:italic;line-height:1.65;">
+                    « {{ review.comment }} »
+                </div>
+                <p style="margin:24px 0 0;color:#626b76;font-size:14px;line-height:1.6;">Cet avis est disponible dans le tableau de bord pour validation ou refus.</p>
+            </td></tr>
+            <tr><td style="padding:20px 32px;background:#f9fafb;border-top:1px solid #e4e7eb;color:#8a929d;font-size:12px;text-align:center;">BellaGP · Notification de modération</td></tr>
+        </table>
+    </td></tr>
+</table>
+</body>
+</html>

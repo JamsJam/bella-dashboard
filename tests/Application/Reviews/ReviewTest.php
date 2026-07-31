@@ -44,4 +44,40 @@ final class ReviewTest extends TestCase
         $this->expectException(\DomainException::class);
         $review->submit(3, 'Autre commentaire');
     }
+
+    public function testAcceptedReviewCanBeRejectedAfterANewModeration(): void
+    {
+        $review = new Review(new ClothesVariant(), new Orders(), new Customers());
+        $review->submit(5, 'Très beau produit.');
+        $review->accept('Merci pour votre avis.');
+
+        $review->reject('Décision corrigée après une nouvelle vérification.');
+
+        self::assertSame(ReviewStatus::Rejected, $review->getStatus());
+        self::assertSame('Décision corrigée après une nouvelle vérification.', $review->getReply());
+    }
+
+    public function testRejectedReviewCanBeAcceptedAfterANewModeration(): void
+    {
+        $review = new Review(new ClothesVariant(), new Orders(), new Customers());
+        $review->submit(4, 'Produit conforme.');
+        $review->reject();
+
+        $review->accept('Votre avis a finalement été validé.');
+
+        self::assertSame(ReviewStatus::Accepted, $review->getStatus());
+    }
+
+    public function testReplyCanBeAddedWithoutChangingAcceptedStatus(): void
+    {
+        $review = new Review(new ClothesVariant(), new Orders(), new Customers());
+        $review->submit(5, 'Très satisfaite.');
+        $review->accept();
+
+        $review->updateReply('Merci pour votre confiance.');
+
+        self::assertSame(ReviewStatus::Accepted, $review->getStatus());
+        self::assertSame('Merci pour votre confiance.', $review->getReply());
+        self::assertNotNull($review->getReplyAt());
+    }
 }

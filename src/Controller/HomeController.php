@@ -40,20 +40,24 @@ final class HomeController extends AbstractController
         ]);
     }
 
-    /** @return array{average: float, accepted: int} */
+    /** @return array{acceptedAverage: float, totalAverage: float, accepted: int, total: int} */
     private function reviewsSummary(Connection $connection): array
     {
         $row = $connection->createQueryBuilder()
-            ->select('COALESCE(AVG(CASE WHEN status = :accepted THEN rating END), 0) AS average')
+            ->select('COALESCE(AVG(CASE WHEN status = :accepted THEN rating END), 0) AS accepted_average')
+            ->addSelect('COALESCE(AVG(rating), 0) AS total_average')
             ->addSelect('SUM(CASE WHEN status = :accepted THEN 1 ELSE 0 END) AS accepted')
+            ->addSelect('COUNT(rating) AS total')
             ->from('review')
             ->setParameter('accepted', 'accepted')
             ->executeQuery()
             ->fetchAssociative();
 
         return [
-            'average' => round((float) ($row['average'] ?? 0), 1),
+            'acceptedAverage' => round((float) ($row['accepted_average'] ?? 0), 1),
+            'totalAverage' => round((float) ($row['total_average'] ?? 0), 1),
             'accepted' => (int) ($row['accepted'] ?? 0),
+            'total' => (int) ($row['total'] ?? 0),
         ];
     }
 }

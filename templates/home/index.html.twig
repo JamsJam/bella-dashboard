@@ -20,16 +20,37 @@
                 {class: '', icon: 'ep:document', label: 'Commandes', value: summary.orders, note: summary.pending ~ ' à traiter'},
                 {class: '', icon: 'ep:user', label: 'Clients', value: customersCount, note: 'Comptes enregistrés'},
                 {class: '', icon: 'ep:goods', label: 'Produits', value: productsCount, note: onlineProductsCount ~ ' actuellement en ligne'},
-                {class: ' dashboard-stat--reviews', icon: 'ep:star', label: 'Satisfaction client', value: reviewsSummary.average|number_format(1, ',', ' ') ~ '/5', note: reviewsSummary.accepted ~ ' avis validé' ~ (reviewsSummary.accepted > 1 ? 's' : ''), rating: reviewsSummary.average}
+                {
+                    class: ' dashboard-stat--reviews',
+                    icon: 'ep:star',
+                    label: 'Satisfaction client',
+                    value: reviewsSummary.acceptedAverage|number_format(1, ',', ' ') ~ '/5',
+                    rating: reviewsSummary.acceptedAverage,
+                    ratingLabel: 'Avis validés',
+                    secondaryValue: reviewsSummary.totalAverage|number_format(1, ',', ' ') ~ '/5',
+                    secondaryRating: reviewsSummary.totalAverage,
+                    secondaryRatingLabel: 'Tous les avis',
+                    note: reviewsSummary.accepted ~ ' validé' ~ (reviewsSummary.accepted > 1 ? 's' : '') ~ ' sur ' ~ reviewsSummary.total ~ ' avis noté' ~ (reviewsSummary.total > 1 ? 's' : '')
+                }
             ] %}
             {% for stat in stats %}
                 <article class="dashboard-stat{{ stat.class }}">
                     <div class="dashboard-stat__icon">{{ ux_icon(stat.icon) }}</div>
                     <p>{{ stat.label }}</p>
                     {% if stat.rating is defined %}
-                        <div class="dashboard-stat__rating" aria-label="Note moyenne : {{ stat.value }}">
-                            <span aria-hidden="true">{% for star in 1..5 %}<i class="{{ star <= stat.rating|round ? 'is-filled' : '' }}">★</i>{% endfor %}</span>
-                            <strong>{{ stat.value }}</strong>
+                        <div class="dashboard-stat__rating" aria-label="Moyenne des avis validés : {{ stat.value }}{% if stat.secondaryValue is defined %}, moyenne de tous les avis : {{ stat.secondaryValue }}{% endif %}">
+                            <div class="dashboard-stat__rating-row">
+                                <small>{{ stat.ratingLabel }}</small>
+                                <span aria-hidden="true">{% for star in 1..5 %}<i class="{{ star <= stat.rating|round ? 'is-filled' : '' }}">★</i>{% endfor %}</span>
+                                <strong>{{ stat.value }}</strong>
+                            </div>
+                            {% if stat.secondaryRating is defined %}
+                                <div class="dashboard-stat__rating-row">
+                                    <small>{{ stat.secondaryRatingLabel }}</small>
+                                    <span aria-hidden="true">{% for star in 1..5 %}<i class="{{ star <= stat.secondaryRating|round ? 'is-filled' : '' }}">★</i>{% endfor %}</span>
+                                    <strong>{{ stat.secondaryValue }}</strong>
+                                </div>
+                            {% endif %}
                         </div>
                     {% else %}
                         <strong>{{ stat.value }}</strong>

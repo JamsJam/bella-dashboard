@@ -40,4 +40,20 @@ final readonly class ReviewWorkflowService
             );
         }
     }
+
+    public function reply(Review $review, string $reply): void
+    {
+        $review->updateReply($reply, $this->clock->now());
+        $this->entityManager->flush();
+
+        $email = $review->getCustomer()->getEmail();
+        if ($email !== null && $email !== '') {
+            $this->emails->sendTemplatedEmail(
+                $email,
+                'BellaGP a répondu à votre avis',
+                'email/review_moderated_customer.html.twig',
+                ['review' => $review],
+            );
+        }
+    }
 }

@@ -15,13 +15,18 @@
         <section class="reviews-summary" aria-label="Résumé des avis">
             <article class="reviews-summary__card reviews-summary__card--average">
                 <span>Note moyenne</span>
-                <strong class="reviews-summary__average" aria-label="Note moyenne : {{ summary.average|number_format(1, ',', ' ') }} sur 5">
-                    <span class="reviews-summary__stars" aria-hidden="true">
-                        {% for star in 1..5 %}<span class="{{ star <= summary.average|round ? 'is-filled' : '' }}">★</span>{% endfor %}
-                    </span>
-                    <small>{{ summary.average|number_format(1, ',', ' ') }}/5</small>
-                </strong>
-                <small>Avis validés</small>
+                <div class="reviews-summary__averages">
+                    <strong class="reviews-summary__average" aria-label="Moyenne des avis validés : {{ summary.acceptedAverage|number_format(1, ',', ' ') }} sur 5">
+                        <small>Avis validés</small>
+                        <span class="reviews-summary__stars" aria-hidden="true">{% for star in 1..5 %}<span class="{{ star <= summary.acceptedAverage|round ? 'is-filled' : '' }}">★</span>{% endfor %}</span>
+                        <em>{{ summary.acceptedAverage|number_format(1, ',', ' ') }}/5</em>
+                    </strong>
+                    <strong class="reviews-summary__average" aria-label="Moyenne de tous les avis : {{ summary.totalAverage|number_format(1, ',', ' ') }} sur 5">
+                        <small>Tous les avis</small>
+                        <span class="reviews-summary__stars" aria-hidden="true">{% for star in 1..5 %}<span class="{{ star <= summary.totalAverage|round ? 'is-filled' : '' }}">★</span>{% endfor %}</span>
+                        <em>{{ summary.totalAverage|number_format(1, ',', ' ') }}/5</em>
+                    </strong>
+                </div>
             </article>
             <article class="reviews-summary__card reviews-summary__card--primary"><span>Total des avis</span><strong>{{ summary.total }}</strong><small>Avis enregistrés</small></article>
             <article class="reviews-summary__card reviews-summary__card--pending"><span>À modérer</span><strong>{{ summary.pending }}</strong><small>Action requise</small></article>

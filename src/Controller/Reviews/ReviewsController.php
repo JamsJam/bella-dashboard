@@ -6,6 +6,7 @@ use App\Entity\Reviews\Review;
 use App\Enum\ReviewStatus;
 use App\Repository\Reviews\ReviewRepository;
 use App\Service\BreadscrumbsService;
+use Doctrine\DBAL\Connection;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -31,12 +32,12 @@ final class ReviewsController extends AbstractController
     ];
 
     #[Route('/reviews', name: 'app_reviews', methods: ['GET'])]
-    public function index(Request $request, ReviewRepository $reviews, BreadscrumbsService $breadcrumbs): Response
+    public function index(Request $request, ReviewRepository $reviews, BreadscrumbsService $breadcrumbs, Connection $connection): Response
     {
         return $this->render('reviews/index.html.twig', [
             'breadscrumbs' => $breadcrumbs->resolve('app_reviews'),
             'table' => $this->createTableData($request, $reviews),
-            'summary' => $this->createSummary($reviews),
+            'summary' => $this->createSummary($connection),
         ]);
     }
 
@@ -117,20 +118,25 @@ final class ReviewsController extends AbstractController
         ];
     }
 
-    /** @return array{total: int, pending: int, average: float} */
-    private function createSummary(ReviewRepository $reviews): array
+    /** @return array{total: int, pending: int, acceptedAverage: float, totalAverage: float} */
+    private function createSummary(Connection $connection): array
     {
-        $average = $reviews->createQueryBuilder('review')
-            ->select('COALESCE(AVG(review.rating), 0)')
-            ->andWhere('review.status = :status')
-            ->setParameter('status', ReviewStatus::Accepted)
-            ->getQuery()
-            ->getSingleScalarResult();
+        $row = $connection->createQueryBuilder()
+            ->select('COUNT(*) AS total')
+            ->addSelect('SUM(CASE WHEN status = :pending THEN 1 ELSE 0 END) AS pending')
+            ->addSelect('COALESCE(AVG(CASE WHEN status = :accepted THEN rating END), 0) AS accepted_average')
+            ->addSelect('COALESCE(AVG(rating), 0) AS total_average')
+            ->from('review')
+            ->setParameter('pending', ReviewStatus::Pending->value)
+            ->setParameter('accepted', ReviewStatus::Accepted->value)
+            ->executeQuery()
+            ->fetchAssociative();
 
         return [
-            'total' => $reviews->count([]),
-            'pending' => $reviews->count(['status' => ReviewStatus::Pending]),
-            'average' => round((float) $average, 1),
+            'total' => (int) ($row['total'] ?? 0),
+            'pending' => (int) ($row['pending'] ?? 0),
+            'acceptedAverage' => round((float) ($row['accepted_average'] ?? 0), 1),
+            'totalAverage' => round((float) ($row['total_average'] ?? 0), 1),
         ];
     }
 }
