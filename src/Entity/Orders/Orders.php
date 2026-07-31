@@ -75,6 +75,12 @@ class Orders
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $trackingNumber = null;
 
+    #[ORM\Column(length: 100, nullable: true)]
+    private ?string $carrierName = null;
+
+    #[ORM\Column(length: 2048, nullable: true)]
+    private ?string $carrierTrackingUrl = null;
+
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $shippedAt = null;
 
@@ -325,6 +331,41 @@ class Orders
         $this->setEditedAt(new \DateTimeImmutable());
 
         return $this;
+    }
+
+    public function getCarrierName(): ?string
+    {
+        return $this->carrierName;
+    }
+
+    public function setCarrierName(?string $carrierName): static
+    {
+        $this->carrierName = $carrierName !== null ? trim($carrierName) : null;
+        $this->setEditedAt(new \DateTimeImmutable());
+
+        return $this;
+    }
+
+    public function getCarrierTrackingUrl(): ?string
+    {
+        return $this->carrierTrackingUrl;
+    }
+
+    public function setCarrierTrackingUrl(?string $carrierTrackingUrl): static
+    {
+        $this->carrierTrackingUrl = $carrierTrackingUrl !== null ? trim($carrierTrackingUrl) : null;
+        $this->setEditedAt(new \DateTimeImmutable());
+
+        return $this;
+    }
+
+    public function getTrackingUrl(): ?string
+    {
+        if ($this->carrierTrackingUrl === null || $this->carrierTrackingUrl === '' || $this->trackingNumber === null || $this->trackingNumber === '') {
+            return null;
+        }
+
+        return $this->carrierTrackingUrl.rawurlencode($this->trackingNumber);
     }
 
     public function getShippedAt(): ?\DateTimeImmutable

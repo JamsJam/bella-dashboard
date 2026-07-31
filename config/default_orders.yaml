@@ -1,4 +1,14 @@
 vat: 20.0
+carriers:
+    -
+        name: La Poste
+        tracking_url: 'https://www.laposte.fr/outils/suivre-vos-envois?code='
+    -
+        name: Colissimo
+        tracking_url: 'https://www.laposte.fr/outils/suivre-vos-envois?code='
+    -
+        name: DPD
+        tracking_url: 'https://trace.dpd.fr/fr/trace/'
 shipping_fees:
     -
         destination: Guadeloupe

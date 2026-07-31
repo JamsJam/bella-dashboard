@@ -20,7 +20,8 @@
     </a>
 {% elseif order.orderStatus.value == 'shipped' %}
     <div class="order-shipment">
-        <strong>{{ order.trackingNumber }}</strong>
+        <strong>{{ order.carrierName ? order.carrierName ~ ' · ' : '' }}{{ order.trackingNumber }}</strong>
+        {% if order.trackingUrl %}<a href="{{ order.trackingUrl }}" target="_blank" rel="noopener noreferrer">Suivre le colis</a>{% endif %}
         <a
             href="{{ path('app_orders_deliveries_delivered_modal', {id: order.id}) }}"
             data-turbo-stream
@@ -30,7 +31,8 @@
     </div>
 {% elseif order.orderStatus.value == 'delivered' and order.trackingNumber %}
     <div class="order-shipment">
-        <strong>{{ order.trackingNumber }}</strong>
+        <strong>{{ order.carrierName ? order.carrierName ~ ' · ' : '' }}{{ order.trackingNumber }}</strong>
+        {% if order.trackingUrl %}<a href="{{ order.trackingUrl }}" target="_blank" rel="noopener noreferrer">Suivre le colis</a>{% endif %}
         <small>Livrée</small>
     </div>
 {% else %}

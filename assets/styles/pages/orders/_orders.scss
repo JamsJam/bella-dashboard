@@ -79,9 +79,16 @@
 .delivery-calendar__day--outside { visibility: hidden; }
 .delivery-calendar small { color: var(--text-muted); font-size: .7rem; }
 .order-delivery-modal .orders-table-action:disabled { cursor: not-allowed; opacity: .5; }
-.order-shipment-modal__tracking { display: flex; flex-direction: column; gap: .45rem; font-weight: 700; }
-.order-shipment-modal__tracking input { padding: .7rem .75rem; border: 1px solid var(--border); border-radius: .4rem; background: var(--bg); color: var(--text); font: inherit; }
-.order-shipment-modal__tracking small { color: var(--text-muted); font-size: .7rem; font-weight: 400; }
+.order-shipment-modal { inline-size: min(32rem, calc(100vw - 2rem)); }
+.order-shipment-modal__tracking { display: grid; gap: 1rem; }
+.order-shipment-modal__field { display: grid; gap: .45rem; min-inline-size: 0; }
+.order-shipment-modal__field label { color: var(--text); font-size: .78rem; font-weight: 500; }
+.order-shipment-modal__tracking input,
+.order-shipment-modal__tracking select { inline-size: 100%; min-block-size: 2.75rem; padding: .7rem .75rem; border: 1px solid var(--border); border-radius: .5rem; background: var(--bg); color: var(--text); font-family: inherit; font-size: .82rem; font-weight: 400; line-height: 1.4; transition: border-color .2s ease, box-shadow .2s ease; }
+.order-shipment-modal__tracking input:focus,
+.order-shipment-modal__tracking select:focus { border-color: var(--primary); outline: 0; box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 18%, transparent); }
+.order-shipment-modal__tracking small { color: var(--text-muted); font-size: .7rem; font-weight: 400; line-height: 1.4; }
+.order-shipment-modal__field ul { margin: 0; padding: 0; color: var(--danger, #c0392b); font-size: .7rem; list-style: none; }
 
 .order-show { color: var(--text); }
 .order-show__header { display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; padding: 1.15rem; border: 1px solid var(--border-muted); border-radius: .75rem; background: var(--bg-light); color: var(--text); }

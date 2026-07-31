@@ -1,6 +1,6 @@
 <div class="modal-backdrop">
     <dialog class="modal order-shipment-modal" open aria-labelledby="order-shipment-modal-title">
-        <form method="post" action="{{ path('app_orders_shipment', {id: order.id}) }}" data-turbo="false">
+        {{ form_start(form, {attr: {'data-turbo': 'false'}}) }}
             <header class="modal__header">
                 <div>
                     <h2 id="order-shipment-modal-title">Expédier la commande</h2>
@@ -12,19 +12,19 @@
             </header>
 
             <div class="modal__body">
-                <label class="order-shipment-modal__tracking">
-                    <span>Numéro d’expédition</span>
-                    <input
-                        type="text"
-                        name="tracking_number"
-                        maxlength="255"
-                        autocomplete="off"
-                        required
-                        autofocus
-                    >
-                    <small>Ce numéro sera communiqué au client par e-mail.</small>
-                </label>
-                <input type="hidden" name="_csrf_token" value="{{ csrf_token('ship_order_' ~ order.id) }}">
+                <div class="order-shipment-modal__tracking">
+                    <div class="order-shipment-modal__field">
+                        {{ form_label(form.carrier) }}
+                        {{ form_widget(form.carrier) }}
+                        {{ form_errors(form.carrier) }}
+                    </div>
+                    <div class="order-shipment-modal__field">
+                        {{ form_label(form.trackingNumber) }}
+                        {{ form_widget(form.trackingNumber) }}
+                        {{ form_help(form.trackingNumber) }}
+                        {{ form_errors(form.trackingNumber) }}
+                    </div>
+                </div>
             </div>
 
             <footer class="modal__actions">
@@ -35,6 +35,6 @@
                     Confirmer l’expédition
                 </button>
             </footer>
-        </form>
+        {{ form_end(form) }}
     </dialog>
 </div>

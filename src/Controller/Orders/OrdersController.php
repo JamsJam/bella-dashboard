@@ -5,6 +5,9 @@ namespace App\Controller\Orders;
 use App\Application\Orders\Delivery\DeliveryDatePolicy;
 use App\Application\Orders\Delivery\AutoDeliverShippedOrderMessage;
 use App\Application\Orders\Delivery\DeliveryReminderMessage;
+use App\Application\Config\Provider\OrdersConfigProvider;
+use App\Application\Orders\Dto\ShipmentDto;
+use App\Application\Orders\Form\ShipmentType;
 use App\Application\Orders\Mapper\OrderStatusSortMapper;
 use App\Application\Orders\Workflow\OrderWorkflow;
 use App\Entity\Orders\Orders;
@@ -199,7 +202,7 @@ final class OrdersController extends AbstractController
     }
 
     #[Route('/orders/{id}/shipment/modal', name: 'app_orders_shipment_modal', requirements: ['id' => '\d+'], methods: ['GET'])]
-    public function shipmentModal(int $id, EntityManagerInterface $entityManager): Response
+    public function shipmentModal(int $id, EntityManagerInterface $entityManager, OrdersConfigProvider $ordersConfigProvider): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
@@ -212,7 +215,16 @@ final class OrdersController extends AbstractController
             throw $this->createAccessDeniedException('Cette commande ne peut pas être expédiée.');
         }
 
-        $html = $this->renderView('orders/_shipment_modal.html.twig', ['order' => $order]);
+        $carriers = $ordersConfigProvider->get()->carriers;
+        $form = $this->createForm(ShipmentType::class, new ShipmentDto(), [
+            'action' => $this->generateUrl('app_orders_shipment', ['id' => $id]),
+            'carriers' => $carriers,
+            'csrf_token_id' => 'ship_order_'.$id,
+        ]);
+        $html = $this->renderView('orders/_shipment_modal.html.twig', [
+            'order' => $order,
+            'form' => $form->createView(),
+        ]);
 
         return new Response(
             sprintf('<turbo-stream action="update" target="modal-root"><template>%s</template></turbo-stream>', $html),
@@ -228,6 +240,7 @@ final class OrdersController extends AbstractController
         EntityManagerInterface $entityManager,
         MessageBusInterface $messageBus,
         EmailNotificationService $emailNotificationService,
+        OrdersConfigProvider $ordersConfigProvider,
         #[Target(OrderWorkflow::NAME)]
         WorkflowInterface $orderWorkflow,
     ): RedirectResponse {
@@ -238,18 +251,31 @@ final class OrdersController extends AbstractController
             throw $this->createNotFoundException('Commande introuvable.');
         }
 
-        if (!$this->isCsrfTokenValid('ship_order_'.$id, (string) $request->request->get('_csrf_token'))) {
-            throw $this->createAccessDeniedException('Jeton CSRF invalide.');
-        }
-
-        $trackingNumber = trim((string) $request->request->get('tracking_number'));
-        if ($trackingNumber === '' || mb_strlen($trackingNumber) > 255) {
-            $this->addFlash('error', 'Le numéro d’expédition est obligatoire et doit contenir au maximum 255 caractères.');
+        $carriers = $ordersConfigProvider->get()->carriers;
+        $shipment = new ShipmentDto();
+        $form = $this->createForm(ShipmentType::class, $shipment, [
+            'carriers' => $carriers,
+            'csrf_token_id' => 'ship_order_'.$id,
+        ]);
+        $form->handleRequest($request);
+        if (!$form->isSubmitted() || !$form->isValid()) {
+            $this->addFlash('error', 'Le numéro d’expédition et le transporteur sont obligatoires.');
 
             return $this->redirectToRoute('app_orders');
         }
 
-        $order->setTrackingNumber($trackingNumber);
+        $carrier = $carriers[(int) $shipment->carrier] ?? null;
+        if ($carrier === null) {
+            $this->addFlash('error', 'Le transporteur sélectionné n’existe plus dans la configuration.');
+
+            return $this->redirectToRoute('app_orders');
+        }
+
+        $trackingNumber = trim($shipment->trackingNumber);
+        $order
+            ->setTrackingNumber($trackingNumber)
+            ->setCarrierName($carrier->name)
+            ->setCarrierTrackingUrl($carrier->trackingUrl);
         $blockers = $orderWorkflow->buildTransitionBlockerList($order, OrderWorkflow::TRANSITION_SHIP);
         if (!$blockers->isEmpty()) {
             foreach ($blockers as $blocker) {

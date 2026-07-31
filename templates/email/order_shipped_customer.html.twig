@@ -18,6 +18,11 @@
                 <div style="padding:18px;border:1px solid #e4e7eb;border-radius:10px;background:#f9fafb;">
                     <div style="color:#737b86;font-size:12px;font-weight:700;text-transform:uppercase;">Numéro d’expédition</div>
                     <div style="margin-top:7px;color:#20242a;font-size:19px;font-weight:800;letter-spacing:.04em;">{{ order.trackingNumber }}</div>
+                    {% if order.trackingUrl %}
+                        <div style="margin-top:14px;">
+                            <a href="{{ order.trackingUrl }}" style="display:inline-block;padding:10px 16px;border-radius:8px;background:#20242a;color:#ffffff;text-decoration:none;font-size:14px;font-weight:700;">Suivre mon colis avec {{ order.carrierName }}</a>
+                        </div>
+                    {% endif %}
                 </div>
                 <p style="margin:24px 0 0;color:#626b76;font-size:14px;line-height:1.6;">
                     Conservez ce numéro pour suivre l’acheminement de votre colis.
