@@ -1,0 +1,35 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Avis clients{% endblock %}
+
+{% block body %}
+    <article class="admin-page reviews-page" aria-labelledby="reviews-title">
+        <header class="admin-page__header reviews-header">
+            <div>
+                <p class="reviews-header__eyebrow">Satisfaction client</p>
+                <h1 id="reviews-title" class="title">Avis clients</h1>
+                <p class="admin-page__subtitle">Consultez les avis reçus et traitez ceux qui attendent une modération.</p>
+            </div>
+        </header>
+
+        <section class="reviews-summary" aria-label="Résumé des avis">
+            <article class="reviews-summary__card reviews-summary__card--average">
+                <span>Note moyenne</span>
+                <strong class="reviews-summary__average" aria-label="Note moyenne : {{ summary.average|number_format(1, ',', ' ') }} sur 5">
+                    <span class="reviews-summary__stars" aria-hidden="true">
+                        {% for star in 1..5 %}<span class="{{ star <= summary.average|round ? 'is-filled' : '' }}">★</span>{% endfor %}
+                    </span>
+                    <small>{{ summary.average|number_format(1, ',', ' ') }}/5</small>
+                </strong>
+                <small>Avis validés</small>
+            </article>
+            <article class="reviews-summary__card reviews-summary__card--primary"><span>Total des avis</span><strong>{{ summary.total }}</strong><small>Avis enregistrés</small></article>
+            <article class="reviews-summary__card reviews-summary__card--pending"><span>À modérer</span><strong>{{ summary.pending }}</strong><small>Action requise</small></article>
+        </section>
+
+        <section class="reviews-list" aria-labelledby="reviews-list-title">
+            <header class="reviews-list__header"><h2 id="reviews-list-title">Tous les avis</h2><p>Recherche, filtre par statut et pagination.</p></header>
+            {% include 'ui/components/data-table/_data_table.html.twig' with table only %}
+        </section>
+    </article>
+{% endblock %}

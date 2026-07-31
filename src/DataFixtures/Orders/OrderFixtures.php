@@ -19,7 +19,7 @@ use Doctrine\Persistence\ObjectManager;
 
 final class OrderFixtures extends AbstractBaseFixtures implements DependentFixtureInterface, FixtureGroupInterface
 {
-    private const ORDER_COUNT = 1000;
+    private const ORDER_COUNT = 500;
     private const CUSTOMER_COUNT = 20;
     private const VARIANT_COUNT = 80;
     private const SHIPPING_FEE = 890;
@@ -54,8 +54,8 @@ final class OrderFixtures extends AbstractBaseFixtures implements DependentFixtu
 
             $orderStatus = $this->orderStatus($orderIndex);
             $outsideGuadeloupe = $orderStatus === OrderStatus::Shipped
-                || ($orderStatus === OrderStatus::Processing && intdiv($orderIndex, 6) % 2 === 1)
-                || ($orderStatus === OrderStatus::Delivered && intdiv($orderIndex, 6) % 2 === 1);
+                || ($orderStatus === OrderStatus::Processing && intdiv($orderIndex, 10) % 2 === 1)
+                || ($orderStatus === OrderStatus::Delivered && intdiv($orderIndex, 10) % 2 === 1);
             $order = (new Orders())
                 ->setCart($cart)
                 ->setCustomer($customer)
@@ -93,13 +93,13 @@ final class OrderFixtures extends AbstractBaseFixtures implements DependentFixtu
             if ($orderStatus === OrderStatus::AwaitingDelivery) {
                 $order->setDeliveryDate(
                     (new \DateTimeImmutable('today', new \DateTimeZone('Europe/Paris')))
-                        ->modify(sprintf('+%d days', 1 + (intdiv($orderIndex, 5) % 5))),
+                        ->modify(sprintf('+%d days', 1 + (intdiv($orderIndex, 10) % 5))),
                 );
             }
 
             if ($orderStatus === OrderStatus::Delivered) {
                 $deliveredAt = (new \DateTimeImmutable('today', new \DateTimeZone('Europe/Paris')))
-                    ->modify(sprintf('-%d days', 1 + (intdiv($orderIndex, 6) % 10)));
+                    ->modify(sprintf('-%d days', 1 + (intdiv($orderIndex, 10) % 10)));
                 $order->setDeliveredAt($deliveredAt);
 
                 if (!$outsideGuadeloupe) {
@@ -109,8 +109,8 @@ final class OrderFixtures extends AbstractBaseFixtures implements DependentFixtu
 
             if ($orderStatus === OrderStatus::Shipped || ($orderStatus === OrderStatus::Delivered && $outsideGuadeloupe)) {
                 $daysAgo = $orderStatus === OrderStatus::Delivered
-                    ? 21 + (intdiv($orderIndex, 6) % 10)
-                    : intdiv($orderIndex, 6) % 10;
+                    ? 21 + (intdiv($orderIndex, 10) % 10)
+                    : intdiv($orderIndex, 10) % 10;
                 $order
                     ->setTrackingNumber(sprintf('TRACK%08d', $orderIndex + 1))
                     ->setShippedAt(
@@ -120,6 +120,7 @@ final class OrderFixtures extends AbstractBaseFixtures implements DependentFixtu
             }
 
             $this->persistTouched($manager, $order);
+            $this->addReference(FixtureReferences::ORDERS.$orderIndex, $order);
         }
 
         $manager->flush();
@@ -160,13 +161,13 @@ final class OrderFixtures extends AbstractBaseFixtures implements DependentFixtu
 
     private function orderStatus(int $orderIndex): OrderStatus
     {
-        return match ($orderIndex % 6) {
-            0 => OrderStatus::Created,
-            1 => OrderStatus::Processing,
+        return match ($orderIndex % 10) {
+            0, 1 => OrderStatus::Created,
             2 => OrderStatus::Cancelled,
-            3 => OrderStatus::AwaitingDelivery,
-            4 => OrderStatus::Shipped,
-            5 => OrderStatus::Delivered,
+            3, 4 => OrderStatus::Processing,
+            5, 6 => OrderStatus::AwaitingDelivery,
+            7 => OrderStatus::Shipped,
+            8, 9 => OrderStatus::Delivered,
         };
     }
 

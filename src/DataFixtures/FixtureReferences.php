@@ -27,4 +27,5 @@ final class FixtureReferences
     public const CLOTHES_VARIANTS = 'clothes.variant.';
 
     public const CUSTOMERS = 'customer.';
+    public const ORDERS = 'order.';
 }

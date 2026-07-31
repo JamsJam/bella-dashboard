@@ -1,0 +1,10 @@
+<!doctype html><html lang="fr"><body>
+{% if review.status.value == 'accepted' %}
+    <h1>Votre avis a été validé</h1>
+    <p>Merci ! Votre avis sur {{ review.product.name }} a été accepté.</p>
+{% else %}
+    <h1>Votre avis n’a pas été retenu</h1>
+    <p>Votre avis sur {{ review.product.name }} n’a pas été validé.</p>
+{% endif %}
+{% if review.reply %}<p><strong>Réponse :</strong> {{ review.reply }}</p>{% endif %}
+</body></html>

@@ -21,6 +21,7 @@ final class BreadscrumbsService
         'contact' => 'Contact',
         'customers' => 'Clients',
         'deliveries' => 'Livraisons',
+        'reviews' => 'Avis',
         'show' => 'Détail',
         'pending' => 'En attente',
         'rename' => 'Renommer',

@@ -7,6 +7,7 @@
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
+    app.front_url: '%env(FRONT_APP_URL)%'
 
 imports:
     - { resource: '../src/Application/Config/Config/temp_config.yaml' }

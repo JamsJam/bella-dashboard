@@ -16,10 +16,17 @@
                     Votre commande <strong>{{ order.orderReference }}</strong> a bien été livrée.
                     Nous espérons qu’elle vous apporte entière satisfaction.
                 </p>
-                <div style="padding:18px;border:1px solid #e4e7eb;border-radius:10px;background:#f9fafb;color:#626b76;font-size:14px;line-height:1.6;">
-                    Votre avis compte beaucoup pour nous. Nous vous inviterons prochainement
-                    à partager votre expérience lorsque notre espace d’avis sera disponible.
-                </div>
+                {% if reviews is not empty %}
+                    <div style="padding:18px;border:1px solid #e4e7eb;border-radius:10px;background:#f9fafb;color:#626b76;font-size:14px;line-height:1.6;">
+                        <strong>Votre avis compte beaucoup pour nous.</strong>
+                        {% for review in reviews %}
+                            <p style="margin:12px 0 0;">
+                                {{ review.product.name }} —
+                                <a href="{{ (front_app_url|default(''))|trim('/') }}/avis/{{ review.reviewUuid }}" style="color:#20242a;font-weight:700;">donner mon avis</a>
+                            </p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
                 <p style="margin:24px 0 0;color:#626b76;font-size:14px;line-height:1.6;">Merci pour votre confiance et à bientôt.</p>
             </td></tr>
             <tr><td style="padding:20px 32px;background:#f9fafb;border-top:1px solid #e4e7eb;color:#8a929d;font-size:12px;text-align:center;">BellaGP · Votre satisfaction est notre priorité.</td></tr>
