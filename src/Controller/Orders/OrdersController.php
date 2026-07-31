@@ -8,7 +8,9 @@ use App\Application\Orders\Delivery\DeliveryReminderMessage;
 use App\Application\Orders\Mapper\OrderStatusSortMapper;
 use App\Application\Orders\Workflow\OrderWorkflow;
 use App\Entity\Orders\Orders;
+use App\Entity\Reviews\Review;
 use App\Enum\OrderStatus;
+use App\Enum\ReviewStatus;
 use App\Service\BreadscrumbsService;
 use App\Notifier\Services\EmailNotificationService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -41,6 +43,7 @@ final class OrdersController extends AbstractController
         ['key' => 'status', 'label' => 'Traitement', 'sortable' => true, 'raw' => true],
         ['key' => 'total', 'label' => 'Montant', 'sortable' => true, 'raw' => true],
         ['key' => 'delivery', 'label' => 'Livraison', 'sortable' => false, 'raw' => true],
+        ['key' => 'reviews', 'label' => 'Avis', 'sortable' => false, 'raw' => true],
         ['key' => 'actions', 'label' => 'Action', 'sortable' => false, 'raw' => true],
     ];
 
@@ -357,10 +360,18 @@ final class OrdersController extends AbstractController
             ->setMaxResults(self::PAGE_SIZE)
             ->getQuery()
             ->getResult();
+        $reviewSummaries = $this->reviewSummaries($orders, $entityManager);
 
         return [
             'columns' => self::COLUMNS,
-            'rows' => array_map(fn (Orders $order): array => $this->mapOrder($order, $deliveryDatePolicy), $orders),
+            'rows' => array_map(
+                fn (Orders $order): array => $this->mapOrder(
+                    $order,
+                    $deliveryDatePolicy,
+                    $reviewSummaries[(int) $order->getId()] ?? ['total' => 0, 'average' => null],
+                ),
+                $orders,
+            ),
             'url' => $this->generateUrl('app_orders_table'),
             'sort' => $sort,
             'direction' => $direction,
@@ -422,7 +433,8 @@ final class OrdersController extends AbstractController
         ];
     }
 
-    private function mapOrder(Orders $order, DeliveryDatePolicy $deliveryDatePolicy): array
+    /** @param array{total: int, average: float|null} $reviewSummary */
+    private function mapOrder(Orders $order, DeliveryDatePolicy $deliveryDatePolicy, array $reviewSummary): array
     {
         return [
             'orderReference' => $this->renderView('orders/_order_cell.html.twig', ['order' => $order]),
@@ -434,8 +446,49 @@ final class OrdersController extends AbstractController
                 'order' => $order,
                 'minimumDate' => $deliveryDatePolicy->minimumDeliveryDate(),
             ]),
+            'reviews' => $this->renderView('orders/_reviews_cell.html.twig', [
+                'order' => $order,
+                'reviewSummary' => $reviewSummary,
+            ]),
             'actions' => $this->renderView('orders/_table_actions.html.twig', ['order' => $order]),
         ];
+    }
+
+    /**
+     * @param list<Orders> $orders
+     * @return array<int, array{total: int, average: float|null}>
+     */
+    private function reviewSummaries(array $orders, EntityManagerInterface $entityManager): array
+    {
+        $orderIds = array_values(array_filter(array_map(
+            static fn (Orders $order): ?int => $order->getId(),
+            $orders,
+        )));
+        if ($orderIds === []) {
+            return [];
+        }
+
+        $rows = $entityManager->getRepository(Review::class)
+            ->createQueryBuilder('review')
+            ->select('IDENTITY(review.order) AS orderId')
+            ->addSelect('COUNT(review.id) AS total')
+            ->addSelect('AVG(CASE WHEN review.status = :accepted THEN review.rating ELSE NULL END) AS average')
+            ->andWhere('review.order IN (:orders)')
+            ->setParameter('orders', $orderIds)
+            ->setParameter('accepted', ReviewStatus::Accepted)
+            ->groupBy('review.order')
+            ->getQuery()
+            ->getArrayResult();
+
+        $summaries = [];
+        foreach ($rows as $row) {
+            $summaries[(int) $row['orderId']] = [
+                'total' => (int) $row['total'],
+                'average' => $row['average'] === null ? null : round((float) $row['average'], 1),
+            ];
+        }
+
+        return $summaries;
     }
 
     /**

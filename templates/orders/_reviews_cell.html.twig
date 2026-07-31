@@ -1,0 +1,15 @@
+{% if reviewSummary.total > 0 %}
+    <a class="order-reviews" href="{{ path('app_reviews', {search: order.orderReference}) }}" aria-label="Voir les {{ reviewSummary.total }} avis de la commande {{ order.orderReference }}">
+        {% if reviewSummary.average is not null %}
+            <span class="order-reviews__stars" aria-hidden="true">
+                {% for star in 1..5 %}<span class="{{ star <= reviewSummary.average|round ? 'is-filled' : '' }}">★</span>{% endfor %}
+            </span>
+            <strong>{{ reviewSummary.average|number_format(1, ',', ' ') }}/5</strong>
+        {% else %}
+            <strong>Aucune note</strong>
+        {% endif %}
+        <small>{{ reviewSummary.total }} avis</small>
+    </a>
+{% else %}
+    <span class="order-reviews__empty">Aucun avis</span>
+{% endif %}

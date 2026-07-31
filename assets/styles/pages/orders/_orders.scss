@@ -30,6 +30,13 @@
 .order-cell a { color: var(--text); font-weight: 750; text-decoration: none; }
 .order-cell a:hover { color: var(--primary); text-decoration: underline; }
 .order-cell small, .order-amount small, .order-delivery small, .order-date small { color: var(--text-muted); font-size: .68rem; }
+.order-reviews { display: flex; flex-direction: column; gap: .2rem; min-inline-size: 6.5rem; color: var(--text); text-decoration: none; }
+.order-reviews:hover strong { color: var(--primary); text-decoration: underline; }
+.order-reviews__stars { display: inline-flex; color: var(--border-muted); font-size: .82rem; line-height: 1; }
+.order-reviews__stars > span { font-size: inherit; }
+.order-reviews__stars .is-filled { color: var(--warning); }
+.order-reviews strong { color: var(--text); font-size: .75rem; }
+.order-reviews small, .order-reviews__empty { color: var(--text-muted); font-size: .68rem; }
 .order-date { min-inline-size: 5.5rem; }
 .order-amount strong { font-size: .88rem; }
 .order-delivery__empty { color: var(--text-muted); }
