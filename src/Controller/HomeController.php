@@ -7,6 +7,7 @@ use App\Repository\Clothes\ClothesVariantRepository;
 use App\Repository\Orders\OrdersRepository;
 use App\Repository\Users\CustomersRepository;
 use App\Service\BreadscrumbsService;
+use Doctrine\DBAL\Connection;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -24,6 +25,7 @@ final class HomeController extends AbstractController
         CustomersRepository $customersRepository,
         ClothesRepository $clothesRepository,
         ClothesVariantRepository $variantsRepository,
+        Connection $connection,
     ): Response {
         $route = $request->attributes->get('_route');
         return $this->render('home/index.html.twig', [
@@ -34,6 +36,24 @@ final class HomeController extends AbstractController
             'onlineProductsCount' => $clothesRepository->count(['isOnline' => true]),
             'lowStockCount' => $variantsRepository->countLowStock(),
             'latestOrders' => $ordersRepository->findLatest(),
+            'reviewsSummary' => $this->reviewsSummary($connection),
         ]);
+    }
+
+    /** @return array{average: float, accepted: int} */
+    private function reviewsSummary(Connection $connection): array
+    {
+        $row = $connection->createQueryBuilder()
+            ->select('COALESCE(AVG(CASE WHEN status = :accepted THEN rating END), 0) AS average')
+            ->addSelect('SUM(CASE WHEN status = :accepted THEN 1 ELSE 0 END) AS accepted')
+            ->from('review')
+            ->setParameter('accepted', 'accepted')
+            ->executeQuery()
+            ->fetchAssociative();
+
+        return [
+            'average' => round((float) ($row['average'] ?? 0), 1),
+            'accepted' => (int) ($row['accepted'] ?? 0),
+        ];
     }
 }

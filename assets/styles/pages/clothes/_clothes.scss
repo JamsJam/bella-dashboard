@@ -138,14 +138,15 @@
     border: 1px solid var(--primary);
     border-radius: 0.35rem;
     padding: 0.65rem 1rem;
-    background: var(--primary);
-    color: var(--bg-dark);
+    background: color-mix(in srgb, var(--primary) 14%, var(--bg-light));
+    color: var(--primary);
     font-weight: 700;
     cursor: pointer;
     transition: filter 160ms ease, transform 160ms ease;
 }
 
 .clothe-show__action:hover {
+    background: color-mix(in srgb, var(--primary) 24%, var(--bg-light));
     filter: brightness(1.06);
     transform: translateY(-1px);
 }

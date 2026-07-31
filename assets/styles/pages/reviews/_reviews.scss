@@ -51,8 +51,11 @@
 .review-show__form textarea { resize: vertical; padding: .7rem; border: 1px solid var(--border); border-radius: .35rem; background: var(--bg); color: var(--text); font: inherit; }
 .review-show__actions { display: flex; flex-wrap: wrap; gap: .6rem; }
 .review-show__button { padding: .6rem .85rem; border: 1px solid currentColor; border-radius: .35rem; background: transparent; font: inherit; font-weight: 750; cursor: pointer; }
-.review-show__button--accept { background: var(--success); color: var(--bg-light); }
+.review-show__button--accept { border-color: var(--success); background: color-mix(in srgb, var(--success) 14%, var(--bg-light)); color: var(--success); }
 .review-show__button--reject { color: var(--danger); }
+.review-show__button--accept:hover { background: color-mix(in srgb, var(--success) 24%, var(--bg-light)); }
+.review-show__button--reject:hover { background: color-mix(in srgb, var(--danger) 12%, var(--bg-light)); }
+.review-show__button:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
 .review-show__decision { color: var(--text); }
 .review-show__reply { padding: .8rem; border-radius: .35rem; background: var(--bg); color: var(--text); line-height: 1.5; }
 

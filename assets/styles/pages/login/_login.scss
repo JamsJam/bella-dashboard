@@ -124,8 +124,8 @@
     border: 1px solid var(--primary);
     border-radius: 0.45rem;
     padding: 0.8rem 1rem;
-    background: var(--primary);
-    color: var(--bg-dark);
+    background: color-mix(in srgb, var(--primary) 14%, var(--bg-light));
+    color: var(--primary);
     font: inherit;
     font-weight: 800;
     cursor: pointer;
@@ -134,6 +134,8 @@
 
 .login-form__submit:hover,
 .login-form__submit:focus-visible {
+    background: color-mix(in srgb, var(--primary) 24%, var(--bg-light));
     filter: brightness(1.08);
     transform: translateY(-1px);
 }
+.login-form__submit:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }

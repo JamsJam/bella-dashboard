@@ -218,7 +218,9 @@
 .data-table-pagination__actions { display: flex; gap: .35rem; flex-wrap: wrap; }
 .data-table-pagination button { min-inline-size: 2rem; padding: .4rem .55rem; border: 1px solid var(--border-muted); border-radius: .3rem; background: var(--bg-light); color: var(--text); cursor: pointer; }
 .data-table-pagination button:hover:not(:disabled),
-.data-table-pagination button.is-active { border-color: var(--primary); background: var(--primary); color: var(--bg-light); }
+.data-table-pagination button.is-active { border-color: var(--primary); background: color-mix(in srgb, var(--primary) 14%, var(--bg-light)); color: var(--primary); }
+.data-table-pagination button.is-active:hover:not(:disabled) { background: color-mix(in srgb, var(--primary) 24%, var(--bg-light)); }
+.data-table-pagination button:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .data-table-pagination button:disabled { opacity: .45; cursor: not-allowed; }
 
 @container main (max-width: 720px) {

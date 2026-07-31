@@ -124,14 +124,17 @@
     padding: 0.6rem 0.85rem;
     border: 1px solid var(--primary);
     border-radius: 0.3rem;
-    background: var(--primary);
-    color: var(--bg-dark);
+    background: color-mix(in srgb, var(--primary) 14%, var(--bg-light));
+    color: var(--primary);
     font: inherit;
     font-weight: 700;
     cursor: pointer;
 }
 
 .customer-show__button--danger { border-color: var(--danger); background: transparent; color: var(--danger); }
+.customer-show__button:hover { background: color-mix(in srgb, var(--primary) 24%, var(--bg-light)); }
+.customer-show__button--danger:hover { background: color-mix(in srgb, var(--danger) 12%, var(--bg-light)); }
+.customer-show__button:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
 
 .customer-show__danger-zone {
     @extend %flex-column-start-stretch;

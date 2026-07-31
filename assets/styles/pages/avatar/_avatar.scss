@@ -215,8 +215,8 @@
     border: 0;
     border-radius: 0.25rem;
     cursor: pointer;
-    background: var(--primary);
-    color: white;
+    background: color-mix(in srgb, var(--primary) 14%, var(--bg-light));
+    color: var(--primary);
 }
 
 .avatar-upload__button--secondary,
@@ -225,6 +225,9 @@
     color: var(--text);
     border: 1px solid var(--border);
 }
+.avatar-upload__button:hover:not(:disabled) { background: color-mix(in srgb, var(--primary) 24%, var(--bg-light)); }
+.avatar-upload__button--secondary:hover:not(:disabled), .avatar-upload__remove:hover:not(:disabled) { border-color: var(--primary); background: var(--bg); color: var(--primary); }
+.avatar-upload__button:focus-visible, .avatar-upload__remove:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 
 .avatar-upload__button:disabled,
 .avatar-upload__remove:disabled {
@@ -685,10 +688,12 @@
     padding: 0.6rem 1rem;
     border: 0;
     border-radius: 0.25rem;
-    background: var(--primary);
-    color: white;
+    background: color-mix(in srgb, var(--primary) 14%, var(--bg-light));
+    color: var(--primary);
     cursor: pointer;
 }
+.avatar-rename__button:hover, .avatar-rename__finish:hover { background: color-mix(in srgb, var(--primary) 24%, var(--bg-light)); }
+.avatar-rename__button:focus-visible, .avatar-rename__finish:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 
 .avatar-rename__finish {
     justify-self: start;

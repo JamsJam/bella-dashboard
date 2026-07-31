@@ -19,12 +19,22 @@
                 {class: ' dashboard-stat--primary', icon: 'ep:money', label: 'Chiffre d’affaires', value: (summary.revenue / 100)|number_format(2, ',', ' ') ~ ' €', note: 'Depuis le début du mois'},
                 {class: '', icon: 'ep:document', label: 'Commandes', value: summary.orders, note: summary.pending ~ ' à traiter'},
                 {class: '', icon: 'ep:user', label: 'Clients', value: customersCount, note: 'Comptes enregistrés'},
-                {class: '', icon: 'ep:goods', label: 'Produits', value: productsCount, note: onlineProductsCount ~ ' actuellement en ligne'}
+                {class: '', icon: 'ep:goods', label: 'Produits', value: productsCount, note: onlineProductsCount ~ ' actuellement en ligne'},
+                {class: ' dashboard-stat--reviews', icon: 'ep:star', label: 'Satisfaction client', value: reviewsSummary.average|number_format(1, ',', ' ') ~ '/5', note: reviewsSummary.accepted ~ ' avis validé' ~ (reviewsSummary.accepted > 1 ? 's' : ''), rating: reviewsSummary.average}
             ] %}
             {% for stat in stats %}
                 <article class="dashboard-stat{{ stat.class }}">
                     <div class="dashboard-stat__icon">{{ ux_icon(stat.icon) }}</div>
-                    <p>{{ stat.label }}</p><strong>{{ stat.value }}</strong><span>{{ stat.note }}</span>
+                    <p>{{ stat.label }}</p>
+                    {% if stat.rating is defined %}
+                        <div class="dashboard-stat__rating" aria-label="Note moyenne : {{ stat.value }}">
+                            <span aria-hidden="true">{% for star in 1..5 %}<i class="{{ star <= stat.rating|round ? 'is-filled' : '' }}">★</i>{% endfor %}</span>
+                            <strong>{{ stat.value }}</strong>
+                        </div>
+                    {% else %}
+                        <strong>{{ stat.value }}</strong>
+                    {% endif %}
+                    <span>{{ stat.note }}</span>
                 </article>
             {% endfor %}
         </section>
