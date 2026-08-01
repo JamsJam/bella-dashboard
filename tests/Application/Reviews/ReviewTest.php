@@ -24,8 +24,12 @@ final class ReviewTest extends TestCase
         self::assertSame(ReviewStatus::Pending, $review->getStatus());
         self::assertSame('Très beau produit.', $review->getComment());
 
-        $review->accept('Merci pour votre retour.', $requestedAt->modify('+2 days'));
+        $review->accept($requestedAt->modify('+2 days'));
         self::assertSame(ReviewStatus::Accepted, $review->getStatus());
+        self::assertNull($review->getReply());
+        self::assertNull($review->getReplyAt());
+
+        $review->updateReply('Merci pour votre retour.', $requestedAt->modify('+3 days'));
         self::assertSame('Merci pour votre retour.', $review->getReply());
         self::assertNotNull($review->getReplyAt());
     }
@@ -49,12 +53,13 @@ final class ReviewTest extends TestCase
     {
         $review = new Review(new ClothesVariant(), new Orders(), new Customers());
         $review->submit(5, 'Très beau produit.');
-        $review->accept('Merci pour votre avis.');
+        $review->accept();
+        $review->updateReply('Merci pour votre avis.');
 
-        $review->reject('Décision corrigée après une nouvelle vérification.');
+        $review->reject();
 
         self::assertSame(ReviewStatus::Rejected, $review->getStatus());
-        self::assertSame('Décision corrigée après une nouvelle vérification.', $review->getReply());
+        self::assertSame('Merci pour votre avis.', $review->getReply());
     }
 
     public function testRejectedReviewCanBeAcceptedAfterANewModeration(): void
@@ -63,7 +68,7 @@ final class ReviewTest extends TestCase
         $review->submit(4, 'Produit conforme.');
         $review->reject();
 
-        $review->accept('Votre avis a finalement été validé.');
+        $review->accept();
 
         self::assertSame(ReviewStatus::Accepted, $review->getStatus());
     }

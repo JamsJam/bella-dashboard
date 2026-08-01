@@ -91,7 +91,7 @@ final readonly class StripeCheckoutSessionMessageHandler
         if ($customerEmail !== null) {
             $this->emailNotificationService->sendTemplatedEmail(
                 to: $customerEmail,
-                subject: sprintf('Votre commande %s est prise en compte', (string) $processedOrder->getOrderReference()),
+                subject: sprintf('Paiement confirmé pour votre commande %s', (string) $processedOrder->getOrderReference()),
                 template: 'email/StripeMail.html.twig',
                 context: [
                     'invoiceUrl' => $processedOrder->getStripeInvoiceUrl(),

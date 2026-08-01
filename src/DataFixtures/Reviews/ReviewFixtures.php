@@ -89,9 +89,12 @@ final class ReviewFixtures extends AbstractBaseFixtures implements DependentFixt
                     $moderatedAt = $submittedAt->modify('+'.(2 + ($reviewIndex % 12)).' hours');
 
                     if ($moderation === 1) {
-                        $review->accept($reply, $moderatedAt);
+                        $review->accept($moderatedAt);
                     } else {
-                        $review->reject($reply, $moderatedAt);
+                        $review->reject($moderatedAt);
+                    }
+                    if ($reply !== null && $reply !== '') {
+                        $review->updateReply($reply, $moderatedAt);
                     }
                 }
 

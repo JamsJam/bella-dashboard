@@ -26,9 +26,9 @@ final readonly class ReviewWorkflowService
         );
     }
 
-    public function moderate(Review $review, bool $accepted, ?string $reply = null): void
+    public function moderate(Review $review, bool $accepted): void
     {
-        $accepted ? $review->accept($reply, $this->clock->now()) : $review->reject($reply, $this->clock->now());
+        $accepted ? $review->accept($this->clock->now()) : $review->reject($this->clock->now());
         $this->entityManager->flush();
         $email = $review->getCustomer()->getEmail();
         if ($email !== null && $email !== '') {
@@ -51,7 +51,7 @@ final readonly class ReviewWorkflowService
             $this->emails->sendTemplatedEmail(
                 $email,
                 'BellaGP a répondu à votre avis',
-                'email/review_moderated_customer.html.twig',
+                'email/review_replied_customer.html.twig',
                 ['review' => $review],
             );
         }

@@ -29,7 +29,7 @@ final class ReviewModerationController extends AbstractController
             throw $this->createAccessDeniedException('Jeton CSRF invalide.');
         }
         try {
-            $workflow->moderate($review, $decision === 'accepted', $request->request->getString('reply') ?: null);
+            $workflow->moderate($review, $decision === 'accepted');
         } catch (\InvalidArgumentException|\DomainException $exception) {
             $this->addFlash('error', $exception->getMessage());
             return $this->redirectToRoute('app_reviews_show', ['id' => $id]);

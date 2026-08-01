@@ -39,7 +39,7 @@ final readonly class MarkOrderDeliveredService
         if ($customerEmail !== null && $customerEmail !== '') {
             $this->emailNotificationService->sendTemplatedEmail(
                 to: $customerEmail,
-                subject: sprintf('Merci pour votre commande %s', (string) $order->getOrderReference()),
+                subject: sprintf('Votre commande %s a été livrée', (string) $order->getOrderReference()),
                 template: 'email/order_delivered_customer.html.twig',
                 context: ['order' => $order, 'reviews' => $reviews],
             );

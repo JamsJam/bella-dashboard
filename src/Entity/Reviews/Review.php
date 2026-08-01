@@ -103,14 +103,14 @@ class Review
         $this->updatedAt = $now ?? new \DateTimeImmutable();
     }
 
-    public function accept(?string $reply = null, ?\DateTimeImmutable $now = null): void
+    public function accept(?\DateTimeImmutable $now = null): void
     {
-        $this->moderate(ReviewStatus::Accepted, $reply, $now);
+        $this->moderate(ReviewStatus::Accepted, $now);
     }
 
-    public function reject(?string $reply = null, ?\DateTimeImmutable $now = null): void
+    public function reject(?\DateTimeImmutable $now = null): void
     {
-        $this->moderate(ReviewStatus::Rejected, $reply, $now);
+        $this->moderate(ReviewStatus::Rejected, $now);
     }
 
     public function updateReply(string $reply, ?\DateTimeImmutable $now = null): void
@@ -129,19 +129,13 @@ class Review
         $this->updatedAt = $this->replyAt;
     }
 
-    private function moderate(ReviewStatus $status, ?string $reply, ?\DateTimeImmutable $now): void
+    private function moderate(ReviewStatus $status, ?\DateTimeImmutable $now): void
     {
         if ($this->status === ReviewStatus::Requested) {
             throw new \DomainException('Un avis sans note ne peut pas être modéré.');
         }
-        $reply = $reply === null ? null : trim($reply);
-        if ($reply !== null && mb_strlen($reply) > 200) {
-            throw new \InvalidArgumentException('La réponse ne peut pas dépasser 200 caractères.');
-        }
         $this->status = $status;
-        $this->reply = $reply === '' ? null : $reply;
-        $this->replyAt = $now ?? new \DateTimeImmutable();
-        $this->updatedAt = $this->replyAt;
+        $this->updatedAt = $now ?? new \DateTimeImmutable();
     }
 
     private static function uuidV4(): string
