@@ -14,9 +14,13 @@ use App\ApiResource\Variant\VariantColorDTO;
 use App\ApiResource\Variant\VariantCategoryDTO;
 use App\ApiResource\Variant\VariantDetailDTO;
 use App\ApiResource\Variant\VariantSizeDTO;
+use App\ApiResource\Variant\VariantReviewDTO;
+use App\Entity\Clothes\Clothes;
 use App\Entity\Clothes\ClothesVariant;
+use App\Entity\Reviews\Review;
 use App\Entity\SizeGuide;
 use App\Repository\Clothes\ClothesVariantRepository;
+use App\Repository\Reviews\ReviewRepository;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -25,6 +29,7 @@ final readonly class VariantDetailProvider implements ProviderInterface
 {
     public function __construct(
         private ClothesVariantRepository $variantRepository,
+        private ReviewRepository $reviewRepository,
         private RequestStack $requestStack,
     ) {
     }
@@ -75,6 +80,7 @@ final readonly class VariantDetailProvider implements ProviderInterface
             sizeGuide: $this->sizeGuide($variant->getSizeGuide()),
             colors: $this->colors($collectionVariants, $clothes?->getId()),
             relatedProducts: $this->relatedProducts($collectionVariants, $slug),
+            reviews: $clothes instanceof Clothes ? $this->reviews($clothes) : [],
         );
     }
 
@@ -235,6 +241,21 @@ final readonly class VariantDetailProvider implements ProviderInterface
         }
 
         return new SizeGuideDTO((string) $guide->getUnit(), $sizeDTOs);
+    }
+
+    /** @return list<VariantReviewDTO> */
+    private function reviews(Clothes $clothes): array
+    {
+        return array_map(
+            static fn (Review $review): VariantReviewDTO => new VariantReviewDTO(
+                rating: (int) $review->getRating(),
+                comment: (string) $review->getComment(),
+                createdAt: $review->getCreatedAt()->format(\DateTimeInterface::ATOM),
+                reply: $review->getReply(),
+                repliedAt: $review->getReplyAt()?->format(\DateTimeInterface::ATOM),
+            ),
+            $this->reviewRepository->findAcceptedByClothes($clothes),
+        );
     }
 
     private function absoluteUrl(string $path): string

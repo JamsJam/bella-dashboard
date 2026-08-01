@@ -2,7 +2,9 @@
 
 namespace App\Repository\Reviews;
 
+use App\Entity\Clothes\Clothes;
 use App\Entity\Reviews\Review;
+use App\Enum\ReviewStatus;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -18,5 +20,20 @@ final class ReviewRepository extends ServiceEntityRepository
     {
         $review = $this->findOneBy(['reviewUuid' => strtolower(trim($uuid))]);
         return $review instanceof Review ? $review : null;
+    }
+
+    /** @return list<Review> */
+    public function findAcceptedByClothes(Clothes $clothes): array
+    {
+        return $this->createQueryBuilder('review')
+            ->join('review.product', 'variant')
+            ->andWhere('variant.clothes = :clothes')
+            ->andWhere('review.status = :status')
+            ->setParameter('clothes', $clothes)
+            ->setParameter('status', ReviewStatus::Accepted)
+            ->orderBy('review.updatedAt', 'DESC')
+            ->addOrderBy('review.id', 'DESC')
+            ->getQuery()
+            ->getResult();
     }
 }

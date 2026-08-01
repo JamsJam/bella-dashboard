@@ -136,7 +136,7 @@ final readonly class ThematicOpenApiFactory implements OpenApiFactoryInterface
             ],
             'GET /api/variant/{slug}' => [
                 'Consulter le détail d’une déclinaison',
-                'Regroupe les données du produit par slug avec ses tailles, son guide des tailles, ses autres couleurs et les produits de la même collection.',
+                'Regroupe les données du produit par slug avec ses tailles, son guide des tailles, ses autres couleurs, les produits de la même collection et ses avis acceptés.',
                 'Le détail de la déclinaison a été retourné.',
             ],
             'GET /api/variants/{id}/stock' => [

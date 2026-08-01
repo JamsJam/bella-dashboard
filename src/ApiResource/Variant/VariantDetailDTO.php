@@ -23,6 +23,7 @@ final readonly class VariantDetailDTO
      * @param list<VariantSizeDTO> $sizes
      * @param list<VariantColorDTO> $colors
      * @param list<RelatedVariantDTO> $relatedProducts
+     * @param list<VariantReviewDTO> $reviews
      */
     public function __construct(
         public string $name,
@@ -38,6 +39,7 @@ final readonly class VariantDetailDTO
         public ?SizeGuideDTO $sizeGuide = null,
         public array $colors = [],
         public array $relatedProducts = [],
+        public array $reviews = [],
     ) {
     }
 }
