@@ -102,8 +102,23 @@ final readonly class AvatarRenameService
             throw new \RuntimeException('Avatar final filename collision.');
         }
 
-        $avatarPart = $this->resolveAvatarPart($message);
-        $this->hydrateAvatarPart($avatarPart, $message, $sourcePath, $destinationWebDir.'/'.$message->newName);
+        $imagePath = $destinationWebDir.'/'.$message->newName;
+        $checksum = hash_file('sha256', $sourcePath);
+        if ($checksum === false) {
+            throw new \RuntimeException('Unable to calculate avatar checksum.');
+        }
+
+        if ($message->replaceExisting) {
+            $avatarPart = $this->partResolver->resolveExistingPart($message, $imagePath);
+            if (!is_object($avatarPart)) {
+                throw new \RuntimeException('Existing avatar entity not found for replacement.');
+            }
+
+            $this->hydrateReplacement($avatarPart, $message, $checksum, $imagePath);
+        } else {
+            $avatarPart = $this->resolveAvatarPart($message);
+            $this->hydrateAvatarPart($avatarPart, $message, $checksum, $imagePath);
+        }
 
         if (file_exists($destinationPath) && $message->replaceExisting && !unlink($destinationPath)) {
             throw new \RuntimeException('Unable to replace existing avatar file.');
@@ -117,7 +132,9 @@ final readonly class AvatarRenameService
         $avatarTemp->setFinalName($message->newName);
         $avatarTemp->setStatus('renamed');
 
-        $this->entityManager->persist($avatarPart);
+        if (!$message->replaceExisting) {
+            $this->entityManager->persist($avatarPart);
+        }
         $this->entityManager->remove($avatarTemp);
         $this->entityManager->flush();
     }
@@ -193,10 +210,10 @@ final readonly class AvatarRenameService
         }
     }
 
-    private function hydrateAvatarPart(object $avatarPart, RenameAvatarMessage $message, string $checksumPath, string $imagePath): void
+    private function hydrateAvatarPart(object $avatarPart, RenameAvatarMessage $message, string $checksum, string $imagePath): void
     {
         $this->callRequiredSetter($avatarPart, 'setName', $this->partResolver->resolveName($message));
-        $this->callRequiredSetter($avatarPart, 'setChecksum', hash_file('sha256', $checksumPath));
+        $this->callRequiredSetter($avatarPart, 'setChecksum', $checksum);
 
         if (method_exists($avatarPart, 'setImage')) {
             $avatarPart->setImage($imagePath);
@@ -213,6 +230,30 @@ final readonly class AvatarRenameService
         }
 
         $this->hydrateAvatarFilters($avatarPart, $message);
+    }
+
+    private function hydrateReplacement(
+        object $avatarPart,
+        RenameAvatarMessage $message,
+        string $checksum,
+        string $imagePath,
+    ): void {
+        $this->callRequiredSetter($avatarPart, 'setChecksum', $checksum);
+
+        if (method_exists($avatarPart, 'setImage')) {
+            $avatarPart->setImage($imagePath);
+        } elseif (method_exists($avatarPart, 'setImages')) {
+            $avatarPart->setImages($this->partResolver->resolveImagesPayload(
+                $avatarPart,
+                $message,
+                $imagePath,
+                replaceExisting: true,
+            ));
+        }
+
+        if (method_exists($avatarPart, 'setEditedAt')) {
+            $avatarPart->setEditedAt(new \DateTimeImmutable());
+        }
     }
 
     private function hydrateAvatarFilters(object $avatarPart, RenameAvatarMessage $message): void

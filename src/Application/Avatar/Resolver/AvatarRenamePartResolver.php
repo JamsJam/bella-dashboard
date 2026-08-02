@@ -28,6 +28,17 @@ final readonly class AvatarRenamePartResolver
         return is_object($existingHair) ? $existingHair : $this->avatarPartFactory->createFromCategory($message->category);
     }
 
+    public function resolveExistingPart(RenameAvatarMessage $message, string $imagePath): ?object
+    {
+        $entityClass = $this->avatarPartFactory->resolveEntityClass($message->category);
+        $criteria = $message->category === 'hair'
+            ? ['name' => $this->resolveName($message)]
+            : ['image' => $imagePath];
+        $avatarPart = $this->entityManager->getRepository($entityClass)->findOneBy($criteria);
+
+        return is_object($avatarPart) ? $avatarPart : null;
+    }
+
     public function resolveName(RenameAvatarMessage $message): string
     {
         $name = pathinfo($message->newName, PATHINFO_FILENAME);
@@ -39,7 +50,12 @@ final readonly class AvatarRenamePartResolver
         return $name;
     }
 
-    public function resolveImagesPayload(object $avatarPart, RenameAvatarMessage $message, string $imagePath): array
+    public function resolveImagesPayload(
+        object $avatarPart,
+        RenameAvatarMessage $message,
+        string $imagePath,
+        bool $replaceExisting = false,
+    ): array
     {
         if ($message->category !== 'hair') {
             return [$imagePath];
@@ -49,7 +65,7 @@ final readonly class AvatarRenamePartResolver
         $images = method_exists($avatarPart, 'getImages') ? $avatarPart->getImages() : [];
         $images = is_array($images) ? $images : [];
 
-        if (isset($images[$side])) {
+        if (isset($images[$side]) && !$replaceExisting) {
             throw new \RuntimeException(sprintf('Hair "%s" image already exists.', $side));
         }
 
