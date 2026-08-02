@@ -11,7 +11,9 @@ use App\Entity\Avatar\Body\Body;
 use App\Entity\AvatarTemp;
 use App\Entity\Clothes\Clothes;
 use App\Message\Avatar\RenameAvatarMessage;
+use App\Service\LoggerService;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\Persistence\ManagerRegistry;
 
 final readonly class AvatarRenameService
 {
@@ -22,6 +24,8 @@ final readonly class AvatarRenameService
         private AvatarRenameDestinationResolver $destinationResolver,
         private AvatarRenamePartResolver $partResolver,
         private AvatarRenameFilterValueResolver $filterValueResolver,
+        private ManagerRegistry $managerRegistry,
+        private LoggerService $logger,
     ) {
     }
 
@@ -35,9 +39,46 @@ final readonly class AvatarRenameService
 
         try {
             $this->process($avatarTemp, $message);
-        } catch (\Throwable) {
+        } catch (\Throwable $exception) {
+            $this->logger->exception($exception, 'Avatar rename failed.', [
+                'avatar_temp_id' => $message->avatarTempId,
+                'new_name' => $message->newName,
+                'category' => $message->category,
+            ]);
+
+            $this->markAvatarTempAsError($message->avatarTempId, $exception);
+        }
+    }
+
+    private function markAvatarTempAsError(int $avatarTempId, \Throwable $originalException): void
+    {
+        try {
+            $entityManager = $this->entityManager;
+
+            if (!$entityManager->isOpen()) {
+                $manager = $this->managerRegistry->resetManager();
+                if (!$manager instanceof EntityManagerInterface) {
+                    throw new \RuntimeException('Unable to reset the Doctrine entity manager.');
+                }
+
+                $entityManager = $manager;
+            } else {
+                $entityManager->clear();
+            }
+
+            $avatarTemp = $entityManager->find(AvatarTemp::class, $avatarTempId);
+            if (!$avatarTemp instanceof AvatarTemp) {
+                return;
+            }
+
             $avatarTemp->setStatus('error');
-            $this->entityManager->flush();
+            $entityManager->flush();
+        } catch (\Throwable $statusException) {
+            $this->logger->exception($statusException, 'Unable to mark failed avatar rename as error.', [
+                'avatar_temp_id' => $avatarTempId,
+            ]);
+
+            throw $originalException;
         }
     }
 
