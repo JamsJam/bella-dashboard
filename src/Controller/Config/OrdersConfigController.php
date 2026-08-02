@@ -34,7 +34,13 @@ final class OrdersConfigController extends AbstractConfigController
             return $this->redirectToRoute('app_config_orders');
         }
 
-        return $this->renderFormPage($request, $breadscrumbs, 'Configuration des commandes', $form->createView());
+        return $this->renderFormPage(
+            $request,
+            $breadscrumbs,
+            'Configuration des commandes',
+            $form->createView(),
+            ['orders_form' => true],
+        );
     }
 
     /**

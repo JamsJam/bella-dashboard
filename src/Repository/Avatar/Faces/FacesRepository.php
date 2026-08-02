@@ -83,6 +83,19 @@ class FacesRepository extends ServiceEntityRepository implements AvatarPartModel
     }
 
     /**
+     * @return Faces[]
+     */
+    public function findByNamePrefix(string $prefix): array
+    {
+        return $this->createQueryBuilder('f')
+            ->andWhere('f.name LIKE :prefix')
+            ->setParameter('prefix', $prefix.'%')
+            ->orderBy('f.id', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function findAllPart(): array

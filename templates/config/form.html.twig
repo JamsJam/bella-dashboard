@@ -26,7 +26,9 @@
             }) }) }}
                 {{ form_errors(form) }}
 
-                {% if categories_form|default(false) %}
+                {% if orders_form|default(false) %}
+                    {% include 'config/_orders_config_fields.html.twig' with { form: form } only %}
+                {% elseif categories_form|default(false) %}
                     {% include 'config/_categories_config_fields.html.twig' with { form: form } only %}
                 {% elseif homepage_form|default(false) %}
                     {% include 'config/_homepage_config_fields.html.twig' with { form: form } only %}

@@ -1,0 +1,64 @@
+<div class="orders-config-tabs" {{ stimulus_controller('config-tabs') }}>
+    <div class="orders-config-tabs__nav" role="tablist" aria-label="Sections de la configuration des commandes">
+        <button type="button" id="orders-tab-general" class="orders-config-tabs__tab" role="tab" aria-selected="true" aria-controls="orders-panel-general" tabindex="0" data-config-tabs-target="tab" data-action="click->config-tabs#select keydown->config-tabs#keydown">
+            <span>Général</span>
+            <small>TVA</small>
+        </button>
+        <button type="button" id="orders-tab-shipping" class="orders-config-tabs__tab" role="tab" aria-selected="false" aria-controls="orders-panel-shipping" tabindex="-1" data-config-tabs-target="tab" data-action="click->config-tabs#select keydown->config-tabs#keydown">
+            <span>Livraison</span>
+            <small>{{ form.shippingFees|length }} destination{{ form.shippingFees|length > 1 ? 's' : '' }}</small>
+        </button>
+        <button type="button" id="orders-tab-carriers" class="orders-config-tabs__tab" role="tab" aria-selected="false" aria-controls="orders-panel-carriers" tabindex="-1" data-config-tabs-target="tab" data-action="click->config-tabs#select keydown->config-tabs#keydown">
+            <span>Transporteurs</span>
+            <small>{{ form.carriers|length }} configuré{{ form.carriers|length > 1 ? 's' : '' }}</small>
+        </button>
+    </div>
+
+    <section id="orders-panel-general" class="orders-config-tabs__panel" role="tabpanel" aria-labelledby="orders-tab-general" data-config-tabs-target="panel" data-has-errors="{{ form.vat.vars.valid ? 'false' : 'true' }}">
+        <header class="orders-config-tabs__header">
+            <div><h2>Paramètres généraux</h2><p>Réglages appliqués au calcul de toutes les commandes.</p></div>
+        </header>
+        <div class="config-field">
+            {{ form_label(form.vat) }}
+            {{ form_widget(form.vat) }}
+            {{ form_help(form.vat) }}
+            {{ form_errors(form.vat) }}
+        </div>
+    </section>
+
+    <section id="orders-panel-shipping" class="orders-config-tabs__panel" role="tabpanel" aria-labelledby="orders-tab-shipping" data-config-tabs-target="panel" data-has-errors="{{ form.shippingFees.vars.valid ? 'false' : 'true' }}" hidden>
+        <header class="orders-config-tabs__header">
+            <div><h2>Frais de livraison</h2><p>Définissez les destinations disponibles, leur drapeau et leur tarif.</p></div>
+        </header>
+        {% set prototypeHtml %}{% include 'config/_collection_entry.html.twig' with { entry: form.shippingFees.vars.prototype } only %}{% endset %}
+        <div class="config-collection" {{ stimulus_target('config-image-upload', 'collection') }} data-config-collection data-prototype="{{ prototypeHtml|e('html_attr') }}" data-index="{{ form.shippingFees|length }}">
+            <div class="config-collection__header">
+                {{ form_label(form.shippingFees) }}
+                <button type="button" class="config-collection__add" {{ stimulus_action('config-image-upload', 'addCollectionItem', 'click') }}>Ajouter une destination</button>
+            </div>
+            {{ form_errors(form.shippingFees) }}
+            <div class="config-collection__items" {{ stimulus_target('config-image-upload', 'collectionItems') }}>
+                {% for entry in form.shippingFees %}{% include 'config/_collection_entry.html.twig' with { entry: entry } only %}{% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <section id="orders-panel-carriers" class="orders-config-tabs__panel" role="tabpanel" aria-labelledby="orders-tab-carriers" data-config-tabs-target="panel" data-has-errors="{{ form.carriers.vars.valid ? 'false' : 'true' }}" hidden>
+        <header class="orders-config-tabs__header">
+            <div><h2>Transporteurs</h2><p>Configurez les services proposés lors de l’expédition et leurs liens de suivi.</p></div>
+        </header>
+        {% set prototypeHtml %}{% include 'config/_collection_entry.html.twig' with { entry: form.carriers.vars.prototype } only %}{% endset %}
+        <div class="config-collection" {{ stimulus_target('config-image-upload', 'collection') }} data-config-collection data-prototype="{{ prototypeHtml|e('html_attr') }}" data-index="{{ form.carriers|length }}">
+            <div class="config-collection__header">
+                {{ form_label(form.carriers) }}
+                <button type="button" class="config-collection__add" {{ stimulus_action('config-image-upload', 'addCollectionItem', 'click') }}>Ajouter un transporteur</button>
+            </div>
+            {{ form_errors(form.carriers) }}
+            <div class="config-collection__items" {{ stimulus_target('config-image-upload', 'collectionItems') }}>
+                {% for entry in form.carriers %}{% include 'config/_collection_entry.html.twig' with { entry: entry } only %}{% endfor %}
+            </div>
+        </div>
+    </section>
+</div>
+
+{{ form_rest(form) }}

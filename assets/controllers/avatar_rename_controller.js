@@ -315,7 +315,7 @@ export default class extends Controller {
             const customValue = customInput?.value.trim();
             const selectedLabel = select.selectedOptions[0]?.textContent || select.value;
 
-            if (filterName === 'accessory' && select.value === '-none-') {
+            if (['accessory', 'clothes'].includes(filterName) && select.value === '-none-') {
                 filters[filterName] = '-none-';
 
                 return;
@@ -345,6 +345,9 @@ export default class extends Controller {
                     data-action="change->avatar-rename#onFilterChange"
                     ${isRequired ? 'required' : ''}
                 >
+                    ${part === 'body' && filter.id === 'clothes' ? `
+                        <option value="-none-">Pas de vêtement</option>
+                    ` : ''}
                     ${filter.options.filter((option) => this.isUsableFilterOption(option)).map((option) => `
                         <option value="${this.escapeAttribute(option.value)}">${this.escapeHtml(option.label)}</option>
                     `).join('')}

@@ -51,6 +51,7 @@ final class AvatarFilterMapper
         'face' => [
             ['id' => 'skinColor', 'label' => 'Couleur de peau', 'source' => Skincolor::class, 'emptyLabel' => 'Toutes'],
             ['id' => 'shape', 'label' => 'Forme', 'source' => Faceshape::class, 'emptyLabel' => 'Toutes'],
+            ['id' => 'accessory', 'label' => 'Accessoire', 'source' => FaceAccessory::class, 'emptyLabel' => "Pas d'accessoire", 'noneOption' => true],
         ],
         'accessory' => [
             ['id' => 'skinColor', 'label' => 'Couleur de peau', 'source' => Skincolor::class, 'emptyLabel' => 'Toutes'],

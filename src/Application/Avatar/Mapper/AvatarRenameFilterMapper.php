@@ -17,7 +17,7 @@ final readonly class AvatarRenameFilterMapper
 
     private const CREATABLE_FILTERS_BY_PART = [
         'body' => ['skinColor', 'morphologie', 'bodySize'],
-        'face' => ['skinColor', 'shape'],
+        'face' => ['skinColor', 'shape', 'accessory'],
         'accessory' => ['skinColor', 'shape'],
         'eyebrows' => ['color', 'shape'],
         'eyes' => ['color', 'shape'],

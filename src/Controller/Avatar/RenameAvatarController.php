@@ -43,7 +43,11 @@ final class RenameAvatarController extends AbstractController
         return $this->render('avatar/rename.html.twig', [
             'breadscrumbs' => $breadscrumbs->resolve((string) $request->attributes->get('_route')),
             'avatars' => array_map(fn (AvatarTemp $avatarTemp): array => $this->mapAvatarTemp($avatarTemp), $avatarTemps),
-            'partLabels' => $avatarFilterMapper->getPartLabels(),
+            'partLabels' => array_filter(
+                $avatarFilterMapper->getPartLabels(),
+                static fn (string $part): bool => $part !== 'accessory',
+                ARRAY_FILTER_USE_KEY,
+            ),
             'filter_url' => $this->generateUrl('app_search_avatar_filters'),
             'check_name_url' => $this->generateUrl('app_avatar_rename_check_name'),
             'csrf_token' => $csrfTokenManager->getToken('avatar_rename')->getValue(),
