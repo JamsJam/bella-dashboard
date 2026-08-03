@@ -21,6 +21,10 @@
     font-family: $font-text;
 }
 
+html {
+    overflow: hidden;
+}
+
 body{
     min-height: 100dvh;
     width: 100%;
