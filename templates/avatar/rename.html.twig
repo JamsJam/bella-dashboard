@@ -140,12 +140,32 @@
                 </ul>
             </section>
 
-            {% for avatar in avatars|filter(avatar => avatar.status == 'error') %}
-                <section class="avatar-rename__error">
-                    <span>{{ avatar.originalName }} — échec définitif</span>
-                    <button type="submit" form="avatar-rename-retry-{{ avatar.id }}">Réessayer</button>
+            {% set rejectedAvatars = avatars|filter(avatar => avatar.status == 'error') %}
+            {% if rejectedAvatars is not empty %}
+                <section class="avatar-rename__rejected" aria-labelledby="avatar-rename-rejected-title">
+                    <header class="avatar-rename__rejected-header">
+                        <h2 id="avatar-rename-rejected-title" class="avatar-rename__title">Images rejetées</h2>
+                        <p>Le worker n’a pas pu terminer ces renommages. Tu peux les reprendre ou les supprimer définitivement.</p>
+                    </header>
+                    <ul class="avatar-rename__rejected-list">
+                        {% for avatar in rejectedAvatars %}
+                            <li class="avatar-rename__error">
+                                {% if avatar.preview %}
+                                    <img class="avatar-rename__error-thumb" src="{{ avatar.preview }}" alt="">
+                                {% endif %}
+                                <span class="avatar-rename__error-content">
+                                    <strong>{{ avatar.originalName }}</strong>
+                                    <small>Rejeté après l’échec du traitement</small>
+                                </span>
+                                <span class="avatar-rename__error-actions">
+                                    <button class="avatar-rename__retry" type="submit" form="avatar-rename-retry-{{ avatar.id }}">Réessayer</button>
+                                    <button class="avatar-rename__remove" type="submit" form="avatar-rename-delete-error-{{ avatar.id }}">Supprimer</button>
+                                </span>
+                            </li>
+                        {% endfor %}
+                    </ul>
                 </section>
-            {% endfor %}
+            {% endif %}
 
             <button type="submit" class="avatar-rename__finish" hidden {{ stimulus_target('avatar-rename', 'finishButton') }}>
                 Termine
@@ -155,6 +175,9 @@
         {% for avatar in avatars|filter(avatar => avatar.status == 'error') %}
             <form id="avatar-rename-retry-{{ avatar.id }}" method="post" action="{{ avatar.retryUrl }}" hidden>
                 <input type="hidden" name="_csrf_token" value="{{ csrf_token('avatar_rename_retry_' ~ avatar.id) }}">
+            </form>
+            <form id="avatar-rename-delete-error-{{ avatar.id }}" method="post" action="{{ avatar.deleteUrl }}" hidden>
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token('avatar_temp_delete') }}">
             </form>
         {% endfor %}
     </article>

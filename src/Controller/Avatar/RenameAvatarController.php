@@ -283,7 +283,8 @@ final class RenameAvatarController extends AbstractController
         #[Autowire('%kernel.project_dir%')]
         string $projectDir,
     ): Response {
-        if (!$this->isCsrfTokenValid('avatar_temp_delete', (string) $request->headers->get('X-CSRF-TOKEN', ''))) {
+        $csrfToken = (string) ($request->headers->get('X-CSRF-TOKEN') ?: $request->request->get('_csrf_token', ''));
+        if (!$this->isCsrfTokenValid('avatar_temp_delete', $csrfToken)) {
             $logger->warning('Invalid CSRF token for avatar temp deletion.', [
                 'avatar_temp_id' => $avatarTemp->getId(),
             ]);
@@ -291,7 +292,7 @@ final class RenameAvatarController extends AbstractController
             return $this->json(['success' => false, 'error' => 'Invalid CSRF token.'], Response::HTTP_FORBIDDEN);
         }
 
-        if ($avatarTemp->getStatus() !== 'uploaded') {
+        if (!in_array($avatarTemp->getStatus(), [AvatarRenameWorkflow::PLACE_UPLOADED, AvatarRenameWorkflow::PLACE_ERROR], true)) {
             $logger->warning('Avatar temp deletion rejected for current status.', [
                 'avatar_temp_id' => $avatarTemp->getId(),
                 'status' => $avatarTemp->getStatus(),
@@ -312,7 +313,11 @@ final class RenameAvatarController extends AbstractController
             'avatar_temp_id' => $avatarTemp->getId(),
         ]);
 
-        return $this->json(['success' => true]);
+        if ($request->isXmlHttpRequest()) {
+            return $this->json(['success' => true]);
+        }
+
+        return $this->redirectToRoute('app_avatar_rename');
     }
 
     private function mapAvatarTemp(AvatarTemp $avatarTemp): array

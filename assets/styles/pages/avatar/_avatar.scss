@@ -396,6 +396,109 @@
     color: white;
 }
 
+.avatar-rename__rejected {
+    padding: 1rem;
+    border: 1px solid color-mix(in srgb, var(--danger) 55%, var(--border));
+    border-radius: 0.4rem;
+    background: color-mix(in srgb, var(--danger) 7%, var(--bg-light));
+}
+
+.avatar-rename__rejected-header {
+    margin-bottom: 0.75rem;
+}
+
+.avatar-rename__rejected-header p {
+    margin: 0.3rem 0 0;
+    color: var(--text-muted);
+}
+
+.avatar-rename__rejected-list {
+    display: grid;
+    gap: 0.6rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.avatar-rename__error {
+    display: grid;
+    grid-template-columns: 3rem minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.65rem;
+    border: 1px solid color-mix(in srgb, var(--danger) 35%, var(--border));
+    border-radius: 0.35rem;
+    background: var(--bg-light);
+}
+
+.avatar-rename__error-thumb {
+    inline-size: 3rem;
+    block-size: 3rem;
+    border-radius: 0.25rem;
+    background: var(--bg);
+    object-fit: contain;
+}
+
+.avatar-rename__error-content {
+    display: flex;
+    min-inline-size: 0;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.avatar-rename__error-content strong {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.avatar-rename__error-content small {
+    color: var(--danger);
+}
+
+.avatar-rename__error-actions {
+    display: flex;
+    gap: 0.4rem;
+}
+
+.avatar-rename__error button {
+    padding: 0.45rem 0.7rem;
+    border: 1px solid var(--primary);
+    border-radius: 0.3rem;
+    background: transparent;
+    color: var(--primary);
+    cursor: pointer;
+}
+
+.avatar-rename__error .avatar-rename__retry:hover,
+.avatar-rename__error .avatar-rename__retry:focus-visible {
+    background: var(--primary);
+    color: white;
+    outline: none;
+}
+
+.avatar-rename__error .avatar-rename__remove {
+    border-color: var(--danger);
+    color: var(--danger);
+}
+
+.avatar-rename__error .avatar-rename__remove:hover,
+.avatar-rename__error .avatar-rename__remove:focus-visible {
+    background: var(--danger);
+    color: white;
+    outline: none;
+}
+
+@media (max-width: 38rem) {
+    .avatar-rename__error {
+        grid-template-columns: 3rem minmax(0, 1fr);
+    }
+
+    .avatar-rename__error-actions {
+        grid-column: 1 / -1;
+    }
+}
+
 .avatar-rename__thumb,
 .avatar-rename__preview {
     width: 100%;
