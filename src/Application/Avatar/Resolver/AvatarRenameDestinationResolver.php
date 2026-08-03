@@ -4,7 +4,7 @@ namespace App\Application\Avatar\Resolver;
 
 use App\Application\Avatar\Mapper\AvatarRenameFilterMapper;
 use App\Entity\Clothes\Clothes;
-use App\Message\Avatar\RenameAvatarMessage;
+use App\Application\Avatar\Model\AvatarRenameInstruction;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
@@ -18,7 +18,7 @@ final readonly class AvatarRenameDestinationResolver
     ) {
     }
 
-    public function resolveWebDirectory(RenameAvatarMessage $message): string
+    public function resolveWebDirectory(AvatarRenameInstruction $message): string
     {
         $categoryDirectory = $message->category;
         if ($message->category === 'face') {
@@ -49,7 +49,7 @@ final readonly class AvatarRenameDestinationResolver
         return '/'.implode('/', $segments);
     }
 
-    private function hasFaceAccessory(RenameAvatarMessage $message): bool
+    private function hasFaceAccessory(AvatarRenameInstruction $message): bool
     {
         $accessory = $this->extractFilterName($message->filters['accessory'] ?? null);
 

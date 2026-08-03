@@ -47,7 +47,16 @@ final readonly class AvatarPartRenameQueueService
         $storedName = $this->createStoredImageFilename($originalName);
         $tempPath = $uploadDir.'/'.$storedName;
 
-        $this->copyOrMoveSourceFile($sourcePath, $tempPath);
+        $this->copySourceFile($sourcePath, $tempPath);
+
+        $sourceChecksum = hash_file('sha256', $sourcePath);
+        $temporaryChecksum = hash_file('sha256', $tempPath);
+        if ($sourceChecksum === false || $temporaryChecksum === false || !hash_equals($sourceChecksum, $temporaryChecksum)) {
+            @unlink($tempPath);
+            @rmdir($uploadDir);
+
+            throw new \RuntimeException('Avatar temporary copy checksum mismatch.', 500);
+        }
 
         $avatarTemp = (new AvatarTemp())
             ->setOriginalName($originalName)
@@ -60,8 +69,31 @@ final readonly class AvatarPartRenameQueueService
             ->setStatus('uploaded');
 
         $this->entityManager->persist($avatarTemp);
-        $this->entityManager->remove($avatarPart);
         $this->entityManager->flush();
+
+        if (!unlink($sourcePath)) {
+            $this->entityManager->remove($avatarTemp);
+            $this->entityManager->flush();
+            @unlink($tempPath);
+            @rmdir($uploadDir);
+
+            throw new \RuntimeException('Unable to remove original avatar file after queuing its verified copy.', 500);
+        }
+
+        try {
+            $this->entityManager->remove($avatarPart);
+            $this->entityManager->flush();
+        } catch (\Throwable $exception) {
+            // The verified temporary copy allows restoring the original if Doctrine fails.
+            @copy($tempPath, $sourcePath);
+            $this->entityManager->remove($avatarTemp);
+            $this->entityManager->flush();
+            @unlink($tempPath);
+            @rmdir($uploadDir);
+            throw $exception;
+        }
+
+        @rmdir(dirname($sourcePath));
 
         return $avatarTemp;
     }
@@ -98,24 +130,8 @@ final readonly class AvatarPartRenameQueueService
         return null;
     }
 
-    private function copyOrMoveSourceFile(string $sourcePath, string $tempPath): void
+    private function copySourceFile(string $sourcePath, string $tempPath): void
     {
-        $avatarFinalRoot = realpath($this->projectDir.'/public/images/upload/avatar');
-        $sourceDirectory = realpath(dirname($sourcePath));
-        $sourceIsFinalFile = $avatarFinalRoot !== false
-            && $sourceDirectory !== false
-            && str_starts_with($sourceDirectory.'/', rtrim($avatarFinalRoot, '/').'/');
-
-        if ($sourceIsFinalFile) {
-            if (!rename($sourcePath, $tempPath)) {
-                throw new \RuntimeException('Unable to move avatar file to rename queue.', 500);
-            }
-
-            @rmdir(dirname($sourcePath));
-
-            return;
-        }
-
         if (!copy($sourcePath, $tempPath)) {
             throw new \RuntimeException('Unable to copy avatar file to rename queue.', 500);
         }

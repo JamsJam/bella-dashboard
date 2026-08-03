@@ -1,5 +1,40 @@
 framework:
     workflows:
+        avatar_rename:
+            type: state_machine
+            audit_trail:
+                enabled: true
+            marking_store:
+                type: method
+                property: status
+            supports:
+                - App\Entity\AvatarTemp
+            initial_marking: uploaded
+            places:
+                - uploaded
+                - validated
+                - renaming
+                - renamed
+                - error
+            transitions:
+                validate:
+                    from: uploaded
+                    to: validated
+                start_renaming:
+                    from: validated
+                    to: renaming
+                cancel_validation:
+                    from: validated
+                    to: uploaded
+                mark_renamed:
+                    from: renaming
+                    to: renamed
+                fail:
+                    from: renaming
+                    to: error
+                retry:
+                    from: error
+                    to: uploaded
         order:
             type: state_machine
             audit_trail:

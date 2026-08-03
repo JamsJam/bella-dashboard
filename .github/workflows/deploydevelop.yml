@@ -232,6 +232,8 @@ jobs:
             APP_ENV=prod APP_DEBUG=0 php bin/console messenger:stop-workers
             supervisorctl start 'messenger-consume:*' \
               || supervisorctl restart 'messenger-consume:*'
+            supervisorctl start 'avatar-rename-consume:*' \
+              || supervisorctl restart 'avatar-rename-consume:*'
             supervisorctl start 'scheduler-consume:*' \
               || supervisorctl restart 'scheduler-consume:*'
 

@@ -17,6 +17,19 @@ class ClothesRepository extends ServiceEntityRepository
         parent::__construct($registry, Clothes::class);
     }
 
+    public function findOneByVariantSlug(string $slug): ?Clothes
+    {
+        $clothe = $this->createQueryBuilder('clothe')
+            ->innerJoin('clothe.variants', 'variant')
+            ->andWhere('variant.slug = :slug')
+            ->setParameter('slug', $slug)
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        return $clothe instanceof Clothes ? $clothe : null;
+    }
+
     /**
     * @return Clothes[] Returns an array of Clothes objects
     */

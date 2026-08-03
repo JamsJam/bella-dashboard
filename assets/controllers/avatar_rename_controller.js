@@ -25,15 +25,26 @@ export default class extends Controller {
 
     static values = {
         filterUrl: String,
-        checkNameUrl: String,
         deleteCsrfToken: String,
     };
 
     connect() {
         this.currentAvatar = null;
+        this.pendingConfirmationPayload = null;
+        this.confirmationAcceptedHandler = this.onConfirmationAccepted.bind(this);
+        window.addEventListener('avatar-rename:confirmation-accepted', this.confirmationAcceptedHandler);
         this.renames = [];
+        this.cardTargets
+            .filter((card) => card.dataset.avatarStatus === 'validated')
+            .forEach((card) => this.renames.push({ avatarTempId: Number(card.dataset.avatarId) }));
+        this.renamesInputTarget.value = JSON.stringify(this.renames);
+        this.finishButtonTarget.hidden = this.renames.length === 0;
         this.closePanel();
         this.renderFilters(this.categoryTarget.value || 'body');
+    }
+
+    disconnect() {
+        window.removeEventListener('avatar-rename:confirmation-accepted', this.confirmationAcceptedHandler);
     }
 
     selectAvatar(event) {
@@ -45,6 +56,8 @@ export default class extends Controller {
             originalName: button.dataset.avatarName,
             preview: button.dataset.avatarPreview,
             deleteUrl: button.dataset.avatarDeleteUrl,
+            validateUrl: button.dataset.avatarValidateUrl,
+            validateCsrfToken: button.dataset.avatarValidateCsrfToken,
         };
 
         this.cardTargets.forEach((item) => item.classList.remove('is-selected'));
@@ -99,36 +112,61 @@ export default class extends Controller {
             newName: this.buildNewName(),
             category: this.normalizeValue(this.categoryTarget.value || 'body'),
             filters: this.collectFilters(),
-            replaceExisting: false,
         };
 
-        let availability = { available: true };
-
+        let validationResult;
         try {
-            availability = await this.checkNameAvailability(payload);
+            validationResult = await this.validateOnServer(payload, false);
+            if (!validationResult.success) {
+                if (validationResult.confirmationRequired) {
+                    this.pendingConfirmationPayload = payload;
+                }
+                return;
+            }
         } catch (error) {
-            console.error('Unable to check avatar name availability', error);
+            console.error('Unable to validate avatar name', error);
             refreshFlashMessages();
 
             return;
         }
 
-        if (!availability.available) {
-            const shouldReplace = await this.confirmReplaceExisting(availability, payload.newName);
+        await this.applySuccessfulValidation(payload, validationResult);
+    }
 
-            if (!shouldReplace) {
-                return;
-            }
+    async onConfirmationAccepted(event) {
+        const payload = this.pendingConfirmationPayload;
+        this.pendingConfirmationPayload = null;
 
-            payload.replaceExisting = true;
+        if (!payload) {
+            return;
+        }
+
+        await this.applySuccessfulValidation(payload, event.detail || {});
+    }
+
+    async applySuccessfulValidation(payload, validationResult) {
+        // Validation may have created new filter values in MySQL. Reload the
+        // definitions so the next image can select them immediately.
+        try {
+            await this.renderFilters(payload.category);
+        } catch (error) {
+            console.error('Unable to reload avatar filters after validation', error);
         }
 
         this.renames = this.renames.filter((rename) => rename.avatarTempId !== payload.avatarTempId);
-        this.renames.push(payload);
+        this.renames.push({ avatarTempId: payload.avatarTempId });
         this.renamesInputTarget.value = JSON.stringify(this.renames);
 
         const card = this.cardTargets.find((item) => Number(item.dataset.avatarId) === payload.avatarTempId);
         if (card) {
+            const cardButton = card.querySelector('.avatar-rename__card-button');
+            const name = cardButton?.querySelector('span');
+            if (name) {
+                name.textContent = validationResult.name || payload.newName;
+            }
+            if (cardButton) {
+                cardButton.dataset.avatarName = validationResult.name || payload.newName;
+            }
             card.classList.remove('is-selected');
             card.classList.add('is-validated');
             card.dataset.avatarStatus = 'validated';
@@ -138,68 +176,35 @@ export default class extends Controller {
         this.finishButtonTarget.hidden = this.renames.length === 0;
     }
 
-    async checkNameAvailability(payload) {
-        if (!this.hasCheckNameUrlValue || this.checkNameUrlValue === '') {
-            return { available: true };
-        }
+    async validateOnServer(payload, authorization) {
+        const body = new FormData();
+        body.set('_csrf_token', this.currentAvatar.validateCsrfToken);
+        body.set('name', payload.newName);
+        body.set('category', payload.category);
+        body.set('filters', JSON.stringify(payload.filters));
+        body.set('authorization', authorization ? '1' : '0');
 
-        const url = new URL(this.checkNameUrlValue, window.location.origin);
-        url.searchParams.set('name', payload.newName);
-        url.searchParams.set('category', payload.category);
-        url.searchParams.set('filters', JSON.stringify(payload.filters));
-
-        const response = await fetch(url.toString(), {
+        const response = await fetch(this.currentAvatar.validateUrl, {
+            method: 'POST',
             headers: {
                 'X-Requested-With': 'XMLHttpRequest',
-                Accept: 'application/json',
+                Accept: 'text/vnd.turbo-stream.html, application/json',
             },
+            body,
         });
-        const data = await response.json().catch(() => ({}));
+        const contentType = response.headers.get('Content-Type') || '';
+        if (contentType.includes('text/vnd.turbo-stream.html')) {
+            const html = await response.text();
+            window.Turbo?.renderStreamMessage(html);
+            return { success: false, confirmationRequired: true };
+        }
 
+        const data = await response.json().catch(() => ({}));
         if (!response.ok || data.error) {
-            throw new Error(data.error || `Name check failed with status ${response.status}`);
+            throw new Error(data.error || `Validation failed with status ${response.status}`);
         }
 
         return data;
-    }
-
-    confirmReplaceExisting(availability, newName) {
-        return new Promise((resolve) => {
-            const overlay = document.createElement('div');
-            overlay.className = 'avatar-rename__confirm-backdrop';
-            overlay.innerHTML = `
-                <dialog class="avatar-rename__confirm" open aria-modal="true">
-                    <header>
-                        <h2>Nom deja utilise</h2>
-                    </header>
-                    <div class="avatar-rename__confirm-body">
-                        <p>${this.escapeHtml(availability.message || `Un element existe deja avec le nom ${newName}.`)}</p>
-                        ${availability.previewUrl ? `
-                            <img src="${this.escapeAttribute(availability.previewUrl)}" alt="Apercu de l image existante">
-                        ` : ''}
-                    </div>
-                    <footer class="avatar-rename__confirm-actions">
-                        <button type="button" data-action="cancel">Annuler</button>
-                        <button type="button" data-action="replace">Remplacer</button>
-                    </footer>
-                </dialog>
-            `;
-
-            const close = (value) => {
-                overlay.remove();
-                resolve(value);
-            };
-
-            overlay.querySelector('[data-action="cancel"]')?.addEventListener('click', () => close(false));
-            overlay.querySelector('[data-action="replace"]')?.addEventListener('click', () => close(true));
-            overlay.addEventListener('click', (event) => {
-                if (event.target === overlay) {
-                    close(false);
-                }
-            });
-
-            document.body.appendChild(overlay);
-        });
     }
 
     async deleteAvatar(event) {
@@ -207,6 +212,11 @@ export default class extends Controller {
         const avatarTempId = Number(button.dataset.avatarId);
         const deleteUrl = button.dataset.avatarDeleteUrl;
         const card = button.closest('.avatar-rename__card');
+
+        if (card?.dataset.avatarStatus === 'validated') {
+            await this.cancelValidation(button);
+            return;
+        }
 
         if (!avatarTempId || !deleteUrl) {
             return;
@@ -250,17 +260,37 @@ export default class extends Controller {
         }
     }
 
-    cancelRename(event) {
-        const button = event.currentTarget;
+    async cancelValidation(button) {
+        const url = button.dataset.avatarCancelValidationUrl;
+        const csrfToken = button.dataset.avatarCancelValidationCsrfToken;
+        if (!url || !csrfToken) {
+            return;
+        }
+
+        const body = new FormData();
+        body.set('_csrf_token', csrfToken);
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                Accept: 'application/json',
+            },
+            body,
+        });
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok || data.error) {
+            return;
+        }
+
         const avatarTempId = Number(button.dataset.avatarId);
         const card = button.closest('.avatar-rename__card');
-
         this.renames = this.renames.filter((rename) => rename.avatarTempId !== avatarTempId);
         this.renamesInputTarget.value = JSON.stringify(this.renames);
 
         if (card) {
             card.classList.remove('is-selected', 'is-validated');
-            card.dataset.avatarStatus = 'uploaded';
+            card.dataset.avatarStatus = data.status || 'uploaded';
             this.pendingListTarget.appendChild(card);
         }
 
@@ -431,6 +461,7 @@ export default class extends Controller {
         url.searchParams.set('part', part || 'body');
 
         const response = await fetch(url.toString(), {
+            cache: 'no-store',
             headers: {
                 'X-Requested-With': 'XMLHttpRequest',
             },

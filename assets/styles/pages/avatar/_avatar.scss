@@ -317,7 +317,6 @@
     position: relative;
 }
 
-.avatar-rename__cancel,
 .avatar-rename__delete {
     display: none;
     width: 100%;
@@ -330,15 +329,12 @@
     cursor: pointer;
 }
 
-.avatar-rename__card.is-validated .avatar-rename__cancel,
 .avatar-rename__delete {
     display: inline-flex;
     align-items: center;
     justify-content: center;
 }
 
-.avatar-rename__cancel:hover,
-.avatar-rename__cancel:focus-visible,
 .avatar-rename__delete:hover,
 .avatar-rename__delete:focus-visible {
     border-color: #b42318;
@@ -384,13 +380,7 @@
     background: color-mix(in srgb, var(--success) 8%, var(--bg-light));
 }
 
-.avatar-rename__card[data-avatar-status="error"] .avatar-rename__card-button {
-    border-color: #b42318;
-    background: color-mix(in srgb, #b42318 7%, var(--bg-light));
-}
-
-.avatar-rename__card.is-validated::after,
-.avatar-rename__card[data-avatar-status="error"]::after {
+.avatar-rename__card.is-validated::after {
     position: absolute;
     top: 0.5rem;
     right: 0.5rem;
@@ -403,12 +393,6 @@
 .avatar-rename__card.is-validated::after {
     content: "Validee";
     background: var(--success);
-    color: white;
-}
-
-.avatar-rename__card[data-avatar-status="error"]::after {
-    content: "Erreur";
-    background: #b42318;
     color: white;
 }
 
@@ -601,7 +585,7 @@
     cursor: pointer;
 }
 
-.avatar-rename__confirm-actions [data-action="replace"] {
+.avatar-rename__confirm-actions form button {
     border-color: #b42318;
     background: color-mix(in srgb, #b42318 12%, var(--bg));
     color: #b42318;

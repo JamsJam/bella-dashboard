@@ -9,6 +9,13 @@ framework:
                 retry_strategy:
                     max_retries: 3
                     multiplier: 2
+            avatar_rename:
+                dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
+                options:
+                    queue_name: avatar_rename
+                retry_strategy:
+                    max_retries: 3
+                    multiplier: 2
             failed: 'doctrine://default?queue_name=failed'
             # sync: 'sync://'
 
@@ -21,10 +28,18 @@ framework:
             Symfony\Component\Mailer\Messenger\SendEmailMessage: async
             Symfony\Component\Notifier\Message\ChatMessage: async
             Symfony\Component\Notifier\Message\SmsMessage: async
-            App\Message\Avatar\RenameAvatarMessage: async
+            App\Message\Avatar\RenameAvatarMessage: avatar_rename
             App\Payment\Stripe\Webhook\Message\StripeCheckoutSessionMessage: async
             App\Application\Orders\Delivery\DeliveryReminderMessage: async
             App\Application\Orders\Delivery\AutoDeliverShippedOrderMessage: async
 
             # Route your messages to the transports
             # 'App\Message\YourMessage': async
+
+when@test:
+    framework:
+        messenger:
+            transports:
+                async: 'in-memory://'
+                avatar_rename: 'in-memory://'
+                failed: 'in-memory://'

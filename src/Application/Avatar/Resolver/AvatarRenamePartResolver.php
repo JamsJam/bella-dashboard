@@ -3,7 +3,7 @@
 namespace App\Application\Avatar\Resolver;
 
 use App\Application\Avatar\Factory\AvatarPartFactory;
-use App\Message\Avatar\RenameAvatarMessage;
+use App\Application\Avatar\Model\AvatarRenameInstruction;
 use Doctrine\ORM\EntityManagerInterface;
 
 final readonly class AvatarRenamePartResolver
@@ -14,7 +14,7 @@ final readonly class AvatarRenamePartResolver
     ) {
     }
 
-    public function resolvePart(RenameAvatarMessage $message): object
+    public function resolvePart(AvatarRenameInstruction $message): object
     {
         if ($message->category !== 'hair') {
             return $this->avatarPartFactory->createFromCategory($message->category);
@@ -28,7 +28,7 @@ final readonly class AvatarRenamePartResolver
         return is_object($existingHair) ? $existingHair : $this->avatarPartFactory->createFromCategory($message->category);
     }
 
-    public function resolveExistingPart(RenameAvatarMessage $message, string $imagePath): ?object
+    public function resolveExistingPart(AvatarRenameInstruction $message, string $imagePath): ?object
     {
         $entityClass = $this->avatarPartFactory->resolveEntityClass($message->category);
         $criteria = $message->category === 'hair'
@@ -39,7 +39,7 @@ final readonly class AvatarRenamePartResolver
         return is_object($avatarPart) ? $avatarPart : null;
     }
 
-    public function resolveName(RenameAvatarMessage $message): string
+    public function resolveName(AvatarRenameInstruction $message): string
     {
         $name = pathinfo($message->newName, PATHINFO_FILENAME);
 
@@ -52,9 +52,9 @@ final readonly class AvatarRenamePartResolver
 
     public function resolveImagesPayload(
         object $avatarPart,
-        RenameAvatarMessage $message,
+        AvatarRenameInstruction $message,
         string $imagePath,
-        bool $replaceExisting = false,
+        bool $allowSideReplacement = false,
     ): array
     {
         if ($message->category !== 'hair') {
@@ -65,7 +65,7 @@ final readonly class AvatarRenamePartResolver
         $images = method_exists($avatarPart, 'getImages') ? $avatarPart->getImages() : [];
         $images = is_array($images) ? $images : [];
 
-        if (isset($images[$side]) && !$replaceExisting) {
+        if (isset($images[$side]) && !$allowSideReplacement) {
             throw new \RuntimeException(sprintf('Hair "%s" image already exists.', $side));
         }
 
@@ -74,7 +74,7 @@ final readonly class AvatarRenamePartResolver
         return $images;
     }
 
-    private function resolveHairSide(RenameAvatarMessage $message): string
+    private function resolveHairSide(AvatarRenameInstruction $message): string
     {
         $side = $this->normalizeToken((string) ($message->filters['side'] ?? ''));
 

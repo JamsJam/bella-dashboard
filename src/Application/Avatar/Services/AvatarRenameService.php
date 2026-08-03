@@ -3,17 +3,22 @@
 namespace App\Application\Avatar\Services;
 
 use App\Application\Avatar\Mapper\AvatarRenameFilterMapper;
+use App\Application\Avatar\Model\AvatarRenameInstruction;
 use App\Application\Avatar\Resolver\AvatarRenameDestinationResolver;
 use App\Application\Avatar\Resolver\AvatarRenameFilterValueResolver;
 use App\Application\Avatar\Resolver\AvatarRenamePartResolver;
 use App\Application\Avatar\Resolver\AvatarRenameSourcePathResolver;
+use App\Application\Avatar\Workflow\AvatarRenameCompletionContext;
+use App\Application\Avatar\Workflow\AvatarRenameGuardContextStore;
+use App\Application\Avatar\Workflow\AvatarRenameWorkflow;
 use App\Entity\Avatar\Body\Body;
 use App\Entity\AvatarTemp;
 use App\Entity\Clothes\Clothes;
 use App\Message\Avatar\RenameAvatarMessage;
-use App\Service\LoggerService;
+use App\Repository\Clothes\ClothesRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Symfony\Component\Workflow\WorkflowInterface;
 
 final readonly class AvatarRenameService
 {
@@ -24,8 +29,10 @@ final readonly class AvatarRenameService
         private AvatarRenameDestinationResolver $destinationResolver,
         private AvatarRenamePartResolver $partResolver,
         private AvatarRenameFilterValueResolver $filterValueResolver,
-        private ManagerRegistry $managerRegistry,
-        private LoggerService $logger,
+        private AvatarRenameNameParser $nameParser,
+        private AvatarRenameGuardContextStore $guardContextStore,
+        #[Autowire(service: 'state_machine.avatar_rename')]
+        private WorkflowInterface $workflow,
     ) {
     }
 
@@ -37,57 +44,22 @@ final readonly class AvatarRenameService
             return;
         }
 
-        try {
-            $this->process($avatarTemp, $message);
-        } catch (\Throwable $exception) {
-            $this->logger->exception($exception, 'Avatar rename failed.', [
-                'avatar_temp_id' => $message->avatarTempId,
-                'new_name' => $message->newName,
-                'category' => $message->category,
-            ]);
-
-            $this->markAvatarTempAsError($message->avatarTempId, $exception);
+        if ($avatarTemp->getStatus() === AvatarRenameWorkflow::PLACE_RENAMED) {
+            return;
         }
+
+        if ($avatarTemp->getStatus() !== AvatarRenameWorkflow::PLACE_RENAMING) {
+            throw new \RuntimeException(sprintf('Avatar rename message received in state "%s".', $avatarTemp->getStatus()));
+        }
+
+        $this->process($avatarTemp, $this->nameParser->fromAvatarTemp($avatarTemp));
     }
 
-    private function markAvatarTempAsError(int $avatarTempId, \Throwable $originalException): void
-    {
-        try {
-            $entityManager = $this->entityManager;
-
-            if (!$entityManager->isOpen()) {
-                $manager = $this->managerRegistry->resetManager();
-                if (!$manager instanceof EntityManagerInterface) {
-                    throw new \RuntimeException('Unable to reset the Doctrine entity manager.');
-                }
-
-                $entityManager = $manager;
-            } else {
-                $entityManager->clear();
-            }
-
-            $avatarTemp = $entityManager->find(AvatarTemp::class, $avatarTempId);
-            if (!$avatarTemp instanceof AvatarTemp) {
-                return;
-            }
-
-            $avatarTemp->setStatus('error');
-            $entityManager->flush();
-        } catch (\Throwable $statusException) {
-            $this->logger->exception($statusException, 'Unable to mark failed avatar rename as error.', [
-                'avatar_temp_id' => $avatarTempId,
-            ]);
-
-            throw $originalException;
-        }
-    }
-
-    private function process(AvatarTemp $avatarTemp, RenameAvatarMessage $message): void
+    private function process(AvatarTemp $avatarTemp, AvatarRenameInstruction $message): void
     {
         $this->assertSafeNewName($message->newName);
         $this->assertRequiredFilters($message);
 
-        $sourcePath = $this->sourcePathResolver->resolve($avatarTemp);
         $destinationWebDir = $this->destinationResolver->resolveWebDirectory($message);
         $destinationDir = $this->destinationResolver->resolveAbsoluteDirectory($destinationWebDir);
 
@@ -97,30 +69,38 @@ final readonly class AvatarRenameService
 
         $destinationPath = $destinationDir.'/'.$message->newName;
         $this->destinationResolver->assertDestinationPathIsAllowed($destinationPath);
+        $imagePath = $destinationWebDir.'/'.$message->newName;
 
-        if (file_exists($destinationPath) && !$message->replaceExisting) {
-            throw new \RuntimeException('Avatar final filename collision.');
+        $temporaryPath = $avatarTemp->getTempPath();
+        if (($temporaryPath === null || !is_file($temporaryPath)) && is_file($destinationPath)) {
+            $this->completePartiallySuccessfulRename($avatarTemp, $message, $destinationPath, $imagePath);
+
+            return;
         }
 
-        $imagePath = $destinationWebDir.'/'.$message->newName;
+        $sourcePath = $this->sourcePathResolver->resolve($avatarTemp);
+
         $checksum = hash_file('sha256', $sourcePath);
         if ($checksum === false) {
             throw new \RuntimeException('Unable to calculate avatar checksum.');
         }
 
-        if ($message->replaceExisting) {
+        $isExistingPart = false;
+        if (file_exists($destinationPath)) {
             $avatarPart = $this->partResolver->resolveExistingPart($message, $imagePath);
-            if (!is_object($avatarPart)) {
-                throw new \RuntimeException('Existing avatar entity not found for replacement.');
+            if (is_object($avatarPart)) {
+                $isExistingPart = true;
+                $this->hydrateReplacement($avatarPart, $message, $checksum, $imagePath);
+            } else {
+                $avatarPart = $this->resolveAvatarPart($message);
+                $this->hydrateAvatarPart($avatarPart, $message, $checksum, $imagePath);
             }
-
-            $this->hydrateReplacement($avatarPart, $message, $checksum, $imagePath);
         } else {
             $avatarPart = $this->resolveAvatarPart($message);
             $this->hydrateAvatarPart($avatarPart, $message, $checksum, $imagePath);
         }
 
-        if (file_exists($destinationPath) && $message->replaceExisting && !unlink($destinationPath)) {
+        if (file_exists($destinationPath) && !unlink($destinationPath)) {
             throw new \RuntimeException('Unable to replace existing avatar file.');
         }
 
@@ -129,17 +109,69 @@ final readonly class AvatarRenameService
         }
         @rmdir(dirname($sourcePath));
 
-        $avatarTemp->setFinalName($message->newName);
-        $avatarTemp->setStatus('renamed');
-
-        if (!$message->replaceExisting) {
+        if (!$isExistingPart) {
             $this->entityManager->persist($avatarPart);
         }
+
+        $this->applyMarkRenamed($avatarTemp, new AvatarRenameCompletionContext(
+            $destinationPath,
+            $message->newName,
+            $checksum,
+            $imagePath,
+            $avatarPart,
+        ));
+        $this->entityManager->flush();
+
+        // "renamed" is the verified terminal state which authorizes cleanup.
         $this->entityManager->remove($avatarTemp);
         $this->entityManager->flush();
     }
 
-    private function resolveAvatarPart(RenameAvatarMessage $message): object
+    private function completePartiallySuccessfulRename(
+        AvatarTemp $avatarTemp,
+        AvatarRenameInstruction $message,
+        string $destinationPath,
+        string $imagePath,
+    ): void {
+        $avatarPart = $this->partResolver->resolveExistingPart($message, $imagePath);
+        $checksum = hash_file('sha256', $destinationPath);
+
+        if ($checksum === false) {
+            throw new \RuntimeException('Unable to resume a partially completed avatar rename.');
+        }
+
+        if (!is_object($avatarPart)) {
+            $avatarPart = $this->resolveAvatarPart($message);
+            $this->hydrateAvatarPart($avatarPart, $message, $checksum, $imagePath);
+            $this->entityManager->persist($avatarPart);
+        }
+
+        $this->applyMarkRenamed($avatarTemp, new AvatarRenameCompletionContext(
+            $destinationPath,
+            $message->newName,
+            $checksum,
+            $imagePath,
+            $avatarPart,
+        ));
+        $this->entityManager->flush();
+        $this->entityManager->remove($avatarTemp);
+        $this->entityManager->flush();
+    }
+
+    private function applyMarkRenamed(AvatarTemp $avatarTemp, AvatarRenameCompletionContext $context): void
+    {
+        $this->guardContextStore->setCompletion($avatarTemp, $context);
+
+        try {
+            $this->workflow->apply($avatarTemp, AvatarRenameWorkflow::TRANSITION_MARK_RENAMED, [
+                'completion' => $context,
+            ]);
+        } finally {
+            $this->guardContextStore->clearCompletion($avatarTemp);
+        }
+    }
+
+    private function resolveAvatarPart(AvatarRenameInstruction $message): object
     {
         if ($message->category !== 'body') {
             return $this->partResolver->resolvePart($message);
@@ -157,17 +189,21 @@ final readonly class AvatarRenameService
     /**
      * @return list<Clothes>
      */
-    private function resolveClothesForBody(RenameAvatarMessage $message): array
+    private function resolveClothesForBody(AvatarRenameInstruction $message): array
     {
         $value = $message->filters['clothes'] ?? null;
         $slug = $this->resolveClothesSlug($value);
 
-        if ($slug === '') {
+        if ($slug === '' || $slug === '-none-') {
             return [];
         }
 
         $repository = $this->entityManager->getRepository(Clothes::class);
-        $clothe = $repository->findOneBy(['slug' => $slug]);
+        if (!$repository instanceof ClothesRepository) {
+            throw new \RuntimeException('Invalid clothes repository.');
+        }
+
+        $clothe = $repository->findOneByVariantSlug($slug);
 
         return $clothe instanceof Clothes ? [$clothe] : [];
     }
@@ -201,7 +237,7 @@ final readonly class AvatarRenameService
         }
     }
 
-    private function assertRequiredFilters(RenameAvatarMessage $message): void
+    private function assertRequiredFilters(AvatarRenameInstruction $message): void
     {
         foreach ($this->avatarRenameFilterMapper->getRequiredFilters($message->category) as $filterId) {
             if (!isset($message->filters[$filterId]) || $this->extractFilterName($message->filters[$filterId]) === '') {
@@ -210,7 +246,7 @@ final readonly class AvatarRenameService
         }
     }
 
-    private function hydrateAvatarPart(object $avatarPart, RenameAvatarMessage $message, string $checksum, string $imagePath): void
+    private function hydrateAvatarPart(object $avatarPart, AvatarRenameInstruction $message, string $checksum, string $imagePath): void
     {
         $this->callRequiredSetter($avatarPart, 'setName', $this->partResolver->resolveName($message));
         $this->callRequiredSetter($avatarPart, 'setChecksum', $checksum);
@@ -234,7 +270,7 @@ final readonly class AvatarRenameService
 
     private function hydrateReplacement(
         object $avatarPart,
-        RenameAvatarMessage $message,
+        AvatarRenameInstruction $message,
         string $checksum,
         string $imagePath,
     ): void {
@@ -247,16 +283,23 @@ final readonly class AvatarRenameService
                 $avatarPart,
                 $message,
                 $imagePath,
-                replaceExisting: true,
+                allowSideReplacement: true,
             ));
         }
 
         if (method_exists($avatarPart, 'setEditedAt')) {
             $avatarPart->setEditedAt(new \DateTimeImmutable());
         }
+
+        $this->hydrateAvatarFilters($avatarPart, $message);
+
+        if ($message->category === 'body' && $avatarPart instanceof Body) {
+            $clothes = $this->resolveClothesForBody($message);
+            $avatarPart->setClothe($clothes[0] ?? null);
+        }
     }
 
-    private function hydrateAvatarFilters(object $avatarPart, RenameAvatarMessage $message): void
+    private function hydrateAvatarFilters(object $avatarPart, AvatarRenameInstruction $message): void
     {
         foreach ($message->filters as $filterId => $filterValue) {
             $sourceClass = $this->avatarRenameFilterMapper->getFilterSourceClass($message->category, (string) $filterId);
