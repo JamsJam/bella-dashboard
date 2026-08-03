@@ -5,6 +5,7 @@ namespace App\State\Category;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\ApiResource\Category\CategoryListDTO;
+use App\Application\Clothes\Guard\ClotheOnlineGuard;
 use App\Entity\Category\Category;
 use App\Entity\Clothes\ClothesVariant;
 use App\Repository\Category\CategoryRepository;
@@ -20,6 +21,7 @@ final readonly class CategoryListProvider implements ProviderInterface
     public function __construct(
         private CategoryRepository $categoryRepository,
         private ClothesVariantRepository $variantRepository,
+        private ClotheOnlineGuard $clotheOnlineGuard,
         private RequestStack $requestStack,
     ) {
     }
@@ -44,7 +46,10 @@ final readonly class CategoryListProvider implements ProviderInterface
             throw new NotFoundHttpException(sprintf('La catégorie "%s" est introuvable.', $categorySlug));
         }
 
-        $groups = $this->groupBySlug($this->variantRepository->findOnlineByCategory($category->getId()));
+        $groups = array_values(array_filter(
+            $this->groupBySlug($this->variantRepository->findOnlineByCategory($category->getId())),
+            fn (array $group): bool => $this->clotheOnlineGuard->canPublishVariants($group)->canPublish(),
+        ));
 
         return array_map(
             function (array $group): CategoryListDTO {

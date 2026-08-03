@@ -4,6 +4,7 @@ namespace App\State\Variant;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
+use App\Application\Clothes\Guard\ClotheOnlineGuard;
 use App\ApiResource\Variant\ClothesVariantItemDTO;
 use App\ApiResource\Variant\ClothesVariantsDTO;
 use App\ApiResource\Variant\RelatedVariantDTO;
@@ -30,6 +31,7 @@ final readonly class VariantDetailProvider implements ProviderInterface
     public function __construct(
         private ClothesVariantRepository $variantRepository,
         private ReviewRepository $reviewRepository,
+        private ClotheOnlineGuard $clotheOnlineGuard,
         private RequestStack $requestStack,
     ) {
     }
@@ -42,7 +44,7 @@ final readonly class VariantDetailProvider implements ProviderInterface
         }
 
         $variants = $this->variantRepository->findOnlineBySlug($slug);
-        if ($variants === []) {
+        if ($variants === [] || !$this->clotheOnlineGuard->canPublishVariants($variants)->canPublish()) {
             throw new NotFoundHttpException(sprintf('La déclinaison "%s" est introuvable.', $slug));
         }
 
@@ -57,7 +59,7 @@ final readonly class VariantDetailProvider implements ProviderInterface
         $collectionId = $collection?->getId();
         $collectionVariants = $collectionId === null
             ? $variants
-            : $this->variantRepository->findOnlineByCollection($collectionId);
+            : $this->publishableVariants($this->variantRepository->findOnlineByCollection($collectionId));
         $images = $this->images($variants);
 
         return new VariantDetailDTO(
@@ -82,6 +84,31 @@ final readonly class VariantDetailProvider implements ProviderInterface
             relatedProducts: $this->relatedProducts($collectionVariants, $slug),
             reviews: $clothes instanceof Clothes ? $this->reviews($clothes) : [],
         );
+    }
+
+    /**
+     * @param list<ClothesVariant> $variants
+     *
+     * @return list<ClothesVariant>
+     */
+    private function publishableVariants(array $variants): array
+    {
+        $groups = [];
+        foreach ($variants as $variant) {
+            $slug = $variant->getSlug();
+            if (is_string($slug) && $slug !== '') {
+                $groups[$slug][] = $variant;
+            }
+        }
+
+        $publishable = [];
+        foreach ($groups as $group) {
+            if ($this->clotheOnlineGuard->canPublishVariants($group)->canPublish()) {
+                array_push($publishable, ...$group);
+            }
+        }
+
+        return $publishable;
     }
 
     /** @param list<ClothesVariant> $variants

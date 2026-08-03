@@ -5,6 +5,7 @@ namespace App\State\Search;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\ApiResource\Search\VariantCardDTO;
+use App\Application\Clothes\Guard\ClotheOnlineGuard;
 use App\Entity\Category\Category;
 use App\Entity\Clothes\ClothesVariant;
 use App\Repository\Category\CategoryRepository;
@@ -21,6 +22,7 @@ final readonly class VariantSearchProvider implements ProviderInterface
     public function __construct(
         private CategoryRepository $categoryRepository,
         private ClothesVariantRepository $variantRepository,
+        private ClotheOnlineGuard $clotheOnlineGuard,
         private RequestStack $requestStack,
     ) {
     }
@@ -56,9 +58,14 @@ final readonly class VariantSearchProvider implements ProviderInterface
                 maximumPrice: $maximumPrice,
             );
 
+        $groups = array_values(array_filter(
+            $this->groupBySlug($variants),
+            fn (array $group): bool => $this->clotheOnlineGuard->canPublishVariants($group)->canPublish(),
+        ));
+
         return array_map(
             fn (array $group): VariantCardDTO => $this->mapVariantGroup($group),
-            $this->groupBySlug($variants),
+            $groups,
         );
     }
 

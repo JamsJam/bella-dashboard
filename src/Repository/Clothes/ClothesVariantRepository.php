@@ -89,7 +89,6 @@ class ClothesVariantRepository extends ServiceEntityRepository
             ->andWhere('category.id = :category')
             ->andWhere('category.isOnline = true')
             ->andWhere('collection.isOnline = true')
-            ->andWhere('clothes.isOnline = true')
             ->andWhere('variant.isOnline = true')
             ->andWhere('variant.stock > 0')
             ->setParameter('category', $categoryId)
@@ -120,7 +119,6 @@ class ClothesVariantRepository extends ServiceEntityRepository
             ->andWhere('variant.slug = :slug')
             ->andWhere('category.isOnline = true')
             ->andWhere('collection.isOnline = true')
-            ->andWhere('clothes.isOnline = true')
             ->andWhere('variant.isOnline = true')
             ->andWhere('variant.stock > 0')
             ->setParameter('slug', $slug)
@@ -145,7 +143,6 @@ class ClothesVariantRepository extends ServiceEntityRepository
             ->andWhere('collection.id = :collection')
             ->andWhere('category.isOnline = true')
             ->andWhere('collection.isOnline = true')
-            ->andWhere('clothes.isOnline = true')
             ->andWhere('variant.isOnline = true')
             ->andWhere('variant.stock > 0')
             ->setParameter('collection', $collectionId)
@@ -183,7 +180,6 @@ class ClothesVariantRepository extends ServiceEntityRepository
             ->andWhere('category.id = :category')
             ->andWhere('category.isOnline = true')
             ->andWhere('collection.isOnline = true')
-            ->andWhere('clothes.isOnline = true')
             ->andWhere('variant.isOnline = true')
             ->andWhere('variant.stock > 0')
             ->setParameter('category', $categoryId)
@@ -312,14 +308,12 @@ class ClothesVariantRepository extends ServiceEntityRepository
             $qb
                 ->andWhere('category.isOnline = true')
                 ->andWhere('collection.isOnline = true')
-                ->andWhere('c.isOnline = true')
                 ->andWhere('v.isOnline = true')
                 ->andWhere('v.stock > 0');
         } elseif ($online === false) {
             $qb->andWhere($qb->expr()->orX(
                 'category.isOnline = false',
                 'collection.isOnline = false',
-                'c.isOnline = false',
                 'v.isOnline = false',
                 'v.stock <= 0',
             ));

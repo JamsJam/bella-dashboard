@@ -12,7 +12,7 @@ final class ClotheOnlineGuardTest extends TestCase
 {
     public function testSeoValidationIsLimitedToTheRequestedSlugGroup(): void
     {
-        $clothe = new Clothes();
+        $clothe = (new Clothes())->setIsOnline(false);
         $orangeSmall = $this->variant('keyssie-orange', 'Description orange');
         $orangeMedium = $this->variant('keyssie-orange', 'Description orange');
         $blueSmall = $this->variant('keyssie-blue', null);

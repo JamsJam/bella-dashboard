@@ -328,7 +328,6 @@ class ClothesVariant
     public function isAvailable(): bool
     {
         return $this->isOnline
-            && $this->stock > 0
-            && (bool) $this->clothes?->isOnline();
+            && $this->stock > 0;
     }
 }

@@ -34,7 +34,7 @@ final readonly class VariantStockProvider implements ProviderInterface
         return new VariantStock(
             variantId: $id,
             stock: $stock,
-            available: $variant->isOnline() && $variant->getClothes()?->isOnline() === true && $stock > 0,
+            available: $variant->isOnline() && $stock > 0,
         );
     }
 }
