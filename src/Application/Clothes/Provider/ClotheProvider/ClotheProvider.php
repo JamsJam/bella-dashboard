@@ -5,6 +5,7 @@ namespace App\Application\Clothes\Provider\ClotheProvider;
 use App\Entity\Clothes\Clothes;
 use App\Repository\Clothes\ClothesRepository;
 use App\Repository\Clothes\ClothesVariantRepository;
+use App\Enum\ClotheStatus;
 
 
 
@@ -45,7 +46,7 @@ final class ClotheProvider
         ?int $category = null,
         ?int $collection = null,
         bool $bestsellerOnly = false,
-        ?bool $online = null,
+        ?ClotheStatus $status = null,
         ?int $limit = null,
         ?int $offset = null,
     ): array {
@@ -67,7 +68,7 @@ final class ClotheProvider
             $category,
             $collection,
             $bestsellerOnly,
-            $online,
+            $status,
             $limit,
             $offset,
         );

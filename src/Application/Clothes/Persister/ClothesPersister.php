@@ -2,6 +2,7 @@
 
 namespace App\Application\Clothes\Persister;
 
+use App\Enum\ClotheStatus;
 use App\Application\Clothes\DTO\ClotheImageInput;
 use App\Application\Clothes\Guard\ClotheNameGuard;
 use App\Application\Clothes\Services\ClotheService;
@@ -73,7 +74,6 @@ final class ClothesPersister
             ->setName($name)
             ->setPrice($price)
             ->setCollection($collection)
-            ->setIsOnline(false)
             ->setCreatedAt($now)
             ->setEditedAt($now);
 
@@ -114,7 +114,7 @@ final class ClothesPersister
                 ->setImages($imagePaths)
                 ->setHighlightImage($imagePaths[0] ?? null)
                 ->setBestsellerImage($imagePaths[0] ?? null)
-                ->setIsOnline((bool) ($variantData['isOnline'] ?? false));
+                ->setPublicationStatus(ClotheStatus::Draft);
 
             $clothe->addVariant($variant);
         }
@@ -169,7 +169,6 @@ final class ClothesPersister
                 'size' => $size,
                 'stock' => $data['stock'] ?? 0,
                 'sku' => null,
-                'isOnline' => false,
                 'metadescription' => $data['metadescription'] ?? null,
             ],
             $sizes,

@@ -2,6 +2,8 @@
 
 namespace App\Repository\Clothes;
 
+use App\Enum\ClotheStatus;
+
 use App\Entity\Clothes\Clothes;
 use App\Entity\Clothes\ClothesVariant;
 use App\Entity\Clothes\Clothescolor;
@@ -15,6 +17,17 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class ClothesVariantRepository extends ServiceEntityRepository
 {
+    /** @return list<ClothesVariant> */
+    public function findScheduledForPublication(\DateTimeImmutable $now): array
+    {
+        return $this->createQueryBuilder('variant')
+            ->andWhere('variant.publicationStatus = :status')
+            ->andWhere('variant.scheduledPublicationAt <= :now')
+            ->setParameter('status', ClotheStatus::Scheduled)
+            ->setParameter('now', $now)
+            ->getQuery()
+            ->getResult();
+    }
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, ClothesVariant::class);
@@ -89,9 +102,9 @@ class ClothesVariantRepository extends ServiceEntityRepository
             ->andWhere('category.id = :category')
             ->andWhere('category.isOnline = true')
             ->andWhere('collection.isOnline = true')
-            ->andWhere('variant.isOnline = true')
-            ->andWhere('variant.stock > 0')
+            ->andWhere('variant.publicationStatus = :onlineStatus')
             ->setParameter('category', $categoryId)
+            ->setParameter('onlineStatus', ClotheStatus::Online)
             ->orderBy('clothes.name', 'ASC')
             ->addOrderBy('color.name', 'ASC')
             ->addOrderBy('size.name', 'ASC')
@@ -119,9 +132,9 @@ class ClothesVariantRepository extends ServiceEntityRepository
             ->andWhere('variant.slug = :slug')
             ->andWhere('category.isOnline = true')
             ->andWhere('collection.isOnline = true')
-            ->andWhere('variant.isOnline = true')
-            ->andWhere('variant.stock > 0')
+            ->andWhere('variant.publicationStatus = :onlineStatus')
             ->setParameter('slug', $slug)
+            ->setParameter('onlineStatus', ClotheStatus::Online)
             ->orderBy('size.name', 'ASC')
             ->addOrderBy('variant.id', 'ASC')
             ->getQuery()
@@ -143,9 +156,9 @@ class ClothesVariantRepository extends ServiceEntityRepository
             ->andWhere('collection.id = :collection')
             ->andWhere('category.isOnline = true')
             ->andWhere('collection.isOnline = true')
-            ->andWhere('variant.isOnline = true')
-            ->andWhere('variant.stock > 0')
+            ->andWhere('variant.publicationStatus = :onlineStatus')
             ->setParameter('collection', $collectionId)
+            ->setParameter('onlineStatus', ClotheStatus::Online)
             ->orderBy('clothes.name', 'ASC')
             ->addOrderBy('color.name', 'ASC')
             ->addOrderBy('size.name', 'ASC')
@@ -180,9 +193,9 @@ class ClothesVariantRepository extends ServiceEntityRepository
             ->andWhere('category.id = :category')
             ->andWhere('category.isOnline = true')
             ->andWhere('collection.isOnline = true')
-            ->andWhere('variant.isOnline = true')
-            ->andWhere('variant.stock > 0')
+            ->andWhere('variant.publicationStatus = :onlineStatus')
             ->setParameter('category', $categoryId)
+            ->setParameter('onlineStatus', ClotheStatus::Online)
             ->orderBy('clothes.name', 'ASC')
             ->addOrderBy('color.name', 'ASC')
             ->addOrderBy('size.name', 'ASC')
@@ -259,7 +272,7 @@ class ClothesVariantRepository extends ServiceEntityRepository
         ?int $category = null,
         ?int $collection = null,
         bool $bestsellerOnly = false,
-        ?bool $online = null,
+        ?ClotheStatus $status = null,
         ?int $limit = null,
         ?int $offset = null,
     ): array {
@@ -304,19 +317,8 @@ class ClothesVariantRepository extends ServiceEntityRepository
             $qb->andWhere('v.isBestseller = true');
         }
 
-        if ($online === true) {
-            $qb
-                ->andWhere('category.isOnline = true')
-                ->andWhere('collection.isOnline = true')
-                ->andWhere('v.isOnline = true')
-                ->andWhere('v.stock > 0');
-        } elseif ($online === false) {
-            $qb->andWhere($qb->expr()->orX(
-                'category.isOnline = false',
-                'collection.isOnline = false',
-                'v.isOnline = false',
-                'v.stock <= 0',
-            ));
+        if ($status instanceof ClotheStatus) {
+            $qb->andWhere('v.publicationStatus = :status')->setParameter('status', $status);
         }
 
         $groups = [];

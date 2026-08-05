@@ -34,7 +34,7 @@ final readonly class VariantStockProvider implements ProviderInterface
         return new VariantStock(
             variantId: $id,
             stock: $stock,
-            available: $variant->isOnline() && $stock > 0,
+            available: $variant->getPublicationStatus() === \App\Enum\ClotheStatus::Online && $stock > 0,
         );
     }
 }

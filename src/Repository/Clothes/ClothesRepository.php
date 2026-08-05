@@ -5,6 +5,7 @@ namespace App\Repository\Clothes;
 use App\Entity\Clothes\Clothes;
 use App\Entity\Clothes\ClothesVariant;
 use Doctrine\Persistence\ManagerRegistry;
+use App\Enum\ClotheStatus;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 
 /**
@@ -54,7 +55,7 @@ class ClothesRepository extends ServiceEntityRepository
             ->leftJoin('variants.color', 'cc')
             ->leftJoin('variants.size', 'cs')
             ->orderBy($orderBy ?? 'c.name', $direction ?? 'asc')
-            ->addOrderBy('c.isOnline', 'desc')
+            ->addOrderBy('variants.publicationStatus', 'asc')
             ->addOrderBy('c.id', 'asc')
         ;
 
@@ -94,21 +95,18 @@ class ClothesRepository extends ServiceEntityRepository
             $qb
                 ->andWhere('cat.isOnline = true')
                 ->andWhere('col.isOnline = true')
-                ->andWhere('c.isOnline = true')
-                ->andWhere('variants.isOnline = true')
-                ->andWhere('variants.stock > 0')
+                ->andWhere('variants.publicationStatus = :onlineStatus')
+                ->setParameter('onlineStatus', ClotheStatus::Online)
             ;
         } elseif ($online === false) {
             $qb->andWhere(
                 $qb->expr()->orX(
                     'cat.isOnline = false',
                     'col.isOnline = false',
-                    'c.isOnline = false',
+                    'variants.publicationStatus <> :onlineStatus',
                     'variants.id IS NULL',
-                    'variants.isOnline = false',
-                    'variants.stock <= 0',
                 ),
-            );
+            )->setParameter('onlineStatus', ClotheStatus::Online);
         }
 
         if ($limit !== null) {
@@ -163,10 +161,10 @@ class ClothesRepository extends ServiceEntityRepository
             ->join('variants.color', 'cc')
             ->join('variants.size', 'cs')
             ->andWhere('slugVariant.slug = :slug')
-            ->andWhere('c.isOnline = true')
+            ->andWhere('variants.publicationStatus = :onlineStatus')
             ->andWhere('col.isOnline = true')
             ->andWhere('cat.isOnline = true')
-            ->andWhere('variants.isOnline = true')
+            ->setParameter('onlineStatus', ClotheStatus::Online)
             ->setParameter('slug', $slug)
             ->orderBy('cc.name', 'ASC')
             ->addOrderBy('cs.name', 'ASC')
@@ -242,7 +240,7 @@ class ClothesRepository extends ServiceEntityRepository
     public function findClothesInCollection($collection): array
     {
         $qb= $this->createQueryBuilder('c');
-        $qb->select('DISTINCT c.name, variants.images, c.isOnline, co.name As collectionName, cc.name AS colorName, c.createdAt')
+        $qb->select('DISTINCT c.name, variants.images, variants.publicationStatus, co.name As collectionName, cc.name AS colorName, c.createdAt')
             ->leftJoin('c.collection','co')
             ->leftJoin('c.variants','variants')
             ->leftJoin('variants.size','cs')
@@ -267,11 +265,11 @@ class ClothesRepository extends ServiceEntityRepository
 
         $qb = $this->createQueryBuilder('c');
 
-        $qb ->select('variants.slug, c.name, col.name AS collection , cat.name AS category, c.isOnline')
+        $qb ->select('variants.slug, c.name, col.name AS collection , cat.name AS category, variants.publicationStatus')
             ->join('c.collection', 'col')
             ->join('col.category', 'cat')
             ->leftJoin('c.variants', 'variants')
-            ->groupBy('variants.slug, c.name, col.name, cat.name, c.isOnline')
+            ->groupBy('variants.slug, c.name, col.name, cat.name, variants.publicationStatus')
             ->orderBy($orderBy,$direction)
             ->setMaxResults( $limit )
         ;

@@ -6,8 +6,8 @@
     <article
         class="clothe-show"
         aria-labelledby="clothe-show-title"
-        {{ stimulus_controller('clothe-bestseller')|stimulus_controller('clothe-online') }}
-        {{ stimulus_action('clothe-bestseller', 'change', 'toggle:change')|stimulus_action('clothe-bestseller', 'change', 'clothe-featured:change')|stimulus_action('clothe-online', 'change', 'clothe-online:change') }}
+        {{ stimulus_controller('clothe-bestseller') }}
+        {{ stimulus_action('clothe-bestseller', 'change', 'toggle:change')|stimulus_action('clothe-bestseller', 'change', 'clothe-featured:change') }}
     >
         {% set currentGroup = clothe.variantGroups|first %}
 
@@ -114,8 +114,8 @@
         <section class="clothe-show__section category-publication" aria-labelledby="clothe-publication-title">
             <header class="category-publication__header">
                 <div>
-                    <h2 id="clothe-publication-title">Conditions de mise en ligne</h2>
-                    <p>Éléments nécessaires pour publier ce groupe de variants.</p>
+                    <h2 id="clothe-publication-title">Publication</h2>
+                    <p>Chaque taille possède son propre état de publication.</p>
                 </div>
                 <span class="category-publication__summary category-publication__summary--{{ canPublish ? 'valid' : 'invalid' }}">
                     {{ canPublish ? 'Prêt à publier' : 'Configuration incomplète' }}
@@ -143,6 +143,23 @@
                     {% endfor %}
                 </ul>
             {% endif %}
+
+            {% for item in variantWorkflows %}
+                <div class="category-publication__item">
+                    <strong>{{ item.variant.name }} — {{ item.variant.publicationStatus.label }}</strong>
+                    <div class="collection-form__actions">
+                    {% for transition in item.transitions %}
+                        <form method="post" action="{{ path('app_clothes_workflow_transition', {id: item.variant.id, transition: transition.name}) }}">
+                            <input type="hidden" name="_token" value="{{ item.csrfToken }}">
+                            {% if transition.name == 'programmer_publication' %}
+                                <label>Date de publication <input type="datetime-local" name="scheduledAt" required></label>
+                            {% endif %}
+                            <button type="submit" class="clothe-show__button">{{ transition.name|replace({'_': ' '})|capitalize }}</button>
+                        </form>
+                    {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
         </section>
 
         <section class="clothe-show__section" aria-labelledby="clothe-show-highlight-images-title">
@@ -226,19 +243,15 @@
                         <div class="clothe-show__stock-availability">
                             <span class="clothe-show__card-label">Statut</span>
                             {% if size.isAvailable %}
-                                <span class="clothe-show__status clothe-show__status--available" data-clothe-online-status-id="{{ size.id }}">Disponible</span>
+                                <span class="clothe-show__status clothe-show__status--available">Disponible</span>
                             {% else %}
-                                <span class="clothe-show__status" data-clothe-online-status-id="{{ size.id }}">Indisponible</span>
+                                <span class="clothe-show__status">Indisponible</span>
                             {% endif %}
                         </div>
                         <div class="clothe-show__stock-value">
                             <span class="clothe-show__card-label">Stock</span>
                             <strong>{{ size.stock }}</strong>
                             <span>en stock</span>
-                        </div>
-                        <div class="clothe-show__stock-toggle">
-                            <span class="clothe-show__card-label">En ligne</span>
-                            {{ size.onlineToggle|raw }}
                         </div>
                     </article>
                 {% else %}

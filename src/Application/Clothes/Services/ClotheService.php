@@ -8,6 +8,7 @@ use App\Entity\Clothes\ClothesVariant;
 use App\Entity\Clothes\Clothessize;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\String\Slugger\AsciiSlugger;
+use App\Enum\ClotheStatus;
 
 final class ClotheService 
 {
@@ -34,7 +35,7 @@ final class ClotheService
         ?int $category = null,
         ?int $collection = null,
         bool $bestsellerOnly = false,
-        ?bool $online = null,
+        ?ClotheStatus $status = null,
         ?int $limit = null,
         ?int $offset = null,
     ): array {
@@ -45,7 +46,7 @@ final class ClotheService
             $category,
             $collection,
             $bestsellerOnly,
-            $online,
+            $status,
             $limit,
             $offset,
         ) ?? [];
@@ -150,7 +151,6 @@ final class ClotheService
                 $variant = $variantsBySize[$sizeName];
                 $variant
                     ->setStock($normalizedStocks[$sizeName])
-                    ->setIsOnline($normalizedStocks[$sizeName] > 0 && $variant->isOnline())
                     ->setEditedAt(new \DateTimeImmutable());
                 continue;
             }
@@ -197,7 +197,7 @@ final class ClotheService
             ->setBestsellerImage($sourceVariant->getBestsellerImage())
             ->setIsBestseller($sourceVariant->isBestseller())
             ->setIsInCarousel($sourceVariant->isInCarousel())
-            ->setIsOnline(false)
+            ->setPublicationStatus(ClotheStatus::Draft)
             ->setCreatedAt($now)
             ->setEditedAt($now);
     }

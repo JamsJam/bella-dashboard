@@ -2,6 +2,7 @@
 
 namespace App\DataFixtures\Clothes;
 
+use App\Enum\ClotheStatus;
 use App\DataFixtures\AbstractBaseFixtures;
 use App\DataFixtures\FixtureReferences;
 use App\Entity\Category\Category;
@@ -213,8 +214,7 @@ final class ClothesFixtures extends AbstractBaseFixtures implements FixtureGroup
                 $clothe = (new Clothes())
                     ->setName($name)
                     ->setPrice($this->faker->randomElement([1990, 2490, 2990, 3990]))
-                    ->setCollection($collection)
-                    ->setIsOnline(true);
+                    ->setCollection($collection);
 
                 foreach ($sizes as $size) {
                     $variantName = trim(sprintf('%s %s', $name, (string) $size->getName()));
@@ -238,7 +238,7 @@ final class ClothesFixtures extends AbstractBaseFixtures implements FixtureGroup
                         ->setBestsellerImage($variantImages[0])
                         ->setIsBestseller($isBestseller)
                         ->setIsInCarousel($isInCarousel)
-                        ->setIsOnline(true);
+                        ->setPublicationStatus(ClotheStatus::Online);
 
                     $clothe->addVariant($variant);
                     $this->addReference(FixtureReferences::CLOTHES.$referenceIndex, $clothe);

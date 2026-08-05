@@ -216,7 +216,7 @@ final readonly class CheckoutCartService
         $variant = $this->entityManager->getRepository(ClothesVariant::class)->findOneWithProductForUpdate($variantId);
         $clothe = $variant?->getClothes();
 
-        if (!$variant instanceof ClothesVariant || !$clothe?->isOnline() || !$variant->isOnline()) {
+        if (!$variant instanceof ClothesVariant || $variant->getPublicationStatus() !== \App\Enum\ClotheStatus::Online) {
             throw new InvalidCheckoutRequestException(sprintf(
                 'Le variant %d est introuvable, hors ligne ou associé à un vêtement indisponible.',
                 $variantId,

@@ -4,16 +4,17 @@ namespace App\Tests\Application\Clothes;
 
 use App\Entity\Clothes\Clothes;
 use App\Entity\Clothes\ClothesVariant;
+use App\Enum\ClotheStatus;
 use PHPUnit\Framework\TestCase;
 
 final class ClothesVariantAvailabilityTest extends TestCase
 {
     public function testAnOnlineVariantWithStockIsAvailableRegardlessOfTheLegacyParentStatus(): void
     {
-        $clothe = (new Clothes())->setIsOnline(false);
+        $clothe = new Clothes();
         $variant = (new ClothesVariant())
             ->setClothes($clothe)
-            ->setIsOnline(true)
+            ->setPublicationStatus(ClotheStatus::Online)
             ->setStock(1);
 
         self::assertTrue($variant->isAvailable());
@@ -21,10 +22,10 @@ final class ClothesVariantAvailabilityTest extends TestCase
 
     public function testAnOfflineOrOutOfStockVariantIsUnavailable(): void
     {
-        $variant = (new ClothesVariant())->setIsOnline(false)->setStock(1);
+        $variant = (new ClothesVariant())->setPublicationStatus(ClotheStatus::Offline)->setStock(1);
         self::assertFalse($variant->isAvailable());
 
-        $variant->setIsOnline(true)->setStock(0);
+        $variant->setPublicationStatus(ClotheStatus::Online)->setStock(0);
         self::assertFalse($variant->isAvailable());
     }
 }

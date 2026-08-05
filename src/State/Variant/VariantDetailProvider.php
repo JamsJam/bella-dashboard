@@ -4,7 +4,6 @@ namespace App\State\Variant;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
-use App\Application\Clothes\Guard\ClotheOnlineGuard;
 use App\ApiResource\Variant\ClothesVariantItemDTO;
 use App\ApiResource\Variant\ClothesVariantsDTO;
 use App\ApiResource\Variant\RelatedVariantDTO;
@@ -31,7 +30,6 @@ final readonly class VariantDetailProvider implements ProviderInterface
     public function __construct(
         private ClothesVariantRepository $variantRepository,
         private ReviewRepository $reviewRepository,
-        private ClotheOnlineGuard $clotheOnlineGuard,
         private RequestStack $requestStack,
     ) {
     }
@@ -44,7 +42,7 @@ final readonly class VariantDetailProvider implements ProviderInterface
         }
 
         $variants = $this->variantRepository->findOnlineBySlug($slug);
-        if ($variants === [] || !$this->clotheOnlineGuard->canPublishVariants($variants)->canPublish()) {
+        if ($variants === []) {
             throw new NotFoundHttpException(sprintf('La déclinaison "%s" est introuvable.', $slug));
         }
 
@@ -103,9 +101,7 @@ final readonly class VariantDetailProvider implements ProviderInterface
 
         $publishable = [];
         foreach ($groups as $group) {
-            if ($this->clotheOnlineGuard->canPublishVariants($group)->canPublish()) {
-                array_push($publishable, ...$group);
-            }
+            array_push($publishable, ...$group);
         }
 
         return $publishable;

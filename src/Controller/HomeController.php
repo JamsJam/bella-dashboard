@@ -33,7 +33,7 @@ final class HomeController extends AbstractController
             'summary' => $ordersRepository->getDashboardSummary(new \DateTimeImmutable('first day of this month 00:00:00')),
             'customersCount' => $customersRepository->count([]),
             'productsCount' => $clothesRepository->count([]),
-            'onlineProductsCount' => $clothesRepository->count(['isOnline' => true]),
+            'onlineProductsCount' => $variantsRepository->count(['publicationStatus' => \App\Enum\ClotheStatus::Online]),
             'lowStockCount' => $variantsRepository->countLowStock(),
             'latestOrders' => $ordersRepository->findLatest(),
             'reviewsSummary' => $this->reviewsSummary($connection),

@@ -60,7 +60,6 @@ final readonly class CategoryPublicationService
 
                 $clotheResult = $this->clotheOnlineGuard->canPublish($clothe);
                 if ($clotheResult->canPublish()) {
-                    $clothe->setIsOnline(true);
                     ++$publishedClothes;
                 } else {
                     $this->flashService->error(sprintf(
@@ -74,9 +73,8 @@ final readonly class CategoryPublicationService
 
         $this->entityManager->flush();
         $this->flashService->success(sprintf(
-            'La catégorie est en ligne. %d collection(s) et %d vêtement(s) mis en ligne.',
+            'La catégorie est en ligne. %d collection(s) mise(s) en ligne ; les statuts des variantes sont inchangés.',
             $publishedCollections,
-            $publishedClothes,
         ));
 
         return true;
@@ -101,16 +99,14 @@ final readonly class CategoryPublicationService
                     continue;
                 }
 
-                $clothe->setIsOnline(false);
                 ++$unpublishedClothes;
             }
         }
 
         $this->entityManager->flush();
         $this->flashService->success(sprintf(
-            'La catégorie est hors ligne. %d collection(s) et %d vêtement(s) mis hors ligne.',
+            'La catégorie est hors ligne. %d collection(s) mise(s) hors ligne ; les statuts des variantes sont inchangés.',
             $unpublishedCollections,
-            $unpublishedClothes,
         ));
     }
 }

@@ -2,7 +2,7 @@
     <dialog class="modal" open aria-labelledby="clothe-delete-modal-title">
         <form method="post" action="{{ action }}" data-turbo="false">
             <header class="modal__header">
-                <h2 id="clothe-delete-modal-title">Supprimer le vetement</h2>
+                <h2 id="clothe-delete-modal-title">Archiver le vêtement</h2>
                 <button type="button" class="modal__close" onclick="this.closest('.modal-backdrop').remove()" aria-label="Fermer">
                     &times;
                 </button>
@@ -10,7 +10,7 @@
 
             <div class="modal__body">
                 <input type="hidden" name="_csrf_token" value="{{ csrfToken }}">
-                <p>Supprimer {{ clothe.name }} supprimera aussi toutes ses variantes.</p>
+                <p>Archiver {{ clothe.name }} le retirera du catalogue sans supprimer ses données ni ses variantes.</p>
             </div>
 
             <footer class="modal__actions">
@@ -18,7 +18,7 @@
                     Annuler
                 </button>
                 <button type="submit" class="clothe-show__button clothe-show__button--danger">
-                    Supprimer
+                    Archiver
                 </button>
             </footer>
         </form>

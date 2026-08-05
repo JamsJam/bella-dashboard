@@ -49,10 +49,6 @@
                                     <input type="number" name="stocks[{{ variant.id }}]" min="0" step="1" value="{{ variant.stock ?? 0 }}" required>
                                 </label>
 
-                                <label>
-                                    <span>En ligne</span>
-                                    <input type="checkbox" name="online[{{ variant.id }}]" value="1" {% if variant.online %}checked{% endif %}>
-                                </label>
                             </fieldset>
                         {% endfor %}
                     </div>

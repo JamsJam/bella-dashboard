@@ -3,18 +3,23 @@
 namespace App\Controller\Clothes;
 
 use App\Application\Clothes\DTO\ClotheImageInput;
+use App\Application\Clothes\DTO\ClotheFormInput;
+use App\Application\Clothes\DTO\VariantGroupInput;
+use App\Application\Clothes\Form\ClotheType;
 use App\Application\Clothes\Guard\ClotheNameGuard;
-use App\Application\Clothes\Guard\ClotheOnlineGuard;
-use App\Application\Clothes\Services\ClothePublicationService;
 use App\Application\Clothes\Services\ClotheRenameService;
 use App\Application\Clothes\Services\ClotheService;
 use App\Application\Clothes\Services\ClotheSizeGuideService;
+use App\Application\Clothes\Services\ClotheVariantFactory;
+use App\Application\Clothes\Services\ClotheWorkflowService;
+use App\Application\Clothes\Services\ClotheCompletenessChecker;
 use App\Entity\Category\Category;
 use App\Entity\Clothes\Clothes;
 use App\Entity\Clothes\ClothesVariant;
 use App\Entity\Clothes\Clothescolor;
 use App\Entity\Clothes\Clothessize;
 use App\Entity\Collections\Collections;
+use App\Enum\ClotheStatus;
 use App\Notifier\Services\FlashService;
 use App\Repository\Category\CategoryRepository;
 use App\Repository\Clothes\ClothesRepository;
@@ -38,6 +43,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Csrf\CsrfToken;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Symfony\Component\String\Slugger\AsciiSlugger;
+use Symfony\Component\Workflow\WorkflowInterface;
 
 final class ClotheController extends AbstractController
 {
@@ -52,13 +58,12 @@ final class ClotheController extends AbstractController
         CategoryRepository $categoryRepository,
         CollectionsRepository $collectionsRepository,
         CsrfTokenManagerInterface $csrfTokenManager,
-        ClotheOnlineGuard $clotheOnlineGuard,
     ): Response
     {
         $category = $request->query->getInt('category') ?: null;
         $collection = $request->query->getInt('collection') ?: null;
         $bestsellerOnly = $request->query->getBoolean('bestseller');
-        $online = $this->resolveOnlineFilter($request->query->get('online'));
+        $status = ClotheStatus::tryFrom((string) $request->query->get('status'));
         $variantGroups = $clotheService->getDistinctClotheByName(
             sortBy: 'name',
             direction: 'asc',
@@ -66,16 +71,16 @@ final class ClotheController extends AbstractController
             category: $category,
             collection: $collection,
             bestsellerOnly: $bestsellerOnly,
-            online: $online,
+            status: $status,
         );
 
         return $this->render('clothes/index.html.twig', [
             'breadscrumbs' => $breadscrumbs->resolve((string) $request->attributes->get('_route')),
-            'tabs' => $this->createTabs($bestsellerOnly),
+            'tabs' => $this->createTabs($bestsellerOnly, $status),
             'gridData' => new ProductGridViewModel(
                 id: 'clothes-grid',
-                items: array_map(fn (ClothesVariant $variant): ProductGridItemModel => $this->mapVariantGroup($variant, $clotheOnlineGuard), $variantGroups),
-                filters: $this->createFilters($categoryRepository, $collectionsRepository, $category, $collection, $online),
+                items: array_map(fn (ClothesVariant $variant): ProductGridItemModel => $this->mapVariantGroup($variant), $variantGroups),
+                filters: $this->createFilters($categoryRepository, $collectionsRepository, $category, $collection),
                 searchRoute: 'app_search_clothes',
                 title: 'Bibliotheque de vetements',
                 searchPlaceholder: 'Rechercher un vetement...',
@@ -86,7 +91,10 @@ final class ClotheController extends AbstractController
                 deleteCsrfTokenId: null,
                 resourceKey: 'clothes',
                 resourceParamName: 'resource',
-                extraSearchParams: $bestsellerOnly ? ['bestseller' => '1'] : [],
+                extraSearchParams: array_filter([
+                    'bestseller' => $bestsellerOnly ? '1' : null,
+                    'status' => $status?->value,
+                ]),
                 showSelectionActions: true,
                 selectionCountLabel: 'vetement(s) selectionne(s)',
                 selectAllLabel: 'Tout selectionner',
@@ -119,7 +127,7 @@ final class ClotheController extends AbstractController
                     'category' => $category,
                     'collection' => $collection,
                     'bestseller' => $bestsellerOnly,
-                    'online' => $online,
+                    'status' => $status?->value,
                 ],
                 part: 'clothes',
             ),
@@ -132,9 +140,8 @@ final class ClotheController extends AbstractController
         #[MapQueryParameter] ?int $category,
         #[MapQueryParameter] ?int $collection,
         #[MapQueryParameter] ?bool $bestseller,
-        #[MapQueryParameter] ?string $online,
+        #[MapQueryParameter] ?string $status,
         ClotheService $clotheService,
-        ClotheOnlineGuard $clotheOnlineGuard,
     ): JsonResponse {
         $variantGroups = $clotheService->getDistinctClotheByName(
             sortBy: 'name',
@@ -143,18 +150,25 @@ final class ClotheController extends AbstractController
             category: $category,
             collection: $collection,
             bestsellerOnly: $bestseller ?? false,
-            online: $this->resolveOnlineFilter($online),
+            status: ClotheStatus::tryFrom((string) $status),
         );
 
         return $this->json([
-            'items' => array_map(fn (ClothesVariant $variant): array => $this->mapVariantGroup($variant, $clotheOnlineGuard)->toArray(), $variantGroups),
+            'items' => array_map(fn (ClothesVariant $variant): array => $this->mapVariantGroup($variant)->toArray(), $variantGroups),
         ]);
     }
 
-    private function createTabs(bool $bestsellerOnly): array
+    private function createTabs(bool $bestsellerOnly, ?ClotheStatus $selectedStatus = null): array
     {
-        return [
+        $tabs = [
             ['id' => 'add', 'label' => 'Ajouter', 'href' => $this->generateUrl('app_clothe_add'), 'isActive' => false],
+            ['id' => 'add-variant', 'label' => 'Ajouter des variantes', 'href' => $this->generateUrl('app_clothes_variant_add'), 'isActive' => false],
+            ['id' => 'all', 'label' => 'Tous', 'href' => $this->generateUrl('app_clothes'), 'isActive' => $selectedStatus === null && !$bestsellerOnly],
+        ];
+        foreach (ClotheStatus::cases() as $status) {
+            $tabs[] = ['id' => $status->value, 'label' => $status->label(), 'href' => $this->generateUrl('app_clothes', ['status' => $status->value]), 'isActive' => $selectedStatus === $status];
+        }
+        $tabs = [...$tabs,
             [
                 'id' => 'bestseller',
                 'label' => 'Bestseller',
@@ -175,6 +189,7 @@ final class ClotheController extends AbstractController
             ],
             ['id' => 'back', 'label' => 'Retour', 'href' => $this->generateUrl('app_dashboard'), 'isActive' => false],
         ];
+        return $tabs;
     }
 
     /**
@@ -185,7 +200,6 @@ final class ClotheController extends AbstractController
         CollectionsRepository $collectionsRepository,
         ?int $selectedCategory,
         ?int $selectedCollection,
-        ?bool $selectedOnline,
     ): array {
         return [
             new ProductGridFilterModel(
@@ -199,16 +213,6 @@ final class ClotheController extends AbstractController
                 label: 'Collection',
                 options: $this->createOptions($collectionsRepository->findBy([], ['name' => 'ASC']), 'Toutes les collections'),
                 selected: $selectedCollection !== null ? (string) $selectedCollection : null,
-            ),
-            new ProductGridFilterModel(
-                id: 'online',
-                label: 'Mise en ligne',
-                options: [
-                    ['value' => '', 'label' => 'Indifferent'],
-                    ['value' => '1', 'label' => 'En ligne'],
-                    ['value' => '0', 'label' => 'Hors ligne'],
-                ],
-                selected: $selectedOnline === null ? null : ($selectedOnline ? '1' : '0'),
             ),
         ];
     }
@@ -252,7 +256,7 @@ final class ClotheController extends AbstractController
         );
     }
 
-    private function mapVariantGroup(ClothesVariant $variant, ClotheOnlineGuard $clotheOnlineGuard): ProductGridItemModel
+    private function mapVariantGroup(ClothesVariant $variant): ProductGridItemModel
     {
         $clothe = $variant->getClothes();
         $images = $variant->getImages() ?? [];
@@ -263,23 +267,8 @@ final class ClotheController extends AbstractController
             $stock += $groupVariant->getStock();
         }
 
-        $isOnline = false;
-        $canPublish = false;
-
-        foreach ($groupVariants as $groupVariant) {
-            if ($clotheOnlineGuard->isOnline([$groupVariant])) {
-                $isOnline = true;
-                break;
-            }
-
-            if ($clotheOnlineGuard->canPublishVariants([$groupVariant])->canPublish()) {
-                $canPublish = true;
-            }
-        }
-
-        $publicationStatus = $isOnline
-            ? 'online'
-            : ($canPublish ? 'publishable' : 'offline');
+        $publicationStatus = $variant->getPublicationStatus()->value;
+        $isOnline = $variant->getPublicationStatus() === ClotheStatus::Online;
 
         return new ProductGridItemModel(
             id: (string) $variant->getId(),
@@ -304,7 +293,7 @@ final class ClotheController extends AbstractController
 
         return (bool) $category?->isOnline()
             && (bool) $collection?->isOnline()
-            && (bool) $clothe->isOnline();
+            && $clothe->hasOnlineVariant();
     }
 
     private function resolveOnlineFilter(mixed $value): ?bool
@@ -403,8 +392,9 @@ final class ClotheController extends AbstractController
         BreadscrumbsService $breadscrumbs,
         ClotheService $clotheService,
         ClotheSizeGuideService $clotheSizeGuideService,
-        ClotheOnlineGuard $clotheOnlineGuard,
         CsrfTokenManagerInterface $csrfTokenManager,
+        ClotheCompletenessChecker $completenessChecker,
+        WorkflowInterface $clothePublicationStateMachine,
     ): Response {
         $variants = $clotheService->getClotheVariantsBySlug($slug);
 
@@ -413,7 +403,7 @@ final class ClotheController extends AbstractController
         }
 
         $mainClothe = $this->resolveMainClothe($variants);
-        $publicationValidation = $clotheOnlineGuard->canPublishVariants($variants);
+        $publicationValidation = $completenessChecker->check($mainClothe);
 
         return $this->render('clothes/show.html.twig', [
             'breadscrumbs' => $breadscrumbs->resolve(
@@ -422,7 +412,7 @@ final class ClotheController extends AbstractController
                 currentLabel: (string) $mainClothe->getName(),
             ),
             'tabs' => $this->createShowTabs($slug, (int) $mainClothe->getId()),
-            'clothe' => $this->mapClotheDetails($mainClothe, $variants, $clotheOnlineGuard, $clotheSizeGuideService, $csrfTokenManager),
+            'clothe' => $this->mapClotheDetails($mainClothe, $variants, $clotheSizeGuideService, $csrfTokenManager),
             'sameCollectionClothes' => array_map(
                 fn (Clothes $clothe): ProductGridItemModel => $this->mapClothe($clothe),
                 $clotheService->getSameCollectionClothes($slug),
@@ -437,9 +427,44 @@ final class ClotheController extends AbstractController
             'sizeGuideUpdateUrl' => $this->generateUrl('app_clothes_size_guide_update', ['slug' => $slug]),
             'sizeGuidePreviewUrl' => $this->generateUrl('app_clothes_size_guide_preview', ['slug' => $slug]),
             'sizeGuideCsrfToken' => $csrfTokenManager->getToken('clothe_size_guide_'.$slug)->getValue(),
-            'canPublish' => $publicationValidation->canPublish(),
-            'publicationErrors' => $publicationValidation->getErrors(),
+            'canPublish' => $publicationValidation->isComplete(),
+            'publicationErrors' => $publicationValidation->errors(),
+            'variantWorkflows' => array_map(
+                fn (ClothesVariant $variant): array => [
+                    'variant' => $variant,
+                    'transitions' => $clothePublicationStateMachine->getEnabledTransitions($variant),
+                    'csrfToken' => $csrfTokenManager->getToken('clothe_variant_workflow_'.$variant->getId())->getValue(),
+                ],
+                $variants,
+            ),
         ]);
+    }
+
+    #[Route('/clothes/variant/{id}/workflow/{transition}', name: 'app_clothes_workflow_transition', requirements: ['id' => '\d+'], methods: ['POST'], priority: 40)]
+    public function transition(
+        ClothesVariant $variant,
+        string $transition,
+        Request $request,
+        ClotheWorkflowService $workflowService,
+        FlashService $flashService,
+    ): RedirectResponse {
+        if (!$this->isCsrfTokenValid('clothe_variant_workflow_'.$variant->getId(), (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Token CSRF invalide.');
+        }
+
+        try {
+            $scheduledAt = null;
+            if ($transition === 'programmer_publication') {
+                $value = trim((string) $request->request->get('scheduledAt'));
+                $scheduledAt = $value === '' ? null : new \DateTimeImmutable($value);
+            }
+            $workflowService->apply($variant, $transition, $scheduledAt);
+            $flashService->success('Nouvel état : '.$variant->getPublicationStatus()->label().'.');
+        } catch (\Throwable $exception) {
+            $flashService->error($exception->getMessage());
+        }
+
+        return $this->redirectToRoute('app_clothes_show', ['slug' => $variant->getSlug()]);
     }
 
     #[Route('/clothes/{slug}/edit/modal', name: 'app_clothes_edit_modal', methods: ['GET'])]
@@ -539,7 +564,7 @@ final class ClotheController extends AbstractController
     public function delete(
         Clothes $clothe,
         Request $request,
-        EntityManagerInterface $entityManager,
+        ClotheWorkflowService $workflowService,
         LoggerService $logger,
     ): JsonResponse {
         if (!$this->isCsrfTokenValid('clothe_delete', (string) $request->headers->get('X-CSRF-TOKEN', ''))) {
@@ -554,7 +579,11 @@ final class ClotheController extends AbstractController
         }
 
         $id = $clothe->getId();
-        $this->removeClothe($clothe, $entityManager, $logger);
+        try {
+            $this->archiveClothe($clothe, $workflowService, $logger);
+        } catch (\DomainException $exception) {
+            return $this->json(['success' => false, 'error' => $exception->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
 
         return $this->json([
             'success' => true,
@@ -584,7 +613,7 @@ final class ClotheController extends AbstractController
     public function confirmDelete(
         Clothes $clothe,
         Request $request,
-        EntityManagerInterface $entityManager,
+        ClotheWorkflowService $workflowService,
         FlashService $flashService,
         LoggerService $logger,
     ): RedirectResponse {
@@ -597,22 +626,35 @@ final class ClotheController extends AbstractController
             return $this->redirectToRoute('app_clothes_show', ['slug' => $clothe->getSlug()]);
         }
 
-        $this->removeClothe($clothe, $entityManager, $logger);
-        $flashService->success('Vetement supprime.');
+        try {
+            $this->archiveClothe($clothe, $workflowService, $logger);
+            $flashService->success('Vêtement archivé.');
+        } catch (\DomainException $exception) {
+            $flashService->error($exception->getMessage());
+        }
 
         return $this->redirectToRoute('app_clothes');
     }
 
-    private function removeClothe(Clothes $clothe, EntityManagerInterface $entityManager, LoggerService $logger): void
+    private function archiveClothe(Clothes $clothe, ClotheWorkflowService $workflowService, LoggerService $logger): void
     {
-        $id = $clothe->getId();
-        $slug = $clothe->getSlug();
-
-        $entityManager->remove($clothe);
-        $entityManager->flush();
-        $logger->info('Clothe deleted.', [
-            'clothe_id' => $id,
-            'slug' => $slug,
+        foreach ($clothe->getVariants() as $variant) {
+            if ($variant->getPublicationStatus() === ClotheStatus::Archived) {
+                continue;
+            }
+            $transition = match ($variant->getPublicationStatus()) {
+                ClotheStatus::Draft => 'archiver_brouillon',
+                ClotheStatus::Publishable => 'archiver_publiable',
+                ClotheStatus::Scheduled => 'archiver_planifie',
+                ClotheStatus::Online => 'archiver_en_ligne',
+                ClotheStatus::Offline => 'archiver_hors_ligne',
+                ClotheStatus::Archived => throw new \LogicException('État déjà archivé.'),
+            };
+            $workflowService->apply($variant, $transition);
+        }
+        $logger->info('Clothe archived.', [
+            'clothe_id' => $clothe->getId(),
+            'slug' => $clothe->getSlug(),
         ]);
     }
 
@@ -667,11 +709,9 @@ final class ClotheController extends AbstractController
         $submittedStocks = $request->request->all('stocks');
         $submittedColors = $request->request->all('colors');
         $submittedSizes = $request->request->all('sizes');
-        $submittedOnline = $request->request->all('online');
         $stocks = [];
         $colors = [];
         $sizes = [];
-        $onlineStates = [];
         $mainClothe = $this->resolveMainClothe($variants);
 
         foreach ($variants as $variant) {
@@ -709,7 +749,6 @@ final class ClotheController extends AbstractController
 
             $colors[$variant->getId()] = $color;
             $sizes[$variant->getId()] = $this->findOrCreateSize($sizeName, $entityManager);
-            $onlineStates[$variant->getId()] = isset($submittedOnline[$variantId]) && $stock > 0;
         }
 
         $now = new \DateTimeImmutable();
@@ -724,7 +763,6 @@ final class ClotheController extends AbstractController
                 ->setSize($sizes[$variant->getId()])
                 ->setSku($this->createVariantSku($mainClothe, $colors[$variant->getId()], $sizes[$variant->getId()]))
                 ->setStock($stock)
-                ->setIsOnline($onlineStates[$variant->getId()])
                 ->setEditedAt($now);
         }
 
@@ -744,93 +782,6 @@ final class ClotheController extends AbstractController
         ]);
 
         return $this->redirectToRoute('app_clothes_show', ['slug' => $slug]);
-    }
-
-    #[Route('/clothes/{id}/online/{state}', name: 'app_clothes_toggle_online', requirements: ['id' => '\d+', 'state' => 'on|off'], methods: ['POST'])]
-    public function toggleOnline(
-        Clothes $clothe,
-        string $state,
-        Request $request,
-        CsrfTokenManagerInterface $csrfTokenManager,
-        ClothePublicationService $clothePublicationService,
-        LoggerService $logger,
-    ): JsonResponse {
-        $token = new CsrfToken($this->getOnlineCsrfTokenId($clothe), (string) $request->headers->get('X-CSRF-TOKEN', ''));
-
-        if (!$csrfTokenManager->isTokenValid($token)) {
-            $logger->warning('Invalid CSRF token for clothe online toggle.', [
-                'clothe_id' => $clothe->getId(),
-                'state' => $state,
-            ]);
-
-            return $this->json(['success' => false, 'error' => 'Invalid CSRF token.'], Response::HTTP_FORBIDDEN);
-        }
-
-        if ($state === 'on' && !$clothePublicationService->publish($clothe)) {
-            $logger->warning('Clothe publication rejected.', [
-                'clothe_id' => $clothe->getId(),
-                'slug' => $clothe->getSlug(),
-            ]);
-
-            return $this->json([
-                'success' => false,
-                'error' => 'Clothe cannot be published.',
-            ], Response::HTTP_UNPROCESSABLE_ENTITY);
-        }
-
-        if ($state === 'off') {
-            $clothePublicationService->unpublish($clothe);
-        }
-
-        return $this->json([
-            'success' => true,
-            'isOnline' => $clothe->isOnline(),
-        ]);
-    }
-
-    #[Route('/clothes/variant/{id}/online/{state}', name: 'app_clothes_variant_toggle_online', requirements: ['id' => '\d+', 'state' => 'on|off'], methods: ['POST'])]
-    public function toggleVariantOnline(
-        ClothesVariant $variant,
-        string $state,
-        Request $request,
-        CsrfTokenManagerInterface $csrfTokenManager,
-        ClotheOnlineGuard $clotheOnlineGuard,
-        EntityManagerInterface $entityManager,
-        LoggerService $logger,
-    ): JsonResponse {
-        $token = new CsrfToken($this->getVariantOnlineCsrfTokenId($variant), (string) $request->headers->get('X-CSRF-TOKEN', ''));
-
-        if (!$csrfTokenManager->isTokenValid($token)) {
-            $logger->warning('Invalid CSRF token for clothe variant online toggle.', [
-                'variant_id' => $variant->getId(),
-                'state' => $state,
-            ]);
-
-            return $this->json(['success' => false, 'error' => 'Invalid CSRF token.'], Response::HTTP_FORBIDDEN);
-        }
-
-        if ($state === 'on') {
-            $publicationValidation = $clotheOnlineGuard->canPublishVariant($variant);
-
-            if (!$publicationValidation->canPublish()) {
-                return $this->json([
-                    'success' => false,
-                    'error' => implode(' ', $publicationValidation->getErrors()),
-                    'errors' => $publicationValidation->getErrors(),
-                ], Response::HTTP_UNPROCESSABLE_ENTITY);
-            }
-        }
-
-        $variant
-            ->setIsOnline($state === 'on')
-            ->setEditedAt(new \DateTimeImmutable());
-        $entityManager->flush();
-
-        return $this->json([
-            'success' => true,
-            'isOnline' => $variant->isOnline(),
-            'isAvailable' => $variant->isAvailable(),
-        ]);
     }
 
     #[Route('/clothes/{slug}/size-guide/preview', name: 'app_clothes_size_guide_preview', methods: ['POST'])]
@@ -1287,13 +1238,6 @@ final class ClotheController extends AbstractController
                 'isActive' => false,
                 'attr' => ['data-turbo-stream' => 'true'],
             ],
-            [
-                'id' => 'delete',
-                'label' => 'Supprimer',
-                'href' => $this->generateUrl('app_clothes_delete_modal', ['id' => $clotheId]),
-                'isActive' => false,
-                'attr' => ['data-turbo-stream' => 'true'],
-            ],
         ];
     }
 
@@ -1406,53 +1350,6 @@ final class ClotheController extends AbstractController
         return $this->renderView('ui/components/toggle/_toggle.html.twig', [
             'toggle' => $toggle->toArray(),
         ]);
-    }
-
-    private function renderVariantOnlineToggle(ClothesVariant $variant, CsrfTokenManagerInterface $csrfTokenManager): string
-    {
-        $csrfToken = $csrfTokenManager->getToken($this->getVariantOnlineCsrfTokenId($variant))->getValue();
-        $onlineAction = new ToggleActionModel(
-            url: $this->generateUrl('app_clothes_variant_toggle_online', [
-                'id' => $variant->getId(),
-                'state' => 'on',
-            ]),
-            csrfToken: $csrfToken,
-            label: 'En ligne',
-        );
-        $offlineAction = new ToggleActionModel(
-            url: $this->generateUrl('app_clothes_variant_toggle_online', [
-                'id' => $variant->getId(),
-                'state' => 'off',
-            ]),
-            csrfToken: $csrfToken,
-            label: 'Hors ligne',
-        );
-
-        $toggle = new ToggleModel(
-            id: 'clothe-variant-online-'.$variant->getId(),
-            label: $variant->isOnline() ? 'En ligne' : 'Hors ligne',
-            checked: $variant->isOnline(),
-            name: 'clothe_variant_online_'.$variant->getId(),
-            eventName: 'clothe-online:change',
-            payload: [
-                'on' => $onlineAction->toArray(),
-                'off' => $offlineAction->toArray(),
-            ],
-        );
-
-        return $this->renderView('ui/components/toggle/_toggle.html.twig', [
-            'toggle' => $toggle->toArray(),
-        ]);
-    }
-
-    private function getOnlineCsrfTokenId(Clothes $clothe): string
-    {
-        return 'clothe_online_'.((string) $clothe->getId());
-    }
-
-    private function getVariantOnlineCsrfTokenId(ClothesVariant $variant): string
-    {
-        return 'clothe_variant_online_'.((string) $variant->getId());
     }
 
     /**
@@ -1623,7 +1520,6 @@ final class ClotheController extends AbstractController
         $clothe = $existingClothe ?? (new Clothes())
             ->setName($name)
             ->setCollection($collection)
-            ->setIsOnline(false)
             ->setCreatedAt($now);
         $clothe
             ->setPrice($price)
@@ -1665,7 +1561,7 @@ final class ClotheController extends AbstractController
                 ->setImages($imagePaths)
                 ->setHighlightImage($imagePaths[0] ?? null)
                 ->setBestsellerImage($imagePaths[0] ?? null)
-                ->setIsOnline((bool) ($variantData['isOnline'] ?? false));
+                ->setPublicationStatus(ClotheStatus::Draft);
 
             $clothe->addVariant($variant);
         }
@@ -1721,7 +1617,6 @@ final class ClotheController extends AbstractController
                 'size' => $size,
                 'stock' => $data['stock'] ?? 0,
                 'sku' => null,
-                'isOnline' => false,
                 'metadescription' => $data['metadescription'] ?? null,
             ],
             $sizes,
@@ -1833,49 +1728,41 @@ final class ClotheController extends AbstractController
     public function add(
         Request $request,
         EntityManagerInterface $entityManager,
-        CsrfTokenManagerInterface $csrfTokenManager,
         ClotheNameGuard $clotheNameGuard,
+        ClotheVariantFactory $variantFactory,
+        ClotheWorkflowService $workflowService,
         FlashService $flashService,
         LoggerService $logger,
     ): Response {
-        if ($request->isMethod('POST')) {
-            $token = new CsrfToken('clothe_create', (string) $request->request->get('_csrf_token', ''));
+        $input = new ClotheFormInput();
+        $input->variants[] = new VariantGroupInput();
+        $form = $this->createForm(ClotheType::class, $input);
+        $form->handleRequest($request);
 
-            if (!$csrfTokenManager->isTokenValid($token)) {
-                $flashService->error('Token CSRF invalide.');
-                $logger->warning('Invalid CSRF token for clothe creation.');
-
-                return $this->redirectToRoute('app_clothe_add');
-            }
-
-            $collection = $entityManager->getRepository(Collections::class)->find($request->request->getInt('collection'));
-            if (!$collection instanceof Collections) {
-                $flashService->error('Selectionne une collection.');
-                $logger->warning('Invalid collection selected for clothe creation.', [
-                    'collection_id' => $request->request->getInt('collection'),
-                ]);
-
-                return $this->redirectToRoute('app_clothe_add');
-            }
-
+        if ($form->isSubmitted() && $form->isValid()) {
             try {
-                $this->createClotheFromPayload(
-                    data: $request->request->all('clothe'),
-                    uploadedImages: $request->files->all('clotheImages'),
-                    entityManager: $entityManager,
-                    collection: $collection,
-                    clotheNameGuard: $clotheNameGuard,
-                );
+                $name = $clotheNameGuard->assertNameAvailable((string) $input->name);
+                $now = new \DateTimeImmutable();
+                $clothe = (new Clothes())
+                    ->setName($name)
+                    ->setPrice($input->price)
+                    ->setCollection($input->collection)
+                    ->setCreatedAt($now)
+                    ->setEditedAt($now);
+                $entityManager->persist($clothe);
+                foreach ($input->variants as $variantInput) {
+                    $variantFactory->createGroup($clothe, $variantInput);
+                }
                 $entityManager->flush();
-                $flashService->success('Vetement cree hors-ligne.');
+                $workflowService->reconcileCompleteness($clothe);
+                $flashService->success('Vêtement créé avec le statut '.$clothe->getVariants()->first()->getPublicationStatus()->label().'.');
                 $logger->info('Clothe created.', [
-                    'collection_id' => $collection->getId(),
+                    'clothe_id' => $clothe->getId(),
                 ]);
-            } catch (\InvalidArgumentException $exception) {
+            } catch (\DomainException|\InvalidArgumentException $exception) {
                 $flashService->error($exception->getMessage());
                 $logger->warning('Clothe creation rejected.', [
                     'error' => $exception->getMessage(),
-                    'collection_id' => $collection->getId(),
                 ]);
 
                 return $this->redirectToRoute('app_clothe_add');
@@ -1893,12 +1780,7 @@ final class ClotheController extends AbstractController
             'tabs' => [
                 ['id' => 'back', 'label' => 'Retour', 'href' => $this->generateUrl('app_clothes'), 'isActive' => false],
             ],
-            'action' => $this->generateUrl('app_clothe_add'),
-            'csrfToken' => $csrfTokenManager->getToken('clothe_create')->getValue(),
-            'collections' => $entityManager->getRepository(Collections::class)->findBy([], ['name' => 'ASC']),
-            'colors' => $entityManager->getRepository(Clothescolor::class)->findBy([], ['name' => 'ASC']),
-            'existingClothes' => $entityManager->getRepository(Clothes::class)->findBy([], ['name' => 'ASC']),
-            'availableSizes' => ClotheService::AVAILABLE_SIZES,
+            'form' => $form,
         ]);
     }
 
@@ -1908,7 +1790,6 @@ final class ClotheController extends AbstractController
     private function mapClotheDetails(
         Clothes $mainClothe,
         array $variants,
-        ClotheOnlineGuard $clotheOnlineGuard,
         ClotheSizeGuideService $clotheSizeGuideService,
         CsrfTokenManagerInterface $csrfTokenManager,
     ): array
@@ -1944,10 +1825,9 @@ final class ClotheController extends AbstractController
                 'highlightImage' => $variant->getHighlightImage(),
                 'bestsellerImage' => $variant->getBestsellerImage(),
                 'stock' => $variant->getStock(),
-                'isOnline' => $variant->isOnline(),
+                'isOnline' => $variant->getPublicationStatus() === ClotheStatus::Online,
                 'isAvailable' => $variant->isAvailable(),
                 'editUrl' => $this->generateUrl('app_clothes_variant_edit_modal', ['id' => $variant->getId()]),
-                'onlineToggle' => $this->renderVariantOnlineToggle($variant, $csrfTokenManager),
             ];
             $sizes[] = $sizeView;
 
@@ -2029,7 +1909,7 @@ final class ClotheController extends AbstractController
             'categoryId' => $mainClothe->getCollection()?->getCategory()?->getId(),
             'color' => implode(', ', array_values($colors)),
             'price' => $mainClothe->getPrice(),
-            'isOnline' => $clotheOnlineGuard->isOnline($variants),
+            'isOnline' => $mainClothe->hasOnlineVariant(),
             'isBestseller' => (bool) $mainClothe->isBestseller(),
             'isInCarousel' => (bool) $mainClothe->isInCarousel(),
             'totalStock' => $mainClothe->getTotalStock(),

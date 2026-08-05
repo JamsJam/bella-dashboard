@@ -3,6 +3,10 @@
 namespace App\Controller\Clothes;
 
 use App\Application\Clothes\Services\ClotheService;
+use App\Application\Clothes\DTO\VariantFormInput;
+use App\Application\Clothes\Form\VariantType;
+use App\Application\Clothes\Services\ClotheVariantFactory;
+use App\Application\Clothes\Services\ClotheWorkflowService;
 use App\Entity\Clothes\Clothes;
 use App\Entity\Clothes\ClothesVariant;
 use App\Entity\Clothes\Clothescolor;
@@ -17,9 +21,42 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Symfony\Component\String\Slugger\AsciiSlugger;
+use App\Enum\ClotheStatus;
 
 final class ClothesVariantController extends AbstractController
 {
+    #[Route('/clothes/variants/add', name: 'app_clothes_variant_add', methods: ['GET', 'POST'], priority: 30)]
+    public function add(
+        Request $request,
+        EntityManagerInterface $entityManager,
+        ClotheVariantFactory $variantFactory,
+        ClotheWorkflowService $workflowService,
+        FlashService $flashService,
+    ): Response {
+        $input = new VariantFormInput();
+        $form = $this->createForm(VariantType::class, $input);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            try {
+                $clothe = $input->clothe;
+                if (!$clothe instanceof Clothes) {
+                    throw new \DomainException('Sélectionnez un vêtement.');
+                }
+                $variantFactory->createGroup($clothe, $input);
+                $entityManager->flush();
+                $workflowService->reconcileCompleteness($clothe);
+                $flashService->success('Variantes ajoutées.');
+
+                return $this->redirectToRoute('app_clothes_show', ['slug' => $clothe->getSlug()]);
+            } catch (\DomainException $exception) {
+                $flashService->error($exception->getMessage());
+            }
+        }
+
+        return $this->render('clothes/variants/add.html.twig', ['form' => $form]);
+    }
+
     #[Route('/clothes/variants/{id}/edit/modal', name: 'app_clothes_variant_edit_modal', requirements: ['id' => '\d+'], methods: ['GET'])]
     public function editModal(
         ClothesVariant $variant,
@@ -111,7 +148,7 @@ final class ClothesVariantController extends AbstractController
                     ->setBestsellerImage($sourceVariant->getBestsellerImage())
                     ->setIsBestseller($sourceVariant->isBestseller())
                     ->setIsInCarousel($sourceVariant->isInCarousel())
-                    ->setIsOnline(false)
+                    ->setPublicationStatus(ClotheStatus::Draft)
                     ->setCreatedAt($now)
                     ->setEditedAt($now);
 
@@ -171,7 +208,6 @@ final class ClothesVariantController extends AbstractController
                 ->setSize($size)
                 ->setSku($this->createSku($clothe, $color, $size))
                 ->setStock($stock)
-                ->setIsOnline($stock > 0 && $variant->isOnline())
                 ->setEditedAt($now);
             $clothe->setEditedAt($now);
 

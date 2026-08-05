@@ -39,7 +39,6 @@ final readonly class CollectionPublicationService
 
             $clotheResult = $this->clotheOnlineGuard->canPublish($clothe);
             if ($clotheResult->canPublish()) {
-                $clothe->setIsOnline(true);
                 ++$publishedClothes;
             } else {
                 $this->flashService->error(sprintf(
@@ -52,8 +51,7 @@ final readonly class CollectionPublicationService
 
         $this->entityManager->flush();
         $this->flashService->success(sprintf(
-            'La collection est en ligne. %d vêtement(s) mis en ligne.',
-            $publishedClothes,
+            'La collection est en ligne. Les statuts de ses variantes sont inchangés.',
         ));
 
         return true;
@@ -69,14 +67,12 @@ final readonly class CollectionPublicationService
                 continue;
             }
 
-            $clothe->setIsOnline(false);
             ++$unpublishedClothes;
         }
 
         $this->entityManager->flush();
         $this->flashService->success(sprintf(
-            'La collection est hors ligne. %d vêtement(s) mis hors ligne.',
-            $unpublishedClothes,
+            'La collection est hors ligne. Les statuts de ses variantes sont inchangés.',
         ));
     }
 }

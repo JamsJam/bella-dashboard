@@ -12,6 +12,7 @@ use App\Entity\Category\Category;
 use App\Entity\Clothes\Clothes;
 use App\Entity\Clothes\Clothescolor;
 use App\Entity\Collections\Collections;
+use App\Enum\ClotheStatus;
 use App\Notifier\Services\FlashService;
 use App\Service\LoggerService;
 use App\UI\Toggle\ToggleActionModel;
@@ -406,7 +407,7 @@ final class CollectionController extends AbstractController
                     'name' => (string) $clothe->getName(),
                     'slug' => $slug,
                     'image' => $images[0] ?? $collection->getImage(),
-                    'isOnline' => $clotheOnlineGuard->isOnline($clothe->getVariants()->toArray()),
+                    'isOnline' => $clotheOnlineGuard->areVariantsOnline($clothe->getVariants()->toArray()),
                     'canPublish' => $clotheOnlineGuard->canPublish($clothe)->canPublish(),
                     'sizes' => [],
                 ];
@@ -417,7 +418,7 @@ final class CollectionController extends AbstractController
                 if ($size !== null && $size !== '') {
                     $items[$slug]['sizes'][$size] = [
                         'name' => $size,
-                        'isOnline' => (bool) $variant->isOnline(),
+                        'isOnline' => $variant->getPublicationStatus() === ClotheStatus::Online,
                         'stock' => $variant->getStock(),
                     ];
                 }

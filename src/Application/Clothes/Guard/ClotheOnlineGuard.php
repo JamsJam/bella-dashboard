@@ -6,6 +6,7 @@ use App\Application\Clothes\Guard\Rules\Publish\ClothePublishRuleInterface;
 use App\Application\Clothes\Guard\Rules\Publish\ClotheVariantsPublishRuleInterface;
 use App\Entity\Clothes\Clothes;
 use App\Entity\Clothes\ClothesVariant;
+use App\Enum\ClotheStatus;
 use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 
 final readonly class ClotheOnlineGuard
@@ -124,14 +125,14 @@ final readonly class ClotheOnlineGuard
     /**
      * @param list<ClothesVariant> $variants
      */
-    public function isOnline(array $variants): bool
+    public function areVariantsOnline(array $variants): bool
     {
         if ($variants === []) {
             return false;
         }
 
         foreach ($variants as $variant) {
-            if (!$variant instanceof ClothesVariant || !$variant->isOnline()) {
+            if (!$variant instanceof ClothesVariant || $variant->getPublicationStatus() !== ClotheStatus::Online) {
                 return false;
             }
         }

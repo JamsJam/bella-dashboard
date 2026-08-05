@@ -151,7 +151,7 @@ final class BestsellerController extends AbstractController
 
         return (bool) $category?->isOnline()
             && (bool) $collection?->isOnline()
-            && (bool) $clothe->isOnline();
+            && $clothe->hasOnlineVariant();
     }
 
     /**

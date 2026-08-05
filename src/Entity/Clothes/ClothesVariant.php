@@ -2,6 +2,7 @@
 
 namespace App\Entity\Clothes;
 
+use App\Enum\ClotheStatus;
 use App\Entity\Avatar\Body\Body;
 use App\Entity\SizeGuide;
 use App\Entity\Traits\DateFieldsTrait;
@@ -14,6 +15,7 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity(repositoryClass: ClothesVariantRepository::class)]
 #[ORM\Table(name: 'clothes_variant')]
 #[ORM\Index(name: 'IDX_CLOTHES_VARIANT_SLUG', columns: ['slug'])]
+#[ORM\Index(name: 'IDX_CLOTHES_VARIANT_PUBLICATION_STATUS', fields: ['publicationStatus'])]
 #[ORM\UniqueConstraint(name: 'UNIQ_CLOTHES_VARIANT_NAME', columns: ['name'])]
 #[ORM\UniqueConstraint(name: 'UNIQ_CLOTHES_VARIANT_SKU', columns: ['sku'])]
 class ClothesVariant
@@ -74,8 +76,17 @@ class ClothesVariant
     #[ORM\Column]
     private bool $isInCarousel = false;
 
-    #[ORM\Column]
-    private bool $isOnline = false;
+    #[ORM\Column(enumType: ClotheStatus::class)]
+    private ClotheStatus $publicationStatus = ClotheStatus::Draft;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $scheduledPublicationAt = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $publishedAt = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $archivedAt = null;
 
     /**
      * @var Collection<int, Body>
@@ -277,14 +288,50 @@ class ClothesVariant
         return $this;
     }
 
-    public function isOnline(): bool
+    public function getPublicationStatus(): ClotheStatus
     {
-        return $this->isOnline;
+        return $this->publicationStatus;
     }
 
-    public function setIsOnline(bool $isOnline): static
+    public function setPublicationStatus(ClotheStatus $publicationStatus): static
     {
-        $this->isOnline = $isOnline;
+        $this->publicationStatus = $publicationStatus;
+
+        return $this;
+    }
+
+    public function getScheduledPublicationAt(): ?\DateTimeImmutable
+    {
+        return $this->scheduledPublicationAt;
+    }
+
+    public function setScheduledPublicationAt(?\DateTimeImmutable $scheduledPublicationAt): static
+    {
+        $this->scheduledPublicationAt = $scheduledPublicationAt;
+
+        return $this;
+    }
+
+    public function getPublishedAt(): ?\DateTimeImmutable
+    {
+        return $this->publishedAt;
+    }
+
+    public function setPublishedAt(?\DateTimeImmutable $publishedAt): static
+    {
+        $this->publishedAt = $publishedAt;
+
+        return $this;
+    }
+
+    public function getArchivedAt(): ?\DateTimeImmutable
+    {
+        return $this->archivedAt;
+    }
+
+    public function setArchivedAt(?\DateTimeImmutable $archivedAt): static
+    {
+        $this->archivedAt = $archivedAt;
 
         return $this;
     }
@@ -327,7 +374,7 @@ class ClothesVariant
 
     public function isAvailable(): bool
     {
-        return $this->isOnline
+        return $this->publicationStatus === ClotheStatus::Online
             && $this->stock > 0;
     }
 }

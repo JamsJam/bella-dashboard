@@ -1,0 +1,16 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Ajouter des variantes{% endblock %}
+
+{% block body %}
+    <article class="collection-add">
+        <header class="admin-page__header">
+            <h1 class="title">Ajouter des variantes</h1>
+        </header>
+        {{ form_start(form, {attr: {class: 'collection-form', enctype: 'multipart/form-data'}}) }}
+            {{ form_errors(form) }}
+            {{ form_widget(form) }}
+            <button type="submit" class="clothe-show__action">Ajouter les variantes</button>
+        {{ form_end(form) }}
+    </article>
+{% endblock %}

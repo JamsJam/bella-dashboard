@@ -34,9 +34,6 @@ class Clothes
     #[ORM\JoinColumn(nullable: false)]
     private ?Collections $collection = null;
 
-    #[ORM\Column]
-    private ?bool $isOnline = null;
-
     /**
      * @var Collection<int, ClothesVariant>
      */
@@ -195,26 +192,15 @@ class Clothes
         return $this;
     }
 
-    public function getStatus(): ?string
+    public function hasOnlineVariant(): bool
     {
-        return null;
-    }
+        foreach ($this->variants as $variant) {
+            if ($variant->getPublicationStatus() === \App\Enum\ClotheStatus::Online) {
+                return true;
+            }
+        }
 
-    public function setStatus(string $status): static
-    {
-        return $this;
-    }
-
-    public function isOnline(): ?bool
-    {
-        return $this->isOnline;
-    }
-
-    public function setIsOnline(bool $isOnline): static
-    {
-        $this->isOnline = $isOnline;
-
-        return $this;
+        return false;
     }
 
     /**

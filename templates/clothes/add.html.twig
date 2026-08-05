@@ -1,61 +1,48 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Ajouter un vetement{% endblock %}
+{% block title %}Ajouter un vêtement{% endblock %}
 
 {% block body %}
     <article class="collection-add" aria-labelledby="clothe-add-title">
         <header class="admin-page__header">
             <div>
-                <h1 id="clothe-add-title" class="title">Ajouter un vetement</h1>
-                <p class="admin-page__subtitle">
-                    Cree une reference hors-ligne, avec ses tailles, ses images et sa couleur.
-                </p>
+                <h1 id="clothe-add-title" class="title">Ajouter un vêtement</h1>
+                <p class="admin-page__subtitle">Crée le vêtement et ses variantes par couleur et tailles.</p>
             </div>
         </header>
 
         {% include 'ui/components/tabs/_tabs.html.twig' with { tabs: tabs } only %}
 
-        <form
-            method="post"
-            action="{{ action }}"
-            enctype="multipart/form-data"
-            class="collection-form"
-            data-controller="collection-form"
-        >
-            <input type="hidden" name="_csrf_token" value="{{ csrfToken }}">
-
-            <section class="collection-form__section">
-                <label class="collection-form__field">
-                    <span>Collection</span>
-                    <select
-                        name="collection"
-                        required
-                        data-collection-form-clothe-collection-select
-                        data-action="change->collection-form#filterClotheNames"
-                    >
-                        <option value="">Selectionner une collection</option>
-                        {% for collection in collections %}
-                            <option value="{{ collection.id }}">
-                                {{ collection.name }}{% if collection.category %} - {{ collection.category.name }}{% endif %}
-                            </option>
-                        {% endfor %}
-                    </select>
-                </label>
+        {{ form_start(form, {attr: {class: 'collection-form', enctype: 'multipart/form-data', 'data-controller': 'clothe-form'}}) }}
+            {{ form_errors(form) }}
+            <section class="collection-form__section collection-form__grid">
+                {{ form_row(form.name) }}
+                {{ form_row(form.price) }}
+                {{ form_row(form.collection) }}
             </section>
 
             <section class="collection-form__section">
-                {% include 'clothes/_clothe_form_fields.html.twig' with {
-                    prefix: 'clothe',
-                    imageInputName: 'clotheImages[]',
-                    existingClothes: existingClothes,
-                    colors: colors,
-                    availableSizes: availableSizes
-                } only %}
+                <div class="collection-form__section-header">
+                    <h2>Variantes</h2>
+                    <button type="button" class="clothe-show__button" data-action="clothe-form#add">Ajouter une couleur</button>
+                </div>
+                <div
+                    data-clothe-form-target="collection"
+                    data-prototype="{{ form_widget(form.variants.vars.prototype)|e('html_attr') }}"
+                    data-index="{{ form.variants|length }}"
+                >
+                    {% for variant in form.variants %}
+                        <fieldset class="collection-form__variant">
+                            {{ form_widget(variant) }}
+                            <button type="button" data-action="clothe-form#remove">Supprimer</button>
+                        </fieldset>
+                    {% endfor %}
+                </div>
             </section>
 
             <footer class="collection-form__actions">
-                <button type="submit" class="clothe-show__action">Creer le vetement</button>
+                <button type="submit" class="clothe-show__action">Créer le vêtement</button>
             </footer>
-        </form>
+        {{ form_end(form) }}
     </article>
 {% endblock %}
