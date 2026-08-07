@@ -10,8 +10,8 @@ final readonly class FaceAccessoryNameMatcher
         $accessory = $parts[3] ?? null;
 
         return is_string($accessory)
-            && $accessory !== ''
-            && $accessory !== '-none-';
+            && '' !== $accessory
+            && '-none-' !== $accessory;
     }
 
     public function matchesWithoutAccessory(string $name): bool

@@ -12,14 +12,20 @@ final class EyebrowsFixtures extends AbstractBaseFixtures implements DependentFi
 {
     public function load(ObjectManager $manager): void
     {
-        foreach (['brown', 'blond', 'black'] as $colorIndex => $colorName) {
-            foreach (['straight', 'angled'] as $shapeIndex => $shapeName) {
+        foreach (AvatarFilterFixtures::EYEBROW_COLORS as $colorIndex => $colorName) {
+            foreach (AvatarFilterFixtures::EYEBROW_SHAPES as $shapeIndex => $shapeName) {
                 $name = sprintf('eyebrows__%s__%s', $colorName, $shapeName);
 
                 $eyebrows = (new Eyebrows())
                     ->setName($name)
-                    ->setColor($this->getReference(FixtureReferences::EYEBROWS_COLORS.$colorIndex, \App\Entity\Avatar\Eyebrows\Eyebrowscolor::class))
-                    ->setShape($this->getReference(FixtureReferences::EYEBROWS_SHAPES.$shapeIndex, \App\Entity\Avatar\Eyebrows\Eyebrowshape::class))
+                    ->setColor($this->getReference(
+                        FixtureReferences::EYEBROWS_COLORS . $colorIndex,
+                        \App\Entity\Avatar\Eyebrows\Eyebrowscolor::class,
+                    ))
+                    ->setShape($this->getReference(
+                        FixtureReferences::EYEBROWS_SHAPES . $shapeIndex,
+                        \App\Entity\Avatar\Eyebrows\Eyebrowshape::class,
+                    ))
                     ->setImage($this->fakeAvatarPngPath('eyebrows', $name))
                     ->setChecksum($this->fakeChecksum());
 

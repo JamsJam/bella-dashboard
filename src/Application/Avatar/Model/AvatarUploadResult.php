@@ -35,6 +35,6 @@ final readonly class AvatarUploadResult
             'error' => $this->error,
             'file' => $this->file,
             'path' => $this->path,
-        ] + $this->extra, static fn (mixed $value): bool => $value !== null);
+        ] + $this->extra, static fn (mixed $value): bool => null !== $value);
     }
 }

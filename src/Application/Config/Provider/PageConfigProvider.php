@@ -46,14 +46,14 @@ final readonly class PageConfigProvider extends AbstractConfigProvider
 
         foreach ($this->listFiles('page_') as $fileName) {
             $slug = substr($fileName, strlen('page_'));
-            if ($slug !== '') {
+            if ('' !== $slug) {
                 $slugs[] = $this->normalizeSlug($slug);
             }
         }
 
-        foreach (glob($this->projectDirectory().'/pages/api/*.yaml') ?: [] as $path) {
+        foreach (glob($this->projectDirectory() . '/pages/api/*.yaml') ?: [] as $path) {
             $slug = basename($path, '.yaml');
-            if ($slug !== '') {
+            if ('' !== $slug) {
                 $slugs[] = $this->normalizeSlug($slug);
             }
         }
@@ -66,6 +66,6 @@ final readonly class PageConfigProvider extends AbstractConfigProvider
 
     private function legacyFileName(string $slug): string
     {
-        return 'page_'.$slug;
+        return 'page_' . $slug;
     }
 }

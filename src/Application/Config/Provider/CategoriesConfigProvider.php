@@ -28,7 +28,7 @@ final readonly class CategoriesConfigProvider
         $data = $config->toArray();
         $data['last-modifyed'] = (new \DateTimeImmutable())->format(DATE_ATOM);
 
-        if (file_put_contents($this->path(), Yaml::dump($data, 10, 2), LOCK_EX) === false) {
+        if (false === file_put_contents($this->path(), Yaml::dump($data, 10, 2), LOCK_EX)) {
             throw new \RuntimeException('Impossible d’enregistrer la configuration de la page des catégories.');
         }
 
@@ -37,6 +37,6 @@ final readonly class CategoriesConfigProvider
 
     private function path(): string
     {
-        return $this->projectDir.'/pages/api/categories.yaml';
+        return $this->projectDir . '/pages/api/categories.yaml';
     }
 }

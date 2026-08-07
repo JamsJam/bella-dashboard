@@ -6,10 +6,10 @@ use App\Application\Avatar\Services\AvatarResolverService;
 use App\Service\LoggerService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Routing\Attribute\Route;
 
 final class DeleteAvatarPartController extends AbstractController
@@ -122,7 +122,7 @@ final class DeleteAvatarPartController extends AbstractController
         if (method_exists($avatarPart, 'getImage')) {
             $image = $avatarPart->getImage();
 
-            return is_string($image) && $image !== '' ? [$image] : [];
+            return is_string($image) && '' !== $image ? [$image] : [];
         }
 
         return [];
@@ -135,14 +135,14 @@ final class DeleteAvatarPartController extends AbstractController
             return;
         }
 
-        $uploadRoot = realpath($projectDir.'/public/images/upload/avatar');
-        $absolutePath = $projectDir.'/public'.$relativePath;
+        $uploadRoot = realpath($projectDir . '/public/images/upload/avatar');
+        $absolutePath = $projectDir . '/public' . $relativePath;
         $realPath = realpath($absolutePath);
 
         if (
-            $uploadRoot === false
-            || $realPath === false
-            || !str_starts_with($realPath, rtrim($uploadRoot, '/').'/')
+            false === $uploadRoot
+            || false === $realPath
+            || !str_starts_with($realPath, rtrim($uploadRoot, '/') . '/')
         ) {
             return;
         }
@@ -152,7 +152,7 @@ final class DeleteAvatarPartController extends AbstractController
         }
 
         $directory = dirname($realPath);
-        while ($directory !== $uploadRoot && str_starts_with($directory, rtrim($uploadRoot, '/').'/')) {
+        while ($directory !== $uploadRoot && str_starts_with($directory, rtrim($uploadRoot, '/') . '/')) {
             if (!@rmdir($directory)) {
                 break;
             }

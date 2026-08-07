@@ -83,7 +83,7 @@ final class PageSectionDto
                         static fn (PageSectionContentItemDto $item): array => $item->toArray(),
                         $this->listItems,
                     ),
-                    static fn (array $item): bool => $item['value'] !== '',
+                    static fn (array $item): bool => '' !== $item['value'],
                 )),
             ],
             self::CONTENT_TYPE_IMAGE => [

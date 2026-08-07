@@ -17,10 +17,10 @@ final class OrderReferenceGeneratorTest extends TestCase
             ->expects(self::once())
             ->method('findOneBy')
             ->with(self::callback(
-                static fn (array $criteria): bool => preg_match(
-                    '/^ORDER-'.(new \DateTimeImmutable())->format('Ymd').'-[A-Z0-9]{8}$/',
+                static fn (array $criteria): bool => 1 === preg_match(
+                    '/^ORDER-' . (new \DateTimeImmutable())->format('Ymd') . '-[A-Z0-9]{8}$/',
                     (string) ($criteria['orderReference'] ?? ''),
-                ) === 1,
+                ),
             ))
             ->willReturn(null);
 
@@ -34,7 +34,7 @@ final class OrderReferenceGeneratorTest extends TestCase
         $reference = (new OrderReferenceGenerator($entityManager))->generate();
 
         self::assertMatchesRegularExpression(
-            '/^ORDER-'.(new \DateTimeImmutable())->format('Ymd').'-[A-Z0-9]{8}$/',
+            '/^ORDER-' . (new \DateTimeImmutable())->format('Ymd') . '-[A-Z0-9]{8}$/',
             $reference,
         );
     }

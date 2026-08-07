@@ -2,21 +2,21 @@
 
 namespace App\DataFixtures\Clothes;
 
-use App\Enum\ClotheStatus;
 use App\DataFixtures\AbstractBaseFixtures;
 use App\DataFixtures\FixtureReferences;
 use App\Entity\Category\Category;
 use App\Entity\Clothes\Clothes;
-use App\Entity\Clothes\ClothesVariant;
 use App\Entity\Clothes\Clothescolor;
 use App\Entity\Clothes\Clothessize;
+use App\Entity\Clothes\ClothesVariant;
 use App\Entity\Collections\Collections;
 use App\Entity\MeasurementType;
 use App\Entity\SizeGuide;
 use App\Entity\SizeGuideMeasurement;
 use App\Entity\SizeGuideSize;
-use Doctrine\Persistence\ObjectManager;
+use App\Enum\ClotheStatus;
 use Doctrine\Bundle\FixturesBundle\FixtureGroupInterface;
+use Doctrine\Persistence\ObjectManager;
 
 final class ClothesFixtures extends AbstractBaseFixtures implements FixtureGroupInterface
 {
@@ -32,6 +32,14 @@ final class ClothesFixtures extends AbstractBaseFixtures implements FixtureGroup
         'Soft Club',
         'Island Days',
         'Tropical Line',
+    ];
+
+    public const CLOTHES = [
+        'T-shirt essentiel',
+        'Sweat oversize',
+        'Bonnet côtelé',
+        'Débardeur soleil',
+        'Hoodie palmiers',
     ];
 
     public const COLORS = [
@@ -91,10 +99,8 @@ final class ClothesFixtures extends AbstractBaseFixtures implements FixtureGroup
 
         foreach (self::MEASUREMENT_TYPES as $code => $label) {
             $type = (new MeasurementType())
-                ->setCode($code)
                 ->setLabel($label)
-                ->setPosition($position++)
-                ->setIsActive(true);
+                ->setPosition($position++);
 
             $manager->persist($type);
             $types[$code] = $type;
@@ -119,7 +125,7 @@ final class ClothesFixtures extends AbstractBaseFixtures implements FixtureGroup
                 ->setIsOnline(true);
 
             $this->persistTouched($manager, $category);
-            $this->addReference(FixtureReferences::CLOTHES_CATEGORIES.$index, $category);
+            $this->addReference(FixtureReferences::CLOTHES_CATEGORIES . $index, $category);
             $categories[] = $category;
         }
 
@@ -128,6 +134,7 @@ final class ClothesFixtures extends AbstractBaseFixtures implements FixtureGroup
 
     /**
      * @param list<Category> $categories
+     *
      * @return list<Collections>
      */
     private function createCollections(ObjectManager $manager, array $categories): array
@@ -142,7 +149,7 @@ final class ClothesFixtures extends AbstractBaseFixtures implements FixtureGroup
                 ->setIsOnline(true);
 
             $this->persistTouched($manager, $collection);
-            $this->addReference(FixtureReferences::COLLECTIONS.$index, $collection);
+            $this->addReference(FixtureReferences::COLLECTIONS . $index, $collection);
             $collections[] = $collection;
         }
 
@@ -162,7 +169,7 @@ final class ClothesFixtures extends AbstractBaseFixtures implements FixtureGroup
                 ->setHexa($data['hex']);
 
             $this->persistTouched($manager, $color);
-            $this->addReference(FixtureReferences::CLOTHES_COLORS.$index, $color);
+            $this->addReference(FixtureReferences::CLOTHES_COLORS . $index, $color);
             $colors[] = $color;
         }
 
@@ -180,7 +187,7 @@ final class ClothesFixtures extends AbstractBaseFixtures implements FixtureGroup
             $size = (new Clothessize())->setName($name);
 
             $this->persistTouched($manager, $size);
-            $this->addReference(FixtureReferences::CLOTHES_SIZES.$index, $size);
+            $this->addReference(FixtureReferences::CLOTHES_SIZES . $index, $size);
             $sizes[] = $size;
         }
 
@@ -188,40 +195,46 @@ final class ClothesFixtures extends AbstractBaseFixtures implements FixtureGroup
     }
 
     /**
-     * @param list<Collections> $collections
-     * @param list<Clothescolor> $colors
-     * @param list<Clothessize> $sizes
+     * @param list<Collections>              $collections
+     * @param list<Clothescolor>             $colors
+     * @param list<Clothessize>              $sizes
      * @param array<string, MeasurementType> $measurementTypes
      */
-    private function createClothes(ObjectManager $manager, array $collections, array $colors, array $sizes, array $measurementTypes): void
-    {
-        $referenceIndex = 0;
+    private function createClothes(
+        ObjectManager $manager,
+        array $collections,
+        array $colors,
+        array $sizes,
+        array $measurementTypes,
+    ): void {
+        $variantReferenceIndex = 0;
 
-        foreach ($collections as $collection) {
+        foreach ($collections as $collectionIndex => $collection) {
+            $clotheName = self::CLOTHES[$collectionIndex];
+            $sizeGuide = $this->createSizeGuide(
+                $manager,
+                $this->isBottomCollection($collection) ? self::BOTTOM_GUIDE : self::TOP_GUIDE,
+                $measurementTypes,
+            );
+            $clothe = (new Clothes())
+                ->setName($clotheName)
+                ->setPrice($this->faker->randomElement([1990, 2490, 2990, 3990]))
+                ->setCollection($collection);
+
             foreach ($colors as $color) {
-                $name = sprintf('%s %s', $collection->getName(), $color->getName());
-                $slug = $this->slug($name);
-                $sizeGuide = $this->createSizeGuide(
-                    $manager,
-                    $this->isBottomCollection($collection) ? self::BOTTOM_GUIDE : self::TOP_GUIDE,
-                    $measurementTypes,
-                );
+                $colorName = (string) $color->getName();
+                $variantSlug = $this->slug(sprintf('%s %s', $clotheName, $colorName));
                 $description = $this->faker->sentence(12);
-                $metaDescription = sprintf('%s en %s', $collection->getName(), $color->getName());
-                $isBestseller = $referenceIndex % 5 === 0;
-                $isInCarousel = $referenceIndex % 7 === 0;
-
-                $clothe = (new Clothes())
-                    ->setName($name)
-                    ->setPrice($this->faker->randomElement([1990, 2490, 2990, 3990]))
-                    ->setCollection($collection);
+                $metaDescription = sprintf('%s en %s', $clotheName, $colorName);
+                $isBestseller = 0 === $variantReferenceIndex % 5;
+                $isInCarousel = 0 === $variantReferenceIndex % 7;
 
                 foreach ($sizes as $size) {
-                    $variantName = trim(sprintf('%s %s', $name, (string) $size->getName()));
-                    $variantSlug = $this->slug($name);
+                    $sizeName = (string) $size->getName();
+                    $variantName = trim(sprintf('%s %s %s', $clotheName, $colorName, $sizeName));
                     $variantImages = [
-                        sprintf('/fixtures/clothes/%s/%s/front.png', $slug, strtolower((string) $size->getName())),
-                        sprintf('/fixtures/clothes/%s/%s/back.png', $slug, strtolower((string) $size->getName())),
+                        sprintf('/fixtures/clothes/%s/%s/front.png', $variantSlug, strtolower($sizeName)),
+                        sprintf('/fixtures/clothes/%s/%s/back.png', $variantSlug, strtolower($sizeName)),
                     ];
                     $variant = (new ClothesVariant())
                         ->setName($variantName)
@@ -229,7 +242,12 @@ final class ClothesFixtures extends AbstractBaseFixtures implements FixtureGroup
                         ->setColor($color)
                         ->setSize($size)
                         ->setSizeGuide($sizeGuide)
-                        ->setSku(sprintf('%s-%s-%s', strtoupper($this->slug($name)), strtoupper($this->slug((string) $color->getName())), strtoupper($this->slug((string) $size->getName()))))
+                        ->setSku(sprintf(
+                            '%s-%s-%s',
+                            strtoupper($this->slug($clotheName)),
+                            strtoupper($this->slug($colorName)),
+                            strtoupper($this->slug($sizeName)),
+                        ))
                         ->setStock($this->faker->numberBetween(0, 50))
                         ->setDescription($description)
                         ->setMetadescription($metaDescription)
@@ -238,16 +256,17 @@ final class ClothesFixtures extends AbstractBaseFixtures implements FixtureGroup
                         ->setBestsellerImage($variantImages[0])
                         ->setIsBestseller($isBestseller)
                         ->setIsInCarousel($isInCarousel)
-                        ->setPublicationStatus(ClotheStatus::Online);
+                        ->setPublicationStatus(ClotheStatus::Online)
+                        ->setPublishedAt(new \DateTimeImmutable());
 
                     $clothe->addVariant($variant);
-                    $this->addReference(FixtureReferences::CLOTHES.$referenceIndex, $clothe);
-                    $this->addReference(FixtureReferences::CLOTHES_VARIANTS.$referenceIndex, $variant);
-                    $referenceIndex++;
+                    $this->addReference(FixtureReferences::CLOTHES_VARIANTS . $variantReferenceIndex, $variant);
+                    ++$variantReferenceIndex;
                 }
-
-                $this->persistTouched($manager, $clothe);
             }
+
+            $this->persistTouched($manager, $clothe);
+            $this->addReference(FixtureReferences::CLOTHES . $collectionIndex, $clothe);
         }
     }
 
@@ -258,7 +277,7 @@ final class ClothesFixtures extends AbstractBaseFixtures implements FixtureGroup
 
     /**
      * @param array<string, array<string, int|float>> $guideData
-     * @param array<string, MeasurementType> $measurementTypes
+     * @param array<string, MeasurementType>          $measurementTypes
      */
     private function createSizeGuide(ObjectManager $manager, array $guideData, array $measurementTypes): SizeGuide
     {

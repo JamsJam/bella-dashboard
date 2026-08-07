@@ -28,11 +28,11 @@ final class SocialNetworkDto
     {
         $data = [];
 
-        if ($this->name !== '') {
+        if ('' !== $this->name) {
             $data['name'] = $this->name;
         }
 
-        if ($this->url !== '') {
+        if ('' !== $this->url) {
             $data['url'] = $this->url;
         }
 

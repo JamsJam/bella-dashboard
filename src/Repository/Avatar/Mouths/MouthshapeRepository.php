@@ -2,8 +2,8 @@
 
 namespace App\Repository\Avatar\Mouths;
 
-use App\Entity\Avatar\Mouths\Mouthshape;
 use App\Application\Avatar\Interface\AvatarFilterValueRepositoryInterface;
+use App\Entity\Avatar\Mouths\Mouthshape;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -21,7 +21,7 @@ class MouthshapeRepository extends ServiceEntityRepository implements AvatarFilt
     {
         $name = $this->normalizeName($name);
 
-        if ($name === '') {
+        if ('' === $name) {
             throw new \InvalidArgumentException('Invalid mouth shape name.');
         }
 

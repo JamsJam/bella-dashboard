@@ -9,7 +9,32 @@ permissions:
   contents: read
 
 jobs:
+  quality:
+    name: Tests et lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Recuperer le depot
+        uses: actions/checkout@v6
+
+      - name: Construire l'environnement de test
+        run: make docker-test-up
+
+      - name: Preparer la base de test
+        run: make docker-test-prepare
+
+      - name: Executer les tests par niveau
+        run: docker compose --profile test run --rm test-runner make test
+
+      - name: Executer les linters Symfony
+        run: docker compose --profile test run --rm test-runner make lint
+
+      - name: Arreter l'environnement de test
+        if: always()
+        run: make docker-test-down
+
   deploy:
+    needs: quality
     name: Deployer l'environnement de test
     runs-on: ubuntu-latest
 

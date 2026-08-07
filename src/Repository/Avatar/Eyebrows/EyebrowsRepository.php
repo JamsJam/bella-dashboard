@@ -26,13 +26,13 @@ class EyebrowsRepository extends ServiceEntityRepository implements AvatarPartMo
     ): array {
         $qb = $this->createQueryBuilder('e');
 
-        if ($color !== 0 && $color !== null) {
+        if (0 !== $color && null !== $color) {
             $qb->leftJoin('e.color', 'c')
                 ->andWhere('c.id = :color')
                 ->setParameter('color', $color);
         }
 
-        if ($shape !== 0 && $shape !== null) {
+        if (0 !== $shape && null !== $shape) {
             $qb->leftJoin('e.shape', 's')
                 ->andWhere('s.id = :shape')
                 ->setParameter('shape', $shape);
@@ -41,9 +41,6 @@ class EyebrowsRepository extends ServiceEntityRepository implements AvatarPartMo
         return $qb->getQuery()->getArrayResult();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function findPartByFilters(array $filters = []): array
     {
         return $this->findAllByFilters(
@@ -52,9 +49,6 @@ class EyebrowsRepository extends ServiceEntityRepository implements AvatarPartMo
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function findAllPart(): array
     {
         return $this->findAll();

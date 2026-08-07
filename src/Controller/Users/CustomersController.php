@@ -64,8 +64,7 @@ final class CustomersController extends AbstractController
         Request $request,
         BreadscrumbsService $breadscrumbs,
         OrdersConfigProvider $ordersConfigProvider,
-    ): Response
-    {
+    ): Response {
         $orders = $customer->getOrders()->toArray();
         usort(
             $orders,
@@ -86,12 +85,12 @@ final class CustomersController extends AbstractController
     #[Route('/customers/{id}/update', name: 'app_customers_update', requirements: ['id' => '\\d+'], methods: ['POST'])]
     public function update(Customers $customer, Request $request, EntityManagerInterface $entityManager): Response
     {
-        if (!$this->isCsrfTokenValid('customer_update_'.$customer->getId(), (string) $request->request->get('_csrf_token'))) {
+        if (!$this->isCsrfTokenValid('customer_update_' . $customer->getId(), (string) $request->request->get('_csrf_token'))) {
             throw $this->createAccessDeniedException('Jeton CSRF invalide.');
         }
 
         $email = mb_strtolower(trim((string) $request->request->get('email')));
-        if ($email === '' || filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
+        if ('' === $email || false === filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $this->addFlash('error', 'L’adresse e-mail est invalide.');
 
             return $this->redirectToRoute('app_customers_show', ['id' => $customer->getId()]);
@@ -124,7 +123,7 @@ final class CustomersController extends AbstractController
     #[Route('/customers/{id}/delete', name: 'app_customers_delete', requirements: ['id' => '\\d+'], methods: ['POST'])]
     public function delete(Customers $customer, Request $request, EntityManagerInterface $entityManager): Response
     {
-        if (!$this->isCsrfTokenValid('customer_delete_'.$customer->getId(), (string) $request->request->get('_csrf_token'))) {
+        if (!$this->isCsrfTokenValid('customer_delete_' . $customer->getId(), (string) $request->request->get('_csrf_token'))) {
             throw $this->createAccessDeniedException('Jeton CSRF invalide.');
         }
 
@@ -156,16 +155,16 @@ final class CustomersController extends AbstractController
             ->groupBy('c.id')
             ->orderBy(self::SORTS[$sort], $direction);
 
-        if ($search !== '') {
+        if ('' !== $search) {
             $queryBuilder
                 ->andWhere('LOWER(c.email) LIKE :search')
-                ->setParameter('search', '%'.mb_strtolower($search).'%');
+                ->setParameter('search', '%' . mb_strtolower($search) . '%');
         }
 
-        if ($confirmation !== null) {
+        if (null !== $confirmation) {
             $queryBuilder
                 ->andWhere('c.isSignupConfirmed = :confirmed')
-                ->setParameter('confirmed', $confirmation === 'confirmed');
+                ->setParameter('confirmed', 'confirmed' === $confirmation);
         }
 
         $countQueryBuilder = clone $queryBuilder;
@@ -239,7 +238,7 @@ final class CustomersController extends AbstractController
 
     private function normalizeDirection(string $direction): string
     {
-        return strtolower($direction) === 'asc' ? 'asc' : 'desc';
+        return 'asc' === strtolower($direction) ? 'asc' : 'desc';
     }
 
     private function normalizeConfirmation(string $confirmation): ?string

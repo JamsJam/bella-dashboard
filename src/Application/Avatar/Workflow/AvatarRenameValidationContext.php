@@ -26,12 +26,12 @@ final class AvatarRenameValidationContext
 
     public function wasChecked(): bool
     {
-        return $this->targetAlreadyExists !== null;
+        return null !== $this->targetAlreadyExists;
     }
 
     public function targetAlreadyExists(): bool
     {
-        return $this->targetAlreadyExists === true;
+        return true === $this->targetAlreadyExists;
     }
 
     public function previewUrl(): ?string

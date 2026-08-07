@@ -10,6 +10,6 @@ final readonly class HasImagesRule implements ClothePublishRuleInterface
     {
         $images = array_values(array_filter($clothe->getImages() ?? []));
 
-        return $images !== [] ? null : 'Au moins une image est requise.';
+        return [] !== $images ? null : 'Au moins une image est requise.';
     }
 }

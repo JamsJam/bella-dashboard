@@ -20,7 +20,7 @@ final readonly class CustomerMeProvider implements ProviderInterface
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): CustomerMe
     {
         $customer = $this->security->getUser();
-        if (!$customer instanceof Customers || $customer->getId() === null) {
+        if (!$customer instanceof Customers || null === $customer->getId()) {
             throw new AccessDeniedHttpException('Un client authentifié est requis.');
         }
 

@@ -22,4 +22,16 @@ enum ClotheStatus: string
             self::Archived => 'Archivé',
         };
     }
+
+    public function progressionRank(): int
+    {
+        return match ($this) {
+            self::Draft => 0,
+            self::Publishable => 1,
+            self::Scheduled => 2,
+            self::Online => 3,
+            self::Offline => 4,
+            self::Archived => 5,
+        };
+    }
 }

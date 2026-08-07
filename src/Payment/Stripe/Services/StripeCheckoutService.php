@@ -22,7 +22,7 @@ final readonly class StripeCheckoutService
     public function createSession(Orders $order): StripeCheckoutSessionResult
     {
         $cart = $order->getCart();
-        if ($order->getId() === null || $cart === null) {
+        if (null === $order->getId() || null === $cart) {
             throw new \InvalidArgumentException('Order must be persisted before creating a Stripe Checkout session.');
         }
 
@@ -31,7 +31,7 @@ final readonly class StripeCheckoutService
             'payment_method_types' => ['card'],
             'customer_email' => $cart->getCustomer()?->getEmail(),
             'line_items' => $this->lineItemsFactory->createFromCart($cart),
-            'success_url' => $this->stripeConfig->getSuccessUrl().'?session_id={CHECKOUT_SESSION_ID}',
+            'success_url' => $this->stripeConfig->getSuccessUrl() . '?session_id={CHECKOUT_SESSION_ID}',
             'cancel_url' => $this->stripeConfig->getCancelUrl(),
             'shipping_options' => [
                 [

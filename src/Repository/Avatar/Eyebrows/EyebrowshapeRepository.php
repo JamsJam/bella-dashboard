@@ -2,8 +2,8 @@
 
 namespace App\Repository\Avatar\Eyebrows;
 
-use App\Entity\Avatar\Eyebrows\Eyebrowshape;
 use App\Application\Avatar\Interface\AvatarFilterValueRepositoryInterface;
+use App\Entity\Avatar\Eyebrows\Eyebrowshape;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -21,7 +21,7 @@ class EyebrowshapeRepository extends ServiceEntityRepository implements AvatarFi
     {
         $name = $this->normalizeName($name);
 
-        if ($name === '') {
+        if ('' === $name) {
             throw new \InvalidArgumentException('Invalid eyebrow shape name.');
         }
 

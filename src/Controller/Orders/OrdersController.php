@@ -2,18 +2,18 @@
 
 namespace App\Controller\Orders;
 
-use App\Application\Orders\Delivery\DeliveryDatePolicy;
-use App\Application\Orders\Delivery\AutoDeliverShippedOrderMessage;
-use App\Application\Orders\Delivery\DeliveryReminderMessage;
 use App\Application\Config\Provider\OrdersConfigProvider;
+use App\Application\Orders\Delivery\AutoDeliverShippedOrderMessage;
+use App\Application\Orders\Delivery\DeliveryDatePolicy;
+use App\Application\Orders\Delivery\DeliveryReminderMessage;
 use App\Application\Orders\Dto\ShipmentDto;
 use App\Application\Orders\Form\ShipmentType;
 use App\Application\Orders\Mapper\OrderStatusSortMapper;
 use App\Application\Orders\Workflow\OrderWorkflow;
 use App\Entity\Orders\Orders;
 use App\Enum\OrderStatus;
-use App\Service\BreadscrumbsService;
 use App\Notifier\Services\EmailNotificationService;
+use App\Service\BreadscrumbsService;
 use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -117,7 +117,7 @@ final class OrdersController extends AbstractController
             throw $this->createNotFoundException('Commande introuvable.');
         }
 
-        if ($order->getOrderStatus() !== OrderStatus::Processing || !$order->isShippingToGuadeloupe()) {
+        if (OrderStatus::Processing !== $order->getOrderStatus() || !$order->isShippingToGuadeloupe()) {
             throw $this->createAccessDeniedException('Cette commande ne peut pas être programmée pour une livraison.');
         }
 
@@ -151,10 +151,12 @@ final class OrdersController extends AbstractController
             throw $this->createNotFoundException('Commande introuvable.');
         }
 
-        if (!$this->isCsrfTokenValid(
-            'order_delivery_date_'.$id,
-            (string) $request->request->get('_csrf_token'),
-        )) {
+        if (
+            !$this->isCsrfTokenValid(
+                'order_delivery_date_' . $id,
+                (string) $request->request->get('_csrf_token'),
+            )
+        ) {
             throw $this->createAccessDeniedException('Jeton CSRF invalide.');
         }
 
@@ -211,7 +213,7 @@ final class OrdersController extends AbstractController
             throw $this->createNotFoundException('Commande introuvable.');
         }
 
-        if ($order->getOrderStatus() !== OrderStatus::Processing || !$order->isShippingOutsideGuadeloupe()) {
+        if (OrderStatus::Processing !== $order->getOrderStatus() || !$order->isShippingOutsideGuadeloupe()) {
             throw $this->createAccessDeniedException('Cette commande ne peut pas être expédiée.');
         }
 
@@ -219,7 +221,7 @@ final class OrdersController extends AbstractController
         $form = $this->createForm(ShipmentType::class, new ShipmentDto(), [
             'action' => $this->generateUrl('app_orders_shipment', ['id' => $id]),
             'carriers' => $carriers,
-            'csrf_token_id' => 'ship_order_'.$id,
+            'csrf_token_id' => 'ship_order_' . $id,
         ]);
         $html = $this->renderView('orders/_shipment_modal.html.twig', [
             'order' => $order,
@@ -255,7 +257,7 @@ final class OrdersController extends AbstractController
         $shipment = new ShipmentDto();
         $form = $this->createForm(ShipmentType::class, $shipment, [
             'carriers' => $carriers,
-            'csrf_token_id' => 'ship_order_'.$id,
+            'csrf_token_id' => 'ship_order_' . $id,
         ]);
         $form->handleRequest($request);
         if (!$form->isSubmitted() || !$form->isValid()) {
@@ -265,7 +267,7 @@ final class OrdersController extends AbstractController
         }
 
         $carrier = $carriers[(int) $shipment->carrier] ?? null;
-        if ($carrier === null) {
+        if (null === $carrier) {
             $this->addFlash('error', 'Le transporteur sélectionné n’existe plus dans la configuration.');
 
             return $this->redirectToRoute('app_orders');
@@ -296,7 +298,7 @@ final class OrdersController extends AbstractController
         );
 
         $customerEmail = $order->getCustomer()?->getEmail();
-        if ($customerEmail !== null && $customerEmail !== '') {
+        if (null !== $customerEmail && '' !== $customerEmail) {
             $emailNotificationService->sendTemplatedEmail(
                 to: $customerEmail,
                 subject: sprintf('Votre commande %s a été expédiée', (string) $order->getOrderReference()),
@@ -326,7 +328,7 @@ final class OrdersController extends AbstractController
             ->addSelect('customer')
             ->leftJoin('o.customer', 'customer');
 
-        if ($sort === 'status') {
+        if ('status' === $sort) {
             $queryBuilder
                 ->addSelect(sprintf('(%s) AS HIDDEN orderStatusRank', $statusSortMapper->dqlCase('o.orderStatus')))
                 ->orderBy('orderStatusRank', $direction);
@@ -336,10 +338,10 @@ final class OrdersController extends AbstractController
 
         $queryBuilder->addOrderBy('o.createdAt', 'DESC');
 
-        if ($search !== '') {
+        if ('' !== $search) {
             $queryBuilder
                 ->andWhere('LOWER(o.orderReference) LIKE :search OR LOWER(o.orderStatus) LIKE :search OR LOWER(customer.email) LIKE :search')
-                ->setParameter('search', '%'.mb_strtolower($search).'%');
+                ->setParameter('search', '%' . mb_strtolower($search) . '%');
         }
 
         if ($status instanceof OrderStatus) {
@@ -348,23 +350,23 @@ final class OrdersController extends AbstractController
                 ->setParameter('orderStatus', $status);
         }
 
-        if ($paymentStatus !== null) {
+        if (null !== $paymentStatus) {
             $queryBuilder
                 ->andWhere('o.status = :paymentStatus')
                 ->setParameter('paymentStatus', $paymentStatus);
         }
 
-        if ($destination === 'guadeloupe') {
+        if ('guadeloupe' === $destination) {
             $queryBuilder
                 ->andWhere('LOWER(o.shippinfo) LIKE :destination')
                 ->setParameter('destination', '%guadeloupe%');
-        } elseif ($destination === 'other') {
+        } elseif ('other' === $destination) {
             $queryBuilder
                 ->andWhere('LOWER(o.shippinfo) NOT LIKE :destination')
                 ->setParameter('destination', '%guadeloupe%');
         }
 
-        if ($scheduling === 'to_schedule') {
+        if ('to_schedule' === $scheduling) {
             $queryBuilder
                 ->andWhere('o.orderStatus = :schedulingStatus')
                 ->andWhere('o.deliveryDate IS NULL')
@@ -452,7 +454,7 @@ final class OrdersController extends AbstractController
             ], [
                 'name' => 'scheduling',
                 'label' => 'Programmation',
-                'value' => $scheduling === 'to_schedule' ? $scheduling : '',
+                'value' => 'to_schedule' === $scheduling ? $scheduling : '',
                 'options' => [
                     ['value' => '', 'label' => 'Toutes les commandes'],
                     ['value' => 'to_schedule', 'label' => 'À programmer'],
@@ -484,6 +486,7 @@ final class OrdersController extends AbstractController
 
     /**
      * @param list<Orders> $orders
+     *
      * @return array<int, array{total: int, average: float|null, reviewUuids: list<string>}>
      */
     private function reviewSummaries(array $orders, EntityManagerInterface $entityManager): array
@@ -492,7 +495,7 @@ final class OrdersController extends AbstractController
             static fn (Orders $order): ?int => $order->getId(),
             $orders,
         )));
-        if ($orderIds === []) {
+        if ([] === $orderIds) {
             return [];
         }
 
@@ -519,7 +522,7 @@ final class OrdersController extends AbstractController
             ++$summaries[$orderId]['total'];
             $summaries[$orderId]['reviewUuids'][] = (string) $row['review_uuid'];
 
-            if ($row['rating'] !== null) {
+            if (null !== $row['rating']) {
                 $summaries[$orderId]['_ratingTotal'] += (int) $row['rating'];
                 ++$summaries[$orderId]['_ratingCount'];
             }
@@ -591,7 +594,7 @@ final class OrdersController extends AbstractController
 
     private function normalizeDirection(string $direction): string
     {
-        return strtolower($direction) === 'asc' ? 'asc' : 'desc';
+        return 'asc' === strtolower($direction) ? 'asc' : 'desc';
     }
 
     private function normalizePaymentStatus(string $status): ?string
@@ -653,6 +656,6 @@ final class OrdersController extends AbstractController
 
     private function formatPrice(int $amount): string
     {
-        return number_format($amount / 100, 2, ',', ' ').' EUR';
+        return number_format($amount / 100, 2, ',', ' ') . ' EUR';
     }
 }

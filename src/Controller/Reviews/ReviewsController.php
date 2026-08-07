@@ -45,6 +45,7 @@ final class ReviewsController extends AbstractController
     public function table(Request $request, ReviewRepository $reviews): JsonResponse
     {
         $table = $this->createTableData($request, $reviews);
+
         return $this->json([
             'html' => $this->renderView('ui/components/data-table/_rows.html.twig', ['columns' => $table['columns'], 'rows' => $table['rows']]),
             'pagination' => $this->renderView('ui/components/data-table/_pagination.html.twig', ['pagination' => $table['pagination']]),
@@ -58,7 +59,7 @@ final class ReviewsController extends AbstractController
         return $this->render('reviews/show.html.twig', [
             'breadscrumbs' => $breadcrumbs->resolve(
                 (string) $request->attributes->get('_route'),
-                currentLabel: 'Avis #'.$review->getId(),
+                currentLabel: 'Avis #' . $review->getId(),
             ),
             'review' => $review,
         ]);
@@ -68,7 +69,7 @@ final class ReviewsController extends AbstractController
     {
         $search = trim($request->query->getString('search'));
         $sort = array_key_exists($request->query->getString('sort'), self::SORTS) ? $request->query->getString('sort') : 'updatedAt';
-        $direction = strtolower($request->query->getString('direction')) === 'asc' ? 'asc' : 'desc';
+        $direction = 'asc' === strtolower($request->query->getString('direction')) ? 'asc' : 'desc';
         $status = ReviewStatus::tryFrom($request->query->getString('status'));
         $requestedPage = max(1, $request->query->getInt('page', 1));
 
@@ -76,9 +77,9 @@ final class ReviewsController extends AbstractController
             ->addSelect('customer', 'product', 'orders')
             ->join('r.customer', 'customer')->join('r.product', 'product')->join('r.order', 'orders')
             ->orderBy(self::SORTS[$sort], $direction)->addOrderBy('r.id', 'DESC');
-        if ($search !== '') {
+        if ('' !== $search) {
             $queryBuilder->andWhere('LOWER(customer.email) LIKE :search OR LOWER(product.name) LIKE :search OR LOWER(orders.orderReference) LIKE :search OR LOWER(r.comment) LIKE :search')
-                ->setParameter('search', '%'.mb_strtolower($search).'%');
+                ->setParameter('search', '%' . mb_strtolower($search) . '%');
         }
         if ($status instanceof ReviewStatus) {
             $queryBuilder->andWhere('r.status = :status')->setParameter('status', $status);

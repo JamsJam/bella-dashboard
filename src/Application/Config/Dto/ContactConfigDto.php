@@ -27,7 +27,7 @@ final class ContactConfigDto
             }
         }
 
-        if ($socialNetworks === []) {
+        if ([] === $socialNetworks) {
             $socialNetworks[] = new SocialNetworkDto();
         }
 
@@ -48,11 +48,11 @@ final class ContactConfigDto
     {
         $data = [];
 
-        if ($this->ownerEmail !== '') {
+        if ('' !== $this->ownerEmail) {
             $data['owner_email'] = $this->ownerEmail;
         }
 
-        if ($this->ownerName !== '') {
+        if ('' !== $this->ownerName) {
             $data['owner_name'] = $this->ownerName;
         }
 
@@ -61,15 +61,15 @@ final class ContactConfigDto
                 static fn (SocialNetworkDto $socialNetwork): array => $socialNetwork->toArray(),
                 $this->ownerSocialNetworks,
             ),
-            static fn (array $socialNetwork): bool => $socialNetwork !== [],
+            static fn (array $socialNetwork): bool => [] !== $socialNetwork,
         ));
 
-        if ($socialNetworks !== []) {
+        if ([] !== $socialNetworks) {
             $data['owner_social_networks'] = $socialNetworks;
         }
 
         $developerContact = $this->developerContact->toArray();
-        if ($developerContact !== []) {
+        if ([] !== $developerContact) {
             $data['developer_contact'] = $developerContact;
         }
 

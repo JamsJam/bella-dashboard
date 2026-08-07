@@ -44,11 +44,11 @@ final readonly class AvatarRenameService
             return;
         }
 
-        if ($avatarTemp->getStatus() === AvatarRenameWorkflow::PLACE_RENAMED) {
+        if (AvatarRenameWorkflow::PLACE_RENAMED === $avatarTemp->getStatus()) {
             return;
         }
 
-        if ($avatarTemp->getStatus() !== AvatarRenameWorkflow::PLACE_RENAMING) {
+        if (AvatarRenameWorkflow::PLACE_RENAMING !== $avatarTemp->getStatus()) {
             throw new \RuntimeException(sprintf('Avatar rename message received in state "%s".', $avatarTemp->getStatus()));
         }
 
@@ -67,12 +67,12 @@ final readonly class AvatarRenameService
             throw new \RuntimeException('Unable to create final avatar directory.');
         }
 
-        $destinationPath = $destinationDir.'/'.$message->newName;
+        $destinationPath = $destinationDir . '/' . $message->newName;
         $this->destinationResolver->assertDestinationPathIsAllowed($destinationPath);
-        $imagePath = $destinationWebDir.'/'.$message->newName;
+        $imagePath = $destinationWebDir . '/' . $message->newName;
 
         $temporaryPath = $avatarTemp->getTempPath();
-        if (($temporaryPath === null || !is_file($temporaryPath)) && is_file($destinationPath)) {
+        if ((null === $temporaryPath || !is_file($temporaryPath)) && is_file($destinationPath)) {
             $this->completePartiallySuccessfulRename($avatarTemp, $message, $destinationPath, $imagePath);
 
             return;
@@ -81,7 +81,7 @@ final readonly class AvatarRenameService
         $sourcePath = $this->sourcePathResolver->resolve($avatarTemp);
 
         $checksum = hash_file('sha256', $sourcePath);
-        if ($checksum === false) {
+        if (false === $checksum) {
             throw new \RuntimeException('Unable to calculate avatar checksum.');
         }
 
@@ -136,7 +136,7 @@ final readonly class AvatarRenameService
         $avatarPart = $this->partResolver->resolveExistingPart($message, $imagePath);
         $checksum = hash_file('sha256', $destinationPath);
 
-        if ($checksum === false) {
+        if (false === $checksum) {
             throw new \RuntimeException('Unable to resume a partially completed avatar rename.');
         }
 
@@ -173,7 +173,7 @@ final readonly class AvatarRenameService
 
     private function resolveAvatarPart(AvatarRenameInstruction $message): object
     {
-        if ($message->category !== 'body') {
+        if ('body' !== $message->category) {
             return $this->partResolver->resolvePart($message);
         }
 
@@ -194,7 +194,7 @@ final readonly class AvatarRenameService
         $value = $message->filters['clothes'] ?? null;
         $slug = $this->resolveClothesSlug($value);
 
-        if ($slug === '' || $slug === '-none-') {
+        if ('' === $slug || '-none-' === $slug) {
             return [];
         }
 
@@ -212,7 +212,7 @@ final readonly class AvatarRenameService
     {
         $value = $this->extractFilterName($value);
 
-        if ($value === '') {
+        if ('' === $value) {
             return '';
         }
 
@@ -240,7 +240,7 @@ final readonly class AvatarRenameService
     private function assertRequiredFilters(AvatarRenameInstruction $message): void
     {
         foreach ($this->avatarRenameFilterMapper->getRequiredFilters($message->category) as $filterId) {
-            if (!isset($message->filters[$filterId]) || $this->extractFilterName($message->filters[$filterId]) === '') {
+            if (!isset($message->filters[$filterId]) || '' === $this->extractFilterName($message->filters[$filterId])) {
                 throw new \InvalidArgumentException(sprintf('Missing required avatar filter "%s".', $filterId));
             }
         }
@@ -293,7 +293,7 @@ final readonly class AvatarRenameService
 
         $this->hydrateAvatarFilters($avatarPart, $message);
 
-        if ($message->category === 'body' && $avatarPart instanceof Body) {
+        if ('body' === $message->category && $avatarPart instanceof Body) {
             $clothes = $this->resolveClothesForBody($message);
             $avatarPart->setClothe($clothes[0] ?? null);
         }
@@ -304,15 +304,15 @@ final readonly class AvatarRenameService
         foreach ($message->filters as $filterId => $filterValue) {
             $sourceClass = $this->avatarRenameFilterMapper->getFilterSourceClass($message->category, (string) $filterId);
 
-            if ($sourceClass === null || $filterValue === null || $this->extractFilterName($filterValue) === '') {
+            if (null === $sourceClass || null === $filterValue || '' === $this->extractFilterName($filterValue)) {
                 continue;
             }
 
-            if ($message->category === 'body' && (string) $filterId === 'clothes' && $avatarPart instanceof Body) {
+            if ('body' === $message->category && 'clothes' === (string) $filterId && $avatarPart instanceof Body) {
                 continue;
             }
 
-            if ($message->category === 'face' && (string) $filterId === 'accessory' && $this->extractFilterName($filterValue) === '-none-') {
+            if ('face' === $message->category && 'accessory' === (string) $filterId && '-none-' === $this->extractFilterName($filterValue)) {
                 continue;
             }
 
@@ -340,7 +340,7 @@ final readonly class AvatarRenameService
             $avatarPart->{$setter}($filterEntity);
         }
 
-        if ($message->category === 'body' && $avatarPart instanceof Body) {
+        if ('body' === $message->category && $avatarPart instanceof Body) {
             $avatarPart->setMorphotype($this->filterValueResolver->resolveBodyMorphotype($message->filters));
         }
     }

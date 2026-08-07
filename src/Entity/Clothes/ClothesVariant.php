@@ -2,10 +2,10 @@
 
 namespace App\Entity\Clothes;
 
-use App\Enum\ClotheStatus;
 use App\Entity\Avatar\Body\Body;
 use App\Entity\SizeGuide;
 use App\Entity\Traits\DateFieldsTrait;
+use App\Enum\ClotheStatus;
 use App\Repository\Clothes\ClothesVariantRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -76,7 +76,7 @@ class ClothesVariant
     #[ORM\Column]
     private bool $isInCarousel = false;
 
-    #[ORM\Column(enumType: ClotheStatus::class)]
+    #[ORM\Column(length: 20, enumType: ClotheStatus::class, options: ['default' => 'draft'])]
     private ClotheStatus $publicationStatus = ClotheStatus::Draft;
 
     #[ORM\Column(nullable: true)]
@@ -374,7 +374,7 @@ class ClothesVariant
 
     public function isAvailable(): bool
     {
-        return $this->publicationStatus === ClotheStatus::Online
+        return ClotheStatus::Online === $this->publicationStatus
             && $this->stock > 0;
     }
 }

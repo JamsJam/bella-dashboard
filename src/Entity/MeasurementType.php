@@ -7,9 +7,9 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Uid\Uuid;
 
 #[ORM\Entity(repositoryClass: MeasurementTypeRepository::class)]
-#[ORM\UniqueConstraint(name: 'UNIQ_MEASUREMENT_TYPE_CODE', columns: ['code'])]
 class MeasurementType
 {
     #[ORM\Id]
@@ -17,8 +17,8 @@ class MeasurementType
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 64)]
-    private ?string $code = null;
+    #[ORM\Column(type: 'uuid', unique: true)]
+    private Uuid $uuid;
 
     #[ORM\Column(length: 120)]
     private ?string $label = null;
@@ -29,17 +29,15 @@ class MeasurementType
     #[ORM\Column]
     private ?int $position = null;
 
-    #[ORM\Column]
-    private ?bool $isActive = null;
-
     /**
      * @var Collection<int, SizeGuideMeasurement>
      */
-    #[ORM\OneToMany(targetEntity: SizeGuideMeasurement::class, mappedBy: 'type')]
+    #[ORM\OneToMany(targetEntity: SizeGuideMeasurement::class, mappedBy: 'type', cascade: ['remove'])]
     private Collection $measurements;
 
     public function __construct()
     {
+        $this->uuid = Uuid::v7();
         $this->measurements = new ArrayCollection();
     }
 
@@ -48,16 +46,9 @@ class MeasurementType
         return $this->id;
     }
 
-    public function getCode(): ?string
+    public function getUuid(): Uuid
     {
-        return $this->code;
-    }
-
-    public function setCode(string $code): static
-    {
-        $this->code = $code;
-
-        return $this;
+        return $this->uuid;
     }
 
     public function getLabel(): ?string
@@ -96,18 +87,6 @@ class MeasurementType
         return $this;
     }
 
-    public function isActive(): ?bool
-    {
-        return $this->isActive;
-    }
-
-    public function setIsActive(bool $isActive): static
-    {
-        $this->isActive = $isActive;
-
-        return $this;
-    }
-
     /**
      * @return Collection<int, SizeGuideMeasurement>
      */
@@ -136,5 +115,4 @@ class MeasurementType
 
         return $this;
     }
-
 }

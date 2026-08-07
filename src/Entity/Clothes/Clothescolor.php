@@ -20,7 +20,6 @@ class Clothescolor
     #[ORM\Column]
     private ?int $id = null;
 
-    
     /**
      * @var Collection<int, ClothesVariant>
      */
@@ -46,7 +45,7 @@ class Clothescolor
 
         foreach ($this->variants as $variant) {
             $clothe = $variant->getClothes();
-            if ($clothe instanceof Clothes && $clothe->getId() !== null) {
+            if ($clothe instanceof Clothes && null !== $clothe->getId()) {
                 $clothes[$clothe->getId()] = $clothe;
             }
         }

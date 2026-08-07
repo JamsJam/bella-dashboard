@@ -25,7 +25,7 @@ final readonly class OrderReferenceGenerator
                 $this->randomPart(),
             );
 
-            if ($this->entityManager->getRepository(Orders::class)->findOneBy(['orderReference' => $reference]) === null) {
+            if (null === $this->entityManager->getRepository(Orders::class)->findOneBy(['orderReference' => $reference])) {
                 return $reference;
             }
         }

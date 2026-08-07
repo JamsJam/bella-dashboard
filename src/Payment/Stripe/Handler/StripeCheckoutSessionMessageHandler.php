@@ -10,8 +10,8 @@ use App\Payment\Stripe\Client\StripeClientFactory;
 use App\Payment\Stripe\Config\StripeConfig;
 use App\Payment\Stripe\Webhook\Message\StripeCheckoutSessionMessage;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\DependencyInjection\Attribute\Target;
+use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\Workflow\WorkflowInterface;
 
 #[AsMessageHandler]
@@ -44,23 +44,23 @@ final readonly class StripeCheckoutSessionMessageHandler
 
     private function handleCompleted(Orders $order, StripeCheckoutSessionMessage $message): void
     {
-        if ($message->paymentStatus !== 'paid') {
+        if ('paid' !== $message->paymentStatus) {
             return;
         }
 
-        if ($order->getStatus() !== Orders::STATUS_PENDING_PAYMENT) {
+        if (Orders::STATUS_PENDING_PAYMENT !== $order->getStatus()) {
             return;
         }
 
         $invoiceUrl = null;
-        if ($message->invoiceId !== null) {
+        if (null !== $message->invoiceId) {
             $invoice = $this->stripeClientFactory->create()->invoices->retrieve($message->invoiceId);
             $invoiceUrl = is_string($invoice->hosted_invoice_url) ? $invoice->hosted_invoice_url : null;
         }
 
         $processedOrder = $this->entityManager->wrapInTransaction(function () use ($order, $message, $invoiceUrl): ?Orders {
             $lockedOrder = $this->entityManager->getRepository(Orders::class)->findForUpdate((int) $order->getId());
-            if (!$lockedOrder instanceof Orders || $lockedOrder->getStatus() !== Orders::STATUS_PENDING_PAYMENT) {
+            if (!$lockedOrder instanceof Orders || Orders::STATUS_PENDING_PAYMENT !== $lockedOrder->getStatus()) {
                 return null;
             }
 
@@ -88,7 +88,7 @@ final readonly class StripeCheckoutSessionMessageHandler
         }
 
         $customerEmail = $processedOrder->getCustomer()?->getEmail();
-        if ($customerEmail !== null) {
+        if (null !== $customerEmail) {
             $this->emailNotificationService->sendTemplatedEmail(
                 to: $customerEmail,
                 subject: sprintf('Paiement confirmé pour votre commande %s', (string) $processedOrder->getOrderReference()),
@@ -118,7 +118,7 @@ final readonly class StripeCheckoutSessionMessageHandler
         }
 
         $customerEmail = $order->getCustomer()?->getEmail();
-        if ($customerEmail === null) {
+        if (null === $customerEmail) {
             return;
         }
 

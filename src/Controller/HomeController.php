@@ -28,6 +28,7 @@ final class HomeController extends AbstractController
         Connection $connection,
     ): Response {
         $route = $request->attributes->get('_route');
+
         return $this->render('home/index.html.twig', [
             'breadscrumbs' => $breadscrumbs->resolve($route),
             'summary' => $ordersRepository->getDashboardSummary(new \DateTimeImmutable('first day of this month 00:00:00')),

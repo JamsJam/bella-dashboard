@@ -4,27 +4,27 @@ namespace App\Application\Clothes\Services;
 
 use App\Application\Clothes\Provider\ClotheProvider\ClotheProvider;
 use App\Entity\Clothes\Clothes;
-use App\Entity\Clothes\ClothesVariant;
 use App\Entity\Clothes\Clothessize;
+use App\Entity\Clothes\ClothesVariant;
+use App\Enum\ClotheStatus;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\String\Slugger\AsciiSlugger;
-use App\Enum\ClotheStatus;
 
-final class ClotheService 
+final class ClotheService
 {
     public const AVAILABLE_SIZES = ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL', '4XL'];
 
     public function __construct(
         private ClotheProvider $clotheProvider,
         private EntityManagerInterface $entityManager,
-    ){}
+    ) {
+    }
 
-    public function getDistinctClothe(?string $sortBy = 'id', ?string $direction = 'asc', ?string $query = '',?int $limit = null, ?int $offset = null) : array
+    public function getDistinctClothe(?string $sortBy = 'id', ?string $direction = 'asc', ?string $query = '', ?int $limit = null, ?int $offset = null): array
     {
-
         $clothes = $this->clotheProvider->searchDistinctClothes($sortBy, $direction, $query, $limit, $offset) ?? [];
         // $clothes = [];
-        
+
         return $clothes;
     }
 
@@ -52,24 +52,24 @@ final class ClotheService
         ) ?? [];
     }
 
-    public function getBestselledClothe(?int $limit = null) : array
+    public function getBestselledClothe(?int $limit = null): array
     {
         return $this->clotheProvider->getBestSellerEntities($limit) ?? [];
     }
 
-    public function getClotheInCarousel(?int $limit = null) : array
+    public function getClotheInCarousel(?int $limit = null): array
     {
-
         $clothes = $this->clotheProvider->getClotheInCarousel($limit) ?? [];
+
         // $clothes = [];
         return $clothes;
     }
 
-    public function getTotalItems() : array
+    public function getTotalItems(): array
     {
-
         // $totalItems = $this->clotheProvider->gettotalItems() ?? [];
         $clothes = [];
+
         // return $totalItems;
         return $clothes;
     }
@@ -89,7 +89,7 @@ final class ClotheService
         $clothe = $sourceVariant instanceof ClothesVariant ? $sourceVariant->getClothes() : null;
         $colorId = $sourceVariant instanceof ClothesVariant ? $sourceVariant->getColor()?->getId() : null;
 
-        if (!$clothe instanceof Clothes || $colorId === null) {
+        if (!$clothe instanceof Clothes || null === $colorId) {
             return [];
         }
 
@@ -99,17 +99,12 @@ final class ClotheService
         ));
     }
 
-    public function getSameCollectionClothes(string $slug, int $limit = 8): array
-    {
-        return $this->clotheProvider->getSameCollectionClothes($slug, $limit);
-    }
-
     public function syncClotheSizes(string $slug, array $selectedSizes, array $stocks = [], bool $confirmDelete = false): void
     {
         $selectedSizes = array_values(array_unique(array_intersect(self::AVAILABLE_SIZES, $selectedSizes)));
         $variants = $this->getClotheSizeVariantsBySlug($slug);
 
-        if ($variants === []) {
+        if ([] === $variants) {
             throw new \InvalidArgumentException('Clothe not found.');
         }
 
@@ -124,7 +119,7 @@ final class ClotheService
 
         foreach ($selectedSizes as $sizeName) {
             $stock = filter_var($stocks[$sizeName] ?? 0, FILTER_VALIDATE_INT);
-            if ($stock === false || $stock < 0) {
+            if (false === $stock || $stock < 0) {
                 throw new \InvalidArgumentException(sprintf('Le stock de la taille %s doit etre un entier positif ou nul.', $sizeName));
             }
 
@@ -132,13 +127,13 @@ final class ClotheService
         }
 
         foreach ($variants as $variant) {
-            if ($variant instanceof ClothesVariant && $variant->getSize()?->getName() !== null) {
+            if ($variant instanceof ClothesVariant && null !== $variant->getSize()?->getName()) {
                 $variantsBySize[$variant->getSize()->getName()] = $variant;
             }
         }
 
         $sizesToDelete = array_diff(array_keys($variantsBySize), $selectedSizes);
-        if ($sizesToDelete !== [] && !$confirmDelete) {
+        if ([] !== $sizesToDelete && !$confirmDelete) {
             throw new \RuntimeException('delete_confirmation_required');
         }
 
@@ -172,8 +167,7 @@ final class ClotheService
         ClothesVariant $sourceVariant,
         string $sizeName,
         int $stock,
-    ): ClothesVariant
-    {
+    ): ClothesVariant {
         $size = $this->findOrCreateSize($sizeName);
         $variantName = trim(sprintf(
             '%s %s %s',

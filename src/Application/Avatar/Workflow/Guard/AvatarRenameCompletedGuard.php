@@ -37,7 +37,7 @@ final class AvatarRenameCompletedGuard
         }
 
         $checksum = hash_file('sha256', $context->destinationPath);
-        if ($checksum === false || !hash_equals($context->expectedChecksum, $checksum)) {
+        if (false === $checksum || !hash_equals($context->expectedChecksum, $checksum)) {
             $this->block($event, 'Le checksum du fichier renommé est incorrect.');
 
             return;

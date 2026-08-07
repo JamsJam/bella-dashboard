@@ -23,18 +23,21 @@ final class ReviewModerationController extends AbstractController
         $decision = (string) $request->request->get('decision');
         if (!in_array($decision, ['accepted', 'rejected'], true)) {
             $this->addFlash('error', 'La décision doit être acceptée ou refusée.');
+
             return $this->redirectToRoute('app_reviews_show', ['id' => $id]);
         }
-        if (!$this->isCsrfTokenValid('review_action_'.$id, (string) $request->request->get('_csrf_token'))) {
+        if (!$this->isCsrfTokenValid('review_action_' . $id, (string) $request->request->get('_csrf_token'))) {
             throw $this->createAccessDeniedException('Jeton CSRF invalide.');
         }
         try {
-            $workflow->moderate($review, $decision === 'accepted');
-        } catch (\InvalidArgumentException|\DomainException $exception) {
+            $workflow->moderate($review, 'accepted' === $decision);
+        } catch (\InvalidArgumentException | \DomainException $exception) {
             $this->addFlash('error', $exception->getMessage());
+
             return $this->redirectToRoute('app_reviews_show', ['id' => $id]);
         }
-        $this->addFlash('success', $decision === 'accepted' ? 'L’avis a été accepté.' : 'L’avis a été refusé.');
+        $this->addFlash('success', 'accepted' === $decision ? 'L’avis a été accepté.' : 'L’avis a été refusé.');
+
         return $this->redirectToRoute('app_reviews_show', ['id' => $id]);
     }
 
@@ -46,18 +49,20 @@ final class ReviewModerationController extends AbstractController
         if (!$review instanceof Review) {
             throw $this->createNotFoundException('Avis introuvable.');
         }
-        if (!$this->isCsrfTokenValid('review_action_'.$id, (string) $request->request->get('_csrf_token'))) {
+        if (!$this->isCsrfTokenValid('review_action_' . $id, (string) $request->request->get('_csrf_token'))) {
             throw $this->createAccessDeniedException('Jeton CSRF invalide.');
         }
 
         try {
             $workflow->reply($review, $request->request->getString('reply'));
-        } catch (\InvalidArgumentException|\DomainException $exception) {
+        } catch (\InvalidArgumentException | \DomainException $exception) {
             $this->addFlash('error', $exception->getMessage());
+
             return $this->redirectToRoute('app_reviews_show', ['id' => $id]);
         }
 
         $this->addFlash('success', 'La réponse a été enregistrée sans modifier le statut.');
+
         return $this->redirectToRoute('app_reviews_show', ['id' => $id]);
     }
 }

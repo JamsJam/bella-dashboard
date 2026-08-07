@@ -34,7 +34,7 @@ class BodyRepository extends ServiceEntityRepository implements AvatarPartModelI
             ->setParameter('morphotype', $morphotype)
             ->orderBy('body.name', 'ASC');
 
-        if ($clothes !== null) {
+        if (null !== $clothes) {
             $queryBuilder
                 ->distinct()
                 ->innerJoin('body.clothesVariants', 'clothesVariant');
@@ -69,9 +69,8 @@ class BodyRepository extends ServiceEntityRepository implements AvatarPartModelI
     //    }
 
     /**
-     *  @return Body[] Returns an array of Body objects
-     *
-     */      
+     * @return Body[] Returns an array of Body objects
+     */
     public function findAllByFilters(
         ?int $skincolor = null,
         ?int $morphologie = null,
@@ -81,32 +80,30 @@ class BodyRepository extends ServiceEntityRepository implements AvatarPartModelI
     ): array {
         $qb = $this->createQueryBuilder('b');
 
-        if ($skincolor !== 0 && $skincolor !== null) {
+        if (0 !== $skincolor && null !== $skincolor) {
             $qb->leftJoin('b.skincolor', 'sc')
                 ->andWhere('sc.id = :skincolor')
                 ->setParameter('skincolor', $skincolor);
         }
 
-        if ($morphotype !== 0 && $morphotype !== null) {
+        if (0 !== $morphotype && null !== $morphotype) {
             $qb->leftJoin('b.morphotype', 'mt')
                 ->andWhere('mt.id = :morphotype')
                 ->setParameter('morphotype', $morphotype);
         }
 
-
-        if ($morphologie !== 0 && $morphologie !== null) {
+        if (0 !== $morphologie && null !== $morphologie) {
             // Si le morphotype n'est pas spécifié, on doit faire une jointure pour accéder à la morphologie
-            if ($morphotype === null || $morphotype === 0) {
+            if (null === $morphotype || 0 === $morphotype) {
                 $qb->leftJoin('b.morphotype', 'mt');
             }
 
             $qb->leftJoin('mt.morphologie', 'ml')
                 ->andWhere('ml.id = :morphologie')
                 ->setParameter('morphologie', $morphologie);
-
         }
 
-        if ($clothes !== 0 && $clothes !== null && $clothes !== '' && $clothes !== '0') {
+        if (0 !== $clothes && null !== $clothes && '' !== $clothes && '0' !== $clothes) {
             $qb->distinct();
             $qb->leftJoin('b.clothes', 'cl');
 
@@ -135,8 +132,6 @@ class BodyRepository extends ServiceEntityRepository implements AvatarPartModelI
         //     $qb->andWhere($or);
         // }
 
-
-
         return
         $qb
             ->getQuery()
@@ -144,9 +139,6 @@ class BodyRepository extends ServiceEntityRepository implements AvatarPartModelI
         ;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function findPartByFilters(array $filters = []): array
     {
         return $this->findAllByFilters(
@@ -158,9 +150,6 @@ class BodyRepository extends ServiceEntityRepository implements AvatarPartModelI
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function findAllPart(): array
     {
         return $this->findAll();

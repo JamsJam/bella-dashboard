@@ -1,9 +1,9 @@
 <div class="modal-backdrop" {{ stimulus_controller('collection-form') }}>
     <dialog class="modal" open aria-labelledby="clothe-variant-edit-modal-title">
-        <form method="post" action="{{ action }}" data-turbo="false">
+        <form method="post" action="{{ action }}">
             <header class="modal__header">
                 <h2 id="clothe-variant-edit-modal-title">
-                    {{ isGroup|default(false) ? 'Modifier la couleur et les informations' : 'Modifier la taille' }}
+                    {{ isGroup|default(false) ? 'Modifier la couleur' : 'Modifier la taille' }}
                 </h2>
                 <button type="button" class="modal__close" onclick="this.closest('.modal-backdrop').remove()" aria-label="Fermer">
                     &times;
@@ -14,25 +14,18 @@
                 <input type="hidden" name="_csrf_token" value="{{ csrfToken }}">
 
                 {% if isGroup|default(false) %}
-                    <div class="collection-form__grid">
-                        <label class="collection-form__field">
-                            <span>Couleur</span>
-                            <select name="color" data-action="change->collection-form#toggleNewColorField" required>
-                                <option value="">Selectionner une couleur</option>
-                                {% for color in colors %}
-                                    <option value="{{ color.id }}" {% if color.id == variant.color.id|default(null) %}selected{% endif %}>
-                                        {{ color.name }}
-                                    </option>
-                                {% endfor %}
-                                <option value="__new__">Créer une nouvelle couleur</option>
-                            </select>
-                        </label>
-
-                        <label class="collection-form__field">
-                            <span>Prix</span>
-                            <input type="number" name="price" min="1" step="1" value="{{ variant.clothes.price }}" required>
-                        </label>
-                    </div>
+                    <label class="collection-form__field">
+                        <span>Couleur</span>
+                        <select name="color" data-action="change->collection-form#toggleNewColorField" required>
+                            <option value="">Selectionner une couleur</option>
+                            {% for color in colors %}
+                                <option value="{{ color.id }}" {% if color.id == variant.color.id|default(null) %}selected{% endif %}>
+                                    {{ color.name }}
+                                </option>
+                            {% endfor %}
+                            <option value="__new__">Créer une nouvelle couleur</option>
+                        </select>
+                    </label>
 
                     <div class="collection-form__grid">
                         <label class="collection-form__field" data-collection-form-new-color-name hidden>
@@ -46,15 +39,6 @@
                         </label>
                     </div>
 
-                    <label class="collection-form__field">
-                        <span>Description</span>
-                        <textarea name="description" rows="5">{{ variant.description }}</textarea>
-                    </label>
-
-                    <label class="collection-form__field">
-                        <span>Description SEO</span>
-                        <textarea name="metadescription" rows="3" maxlength="200">{{ variant.metadescription }}</textarea>
-                    </label>
                 {% else %}
                     <div class="collection-form__grid">
                         <label class="collection-form__field">

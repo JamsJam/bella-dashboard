@@ -4,11 +4,13 @@
             <form
                 method="post"
                 action="{{ action }}"
-                data-turbo="false"
-                {{ stimulus_controller('clothe-edit-modal') }}
+                data-turbo-frame="_top"
             >
                 <header class="modal__header">
-                    <h2 id="clothe-edit-modal-title">Modifier le vetement</h2>
+                    <div>
+                        <h2 id="clothe-edit-modal-title">Modifier les informations du vêtement</h2>
+                        <p class="modal__subtitle">Ces informations appartiennent au vêtement et sont communes à ses variants.</p>
+                    </div>
                     <button type="button" class="modal__close" onclick="this.closest('.modal-backdrop').remove()" aria-label="Fermer">
                         &times;
                     </button>
@@ -17,32 +19,27 @@
                 <div class="modal__body">
                     <input type="hidden" name="_csrf_token" value="{{ csrf_token('clothe_edit_' ~ slug) }}">
 
-                    {# <label class="category-form__field">
-                        <span>Categorie</span>
-                        <select name="category" required {{ stimulus_target('clothe-edit-modal', 'category') }} {{ stimulus_action('clothe-edit-modal', 'filterCollections', 'change') }}>
-                            {% for category in categories %}
-                                <option value="{{ category.id }}" {% if category.id == clothe.collection.category.id|default(null) %}selected{% endif %}>
-                                    {{ category.name }}
-                                </option>
-                            {% endfor %}
-                        </select>
-                    </label> #}
-
                     <label class="category-form__field">
-                        <span>Nom du vetement</span>
-                        <input type="text" name="name" value="{{ clothe.name }}" required maxlength="70">
+                        <span>Nom du vêtement</span>
+                        <input
+                            type="text"
+                            name="name"
+                            value="{{ clothe.name }}"
+                            required
+                            maxlength="70"
+                            autocomplete="off"
+                        >
                     </label>
 
                     <label class="category-form__field">
                         <span>Collection</span>
-                        <select name="collection" required {{ stimulus_target('clothe-edit-modal', 'collection') }}>
+                        <select name="collection" required>
                             {% for collection in collections %}
                                 <option
                                     value="{{ collection.id }}"
-                                    data-category-id="{{ collection.category.id }}"
                                     {% if collection.id == clothe.collection.id|default(null) %}selected{% endif %}
                                 >
-                                    {{ collection.name }}
+                                    {{ collection.category.name }} — {{ collection.name }}
                                 </option>
                             {% endfor %}
                         </select>
@@ -50,7 +47,15 @@
 
                     <label class="category-form__field">
                         <span>Prix TTC en centimes</span>
-                        <input type="number" name="price" min="1" step="1" value="{{ clothe.price }}" required>
+                        <input
+                            type="number"
+                            name="price"
+                            min="1"
+                            step="1"
+                            value="{{ clothe.price }}"
+                            inputmode="numeric"
+                            required
+                        >
                     </label>
                 </div>
 

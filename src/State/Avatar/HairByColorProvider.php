@@ -25,7 +25,7 @@ final readonly class HairByColorProvider implements ProviderInterface
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): HairByColorList
     {
         $hairColorId = filter_var($uriVariables['id'] ?? null, FILTER_VALIDATE_INT);
-        if ($hairColorId === false || $hairColorId <= 0) {
+        if (false === $hairColorId || $hairColorId <= 0) {
             throw new NotFoundHttpException('Couleur de cheveux introuvable.');
         }
 
@@ -37,13 +37,13 @@ final readonly class HairByColorProvider implements ProviderInterface
         $hairs = [];
         foreach ($this->hairsRepository->findBy(['color' => $hairColor], ['name' => 'ASC']) as $hair) {
             $id = $hair->getId();
-            if ($id === null) {
+            if (null === $id) {
                 continue;
             }
 
             $images = [];
             foreach ($hair->getImages() as $image) {
-                if (is_string($image) && $image !== '') {
+                if (is_string($image) && '' !== $image) {
                     $images[] = $this->absoluteUrl($image);
                 }
             }
@@ -63,15 +63,15 @@ final readonly class HairByColorProvider implements ProviderInterface
 
     private function absoluteUrl(string $path): string
     {
-        if (filter_var($path, FILTER_VALIDATE_URL) !== false) {
+        if (false !== filter_var($path, FILTER_VALIDATE_URL)) {
             return $path;
         }
 
         $request = $this->requestStack->getCurrentRequest();
-        if ($request === null) {
+        if (null === $request) {
             return $path;
         }
 
-        return $request->getSchemeAndHttpHost().'/'.ltrim($path, '/');
+        return $request->getSchemeAndHttpHost() . '/' . ltrim($path, '/');
     }
 }

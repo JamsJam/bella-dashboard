@@ -44,20 +44,20 @@ final class ReviewFixtures extends AbstractBaseFixtures implements DependentFixt
 
         for ($orderIndex = 0; $orderIndex < self::ORDER_COUNT; ++$orderIndex) {
             /** @var Orders $order */
-            $order = $this->getReference(FixtureReferences::ORDERS.$orderIndex, Orders::class);
+            $order = $this->getReference(FixtureReferences::ORDERS . $orderIndex, Orders::class);
 
-            if ($order->getOrderStatus() !== OrderStatus::Delivered || !$order->isPaid()) {
+            if (OrderStatus::Delivered !== $order->getOrderStatus() || !$order->isPaid()) {
                 continue;
             }
 
             // Seules quatre commandes livrées sur cinq reçoivent des avis.
-            if ($deliveredOrderIndex++ % 5 === 0) {
+            if (0 === $deliveredOrderIndex++ % 5) {
                 continue;
             }
 
             $customer = $order->getCustomer();
             $deliveredAt = $order->getDeliveredAt();
-            if ($customer === null || $deliveredAt === null) {
+            if (null === $customer || null === $deliveredAt) {
                 continue;
             }
 
@@ -65,13 +65,13 @@ final class ReviewFixtures extends AbstractBaseFixtures implements DependentFixt
             foreach ($order->getCart()->getItems() as $item) {
                 $variant = $item->getVariant();
                 $variantId = $variant?->getId();
-                if ($variant === null || $variantId === null || isset($seenVariants[$variantId])) {
+                if (null === $variant || null === $variantId || isset($seenVariants[$variantId])) {
                     continue;
                 }
                 $seenVariants[$variantId] = true;
 
                 $requestedAt = $deliveredAt->modify('+2 hours');
-                $submittedAt = $requestedAt->modify('+'.(1 + ($reviewIndex % 18)).' hours');
+                $submittedAt = $requestedAt->modify('+' . (1 + ($reviewIndex % 18)) . ' hours');
                 $review = new Review($variant, $order, $customer, $requestedAt);
                 $review->submit(
                     1 + (($reviewIndex * 7) % 5),
@@ -81,19 +81,19 @@ final class ReviewFixtures extends AbstractBaseFixtures implements DependentFixt
 
                 // Répartition stable : pending, accepted, rejected.
                 $moderation = $reviewIndex % 3;
-                if ($moderation !== 0) {
+                if (0 !== $moderation) {
                     // La présence d'une réponse est indépendante de la décision de modération.
-                    $reply = $reviewIndex % 2 === 0
+                    $reply = 0 === $reviewIndex % 2
                         ? self::REPLIES[$reviewIndex % count(self::REPLIES)]
                         : null;
-                    $moderatedAt = $submittedAt->modify('+'.(2 + ($reviewIndex % 12)).' hours');
+                    $moderatedAt = $submittedAt->modify('+' . (2 + ($reviewIndex % 12)) . ' hours');
 
-                    if ($moderation === 1) {
+                    if (1 === $moderation) {
                         $review->accept($moderatedAt);
                     } else {
                         $review->reject($moderatedAt);
                     }
-                    if ($reply !== null && $reply !== '') {
+                    if (null !== $reply && '' !== $reply) {
                         $review->updateReply($reply, $moderatedAt);
                     }
                 }

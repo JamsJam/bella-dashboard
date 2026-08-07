@@ -59,7 +59,7 @@ class SizeGuide
                 continue;
             }
 
-            if ($clothe->getId() !== null) {
+            if (null !== $clothe->getId()) {
                 $clothes[$clothe->getId()] = $clothe;
                 continue;
             }

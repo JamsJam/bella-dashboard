@@ -54,7 +54,7 @@ final readonly class ThematicOpenApiFactory implements OpenApiFactoryInterface
 
     private function describeOperation(?Operation $operation, string $tag, string $method, string $path): ?Operation
     {
-        if ($operation === null) {
+        if (null === $operation) {
             return null;
         }
 
@@ -83,7 +83,7 @@ final readonly class ThematicOpenApiFactory implements OpenApiFactoryInterface
         }
 
         foreach ($parameters as $index => $parameter) {
-            if (!$parameter instanceof Parameter || $parameter->getIn() !== 'path') {
+            if (!$parameter instanceof Parameter || 'path' !== $parameter->getIn()) {
                 continue;
             }
 
@@ -123,7 +123,7 @@ final readonly class ThematicOpenApiFactory implements OpenApiFactoryInterface
      */
     private function operationDescriptions(string $method, string $path): array
     {
-        return match ($method.' '.$path) {
+        return match ($method . ' ' . $path) {
             'GET /api/category/{category}' => [
                 'Lister les variantes d’une catégorie',
                 'Retourne les variantes disponibles pour la catégorie identifiée par son slug.',

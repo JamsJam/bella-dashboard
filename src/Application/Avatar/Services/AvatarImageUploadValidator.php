@@ -17,12 +17,12 @@ final class AvatarImageUploadValidator
             return 'Invalid file identifier';
         }
 
-        if ($request->originalName === '' || !str_ends_with(strtolower($request->originalName), '.png')) {
+        if ('' === $request->originalName || !str_ends_with(strtolower($request->originalName), '.png')) {
             return 'Only PNG files are allowed';
         }
 
         if (
-            $request->relativePath === ''
+            '' === $request->relativePath
             || str_contains($request->relativePath, '..')
             || str_starts_with($request->relativePath, '/')
             || str_contains($request->relativePath, '\\')
@@ -38,7 +38,7 @@ final class AvatarImageUploadValidator
             return 'Invalid file size';
         }
 
-        if ($request->mimeType !== '' && !in_array($request->mimeType, self::ALLOWED_MIME_TYPES, true)) {
+        if ('' !== $request->mimeType && !in_array($request->mimeType, self::ALLOWED_MIME_TYPES, true)) {
             return 'Invalid MIME type';
         }
 
@@ -47,17 +47,17 @@ final class AvatarImageUploadValidator
 
     public function isValidPngFile(string $path): bool
     {
-        if (!is_file($path) || strtolower(pathinfo($path, PATHINFO_EXTENSION)) !== 'png') {
+        if (!is_file($path) || 'png' !== strtolower(pathinfo($path, PATHINFO_EXTENSION))) {
             return false;
         }
 
         $signature = file_get_contents($path, false, null, 0, 8);
-        if ($signature !== "\x89PNG\r\n\x1A\n") {
+        if ("\x89PNG\r\n\x1A\n" !== $signature) {
             return false;
         }
 
         $mimeType = function_exists('finfo_open') ? $this->detectMimeType($path) : null;
-        if ($mimeType !== null && $mimeType !== 'image/png') {
+        if (null !== $mimeType && 'image/png' !== $mimeType) {
             return false;
         }
 
@@ -69,7 +69,7 @@ final class AvatarImageUploadValidator
     private function detectMimeType(string $path): ?string
     {
         $fileInfo = finfo_open(FILEINFO_MIME_TYPE);
-        if ($fileInfo === false) {
+        if (false === $fileInfo) {
             return null;
         }
 

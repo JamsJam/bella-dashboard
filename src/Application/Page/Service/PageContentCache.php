@@ -32,7 +32,7 @@ final readonly class PageContentCache
             $this->cache->save($item);
         }
 
-        $defaultPath = dirname($path, 2).'/defaults/'.basename($path);
+        $defaultPath = dirname($path, 2) . '/defaults/' . basename($path);
         if (!is_file($defaultPath)) {
             return $data;
         }
@@ -50,6 +50,6 @@ final readonly class PageContentCache
 
     private function key(string $page): string
     {
-        return self::CACHE_PREFIX.$page;
+        return self::CACHE_PREFIX . $page;
     }
 }

@@ -2,8 +2,8 @@
 
 namespace App\Application\Avatar\Workflow\Guard;
 
-use App\Application\Avatar\Workflow\AvatarRenameValidationContext;
 use App\Application\Avatar\Workflow\AvatarRenameGuardContextStore;
+use App\Application\Avatar\Workflow\AvatarRenameValidationContext;
 use App\Entity\AvatarTemp;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Component\Workflow\Event\GuardEvent;

@@ -1,0 +1,51 @@
+<fieldset class="config-group">
+    <legend>Catalogue</legend>
+
+    <div class="config-field">
+        {{ form_label(form.bestsellerCount) }}
+        {{ form_widget(form.bestsellerCount) }}
+        {{ form_help(form.bestsellerCount) }}
+        {{ form_errors(form.bestsellerCount) }}
+    </div>
+
+    <div class="config-field">
+        {{ form_label(form.featuredCount) }}
+        {{ form_widget(form.featuredCount) }}
+        {{ form_help(form.featuredCount) }}
+        {{ form_errors(form.featuredCount) }}
+    </div>
+</fieldset>
+
+{% set prototypeHtml %}
+    {% include 'config/_collection_entry.html.twig' with { entry: form.sizeGuideItems.vars.prototype } only %}
+{% endset %}
+<fieldset class="config-group">
+    <legend>Guide des tailles</legend>
+    <p class="config-group__description">
+        Gérez les mesures proposées lors de la création d’un guide. Un item retiré reste conservé dans les anciens guides.
+    </p>
+
+    <div
+        class="config-collection"
+        {{ stimulus_target('config-image-upload', 'collection') }}
+        data-config-collection
+        data-prototype="{{ prototypeHtml|e('html_attr') }}"
+        data-index="{{ form.sizeGuideItems|length }}"
+    >
+        <div class="config-collection__header">
+            {{ form_label(form.sizeGuideItems) }}
+            <button
+                type="button"
+                class="config-collection__add"
+                {{ stimulus_action('config-image-upload', 'addCollectionItem', 'click') }}
+            >Ajouter un item</button>
+        </div>
+
+        {{ form_errors(form.sizeGuideItems) }}
+        <div class="config-collection__items" {{ stimulus_target('config-image-upload', 'collectionItems') }}>
+            {% for item in form.sizeGuideItems %}
+                {% include 'config/_collection_entry.html.twig' with { entry: item } only %}
+            {% endfor %}
+        </div>
+    </div>
+</fieldset>

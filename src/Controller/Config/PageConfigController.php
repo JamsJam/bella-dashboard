@@ -2,16 +2,16 @@
 
 namespace App\Controller\Config;
 
-use App\Application\Config\Dto\PageConfigDto;
 use App\Application\Config\Dto\Page\Categories\CategoriesConfigDto;
 use App\Application\Config\Dto\Page\Homepage\HomepageConfigDto;
 use App\Application\Config\Dto\Page\Homepage\Item\ManualItemDto;
 use App\Application\Config\Dto\Page\Homepage\Item\ReturnStepDto;
-use App\Application\Config\Form\PageConfigType;
+use App\Application\Config\Dto\PageConfigDto;
 use App\Application\Config\Form\Page\Categories\CategoriesConfigType;
 use App\Application\Config\Form\Page\Homepage\HomepageConfigType;
-use App\Application\Config\Provider\HomepageConfigProvider;
+use App\Application\Config\Form\PageConfigType;
 use App\Application\Config\Provider\CategoriesConfigProvider;
+use App\Application\Config\Provider\HomepageConfigProvider;
 use App\Application\Config\Service\HomepageImageUploader;
 use App\Application\Config\Service\PageConfigService;
 use App\Notifier\Services\FlashService;
@@ -47,7 +47,7 @@ final class PageConfigController extends AbstractConfigController
         FlashService $flashService,
         ?string $slug = 'home',
     ): Response {
-        if ($slug === 'homepage') {
+        if ('homepage' === $slug) {
             return $this->homepage(
                 $request,
                 $breadscrumbs,
@@ -57,7 +57,7 @@ final class PageConfigController extends AbstractConfigController
             );
         }
 
-        if ($slug === 'categories') {
+        if ('categories' === $slug) {
             return $this->categories(
                 $request,
                 $breadscrumbs,

@@ -17,7 +17,7 @@ final readonly class SignupConfirmationMailer
         $email = $customer->getEmail();
         $code = $customer->getSignupVerificationCode();
 
-        if ($email === null || $code === null) {
+        if (null === $email || null === $code) {
             throw new \InvalidArgumentException('Customer email and signup confirmation code are required.');
         }
 

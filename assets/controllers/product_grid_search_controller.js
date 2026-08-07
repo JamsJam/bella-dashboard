@@ -195,16 +195,24 @@ export default class extends Controller {
     }
 
     renderStatusBadge(card) {
-        if (card.publicationStatus === 'publishable') {
-            return '<span class="product-grid-card__status product-grid-card__status--publishable">Publiable</span>';
+        const statusLabels = {
+            draft: 'Brouillon',
+            publishable: 'Publiable',
+            scheduled: 'Planifié',
+            online: 'En ligne',
+            offline: 'Hors ligne',
+            archived: 'Archivé',
+        };
+
+        if (card.publicationStatus && statusLabels[card.publicationStatus]) {
+            const status = this.escapeHtml(card.publicationStatus);
+            return `<span class="product-grid-card__status-list"><span class="badge badge--${status}">${statusLabels[card.publicationStatus]}</span></span>`;
         }
 
-        if (card.isOnline === true) {
-            return '<span class="product-grid-card__status product-grid-card__status--online">En ligne</span>';
-        }
-
-        if (card.isOnline === false) {
-            return '<span class="product-grid-card__status product-grid-card__status--offline">Hors ligne</span>';
+        if (card.isOnline === true || card.isOnline === false) {
+            const status = card.isOnline ? 'online' : 'offline';
+            const label = card.isOnline ? 'En ligne' : 'Hors ligne';
+            return `<span class="product-grid-card__status-list"><span class="badge badge--${status}">${label}</span></span>`;
         }
 
         return '';

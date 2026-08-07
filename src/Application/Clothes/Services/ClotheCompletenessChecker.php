@@ -12,22 +12,22 @@ final readonly class ClotheCompletenessChecker
     {
         $clothe = $variant->getClothes();
         $errors = [];
-        if (!$clothe instanceof Clothes || trim((string) $clothe->getName()) === '') {
+        if (!$clothe instanceof Clothes || '' === trim((string) $clothe->getName())) {
             $errors[] = 'Le nom du vêtement est obligatoire.';
         }
         if (!$clothe instanceof Clothes || ($clothe->getPrice() ?? 0) <= 0) {
             $errors[] = 'Le prix doit être supérieur à zéro.';
         }
-        if (!$clothe instanceof Clothes || $clothe->getCollection() === null) {
+        if (!$clothe instanceof Clothes || null === $clothe->getCollection()) {
             $errors[] = 'La collection est obligatoire.';
         }
-        if ($variant->getColor() === null) {
+        if (null === $variant->getColor()) {
             $errors[] = 'La couleur est obligatoire.';
         }
-        if ($variant->getSize() === null) {
+        if (null === $variant->getSize()) {
             $errors[] = 'La taille est obligatoire.';
         }
-        if (array_values(array_filter($variant->getImages() ?? [])) === []) {
+        if ([] === array_values(array_filter($variant->getImages() ?? []))) {
             $errors[] = 'Ajoutez au moins une image.';
         }
 
@@ -38,13 +38,13 @@ final readonly class ClotheCompletenessChecker
     {
         $errors = [];
 
-        if (trim((string) $clothe->getName()) === '') {
+        if ('' === trim((string) $clothe->getName())) {
             $errors[] = 'Le nom du vêtement est obligatoire.';
         }
         if (($clothe->getPrice() ?? 0) <= 0) {
             $errors[] = 'Le prix doit être supérieur à zéro.';
         }
-        if ($clothe->getCollection() === null) {
+        if (null === $clothe->getCollection()) {
             $errors[] = 'La collection est obligatoire.';
         }
         if ($clothe->getVariants()->isEmpty()) {
@@ -54,11 +54,11 @@ final readonly class ClotheCompletenessChecker
         /** @var array<string, list<ClothesVariant>> $groups */
         $groups = [];
         foreach ($clothe->getVariants() as $variant) {
-            if (!$variant instanceof ClothesVariant || $variant->getColor() === null) {
+            if (!$variant instanceof ClothesVariant || null === $variant->getColor()) {
                 $errors[] = 'Chaque variante doit avoir une couleur.';
                 continue;
             }
-            if ($variant->getSize() === null) {
+            if (null === $variant->getSize()) {
                 $errors[] = 'Chaque variante doit avoir une taille.';
             }
             $groups[(string) ($variant->getColor()->getId() ?? spl_object_id($variant->getColor()))][] = $variant;

@@ -34,8 +34,6 @@ class Category
     #[ORM\Column]
     private ?bool $isOnline = null;
 
-
-
     /**
      * @var Collection<int, Collections>
      */
@@ -87,7 +85,6 @@ class Category
 
         return $this;
     }
-
 
     public function getSlug(): ?string
     {

@@ -37,7 +37,7 @@ final class AvatarPartShowController extends AbstractController
                 fn (Faces $accessoryFace): array => $this->mapAvatarPart($accessoryFace),
                 $this->findAccessoryFaces($entityManager, $avatarPart),
             ),
-            'showAccessoryFacesSection' => $avatarPart instanceof Faces && $avatarPart->getAccessory() === null,
+            'showAccessoryFacesSection' => $avatarPart instanceof Faces && null === $avatarPart->getAccessory(),
         ]);
     }
 
@@ -46,7 +46,7 @@ final class AvatarPartShowController extends AbstractController
      */
     private function findAccessoryFaces(EntityManagerInterface $entityManager, object $avatarPart): array
     {
-        if (!$avatarPart instanceof Faces || $avatarPart->getAccessory() !== null) {
+        if (!$avatarPart instanceof Faces || null !== $avatarPart->getAccessory()) {
             return [];
         }
 
@@ -104,14 +104,16 @@ final class AvatarPartShowController extends AbstractController
     {
         $attributes = [];
 
-        foreach ([
+        foreach (
+            [
             'Couleur' => 'getColor',
             'Couleur de peau' => 'getSkincolor',
             'Forme' => 'getShape',
             'Morphotype' => 'getMorphotype',
             'Accessoire' => 'getAccessory',
             'Vetements' => 'getClothes',
-        ] as $label => $getter) {
+            ] as $label => $getter
+        ) {
             if (!method_exists($avatarPart, $getter)) {
                 continue;
             }
@@ -119,11 +121,11 @@ final class AvatarPartShowController extends AbstractController
             $value = $avatarPart->{$getter}();
 
             if ($value instanceof \Traversable) {
-                $names = $label === 'Vetements'
+                $names = 'Vetements' === $label
                     ? $this->resolveDistinctSlugNames($value)
                     : $this->resolveTraversableNames($value);
 
-                if ($names !== []) {
+                if ([] !== $names) {
                     $attributes[$label] = implode(', ', $names);
                 }
 
@@ -135,7 +137,7 @@ final class AvatarPartShowController extends AbstractController
             }
         }
 
-        if ($avatarPart instanceof Faces && $avatarPart->getAccessory() === null) {
+        if ($avatarPart instanceof Faces && null === $avatarPart->getAccessory()) {
             $attributes['Accessoire'] = '-none-';
         }
 
@@ -154,7 +156,7 @@ final class AvatarPartShowController extends AbstractController
 
         return [
             'name' => $name,
-            'hexa' => preg_match('/^[0-9A-F]{6}$/', $hexa) === 1 ? '#'.$hexa : null,
+            'hexa' => 1 === preg_match('/^[0-9A-F]{6}$/', $hexa) ? '#' . $hexa : null,
         ];
     }
 
@@ -181,7 +183,7 @@ final class AvatarPartShowController extends AbstractController
             }
 
             $slug = method_exists($item, 'getSlug') ? (string) $item->getSlug() : '';
-            $key = $slug !== '' ? $slug : (string) $this->resolveId($item);
+            $key = '' !== $slug ? $slug : (string) $this->resolveId($item);
             $namesBySlug[$key] ??= $this->resolveName($item);
         }
 
@@ -213,7 +215,7 @@ final class AvatarPartShowController extends AbstractController
 
         $imageUrl = $this->resolveImageUrl($avatarPart);
 
-        return $imageUrl !== '' ? [$imageUrl] : [];
+        return '' !== $imageUrl ? [$imageUrl] : [];
     }
 
     private function resolveImageSides(object $avatarPart): array
@@ -235,7 +237,7 @@ final class AvatarPartShowController extends AbstractController
 
     private function resolveName(?object $entity): string
     {
-        if ($entity === null) {
+        if (null === $entity) {
             return '';
         }
 
@@ -247,11 +249,11 @@ final class AvatarPartShowController extends AbstractController
             return (string) $entity->getSize()->getName();
         }
 
-        return '#'.(string) $this->resolveId($entity);
+        return '#' . (string) $this->resolveId($entity);
     }
 
     private function resolveId(?object $entity): ?int
     {
-        return $entity !== null && method_exists($entity, 'getId') ? $entity->getId() : null;
+        return null !== $entity && method_exists($entity, 'getId') ? $entity->getId() : null;
     }
 }

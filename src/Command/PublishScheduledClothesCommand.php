@@ -31,7 +31,7 @@ final class PublishScheduledClothesCommand extends Command
                 ? 'publier_automatiquement'
                 : 'invalider_programmation';
             $this->workflow->apply($variant, $transition);
-            $transition === 'publier_automatiquement' ? ++$published : ++$invalidated;
+            'publier_automatiquement' === $transition ? ++$published : ++$invalidated;
         }
 
         $output->writeln(sprintf('%d vêtement(s) publié(s), %d programmation(s) invalidée(s).', $published, $invalidated));

@@ -42,7 +42,7 @@ final readonly class CustomerOrdersProvider implements ProviderInterface
         $items = [];
 
         foreach ($cart?->getItems() ?? [] as $item) {
-            if (!$item instanceof CartItem || $item->getProductId() === null) {
+            if (!$item instanceof CartItem || null === $item->getProductId()) {
                 continue;
             }
 

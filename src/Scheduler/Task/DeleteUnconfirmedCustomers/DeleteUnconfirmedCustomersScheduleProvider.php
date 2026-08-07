@@ -16,20 +16,18 @@ use Symfony\Component\Scheduler\ScheduleProviderInterface;
 use Symfony\Component\Scheduler\Trigger\CallbackMessageProvider;
 use Symfony\Contracts\Cache\CacheInterface;
 
-
 #[AsSchedule('default')]
 final class DeleteUnconfirmedCustomersScheduleProvider implements ScheduleProviderInterface
 {
     public function __construct(
         private CacheInterface $cache,
         private EventDispatcherInterface $dispatcher,
-        private CustomersRepository $customersRepository
+        private CustomersRepository $customersRepository,
     ) {
     }
 
     public function getSchedule(): Schedule
     {
-
         return $this->schedule ??= (new Schedule($this->dispatcher))
             ->with(
                 RecurringMessage::every(
@@ -51,46 +49,41 @@ final class DeleteUnconfirmedCustomersScheduleProvider implements ScheduleProvid
             // ))
             ->stateful($this->cache)
             ->processOnlyLastMissedRun(true)
-            ->before(function(PreRunEvent $event) {
+            ->before(function (PreRunEvent $event) {
                 $message = $event->getMessage();
                 if (!$message instanceof DeleteUnconfirmedCustomersMessage) {
                     return;
                 }
 
-                $customers = $message->getCustomers() ;
+                $customers = $message->getCustomers();
                 if (empty($customers)) {
                     $event->ShouldCancel(true);
                 }
             })
 
-            ->onFailure(function(FailureEvent $event): void {
+            ->onFailure(function (FailureEvent $event): void {
                 $message = $event->getMessage();
                 $error = $event->getError();
 
                 // Log the error or perform any other necessary actions
-                
             })
 
-            ->after(function(PostRunEvent $event): void {
+            ->after(function (PostRunEvent $event): void {
                 $message = $event->getMessage();
                 $result = $event->getResult();
 
                 // Perform any necessary actions after the task has run
-                //logging, notifications, etc.
-
+                // logging, notifications, etc.
             })
-            
-
 
         ;
     }
 
-    public function getExpiredUnconfirmedCustomers(MessageContext $context ): iterable {
+    public function getExpiredUnconfirmedCustomers(MessageContext $context): iterable
+    {
         $customers = $this->customersRepository
             ->findExpiredUnconfirmedCustomers();
 
         yield new DeleteUnconfirmedCustomersMessage($customers);
-
-
-        }
     }
+}

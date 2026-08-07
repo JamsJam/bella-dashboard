@@ -24,7 +24,7 @@ final readonly class CollectionPublicationService
         $result = $this->collectionOnlineGuard->canPublish($collection);
 
         if (!$result->canPublish()) {
-            $this->flashService->error('La collection ne peut pas être mise en ligne : '.implode(', ', $result->getErrors()));
+            $this->flashService->error('La collection ne peut pas être mise en ligne : ' . implode(', ', $result->getErrors()));
 
             return false;
         }

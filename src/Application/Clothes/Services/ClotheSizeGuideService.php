@@ -9,22 +9,11 @@ use App\Entity\SizeGuide;
 use App\Entity\SizeGuideMeasurement;
 use App\Entity\SizeGuideSize;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\String\Slugger\AsciiSlugger;
+use Symfony\Component\Uid\Uuid;
 
 final readonly class ClotheSizeGuideService
 {
     private const UNIT = 'cm';
-
-    public const DEFAULT_MEASUREMENT_TYPES = [
-        'sleeve_length' => 'Longueur de manche',
-        'chest_width' => 'Poitrine',
-        'shoulder_width' => 'Epaules',
-        'body_length' => 'Longueur',
-        'waist_width' => 'Taille',
-        'hip_width' => 'Hanche',
-        'inseam_length' => 'Entrejambe',
-        'pants_length' => 'Longueur pantalon',
-    ];
 
     public function __construct(
         private EntityManagerInterface $entityManager,
@@ -32,43 +21,43 @@ final readonly class ClotheSizeGuideService
     }
 
     /**
-     * @param list<ClothesVariant> $variants
+     * @param list<ClothesVariant>                $variants
      * @param array<string, array<string, mixed>> $measurements
-     * @param list<string> $selectedTypeCodes
+     * @param list<string>                        $selectedTypeUuids
      */
-    public function syncGuide(Clothes $mainClothe, array $variants, array $measurements, array $selectedTypeCodes): SizeGuide
+    public function syncGuide(Clothes $mainClothe, array $variants, array $measurements, array $selectedTypeUuids): SizeGuide
     {
         $guide = $this->ensureGuideForVariants($mainClothe, $variants);
-        $selectedTypes = $this->resolveMeasurementTypes($selectedTypeCodes);
-        $selectedTypesByCode = $this->indexTypesByCode($selectedTypes);
+        $selectedTypes = $this->resolveMeasurementTypes($selectedTypeUuids);
+        $selectedTypesByUuid = $this->indexTypesByUuid($selectedTypes);
 
         foreach ($guide->getSizes() as $size) {
-            $this->removeUnselectedMeasurements($size, array_keys($selectedTypesByCode));
+            $this->removeUnselectedMeasurements($size, array_keys($selectedTypesByUuid));
         }
 
         $position = 0;
         foreach ($measurements as $sizeLabel => $valuesByType) {
             $sizeLabel = trim((string) $sizeLabel);
-            if ($sizeLabel === '') {
+            if ('' === $sizeLabel) {
                 continue;
             }
 
             $size = $this->findOrCreateSize($guide, $sizeLabel, $position++);
-            $this->removeUnselectedMeasurements($size, array_keys($selectedTypesByCode));
+            $this->removeUnselectedMeasurements($size, array_keys($selectedTypesByUuid));
 
-            foreach ($valuesByType as $typeCode => $value) {
-                $typeCode = $this->normalizeCode((string) $typeCode);
+            foreach ($valuesByType as $typeUuid => $value) {
+                $typeUuid = (string) $typeUuid;
 
-                if (!isset($selectedTypesByCode[$typeCode])) {
+                if (!isset($selectedTypesByUuid[$typeUuid])) {
                     continue;
                 }
 
                 $value = str_replace(',', '.', trim((string) $value));
-                if ($value === '' || !is_numeric($value) || (float) $value <= 0) {
+                if ('' === $value || !is_numeric($value) || (float) $value <= 0) {
                     continue;
                 }
 
-                $measurement = $this->findOrCreateMeasurement($size, $selectedTypesByCode[$typeCode]);
+                $measurement = $this->findOrCreateMeasurement($size, $selectedTypesByUuid[$typeUuid]);
                 $measurement
                     ->setValue(number_format((float) $value, 2, '.', ''))
                     ->setUnit(self::UNIT);
@@ -82,30 +71,31 @@ final readonly class ClotheSizeGuideService
     }
 
     /**
-     * @param list<ClothesVariant> $variants
-     * @param list<string> $selectedTypeCodes
+     * @param list<ClothesVariant>                $variants
+     * @param list<string>                        $selectedTypeUuids
      * @param array<string, array<string, mixed>> $submittedMeasurements
+     *
      * @return array{
      *     unit: string,
-     *     availableTypes: list<array{code: string, label: string, selected: bool}>,
-     *     types: list<array{code: string, label: string}>,
+     *     availableTypes: list<array{uuid: string, label: string, selected: bool}>,
+     *     types: list<array{uuid: string, label: string}>,
      *     rows: list<array{size: string, measurements: array<string, string|null>}>
      * }
      */
-    public function buildPreviewView(Clothes $mainClothe, array $variants, array $selectedTypeCodes, array $submittedMeasurements): array
+    public function buildPreviewView(Clothes $mainClothe, array $variants, array $selectedTypeUuids, array $submittedMeasurements): array
     {
         $allTypes = $this->getActiveMeasurementTypes();
-        $selectedTypes = $this->resolveMeasurementTypes($selectedTypeCodes);
-        $selectedCodes = array_values(array_filter(array_map(
-            static fn (MeasurementType $type): ?string => $type->getCode(),
+        $selectedTypes = $this->resolveMeasurementTypes($selectedTypeUuids);
+        $selectedUuids = array_map(
+            static fn (MeasurementType $type): string => $type->getUuid()->toRfc4122(),
             $selectedTypes,
-        )));
+        );
         $typeRows = $this->mapTypesForView($selectedTypes);
         $rows = $this->buildRowsFromSubmittedData($mainClothe, $variants, $typeRows, $submittedMeasurements);
 
         return [
             'unit' => $mainClothe->getSizeGuide()?->getUnit() ?? 'cm',
-            'availableTypes' => $this->mapAvailableTypesForView($allTypes, $selectedCodes),
+            'availableTypes' => $this->mapAvailableTypesForView($allTypes, $selectedUuids),
             'types' => $typeRows,
             'rows' => $rows,
         ];
@@ -113,10 +103,11 @@ final readonly class ClotheSizeGuideService
 
     /**
      * @param list<ClothesVariant> $variants
+     *
      * @return array{
      *     unit: string,
-     *     availableTypes: list<array{code: string, label: string, selected: bool}>,
-     *     types: list<array{code: string, label: string}>,
+     *     availableTypes: list<array{uuid: string, label: string, selected: bool}>,
+     *     types: list<array{uuid: string, label: string}>,
      *     rows: list<array{size: string, measurements: array<string, string|null>}>
      * }
      */
@@ -128,27 +119,27 @@ final readonly class ClotheSizeGuideService
             ? $this->resolveTypesUsedByGuide($guide)
             : $allTypes;
 
-        if ($selectedTypes === []) {
+        if ([] === $selectedTypes) {
             $selectedTypes = $allTypes;
         }
 
-        $selectedCodes = array_values(array_filter(array_map(
-            static fn (MeasurementType $type): ?string => $type->getCode(),
+        $selectedUuids = array_map(
+            static fn (MeasurementType $type): string => $type->getUuid()->toRfc4122(),
             $selectedTypes,
-        )));
+        );
 
         $typeRows = $this->mapTypesForView($selectedTypes);
         $rows = $guide instanceof SizeGuide
             ? $this->buildRowsFromGuide($guide, $typeRows)
             : [];
 
-        if ($rows === []) {
+        if ([] === $rows) {
             $rows = $this->buildEmptyVariantRows($variants, $typeRows);
         }
 
         return [
             'unit' => self::UNIT,
-            'availableTypes' => $this->mapAvailableTypesForView($allTypes, $selectedCodes),
+            'availableTypes' => $this->mapAvailableTypesForView($allTypes, $selectedUuids),
             'types' => $typeRows,
             'rows' => $rows,
         ];
@@ -185,63 +176,33 @@ final readonly class ClotheSizeGuideService
      */
     private function getActiveMeasurementTypes(): array
     {
-        $types = $this->entityManager->getRepository(MeasurementType::class)->findBy(
-            ['isActive' => true],
+        return $this->entityManager->getRepository(MeasurementType::class)->findBy(
+            [],
             ['position' => 'ASC', 'label' => 'ASC'],
         );
-
-        if ($types !== []) {
-            return $types;
-        }
-
-        $position = 0;
-        $createdTypes = [];
-        foreach (self::DEFAULT_MEASUREMENT_TYPES as $code => $label) {
-            $createdTypes[] = $this->getOrCreateMeasurementType($code, $label, $position++);
-        }
-
-        return $createdTypes;
     }
 
     /**
-     * @param list<string> $selectedTypeCodes
+     * @param list<string> $selectedTypeUuids
+     *
      * @return list<MeasurementType>
      */
-    private function resolveMeasurementTypes(array $selectedTypeCodes): array
+    private function resolveMeasurementTypes(array $selectedTypeUuids): array
     {
-        $selectedTypeCodes = array_values(array_unique(array_filter(array_map(
-            fn (string $code): string => $this->normalizeCode($code),
-            $selectedTypeCodes,
-        ))));
-
         $types = [];
-        foreach (self::DEFAULT_MEASUREMENT_TYPES as $code => $label) {
-            if (in_array($code, $selectedTypeCodes, true)) {
-                $types[] = $this->getOrCreateMeasurementType($code, $label);
+        foreach (array_unique($selectedTypeUuids) as $uuid) {
+            if (!is_string($uuid) || !Uuid::isValid($uuid)) {
+                continue;
+            }
+
+            $type = $this->entityManager->getRepository(MeasurementType::class)->findOneBy(['uuid' => $uuid]);
+
+            if ($type instanceof MeasurementType) {
+                $types[] = $type;
             }
         }
 
         return $types;
-    }
-
-    private function getOrCreateMeasurementType(string $code, string $label, int $position = 0): MeasurementType
-    {
-        $code = $this->normalizeCode($code);
-        $type = $this->entityManager->getRepository(MeasurementType::class)->findOneBy(['code' => $code]);
-
-        if ($type instanceof MeasurementType) {
-            return $type;
-        }
-
-        $type = (new MeasurementType())
-            ->setCode($code)
-            ->setLabel($label)
-            ->setPosition($position)
-            ->setIsActive(true);
-
-        $this->entityManager->persist($type);
-
-        return $type;
     }
 
     private function findOrCreateSize(SizeGuide $guide, string $label, int $position): SizeGuideSize
@@ -276,17 +237,17 @@ final readonly class ClotheSizeGuideService
     }
 
     /**
-     * @param list<string> $selectedCodes
+     * @param list<string> $selectedUuids
      */
-    private function removeUnselectedMeasurements(SizeGuideSize $size, array $selectedCodes): void
+    private function removeUnselectedMeasurements(SizeGuideSize $size, array $selectedUuids): void
     {
         foreach ($size->getMeasurements()->toArray() as $measurement) {
             if (!$measurement instanceof SizeGuideMeasurement) {
                 continue;
             }
 
-            $code = $measurement->getType()?->getCode();
-            if ($code !== null && !in_array($code, $selectedCodes, true)) {
+            $uuid = $measurement->getType()?->getUuid()->toRfc4122();
+            if (null !== $uuid && !in_array($uuid, $selectedUuids, true)) {
                 $size->removeMeasurement($measurement);
             }
         }
@@ -297,18 +258,18 @@ final readonly class ClotheSizeGuideService
      */
     private function resolveTypesUsedByGuide(SizeGuide $guide): array
     {
-        $typesByCode = [];
+        $typesByUuid = [];
 
         foreach ($guide->getSizes() as $size) {
             foreach ($size->getMeasurements() as $measurement) {
                 $type = $measurement->getType();
-                if ($type instanceof MeasurementType && $type->getCode() !== null) {
-                    $typesByCode[$type->getCode()] = $type;
+                if ($type instanceof MeasurementType) {
+                    $typesByUuid[$type->getUuid()->toRfc4122()] = $type;
                 }
             }
         }
 
-        $types = array_values($typesByCode);
+        $types = array_values($typesByUuid);
         usort($types, static fn (MeasurementType $a, MeasurementType $b): int => ($a->getPosition() ?? 0) <=> ($b->getPosition() ?? 0));
 
         return $types;
@@ -316,16 +277,15 @@ final readonly class ClotheSizeGuideService
 
     /**
      * @param list<MeasurementType> $types
+     *
      * @return array<string, MeasurementType>
      */
-    private function indexTypesByCode(array $types): array
+    private function indexTypesByUuid(array $types): array
     {
         $indexed = [];
 
         foreach ($types as $type) {
-            if ($type->getCode() !== null) {
-                $indexed[$type->getCode()] = $type;
-            }
+            $indexed[$type->getUuid()->toRfc4122()] = $type;
         }
 
         return $indexed;
@@ -333,13 +293,14 @@ final readonly class ClotheSizeGuideService
 
     /**
      * @param list<MeasurementType> $types
-     * @return list<array{code: string, label: string}>
+     *
+     * @return list<array{uuid: string, label: string}>
      */
     private function mapTypesForView(array $types): array
     {
         return array_map(
             static fn (MeasurementType $type): array => [
-                'code' => (string) $type->getCode(),
+                'uuid' => $type->getUuid()->toRfc4122(),
                 'label' => (string) $type->getLabel(),
             ],
             $types,
@@ -348,37 +309,39 @@ final readonly class ClotheSizeGuideService
 
     /**
      * @param list<MeasurementType> $types
-     * @param list<string> $selectedCodes
-     * @return list<array{code: string, label: string, selected: bool}>
+     * @param list<string>          $selectedUuids
+     *
+     * @return list<array{uuid: string, label: string, selected: bool}>
      */
-    private function mapAvailableTypesForView(array $types, array $selectedCodes): array
+    private function mapAvailableTypesForView(array $types, array $selectedUuids): array
     {
         return array_map(
             static fn (MeasurementType $type): array => [
-                'code' => (string) $type->getCode(),
+                'uuid' => $type->getUuid()->toRfc4122(),
                 'label' => (string) $type->getLabel(),
-                'selected' => in_array((string) $type->getCode(), $selectedCodes, true),
+                'selected' => in_array($type->getUuid()->toRfc4122(), $selectedUuids, true),
             ],
             $types,
         );
     }
 
     /**
-     * @param list<array{code: string, label: string}> $types
+     * @param list<array{uuid: string, label: string}> $types
+     *
      * @return list<array{size: string, measurements: array<string, string|null>}>
      */
     private function buildRowsFromGuide(SizeGuide $guide, array $types): array
     {
         $rows = [];
-        $typeCodes = array_column($types, 'code');
+        $typeUuids = array_column($types, 'uuid');
 
         foreach ($guide->getSizes() as $size) {
-            $measurements = array_fill_keys($typeCodes, null);
+            $measurements = array_fill_keys($typeUuids, null);
 
             foreach ($size->getMeasurements() as $measurement) {
-                $code = $measurement->getType()?->getCode();
-                if ($code !== null && array_key_exists($code, $measurements)) {
-                    $measurements[$code] = $measurement->getValue();
+                $uuid = $measurement->getType()?->getUuid()->toRfc4122();
+                if (null !== $uuid && array_key_exists($uuid, $measurements)) {
+                    $measurements[$uuid] = $measurement->getValue();
                 }
             }
 
@@ -392,23 +355,24 @@ final readonly class ClotheSizeGuideService
     }
 
     /**
-     * @param list<Clothes> $variants
-     * @param list<array{code: string, label: string}> $types
+     * @param list<Clothes>                            $variants
+     * @param list<array{uuid: string, label: string}> $types
+     *
      * @return list<array{size: string, measurements: array<string, string|null>}>
      */
     private function buildEmptyVariantRows(array $variants, array $types): array
     {
         $rows = [];
-        $typeCodes = array_column($types, 'code');
+        $typeUuids = array_column($types, 'uuid');
 
         foreach ($variants as $variant) {
-            if (!$variant instanceof ClothesVariant || $variant->getSize()?->getName() === null) {
+            if (!$variant instanceof ClothesVariant || null === $variant->getSize()?->getName()) {
                 continue;
             }
 
             $rows[(string) $variant->getSize()->getName()] = [
                 'size' => (string) $variant->getSize()->getName(),
-                'measurements' => array_fill_keys($typeCodes, null),
+                'measurements' => array_fill_keys($typeUuids, null),
             ];
         }
 
@@ -416,15 +380,16 @@ final readonly class ClotheSizeGuideService
     }
 
     /**
-     * @param list<Clothes> $variants
-     * @param list<array{code: string, label: string}> $types
-     * @param array<string, array<string, mixed>> $submittedMeasurements
+     * @param list<Clothes>                            $variants
+     * @param list<array{uuid: string, label: string}> $types
+     * @param array<string, array<string, mixed>>      $submittedMeasurements
+     *
      * @return list<array{size: string, measurements: array<string, string|null>}>
      */
     private function buildRowsFromSubmittedData(Clothes $mainClothe, array $variants, array $types, array $submittedMeasurements): array
     {
         $rows = [];
-        $typeCodes = array_column($types, 'code');
+        $typeUuids = array_column($types, 'uuid');
         $existingRows = [];
 
         $guide = $mainClothe->getSizeGuide();
@@ -435,18 +400,18 @@ final readonly class ClotheSizeGuideService
         }
 
         foreach ($variants as $variant) {
-            if (!$variant instanceof ClothesVariant || $variant->getSize()?->getName() === null) {
+            if (!$variant instanceof ClothesVariant || null === $variant->getSize()?->getName()) {
                 continue;
             }
 
             $sizeLabel = (string) $variant->getSize()->getName();
-            $measurements = array_fill_keys($typeCodes, null);
+            $measurements = array_fill_keys($typeUuids, null);
 
-            foreach ($typeCodes as $typeCode) {
-                $submittedValue = $submittedMeasurements[$sizeLabel][$typeCode] ?? null;
-                $measurements[$typeCode] = $submittedValue !== null && $submittedValue !== ''
+            foreach ($typeUuids as $typeUuid) {
+                $submittedValue = $submittedMeasurements[$sizeLabel][$typeUuid] ?? null;
+                $measurements[$typeUuid] = null !== $submittedValue && '' !== $submittedValue
                     ? (string) $submittedValue
-                    : ($existingRows[$sizeLabel][$typeCode] ?? null);
+                    : ($existingRows[$sizeLabel][$typeUuid] ?? null);
             }
 
             $rows[$sizeLabel] = [
@@ -457,10 +422,4 @@ final readonly class ClotheSizeGuideService
 
         return array_values($rows);
     }
-
-    private function normalizeCode(string $code): string
-    {
-        return strtolower((string) (new AsciiSlugger())->slug(trim($code), '_'));
-    }
-
 }

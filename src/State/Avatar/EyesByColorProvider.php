@@ -35,7 +35,7 @@ final readonly class EyesByColorProvider implements ProviderInterface
         foreach ($this->eyeRepository->findBy(['color' => $color], ['name' => 'ASC']) as $eye) {
             $id = $eye->getId();
             $image = $eye->getImage();
-            if ($id === null || $image === null || $image === '') {
+            if (null === $id || null === $image || '' === $image) {
                 continue;
             }
 
@@ -48,7 +48,7 @@ final readonly class EyesByColorProvider implements ProviderInterface
     private function colorId(array $uriVariables): int
     {
         $id = filter_var($uriVariables['id'] ?? null, FILTER_VALIDATE_INT);
-        if ($id === false || $id <= 0) {
+        if (false === $id || $id <= 0) {
             throw new NotFoundHttpException('Couleur des yeux introuvable.');
         }
 
@@ -57,12 +57,12 @@ final readonly class EyesByColorProvider implements ProviderInterface
 
     private function absoluteUrl(string $path): string
     {
-        if (filter_var($path, FILTER_VALIDATE_URL) !== false) {
+        if (false !== filter_var($path, FILTER_VALIDATE_URL)) {
             return $path;
         }
 
         $request = $this->requestStack->getCurrentRequest();
 
-        return $request === null ? $path : $request->getSchemeAndHttpHost().'/'.ltrim($path, '/');
+        return null === $request ? $path : $request->getSchemeAndHttpHost() . '/' . ltrim($path, '/');
     }
 }

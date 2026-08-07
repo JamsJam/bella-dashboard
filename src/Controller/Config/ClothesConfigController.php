@@ -25,15 +25,20 @@ final class ClothesConfigController extends AbstractConfigController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-
-
             /** @var ClothesConfigDto $config */
             $config = $form->getData();
             $configService->save($config);
             $flashService->success('Configuration des vêtements mise à jour.');
+
             return $this->redirectToRoute('app_config_clothes');
         }
 
-        return $this->renderFormPage($request, $breadscrumbs, 'Configuration des vêtements', $form->createView());
+        return $this->renderFormPage(
+            $request,
+            $breadscrumbs,
+            'Configuration des vêtements',
+            $form->createView(),
+            ['clothes_form' => true],
+        );
     }
 }

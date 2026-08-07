@@ -11,12 +11,12 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity(repositoryClass: OrdersRepository::class)]
 class Orders
 {
+    use DateFieldsTrait;
+
     public const STATUS_PENDING_PAYMENT = 'pending_payment';
     public const STATUS_PAID = 'paid';
     public const STATUS_PAYMENT_EXPIRED = 'payment_expired';
     public const STATUS_CHECKOUT_CREATION_FAILED = 'checkout_creation_failed';
-
-    use DateFieldsTrait;
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -151,27 +151,27 @@ class Orders
 
     public function isPaid(): bool
     {
-        return $this->status === self::STATUS_PAID;
+        return self::STATUS_PAID === $this->status;
     }
 
     public function hasInvoice(): bool
     {
-        return $this->stripeInvoiceId !== null
-            && $this->stripeInvoiceId !== ''
-            && $this->stripeInvoiceUrl !== null
-            && $this->stripeInvoiceUrl !== '';
+        return null !== $this->stripeInvoiceId
+            && '' !== $this->stripeInvoiceId
+            && null !== $this->stripeInvoiceUrl
+            && '' !== $this->stripeInvoiceUrl;
     }
 
     public function isShippingToGuadeloupe(): bool
     {
-        return mb_strtolower(trim((string) ($this->shippinfo['destination'] ?? ''))) === 'guadeloupe';
+        return 'guadeloupe' === mb_strtolower(trim((string) ($this->shippinfo['destination'] ?? '')));
     }
 
     public function isShippingOutsideGuadeloupe(): bool
     {
         $destination = mb_strtolower(trim((string) ($this->shippinfo['destination'] ?? '')));
 
-        return $destination !== '' && $destination !== 'guadeloupe';
+        return '' !== $destination && 'guadeloupe' !== $destination;
     }
 
     public function getCustomer(): ?Customers
@@ -327,7 +327,7 @@ class Orders
 
     public function setTrackingNumber(?string $trackingNumber): static
     {
-        $this->trackingNumber = $trackingNumber !== null ? trim($trackingNumber) : null;
+        $this->trackingNumber = null !== $trackingNumber ? trim($trackingNumber) : null;
         $this->setEditedAt(new \DateTimeImmutable());
 
         return $this;
@@ -340,7 +340,7 @@ class Orders
 
     public function setCarrierName(?string $carrierName): static
     {
-        $this->carrierName = $carrierName !== null ? trim($carrierName) : null;
+        $this->carrierName = null !== $carrierName ? trim($carrierName) : null;
         $this->setEditedAt(new \DateTimeImmutable());
 
         return $this;
@@ -353,7 +353,7 @@ class Orders
 
     public function setCarrierTrackingUrl(?string $carrierTrackingUrl): static
     {
-        $this->carrierTrackingUrl = $carrierTrackingUrl !== null ? trim($carrierTrackingUrl) : null;
+        $this->carrierTrackingUrl = null !== $carrierTrackingUrl ? trim($carrierTrackingUrl) : null;
         $this->setEditedAt(new \DateTimeImmutable());
 
         return $this;
@@ -361,11 +361,11 @@ class Orders
 
     public function getTrackingUrl(): ?string
     {
-        if ($this->carrierTrackingUrl === null || $this->carrierTrackingUrl === '' || $this->trackingNumber === null || $this->trackingNumber === '') {
+        if (null === $this->carrierTrackingUrl || '' === $this->carrierTrackingUrl || null === $this->trackingNumber || '' === $this->trackingNumber) {
             return null;
         }
 
-        return $this->carrierTrackingUrl.rawurlencode($this->trackingNumber);
+        return $this->carrierTrackingUrl . rawurlencode($this->trackingNumber);
     }
 
     public function getShippedAt(): ?\DateTimeImmutable

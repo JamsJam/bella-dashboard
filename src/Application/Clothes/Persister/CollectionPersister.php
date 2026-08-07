@@ -65,30 +65,30 @@ final class CollectionPersister
 
     private function storeIllustration(Collections $collection, UploadedFile $image): string
     {
-        $directory = $this->projectDir.'/public/images/upload/collections/'.$collection->getId();
+        $directory = $this->projectDir . '/public/images/upload/collections/' . $collection->getId();
         if (!is_dir($directory) && !mkdir($directory, 0775, true) && !is_dir($directory)) {
             throw new \RuntimeException('Unable to create collection upload directory.');
         }
 
         $extension = strtolower((string) $image->guessExtension());
-        if ($extension === 'jpeg') {
+        if ('jpeg' === $extension) {
             $extension = 'jpg';
         }
 
-        if ($extension === '' || !in_array($extension, self::ILLUSTRATION_EXTENSIONS, true)) {
+        if ('' === $extension || !in_array($extension, self::ILLUSTRATION_EXTENSIONS, true)) {
             $extension = strtolower((string) $image->getClientOriginalExtension());
         }
 
         $filename = sprintf('collection-%d-%s.%s', $collection->getId(), bin2hex(random_bytes(4)), $extension);
         $image->move($directory, $filename);
 
-        return '/images/upload/collections/'.$collection->getId().'/'.$filename;
+        return '/images/upload/collections/' . $collection->getId() . '/' . $filename;
     }
 
     private function createUniqueCategorySlug(string $name): string
     {
         $baseSlug = strtolower((string) (new AsciiSlugger())->slug($name));
-        $baseSlug = substr($baseSlug !== '' ? $baseSlug : 'categorie', 0, 60);
+        $baseSlug = substr('' !== $baseSlug ? $baseSlug : 'categorie', 0, 60);
         $slug = $baseSlug;
         $index = 1;
 

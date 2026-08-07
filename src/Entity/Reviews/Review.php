@@ -71,30 +71,81 @@ class Review
         $this->requestedAt = $now;
     }
 
-    public function getId(): ?int { return $this->id; }
-    public function getReviewUuid(): string { return $this->reviewUuid; }
-    public function getProduct(): ClothesVariant { return $this->product; }
-    public function getOrder(): Orders { return $this->order; }
-    public function getCustomer(): Customers { return $this->customer; }
-    public function getRating(): ?int { return $this->rating; }
-    public function getComment(): ?string { return $this->comment; }
-    public function getCreatedAt(): \DateTimeImmutable { return $this->createdAt; }
-    public function getUpdatedAt(): \DateTimeImmutable { return $this->updatedAt; }
-    public function getRequestedAt(): \DateTimeImmutable { return $this->requestedAt; }
-    public function getReply(): ?string { return $this->reply; }
-    public function getStatus(): ReviewStatus { return $this->status; }
-    public function getReplyAt(): ?\DateTimeImmutable { return $this->replyAt; }
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    public function getReviewUuid(): string
+    {
+        return $this->reviewUuid;
+    }
+
+    public function getProduct(): ClothesVariant
+    {
+        return $this->product;
+    }
+
+    public function getOrder(): Orders
+    {
+        return $this->order;
+    }
+
+    public function getCustomer(): Customers
+    {
+        return $this->customer;
+    }
+
+    public function getRating(): ?int
+    {
+        return $this->rating;
+    }
+
+    public function getComment(): ?string
+    {
+        return $this->comment;
+    }
+
+    public function getCreatedAt(): \DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
+
+    public function getUpdatedAt(): \DateTimeImmutable
+    {
+        return $this->updatedAt;
+    }
+
+    public function getRequestedAt(): \DateTimeImmutable
+    {
+        return $this->requestedAt;
+    }
+
+    public function getReply(): ?string
+    {
+        return $this->reply;
+    }
+
+    public function getStatus(): ReviewStatus
+    {
+        return $this->status;
+    }
+
+    public function getReplyAt(): ?\DateTimeImmutable
+    {
+        return $this->replyAt;
+    }
 
     public function submit(int $rating, string $comment, ?\DateTimeImmutable $now = null): void
     {
-        if ($this->status !== ReviewStatus::Requested) {
+        if (ReviewStatus::Requested !== $this->status) {
             throw new \DomainException('Cet avis a déjà été envoyé.');
         }
         if ($rating < 1 || $rating > 5) {
             throw new \InvalidArgumentException('La note doit être comprise entre 1 et 5.');
         }
         $comment = trim($comment);
-        if ($comment === '' || mb_strlen($comment) > 200) {
+        if ('' === $comment || mb_strlen($comment) > 200) {
             throw new \InvalidArgumentException('Le commentaire doit contenir entre 1 et 200 caractères.');
         }
         $this->rating = $rating;
@@ -120,7 +171,7 @@ class Review
         }
 
         $reply = trim($reply);
-        if ($reply === '' || mb_strlen($reply) > 200) {
+        if ('' === $reply || mb_strlen($reply) > 200) {
             throw new \InvalidArgumentException('La réponse doit contenir entre 1 et 200 caractères.');
         }
 
@@ -131,7 +182,7 @@ class Review
 
     private function moderate(ReviewStatus $status, ?\DateTimeImmutable $now): void
     {
-        if ($this->status === ReviewStatus::Requested) {
+        if (ReviewStatus::Requested === $this->status) {
             throw new \DomainException('Un avis sans note ne peut pas être modéré.');
         }
         $this->status = $status;
@@ -141,8 +192,9 @@ class Review
     private static function uuidV4(): string
     {
         $bytes = random_bytes(16);
-        $bytes[6] = chr((ord($bytes[6]) & 0x0f) | 0x40);
-        $bytes[8] = chr((ord($bytes[8]) & 0x3f) | 0x80);
+        $bytes[6] = chr((ord($bytes[6]) & 0x0F) | 0x40);
+        $bytes[8] = chr((ord($bytes[8]) & 0x3F) | 0x80);
+
         return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($bytes), 4));
     }
 }

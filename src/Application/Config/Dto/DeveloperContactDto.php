@@ -28,11 +28,11 @@ final class DeveloperContactDto
     {
         $data = [];
 
-        if ($this->email !== '') {
+        if ('' !== $this->email) {
             $data['email'] = $this->email;
         }
 
-        if ($this->name !== '') {
+        if ('' !== $this->name) {
             $data['name'] = $this->name;
         }
 

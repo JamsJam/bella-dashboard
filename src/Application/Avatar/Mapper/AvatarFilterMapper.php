@@ -9,8 +9,8 @@ use App\Entity\Avatar\Eyebrows\Eyebrowscolor;
 use App\Entity\Avatar\Eyebrows\Eyebrowshape;
 use App\Entity\Avatar\Eyes\Eyecolor;
 use App\Entity\Avatar\Eyes\Eyeshape;
-use App\Entity\Avatar\Faces\Faceshape;
 use App\Entity\Avatar\Faces\FaceAccessory;
+use App\Entity\Avatar\Faces\Faceshape;
 use App\Entity\Avatar\Hairs\Hairscolor;
 use App\Entity\Avatar\Hairs\Hairshape;
 use App\Entity\Avatar\Mouths\Mouthscolor;
@@ -85,9 +85,10 @@ final class AvatarFilterMapper
     ];
 
     /**
-     * Récupère les filtres disponibles pour une partie d'avatar donnée
+     * Récupère les filtres disponibles pour une partie d'avatar donnée.
      *
      * @param string $part La partie de l'avatar (body, face, eyebrows, etc.)
+     *
      * @return array Un tableau de filtres avec leurs options
      */
     public function getFiltersForPart(string $part = 'body'): array
@@ -134,7 +135,7 @@ final class AvatarFilterMapper
     }
 
     /**
-     * Récupère les filtres disponibles pour toutes les parties d'avatar
+     * Récupère les filtres disponibles pour toutes les parties d'avatar.
      *
      * @return array Un tableau associatif où la clé est la partie de l'avatar et la valeur est un tableau de filtres
      */
@@ -168,7 +169,7 @@ final class AvatarFilterMapper
     }
 
     /**
-     * Normalise la partie d'avatar pour s'assurer qu'elle correspond à une clé valide dans FILTERS_BY_PART
+     * Normalise la partie d'avatar pour s'assurer qu'elle correspond à une clé valide dans FILTERS_BY_PART.
      */
     private function normalizePart(string $part): string
     {
@@ -195,7 +196,7 @@ final class AvatarFilterMapper
 
     private function createOptions(string $entityClass, string $emptyLabel, bool $noneOption = false): array
     {
-        if ($entityClass === Clothes::class) {
+        if (Clothes::class === $entityClass) {
             return $this->createClothesSlugOptions($emptyLabel);
         }
 
@@ -206,7 +207,7 @@ final class AvatarFilterMapper
             $id = $entity->getId();
             $label = $this->resolveLabel($entity);
 
-            if ($id !== null && $label !== null && $label !== '') {
+            if (null !== $id && null !== $label && '' !== $label) {
                 $options[] = ['value' => $id, 'label' => $label];
             }
         }
@@ -224,7 +225,7 @@ final class AvatarFilterMapper
         }
 
         foreach ($repository->findDistinctEntitiesByName(orderBy: 'c.name', direction: 'asc') as $clothe) {
-            if (!$clothe instanceof Clothes || $clothe->getSlug() === null || $clothe->getSlug() === '') {
+            if (!$clothe instanceof Clothes || null === $clothe->getSlug() || '' === $clothe->getSlug()) {
                 continue;
             }
 

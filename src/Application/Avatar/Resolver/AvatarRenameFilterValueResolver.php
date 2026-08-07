@@ -31,7 +31,7 @@ final readonly class AvatarRenameFilterValueResolver
 
         $rawValue = $this->extractName($value);
         $normalizedValue = $this->normalizeToken($rawValue);
-        if ($normalizedValue === '') {
+        if ('' === $normalizedValue) {
             throw new \InvalidArgumentException('Invalid avatar filter value.');
         }
 
@@ -47,7 +47,7 @@ final readonly class AvatarRenameFilterValueResolver
         $entity = $repository->findOrCreate($normalizedValue);
         $hexa = $this->extractHexa($value);
 
-        if ($hexa !== null && method_exists($entity, 'setHexa')) {
+        if (null !== $hexa && method_exists($entity, 'setHexa')) {
             $entity->setHexa($hexa);
         }
 
@@ -143,7 +143,7 @@ final readonly class AvatarRenameFilterValueResolver
 
         $hexa = strtoupper(ltrim((string) ($value['hexa'] ?? ''), '#'));
 
-        return preg_match('/^[0-9A-F]{6}$/', $hexa) === 1 ? $hexa : null;
+        return 1 === preg_match('/^[0-9A-F]{6}$/', $hexa) ? $hexa : null;
     }
 
     private function normalizeToken(string $value): string

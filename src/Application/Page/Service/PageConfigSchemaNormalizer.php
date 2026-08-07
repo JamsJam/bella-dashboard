@@ -42,7 +42,7 @@ final readonly class PageConfigSchemaNormalizer
             return $this->normalize($defaultValue, $savedValue);
         }
 
-        if ($defaultValue === null) {
+        if (null === $defaultValue) {
             return $savedValue;
         }
 
@@ -55,8 +55,8 @@ final readonly class PageConfigSchemaNormalizer
 
     private function isEmpty(mixed $value): bool
     {
-        return $value === null
-            || $value === []
-            || (is_string($value) && trim($value) === '');
+        return null === $value
+            || [] === $value
+            || (is_string($value) && '' === trim($value));
     }
 }

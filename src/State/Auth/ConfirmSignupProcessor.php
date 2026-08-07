@@ -8,8 +8,8 @@ use App\ApiResource\Auth\ConfirmSignupOutput;
 use App\Entity\Users\Customers;
 use App\Repository\Users\CustomersRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 /**
  * @implements ProcessorInterface<mixed, ConfirmSignupOutput>
@@ -78,7 +78,7 @@ final readonly class ConfirmSignupProcessor implements ProcessorInterface
     private function getPayload(): array
     {
         $request = $this->requestStack->getCurrentRequest();
-        if ($request === null) {
+        if (null === $request) {
             throw new BadRequestHttpException('Payload de confirmation invalide.');
         }
 

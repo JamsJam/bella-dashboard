@@ -25,7 +25,6 @@ final class Version20260731133629 extends AbstractMigration
         $this->addSql('ALTER TABLE review ADD CONSTRAINT FK_794381C68D9F6D38 FOREIGN KEY (order_id) REFERENCES orders (id) ON DELETE CASCADE');
         $this->addSql('ALTER TABLE review ADD CONSTRAINT FK_794381C6C3568B40 FOREIGN KEY (customers_id) REFERENCES customers (id) ON DELETE CASCADE');
     }
-    
 
     public function down(Schema $schema): void
     {
@@ -34,6 +33,5 @@ final class Version20260731133629 extends AbstractMigration
         $this->addSql('ALTER TABLE review DROP FOREIGN KEY FK_794381C68D9F6D38');
         $this->addSql('ALTER TABLE review DROP FOREIGN KEY FK_794381C6C3568B40');
         $this->addSql('DROP TABLE review');
-        
     }
 }

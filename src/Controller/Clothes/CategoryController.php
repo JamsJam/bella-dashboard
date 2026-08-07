@@ -2,11 +2,11 @@
 
 namespace App\Controller\Clothes;
 
-use App\Entity\Category\Category;
 use App\Application\Clothes\Guard\Category\CategoryOnlineGuard;
 use App\Application\Clothes\Guard\Collection\CollectionOnlineGuard;
-use App\Entity\Collections\Collections;
 use App\Application\Clothes\Services\CategoryPublicationService;
+use App\Entity\Category\Category;
+use App\Entity\Collections\Collections;
 use App\Notifier\Services\FlashService;
 use App\Service\BreadscrumbsService;
 use App\Service\LoggerService;
@@ -14,8 +14,8 @@ use App\UI\Toggle\ToggleActionModel;
 use App\UI\Toggle\ToggleModel;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -50,8 +50,7 @@ final class CategoryController extends AbstractController
         BreadscrumbsService $breadscrumbs,
         EntityManagerInterface $entityManager,
         CsrfTokenManagerInterface $csrfTokenManager,
-    ): Response
-    {
+    ): Response {
         return $this->render('clothes/categories/index.html.twig', [
             'breadscrumbs' => $breadscrumbs->resolve((string) $request->attributes->get('_route')),
             'tabs' => $this->createTabs(),
@@ -105,14 +104,14 @@ final class CategoryController extends AbstractController
         }
 
         $name = trim((string) $request->request->get('name', ''));
-        if ($name === '') {
+        if ('' === $name) {
             $flashService->error('Le nom de la categorie est obligatoire.');
 
             return $this->redirectToRoute('app_clothes_categories');
         }
 
         $image = $request->files->get('illustration');
-        if ($image !== null && (!$image instanceof UploadedFile || !$this->isValidIllustration($image))) {
+        if (null !== $image && (!$image instanceof UploadedFile || !$this->isValidIllustration($image))) {
             $flashService->error('Image invalide. Formats acceptes : PNG, JPEG, SVG.');
 
             return $this->redirectToRoute('app_clothes_categories');
@@ -165,7 +164,7 @@ final class CategoryController extends AbstractController
             return $this->json(['success' => false, 'error' => 'Invalid CSRF token.'], Response::HTTP_FORBIDDEN);
         }
 
-        if ($state === 'on' && !$categoryPublicationService->publish($category)) {
+        if ('on' === $state && !$categoryPublicationService->publish($category)) {
             $logger->warning('Category publication rejected.', [
                 'category_id' => $category->getId(),
             ]);
@@ -176,7 +175,7 @@ final class CategoryController extends AbstractController
             ], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
-        if ($state === 'off') {
+        if ('off' === $state) {
             $categoryPublicationService->unpublish($category);
         }
 
@@ -254,14 +253,14 @@ final class CategoryController extends AbstractController
         }
 
         $name = trim((string) $request->request->get('name', ''));
-        if ($name === '') {
+        if ('' === $name) {
             $flashService->error('Le nom de la categorie est obligatoire.');
 
             return $this->redirectToRoute('app_clothe_category_show', ['id' => $category->getId()]);
         }
 
         $image = $request->files->get('illustration');
-        if ($image !== null && (!$image instanceof UploadedFile || !$this->isValidIllustration($image))) {
+        if (null !== $image && (!$image instanceof UploadedFile || !$this->isValidIllustration($image))) {
             $flashService->error('Image invalide. Formats acceptes : PNG, JPEG, SVG.');
 
             return $this->redirectToRoute('app_clothe_category_show', ['id' => $category->getId()]);
@@ -384,24 +383,24 @@ final class CategoryController extends AbstractController
 
     private function storeIllustration(Category $category, UploadedFile $image): string
     {
-        $directory = $this->getParameter('kernel.project_dir').'/public/images/upload/categories/'.$category->getId();
+        $directory = $this->getParameter('kernel.project_dir') . '/public/images/upload/categories/' . $category->getId();
         if (!is_dir($directory) && !mkdir($directory, 0775, true) && !is_dir($directory)) {
             throw new \RuntimeException('Unable to create category upload directory.');
         }
 
         $extension = strtolower((string) $image->guessExtension());
-        if ($extension === 'jpeg') {
+        if ('jpeg' === $extension) {
             $extension = 'jpg';
         }
 
-        if ($extension === '' || !in_array($extension, self::ILLUSTRATION_EXTENSIONS, true)) {
+        if ('' === $extension || !in_array($extension, self::ILLUSTRATION_EXTENSIONS, true)) {
             $extension = strtolower((string) $image->getClientOriginalExtension());
         }
 
         $filename = sprintf('category-%d-%s.%s', $category->getId(), bin2hex(random_bytes(4)), $extension);
         $image->move($directory, $filename);
 
-        return '/images/upload/categories/'.$category->getId().'/'.$filename;
+        return '/images/upload/categories/' . $category->getId() . '/' . $filename;
     }
 
     private function createTableData(Request $request, EntityManagerInterface $entityManager, CsrfTokenManagerInterface $csrfTokenManager): array
@@ -417,10 +416,10 @@ final class CategoryController extends AbstractController
             ->groupBy('c.id')
             ->orderBy(self::SORTS[$sort], $direction);
 
-        if ($search !== '') {
+        if ('' !== $search) {
             $queryBuilder
                 ->andWhere('LOWER(c.name) LIKE :search OR LOWER(c.slug) LIKE :search')
-                ->setParameter('search', '%'.mb_strtolower($search).'%');
+                ->setParameter('search', '%' . mb_strtolower($search) . '%');
         }
 
         $results = $queryBuilder
@@ -535,10 +534,10 @@ final class CategoryController extends AbstractController
         );
 
         $toggle = new ToggleModel(
-            id: 'category-online-'.$category->getId(),
+            id: 'category-online-' . $category->getId(),
             label: $category->isOnline() ? 'En ligne' : 'Hors ligne',
             checked: (bool) $category->isOnline(),
-            name: 'category_online_'.$category->getId(),
+            name: 'category_online_' . $category->getId(),
             payload: [
                 'on' => $onlineAction->toArray(),
                 'off' => $offlineAction->toArray(),
@@ -562,7 +561,7 @@ final class CategoryController extends AbstractController
     private function createUniqueSlug(string $name, EntityManagerInterface $entityManager, ?Category $currentCategory = null): string
     {
         $baseSlug = strtolower((string) (new AsciiSlugger())->slug($name));
-        $baseSlug = substr($baseSlug !== '' ? $baseSlug : 'categorie', 0, 60);
+        $baseSlug = substr('' !== $baseSlug ? $baseSlug : 'categorie', 0, 60);
         $slug = $baseSlug;
         $index = 1;
 
@@ -588,32 +587,32 @@ final class CategoryController extends AbstractController
 
     private function normalizeDirection(string $direction): string
     {
-        return strtolower($direction) === 'desc' ? 'desc' : 'asc';
+        return 'desc' === strtolower($direction) ? 'desc' : 'asc';
     }
 
     private function getOnlineCsrfTokenId(Category $category): string
     {
-        return 'category_online_'.((string) $category->getId());
+        return 'category_online_' . ((string) $category->getId());
     }
 
     private function getImageCsrfTokenId(Category $category): string
     {
-        return 'category_image_'.((string) $category->getId());
+        return 'category_image_' . ((string) $category->getId());
     }
 
     private function getEditCsrfTokenId(Category $category): string
     {
-        return 'category_edit_'.((string) $category->getId());
+        return 'category_edit_' . ((string) $category->getId());
     }
 
     private function getDeleteCsrfTokenId(Category $category): string
     {
-        return 'category_delete_'.((string) $category->getId());
+        return 'category_delete_' . ((string) $category->getId());
     }
 
     private function getCategoryRowId(Category $category): string
     {
-        return 'category-row-'.((string) $category->getId());
+        return 'category-row-' . ((string) $category->getId());
     }
 
     /**

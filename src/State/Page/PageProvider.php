@@ -45,7 +45,7 @@ final readonly class PageProvider implements ProviderInterface
 
         $data = $this->pageContentCache->load($page, $path);
 
-        if ($page === 'homepage') {
+        if ('homepage' === $page) {
             $data['sections'] = is_array($data['sections'] ?? null) ? $data['sections'] : [];
             $data['sections']['bestseller'] = [
                 'products' => array_map(
@@ -61,7 +61,7 @@ final readonly class PageProvider implements ProviderInterface
             ];
         }
 
-        if ($page === 'categories') {
+        if ('categories' === $page) {
             $data['categories'] = array_map(
                 static fn (Category $category): array => [
                     'name' => (string) $category->getName(),
@@ -122,7 +122,7 @@ final readonly class PageProvider implements ProviderInterface
                 is_string($key)
                 && in_array($key, ['image', 'images', 'icon', 'ogImage', 'background'], true)
                 && is_string($value)
-                && $value !== ''
+                && '' !== $value
             ) {
                 $data[$key] = $this->absoluteUrl($value);
             }
@@ -133,15 +133,15 @@ final readonly class PageProvider implements ProviderInterface
 
     private function absoluteUrl(string $path): string
     {
-        if (preg_match('#^https?://#i', $path) === 1 || str_starts_with($path, '//')) {
+        if (1 === preg_match('#^https?://#i', $path) || str_starts_with($path, '//')) {
             return $path;
         }
 
         $request = $this->requestStack->getCurrentRequest();
-        if ($request === null) {
+        if (null === $request) {
             return $path;
         }
 
-        return $request->getSchemeAndHttpHost().'/'.ltrim($path, '/');
+        return $request->getSchemeAndHttpHost() . '/' . ltrim($path, '/');
     }
 }

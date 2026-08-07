@@ -7,8 +7,8 @@ use App\Application\Reviews\ReviewRequestService;
 use App\Entity\Orders\Orders;
 use App\Notifier\Services\EmailNotificationService;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Clock\ClockInterface;
+use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Workflow\WorkflowInterface;
 
 final readonly class MarkOrderDeliveredService
@@ -36,7 +36,7 @@ final readonly class MarkOrderDeliveredService
         $reviews = $this->reviewRequestService->createForOrder($order);
 
         $customerEmail = $order->getCustomer()?->getEmail();
-        if ($customerEmail !== null && $customerEmail !== '') {
+        if (null !== $customerEmail && '' !== $customerEmail) {
             $this->emailNotificationService->sendTemplatedEmail(
                 to: $customerEmail,
                 subject: sprintf('Votre commande %s a été livrée', (string) $order->getOrderReference()),

@@ -86,9 +86,18 @@
         {% endif %}
     {% endfor %}
 
+    {% if entry.vars.data.measurementCount|default(0) > 0 %}
+        <p class="config-collection__impact">
+            {{ entry.vars.data.measurementCount }} mesure{{ entry.vars.data.measurementCount > 1 ? 's' : '' }} associée{{ entry.vars.data.measurementCount > 1 ? 's' : '' }} {{ entry.vars.data.measurementCount > 1 ? 'seront' : 'sera' }} supprimée{{ entry.vars.data.measurementCount > 1 ? 's' : '' }}.
+        </p>
+    {% endif %}
+
     <button
         type="button"
         class="config-collection__remove"
+        {% if entry.vars.data.measurementCount|default(0) > 0 %}
+            data-confirm="Supprimer cet item effacera définitivement {{ entry.vars.data.measurementCount }} mesure{{ entry.vars.data.measurementCount > 1 ? 's' : '' }} associée{{ entry.vars.data.measurementCount > 1 ? 's' : '' }}. Continuer ?"
+        {% endif %}
         {{ stimulus_action('config-image-upload', 'removeCollectionItem', 'click') }}
     >Supprimer</button>
 </div>

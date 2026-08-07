@@ -29,6 +29,6 @@ final class BandeauDto
     {
         $value = trim((string) $value);
 
-        return $value !== '' ? $value : null;
+        return '' !== $value ? $value : null;
     }
 }

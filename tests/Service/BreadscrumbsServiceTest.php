@@ -97,13 +97,11 @@ class BreadscrumbsServiceTest extends TestCase
         $this->service->resolve('');
     }
 
+    public function testResolveRouteWithEmptySegmentsThrowsException(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('contains an empty segment');
 
-
-public function testResolveRouteWithEmptySegmentsThrowsException(): void
-{
-    $this->expectException(\InvalidArgumentException::class);
-    $this->expectExceptionMessage('contains an empty segment');
-
-    $this->service->resolve('app_user__index');
-}
+        $this->service->resolve('app_user__index');
+    }
 }

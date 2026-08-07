@@ -19,6 +19,7 @@ final class ReviewRepository extends ServiceEntityRepository
     public function findOneByUuid(string $uuid): ?Review
     {
         $review = $this->findOneBy(['reviewUuid' => strtolower(trim($uuid))]);
+
         return $review instanceof Review ? $review : null;
     }
 

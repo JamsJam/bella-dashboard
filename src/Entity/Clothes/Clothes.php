@@ -3,14 +3,14 @@
 namespace App\Entity\Clothes;
 
 use ApiPlatform\Metadata\ApiResource;
-use App\Entity\SizeGuide;
 use App\Entity\Avatar\Body\Body;
-use Doctrine\ORM\Mapping as ORM;
-use App\Entity\Traits\DateFieldsTrait;
 use App\Entity\Collections\Collections;
-use Doctrine\Common\Collections\Collection;
+use App\Entity\SizeGuide;
+use App\Entity\Traits\DateFieldsTrait;
 use App\Repository\Clothes\ClothesRepository;
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ClothesRepository::class)]
 #[ORM\UniqueConstraint(name: 'UNIQ_CLOTHES_NAME', columns: ['name'])]
@@ -18,7 +18,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 class Clothes
 {
     use DateFieldsTrait;
-    
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -30,7 +30,7 @@ class Clothes
     #[ORM\Column(nullable: true)]
     private ?int $price = null;
 
-    #[ORM\ManyToOne(inversedBy: 'clothes' )]
+    #[ORM\ManyToOne(inversedBy: 'clothes')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Collections $collection = null;
 
@@ -195,7 +195,7 @@ class Clothes
     public function hasOnlineVariant(): bool
     {
         foreach ($this->variants as $variant) {
-            if ($variant->getPublicationStatus() === \App\Enum\ClotheStatus::Online) {
+            if (\App\Enum\ClotheStatus::Online === $variant->getPublicationStatus()) {
                 return true;
             }
         }
@@ -212,7 +212,7 @@ class Clothes
 
         foreach ($this->variants as $variant) {
             foreach ($variant->getBodies() as $body) {
-                if ($body->getId() !== null) {
+                if (null !== $body->getId()) {
                     $bodies[$body->getId()] = $body;
                     continue;
                 }
@@ -363,5 +363,4 @@ class Clothes
 
         return $variant;
     }
-
 }

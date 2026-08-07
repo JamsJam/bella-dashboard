@@ -2,11 +2,11 @@
 
 namespace App\Application\Clothes\Services;
 
-use App\Enum\ClotheStatus;
 use App\Application\Clothes\DTO\VariantGroupInput;
 use App\Entity\Clothes\Clothes;
-use App\Entity\Clothes\ClothesVariant;
 use App\Entity\Clothes\Clothescolor;
+use App\Entity\Clothes\ClothesVariant;
+use App\Enum\ClotheStatus;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -27,7 +27,7 @@ final readonly class ClotheVariantFactory
         $color = $this->resolveColor($input);
         $images = $this->storeImages($input->images, (string) $clothe->getName(), (string) $color->getName());
         $slugger = new AsciiSlugger();
-        $slug = strtolower((string) $slugger->slug(trim($clothe->getName().' '.$color->getName())));
+        $slug = strtolower((string) $slugger->slug(trim($clothe->getName() . ' ' . $color->getName())));
         $created = [];
         $now = new \DateTimeImmutable();
 
@@ -87,8 +87,8 @@ final readonly class ClotheVariantFactory
     private function storeImages(array $files, string $clotheName, string $colorName): array
     {
         $slugger = new AsciiSlugger();
-        $directoryName = strtolower((string) $slugger->slug($clotheName.'-'.$colorName));
-        $directory = $this->projectDir.'/public/images/upload/clothes/'.$directoryName;
+        $directoryName = strtolower((string) $slugger->slug($clotheName . '-' . $colorName));
+        $directory = $this->projectDir . '/public/images/upload/clothes/' . $directoryName;
         if (!is_dir($directory) && !mkdir($directory, 0775, true) && !is_dir($directory)) {
             throw new \RuntimeException('Impossible de créer le dossier des images.');
         }
@@ -98,7 +98,7 @@ final readonly class ClotheVariantFactory
             $extension = $file->guessExtension() ?: 'jpg';
             $filename = sprintf('%02d-%s.%s', $position + 1, bin2hex(random_bytes(5)), $extension);
             $file->move($directory, $filename);
-            $paths[] = '/images/upload/clothes/'.$directoryName.'/'.$filename;
+            $paths[] = '/images/upload/clothes/' . $directoryName . '/' . $filename;
         }
 
         return $paths;
@@ -108,6 +108,6 @@ final readonly class ClotheVariantFactory
     {
         $value = trim((string) $value);
 
-        return $value === '' ? null : $value;
+        return '' === $value ? null : $value;
     }
 }

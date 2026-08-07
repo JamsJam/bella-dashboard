@@ -3,6 +3,7 @@
 namespace App\Application\PageGenerator\Blocks\Back;
 
 use App\Application\PageGenerator\Blocks\BlockInterface;
+
 // use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 final class AdminSortableTableBlock implements BlockInterface
@@ -22,8 +23,9 @@ final class AdminSortableTableBlock implements BlockInterface
     private bool $isSortable = false;
 
     public function __construct(
-        private string $theme
-    ){}
+        private string $theme,
+    ) {
+    }
 
     public function getType(): string
     {
@@ -81,7 +83,7 @@ final class AdminSortableTableBlock implements BlockInterface
                         break;
 
                     case 'boolean':
-                        $value = (bool)($item[$property] ?? false);
+                        $value = (bool) ($item[$property] ?? false);
                         $row[] = [
                             'type' => 'boolean',
                             'value' => $value,
@@ -98,13 +100,12 @@ final class AdminSortableTableBlock implements BlockInterface
 
                             $url = $action['route'];
                             $params = [$paramName => $paramValue];
-                            
 
                             $actions[] = [
-                                'type'  => $action['type'],
+                                'type' => $action['type'],
                                 'label' => $action['label'],
-                                'url'   => $url,
-                                'params'   => $params,
+                                'url' => $url,
+                                'params' => $params,
                             ];
                         }
                         $row[] = [
@@ -121,10 +122,6 @@ final class AdminSortableTableBlock implements BlockInterface
         return $rows;
     }
 
-
-
-
-
     // ===== theme =====
     public function getTheme(): string
     {
@@ -134,6 +131,7 @@ final class AdminSortableTableBlock implements BlockInterface
     public function setTheme(string $theme): static
     {
         $this->theme = $theme;
+
         return $this;
     }
 
@@ -146,6 +144,7 @@ final class AdminSortableTableBlock implements BlockInterface
     public function setRows(array $rows): static
     {
         $this->rows = $rows;
+
         return $this;
     }
 
@@ -158,8 +157,10 @@ final class AdminSortableTableBlock implements BlockInterface
     public function setIsPaginated(bool $isPaginated): static
     {
         $this->isPaginated = $isPaginated;
+
         return $this;
     }
+
     public function getTotalPage(): bool
     {
         return $this->totalPage;
@@ -168,6 +169,7 @@ final class AdminSortableTableBlock implements BlockInterface
     public function setTotalPage(bool $totalPage): static
     {
         $this->totalPage = $totalPage;
+
         return $this;
     }
 
@@ -180,6 +182,7 @@ final class AdminSortableTableBlock implements BlockInterface
     public function setReverse(bool $reverse): static
     {
         $this->reverse = $reverse;
+
         return $this;
     }
 
@@ -192,6 +195,7 @@ final class AdminSortableTableBlock implements BlockInterface
     public function setColTitles(array $colTitles): static
     {
         $this->colTitles = $colTitles;
+
         return $this;
     }
 
@@ -204,6 +208,7 @@ final class AdminSortableTableBlock implements BlockInterface
     public function setMaxItems(int $maxItems): static
     {
         $this->maxItems = $maxItems;
+
         return $this;
     }
 
@@ -216,6 +221,7 @@ final class AdminSortableTableBlock implements BlockInterface
     public function setNoItemsLabel(string $noItemsLabel): static
     {
         $this->noItemsLabel = $noItemsLabel;
+
         return $this;
     }
 
@@ -228,6 +234,7 @@ final class AdminSortableTableBlock implements BlockInterface
     public function setTableTitle(string $tableTitle): static
     {
         $this->tableTitle = $tableTitle;
+
         return $this;
     }
 
@@ -240,22 +247,23 @@ final class AdminSortableTableBlock implements BlockInterface
     public function setMaxPage(?int $maxPage): static
     {
         $this->maxPage = $maxPage;
+
         return $this;
     }
 
     /**
-     * Get the value of currentDirection
-     */ 
+     * Get the value of currentDirection.
+     */
     public function getCurrentDirection(): ?string
     {
         return $this->currentDirection;
     }
 
     /**
-     * Set the value of currentDirection
+     * Set the value of currentDirection.
      *
-     * @return  self
-     */ 
+     * @return self
+     */
     public function setCurrentDirection(?string $currentDirection): static
     {
         $this->currentDirection = $currentDirection;
@@ -264,18 +272,18 @@ final class AdminSortableTableBlock implements BlockInterface
     }
 
     /**
-     * Get the value of currentSort
-     */ 
+     * Get the value of currentSort.
+     */
     public function getCurrentSort(): ?string
     {
         return $this->currentSort;
     }
 
     /**
-     * Set the value of currentSort
+     * Set the value of currentSort.
      *
-     * @return  self
-     */ 
+     * @return self
+     */
     public function setCurrentSort(?string $currentSort): static
     {
         $this->currentSort = $currentSort;
@@ -284,18 +292,18 @@ final class AdminSortableTableBlock implements BlockInterface
     }
 
     /**
-     * Get the value of isSortable
-     */ 
+     * Get the value of isSortable.
+     */
     public function getIsSortable(): bool
     {
         return $this->isSortable;
     }
 
     /**
-     * Set the value of isSortable
+     * Set the value of isSortable.
      *
-     * @return  self
-     */ 
+     * @return self
+     */
     public function setIsSortable($isSortable): static
     {
         $this->isSortable = $isSortable;
@@ -304,18 +312,18 @@ final class AdminSortableTableBlock implements BlockInterface
     }
 
     /**
-     * Get the value of currentPage
-     */ 
+     * Get the value of currentPage.
+     */
     public function getCurrentPage(): ?int
     {
         return $this->currentPage;
     }
 
     /**
-     * Set the value of currentPage
+     * Set the value of currentPage.
      *
-     * @return  self
-     */ 
+     * @return self
+     */
     public function setCurrentPage($currentPage): static
     {
         $this->currentPage = $currentPage;

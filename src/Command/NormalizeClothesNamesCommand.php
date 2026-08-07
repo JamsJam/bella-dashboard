@@ -73,11 +73,11 @@ final class NormalizeClothesNamesCommand extends Command
 
             foreach ($canonical->getVariants() as $variant) {
                 $colorName = trim((string) $variant->getColor()?->getName());
-                if ($colorName === '') {
+                if ('' === $colorName) {
                     continue;
                 }
 
-                $slug = strtolower((string) (new AsciiSlugger())->slug($name.' '.$colorName));
+                $slug = strtolower((string) (new AsciiSlugger())->slug($name . ' ' . $colorName));
                 if ($variant->getSlug() !== $slug) {
                     $variant->setSlug($slug)->setEditedAt($now);
                     ++$updatedSlugs;

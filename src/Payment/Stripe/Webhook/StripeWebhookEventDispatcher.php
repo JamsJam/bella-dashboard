@@ -27,7 +27,7 @@ final readonly class StripeWebhookEventDispatcher
     {
         try {
             $event = Webhook::constructEvent($payload, $signature, $this->stripeConfig->getWebhookSecret());
-        } catch (SignatureVerificationException|\UnexpectedValueException $exception) {
+        } catch (SignatureVerificationException | \UnexpectedValueException $exception) {
             throw new BadRequestHttpException('Invalid Stripe webhook signature.', $exception);
         }
 
@@ -41,7 +41,7 @@ final readonly class StripeWebhookEventDispatcher
         }
 
         $orderId = filter_var($session->metadata['order_id'] ?? null, FILTER_VALIDATE_INT);
-        if ($orderId === false || $orderId <= 0) {
+        if (false === $orderId || $orderId <= 0) {
             throw new \InvalidArgumentException('Stripe webhook missing order_id metadata.');
         }
 

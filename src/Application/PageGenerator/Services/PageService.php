@@ -14,7 +14,7 @@ final class PageService
     ) {
     }
 
-    public function createPageFromYamlFile(string $filePath,array $params = []): Page
+    public function createPageFromYamlFile(string $filePath, array $params = []): Page
     {
         // $yamlData = $this->yamlLoaderService->load($filePath); //yamlService
 

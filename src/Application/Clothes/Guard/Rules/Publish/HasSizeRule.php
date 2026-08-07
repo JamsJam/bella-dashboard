@@ -9,7 +9,7 @@ final readonly class HasSizeRule implements ClothePublishRuleInterface
     public function validate(Clothes $clothe): ?string
     {
         foreach ($clothe->getVariants() as $variant) {
-            if ($variant->getSize() !== null) {
+            if (null !== $variant->getSize()) {
                 return null;
             }
         }

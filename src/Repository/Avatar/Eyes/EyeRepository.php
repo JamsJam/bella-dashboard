@@ -21,20 +21,20 @@ class EyeRepository extends ServiceEntityRepository implements AvatarPartModelIn
      * @return Eye[] Returns an array of Eye objects
      */
     public function findAllByFilters(
-        array $filter = []
+        array $filter = [],
     ): array {
         $color = $filter['color'] ?? null;
         $shape = $filter['shape'] ?? null;
-        
+
         $qb = $this->createQueryBuilder('e');
 
-        if ($color !== 0 && $color !== null) {
+        if (0 !== $color && null !== $color) {
             $qb->leftJoin('e.color', 'c')
                 ->andWhere('c.id = :color')
                 ->setParameter('color', $color);
         }
 
-        if ($shape !== 0 && $shape !== null) {
+        if (0 !== $shape && null !== $shape) {
             $qb->leftJoin('e.shape', 's')
                 ->andWhere('s.id = :shape')
                 ->setParameter('shape', $shape);
@@ -43,17 +43,11 @@ class EyeRepository extends ServiceEntityRepository implements AvatarPartModelIn
         return $qb->getQuery()->getArrayResult();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function findPartByFilters(array $filters = []): array
     {
         return $this->findAllByFilters($filters);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function findAllPart(): array
     {
         return $this->findAll();

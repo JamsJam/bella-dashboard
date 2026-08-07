@@ -28,24 +28,33 @@
             {% endset %}
 
 
-            {#todo macro badge  #}
             {% set statusBadge = '' %}
-            {% if item.publicationStatus|default(null) == 'online' %}
-                {% set statusBadge = '<span class="product-grid-card__status product-grid-card__status--online">En ligne</span>' %}
-            {% elseif item.publicationStatus|default(null) == 'publishable' %}
-                {% set statusBadge = '<span class="product-grid-card__status product-grid-card__status--publishable">Publiable</span>' %}
-            {% elseif item.publicationStatus|default(null) == 'offline' %}
-                {% set statusBadge = '<span class="product-grid-card__status product-grid-card__status--offline">Hors ligne</span>' %}
-            {% elseif item.publicationStatus|default(null) == 'draft' %}
-                {% set statusBadge = '<span class="product-grid-card__status product-grid-card__status--offline">Brouillon</span>' %}
-            {% elseif item.publicationStatus|default(null) == 'scheduled' %}
-                {% set statusBadge = '<span class="product-grid-card__status product-grid-card__status--publishable">Planifié</span>' %}
-            {% elseif item.publicationStatus|default(null) == 'archived' %}
-                {% set statusBadge = '<span class="product-grid-card__status product-grid-card__status--offline">Archivé</span>' %}
+            {% if item.publicationStatus|default(null) %}
+                {% set statusLabels = {
+                    draft: 'Brouillon',
+                    publishable: 'Publiable',
+                    scheduled: 'Planifié',
+                    online: 'En ligne',
+                    offline: 'Hors ligne',
+                    archived: 'Archivé'
+                } %}
+                {% set statusBadge = include('ui/components/badge/_badge.html.twig', {
+                    label: statusLabels[item.publicationStatus]|default(item.publicationStatus),
+                    variant: item.publicationStatus,
+                    wrapperClass: 'product-grid-card__status-list'
+                }, with_context = false) %}
             {% elseif item.isOnline is same as(true) %}
-                {% set statusBadge = '<span class="product-grid-card__status product-grid-card__status--online">En ligne</span>' %}
+                {% set statusBadge = include('ui/components/badge/_badge.html.twig', {
+                    label: 'En ligne',
+                    variant: 'online',
+                    wrapperClass: 'product-grid-card__status-list'
+                }, with_context = false) %}
             {% elseif item.isOnline is same as(false) %}
-                {% set statusBadge = '<span class="product-grid-card__status product-grid-card__status--offline">Hors ligne</span>' %}
+                {% set statusBadge = include('ui/components/badge/_badge.html.twig', {
+                    label: 'Hors ligne',
+                    variant: 'offline',
+                    wrapperClass: 'product-grid-card__status-list'
+                }, with_context = false) %}
             {% endif %}
 
             {% set detailUrl = detailUrlTemplate|default('#') == '#'

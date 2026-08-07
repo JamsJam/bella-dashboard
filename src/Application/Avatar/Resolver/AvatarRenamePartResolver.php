@@ -16,7 +16,7 @@ final readonly class AvatarRenamePartResolver
 
     public function resolvePart(AvatarRenameInstruction $message): object
     {
-        if ($message->category !== 'hair') {
+        if ('hair' !== $message->category) {
             return $this->avatarPartFactory->createFromCategory($message->category);
         }
 
@@ -31,7 +31,7 @@ final readonly class AvatarRenamePartResolver
     public function resolveExistingPart(AvatarRenameInstruction $message, string $imagePath): ?object
     {
         $entityClass = $this->avatarPartFactory->resolveEntityClass($message->category);
-        $criteria = $message->category === 'hair'
+        $criteria = 'hair' === $message->category
             ? ['name' => $this->resolveName($message)]
             : ['image' => $imagePath];
         $avatarPart = $this->entityManager->getRepository($entityClass)->findOneBy($criteria);
@@ -43,7 +43,7 @@ final readonly class AvatarRenamePartResolver
     {
         $name = pathinfo($message->newName, PATHINFO_FILENAME);
 
-        if ($message->category === 'hair') {
+        if ('hair' === $message->category) {
             return preg_replace('/__(front|back)$/', '', $name) ?? $name;
         }
 
@@ -55,9 +55,8 @@ final readonly class AvatarRenamePartResolver
         AvatarRenameInstruction $message,
         string $imagePath,
         bool $allowSideReplacement = false,
-    ): array
-    {
-        if ($message->category !== 'hair') {
+    ): array {
+        if ('hair' !== $message->category) {
             return [$imagePath];
         }
 

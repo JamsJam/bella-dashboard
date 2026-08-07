@@ -50,24 +50,24 @@ final readonly class PageConfigService
     private function storeSectionImage(UploadedFile $file, PageConfigDto $config, PageSectionDto $section): string
     {
         $publicPath = '/images/upload/config/pages';
-        $directory = $this->projectDir.'/public'.$publicPath;
+        $directory = $this->projectDir . '/public' . $publicPath;
 
         if (!is_dir($directory) && !mkdir($directory, 0775, true) && !is_dir($directory)) {
             throw new \RuntimeException(sprintf('Unable to create upload directory "%s".', $directory));
         }
 
         $extension = strtolower((string) ($file->guessExtension() ?: $file->getClientOriginalExtension()));
-        if ($extension === 'jpeg') {
+        if ('jpeg' === $extension) {
             $extension = 'jpg';
         }
 
-        $sectionName = $section->type !== '' ? $section->type : 'section';
+        $sectionName = '' !== $section->type ? $section->type : 'section';
         $slugger = new AsciiSlugger();
-        $slug = strtolower((string) $slugger->slug($config->normalizedSlug().'-'.$sectionName));
+        $slug = strtolower((string) $slugger->slug($config->normalizedSlug() . '-' . $sectionName));
         $filename = sprintf('page-%s-%s.%s', $slug, bin2hex(random_bytes(4)), $extension);
 
         $file->move($directory, $filename);
 
-        return $publicPath.'/'.$filename;
+        return $publicPath . '/' . $filename;
     }
 }

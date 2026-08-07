@@ -21,7 +21,7 @@ final class CollectionCreationService
     public function createFromRequest(Request $request): Collections
     {
         $name = trim((string) $request->request->get('name', ''));
-        if ($name === '') {
+        if ('' === $name) {
             throw new \InvalidArgumentException('Le nom de la collection est obligatoire.');
         }
 
@@ -42,11 +42,11 @@ final class CollectionCreationService
     {
         $newCategoryName = trim((string) $request->request->get('newCategory', ''));
 
-        if ($newCategoryName !== '') {
+        if ('' !== $newCategoryName) {
             return $this->collectionPersister->createCategory($newCategoryName);
         }
 
-        if ((string) $request->request->get('category') === '__new__') {
+        if ('__new__' === (string) $request->request->get('category')) {
             return null;
         }
 

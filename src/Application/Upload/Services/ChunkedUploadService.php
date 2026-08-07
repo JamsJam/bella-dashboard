@@ -22,7 +22,7 @@ final readonly class ChunkedUploadService
             throw new \RuntimeException('Unable to create temporary upload directory.');
         }
 
-        $request->chunk->move($tempDir, 'chunk_'.$request->chunkIndex);
+        $request->chunk->move($tempDir, 'chunk_' . $request->chunkIndex);
 
         $receivedChunks = $this->countReceivedChunks($request->fileId, $request->totalChunks);
 
@@ -38,16 +38,16 @@ final readonly class ChunkedUploadService
         $tempDir = $this->getTempDir($request->fileId);
         $output = fopen($finalPath, 'wb');
 
-        if ($output === false) {
+        if (false === $output) {
             throw new \RuntimeException('Unable to open final file.');
         }
 
         try {
-            for ($index = 0; $index < $request->totalChunks; $index++) {
-                $chunkPath = $tempDir.'/chunk_'.$index;
+            for ($index = 0; $index < $request->totalChunks; ++$index) {
+                $chunkPath = $tempDir . '/chunk_' . $index;
                 $input = fopen($chunkPath, 'rb');
 
-                if ($input === false) {
+                if (false === $input) {
                     throw new \RuntimeException(sprintf('Unable to open chunk "%s".', $chunkPath));
                 }
 
@@ -67,7 +67,7 @@ final readonly class ChunkedUploadService
             return;
         }
 
-        foreach (glob($tempDir.'/*') ?: [] as $file) {
+        foreach (glob($tempDir . '/*') ?: [] as $file) {
             if (is_file($file)) {
                 @unlink($file);
             }
@@ -81,9 +81,9 @@ final readonly class ChunkedUploadService
         $tempDir = $this->getTempDir($fileId);
         $receivedChunks = 0;
 
-        for ($index = 0; $index < $totalChunks; $index++) {
-            if (is_file($tempDir.'/chunk_'.$index)) {
-                $receivedChunks++;
+        for ($index = 0; $index < $totalChunks; ++$index) {
+            if (is_file($tempDir . '/chunk_' . $index)) {
+                ++$receivedChunks;
             }
         }
 
@@ -92,6 +92,6 @@ final readonly class ChunkedUploadService
 
     private function getTempDir(string $fileId): string
     {
-        return $this->projectDir.'/var/avatar-upload-chunks/'.$fileId;
+        return $this->projectDir . '/var/avatar-upload-chunks/' . $fileId;
     }
 }

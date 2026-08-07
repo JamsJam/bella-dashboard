@@ -33,7 +33,7 @@ final readonly class AvatarUploadService
         }
 
         $validationError = $this->avatarImageUploadValidator->validateMetadata($chunkUploadRequest);
-        if ($validationError !== null) {
+        if (null !== $validationError) {
             return AvatarUploadResult::error($validationError, Response::HTTP_BAD_REQUEST);
         }
 
@@ -83,7 +83,7 @@ final readonly class AvatarUploadService
 
     private function rebuildAvatarFile(ChunkUploadRequest $request): AvatarUploadResult
     {
-        $uploadDir = $this->projectDir.'/var/avatar-temp/'.$request->fileId;
+        $uploadDir = $this->projectDir . '/var/avatar-temp/' . $request->fileId;
 
         if (!is_dir($uploadDir) && !mkdir($uploadDir, 0775, true) && !is_dir($uploadDir)) {
             $this->chunkedUploadService->cleanup($request->fileId);
@@ -116,7 +116,7 @@ final readonly class AvatarUploadService
             ->setStoredName(basename($finalPath))
             ->setRelativePath($request->relativePath)
             ->setTempPath($finalPath)
-            ->setMimeType($request->mimeType !== '' ? $request->mimeType : 'image/png')
+            ->setMimeType('' !== $request->mimeType ? $request->mimeType : 'image/png')
             ->setFileSize($request->fileSize)
             ->setExtension('png')
             ->setStatus('uploaded');
@@ -141,23 +141,23 @@ final readonly class AvatarUploadService
         $slugger = new AsciiSlugger();
         $safeName = strtolower((string) $slugger->slug($baseName));
 
-        if ($safeName === '') {
+        if ('' === $safeName) {
             $safeName = 'avatar';
         }
 
-        return $safeName.'.png';
+        return $safeName . '.png';
     }
 
     private function createStoredImageFilename(string $originalName): string
     {
         $baseName = pathinfo($this->createSafeImageFilename($originalName), PATHINFO_FILENAME);
 
-        return $baseName.'-'.bin2hex(random_bytes(4)).'.png';
+        return $baseName . '-' . bin2hex(random_bytes(4)) . '.png';
     }
 
     private function createAvailablePath(string $uploadDir, string $filename): string
     {
-        $path = $uploadDir.'/'.$filename;
+        $path = $uploadDir . '/' . $filename;
 
         if (!file_exists($path)) {
             return $path;
@@ -165,6 +165,6 @@ final readonly class AvatarUploadService
 
         $baseName = pathinfo($filename, PATHINFO_FILENAME);
 
-        return $uploadDir.'/'.$baseName.'-'.bin2hex(random_bytes(6)).'.png';
+        return $uploadDir . '/' . $baseName . '-' . bin2hex(random_bytes(6)) . '.png';
     }
 }

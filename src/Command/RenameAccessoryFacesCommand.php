@@ -2,7 +2,6 @@
 
 namespace App\Command;
 
-use App\Entity\Avatar\Faces\Faces;
 use App\Repository\Avatar\Faces\FacesRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -44,7 +43,7 @@ final class RenameAccessoryFacesCommand extends Command
         $faces = $this->facesRepository->findByNamePrefix(self::OLD_PREFIX);
         $dryRun = (bool) $input->getOption('dry-run');
 
-        if ($faces === []) {
+        if ([] === $faces) {
             $io->success('Aucun visage dont le nom commence par « accessory » n’a été trouvé.');
 
             return Command::SUCCESS;
@@ -52,7 +51,7 @@ final class RenameAccessoryFacesCommand extends Command
 
         foreach ($faces as $face) {
             $oldName = (string) $face->getName();
-            $newName = self::NEW_PREFIX.substr($oldName, strlen(self::OLD_PREFIX));
+            $newName = self::NEW_PREFIX . substr($oldName, strlen(self::OLD_PREFIX));
             $io->writeln(sprintf('%s → %s', $oldName, $newName));
 
             if (!$dryRun) {

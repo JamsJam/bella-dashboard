@@ -37,7 +37,7 @@ final readonly class CategoryListProvider implements ProviderInterface
 
         $category = $this->categoryRepository->findOneBy(['slug' => $categorySlug, 'isOnline' => true]);
 
-        if (!$category instanceof Category || $category->getId() === null) {
+        if (!$category instanceof Category || null === $category->getId()) {
             throw new NotFoundHttpException(sprintf('La catégorie "%s" est introuvable.', $categorySlug));
         }
 
@@ -72,7 +72,7 @@ final readonly class CategoryListProvider implements ProviderInterface
 
         foreach ($variants as $variant) {
             $slug = $variant->getSlug();
-            if ($slug !== null && $slug !== '') {
+            if (null !== $slug && '' !== $slug) {
                 $groups[$slug][] = $variant;
             }
         }
@@ -91,7 +91,7 @@ final readonly class CategoryListProvider implements ProviderInterface
 
         foreach ($variants as $variant) {
             foreach ($variant->getImages() ?? [] as $path) {
-                if (is_string($path) && $path !== '') {
+                if (is_string($path) && '' !== $path) {
                     $paths[$path] = $path;
                 }
             }
@@ -110,7 +110,7 @@ final readonly class CategoryListProvider implements ProviderInterface
         $urls = [];
 
         foreach ($paths as $path) {
-            if (!is_string($path) || $path === '') {
+            if (!is_string($path) || '' === $path) {
                 continue;
             }
 
@@ -131,7 +131,7 @@ final readonly class CategoryListProvider implements ProviderInterface
 
         foreach ($variants as $variant) {
             $color = $variant->getColor()?->getName();
-            if (is_string($color) && $color !== '') {
+            if (is_string($color) && '' !== $color) {
                 $colors[$color] = $color;
             }
         }
@@ -141,15 +141,15 @@ final readonly class CategoryListProvider implements ProviderInterface
 
     private function absoluteUrl(string $path): string
     {
-        if (preg_match('#^https?://#i', $path) === 1 || str_starts_with($path, '//')) {
+        if (1 === preg_match('#^https?://#i', $path) || str_starts_with($path, '//')) {
             return $path;
         }
 
         $request = $this->requestStack->getCurrentRequest();
-        if ($request === null) {
+        if (null === $request) {
             return $path;
         }
 
-        return $request->getSchemeAndHttpHost().'/'.ltrim($path, '/');
+        return $request->getSchemeAndHttpHost() . '/' . ltrim($path, '/');
     }
 }

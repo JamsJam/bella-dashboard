@@ -27,21 +27,21 @@ class FacesRepository extends ServiceEntityRepository implements AvatarPartModel
     ): array {
         $qb = $this->createQueryBuilder('f');
 
-        if ($skincolor !== 0 && $skincolor !== null) {
+        if (0 !== $skincolor && null !== $skincolor) {
             $qb->leftJoin('f.skincolor', 'sc')
                 ->andWhere('sc.id = :skincolor')
                 ->setParameter('skincolor', $skincolor);
         }
 
-        if ($shape !== 0 && $shape !== null) {
+        if (0 !== $shape && null !== $shape) {
             $qb->leftJoin('f.shape', 's')
                 ->andWhere('s.id = :shape')
                 ->setParameter('shape', $shape);
         }
 
-        if ($accessory === '-none-') {
+        if ('-none-' === $accessory) {
             $qb->andWhere('f.accessory IS NULL');
-        } elseif ($accessory !== 0 && $accessory !== null && $accessory !== '') {
+        } elseif (0 !== $accessory && null !== $accessory && '' !== $accessory) {
             $qb->leftJoin('f.accessory', 'a')
                 ->andWhere('a.id = :accessory')
                 ->setParameter('accessory', (int) $accessory);
@@ -50,9 +50,6 @@ class FacesRepository extends ServiceEntityRepository implements AvatarPartModel
         return $qb->getQuery()->getArrayResult();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function findPartByFilters(array $filters = []): array
     {
         return $this->findAllByFilters(
@@ -67,7 +64,7 @@ class FacesRepository extends ServiceEntityRepository implements AvatarPartModel
      */
     public function findAccessorizedFor(Faces $face): array
     {
-        if ($face->getSkincolor() === null || $face->getShape() === null) {
+        if (null === $face->getSkincolor() || null === $face->getShape()) {
             return [];
         }
 
@@ -89,15 +86,12 @@ class FacesRepository extends ServiceEntityRepository implements AvatarPartModel
     {
         return $this->createQueryBuilder('f')
             ->andWhere('f.name LIKE :prefix')
-            ->setParameter('prefix', $prefix.'%')
+            ->setParameter('prefix', $prefix . '%')
             ->orderBy('f.id', 'ASC')
             ->getQuery()
             ->getResult();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function findAllPart(): array
     {
         return $this->findAll();

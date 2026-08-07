@@ -2,7 +2,9 @@
 
 .config-hub {
     @extend %flex-column-start-stretch;
+    @extend %theme-transition;
     gap: 1.5rem;
+    color: var(--text);
 }
 
 .config-hub__grid {
@@ -72,11 +74,39 @@
 
 .config-page {
     @extend %flex-column-start-stretch;
+    @extend %theme-transition;
     gap: 1.5rem;
+    color: var(--text);
+}
+
+:root[data-theme="dark"] .config-page {
+    color-scheme: dark;
+}
+
+:root[data-theme="light"] .config-page {
+    color-scheme: light;
+}
+
+.config-page h1,
+.config-page h2,
+.config-page h3,
+.config-page legend,
+.config-page strong,
+.config-page label {
+    color: var(--text);
+}
+
+.config-page p,
+.config-page small,
+.config-page .form-text,
+.config-page .help-text {
+    color: var(--text-muted);
 }
 
 .config-page__content {
+    inline-size: 100%;
     max-inline-size: 52rem;
+    margin-inline: auto;
 }
 
 .config-page__back {
@@ -90,6 +120,7 @@
 
 .config-card {
     @extend %flex-column-start-stretch;
+    @extend %theme-transition;
     gap: 1rem;
     padding: 1rem;
     border: 1px solid var(--border);
@@ -127,12 +158,69 @@
 .config-field textarea,
 .config-field select,
 .config-collection input {
+    @extend %theme-transition;
     inline-size: 100%;
     border: 1px solid var(--border);
     border-radius: 0.35rem;
     padding: 0.65rem 0.75rem;
     background: var(--bg);
     color: var(--text);
+    font: inherit;
+}
+
+.config-field input::placeholder,
+.config-field textarea::placeholder,
+.config-collection input::placeholder {
+    color: var(--text-muted);
+    opacity: 0.72;
+}
+
+.config-field select option {
+    background: var(--bg);
+    color: var(--text);
+}
+
+.config-field input:hover,
+.config-field textarea:hover,
+.config-field select:hover,
+.config-collection input:hover {
+    border-color: var(--border-muted);
+}
+
+.config-field input:focus-visible,
+.config-field textarea:focus-visible,
+.config-field select:focus-visible,
+.config-collection input:focus-visible {
+    border-color: var(--primary);
+    outline: 0;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 20%, transparent);
+}
+
+.config-field input:disabled,
+.config-field textarea:disabled,
+.config-field select:disabled,
+.config-collection input:disabled {
+    background: var(--bg-dark);
+    color: var(--text-muted);
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.config-field input[type="checkbox"],
+.config-field input[type="radio"],
+.config-checkbox input {
+    inline-size: 1.1rem;
+    block-size: 1.1rem;
+    accent-color: var(--primary);
+}
+
+.config-card > ul,
+.config-field ul,
+.config-collection > ul,
+.config-page .invalid-feedback {
+    color: var(--danger);
+    font-size: 0.82rem;
+    line-height: 1.45;
 }
 
 .config-field textarea {
@@ -151,11 +239,14 @@
 }
 
 .orders-config-tabs {
+    @extend %theme-transition;
     display: grid;
     gap: 1.25rem;
+    color: var(--text);
 }
 
 .orders-config-tabs__nav {
+    @extend %theme-transition;
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 0.5rem;
@@ -166,6 +257,7 @@
 }
 
 .orders-config-tabs__tab {
+    @extend %theme-transition;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
@@ -212,6 +304,7 @@
 }
 
 .orders-config-tabs__panel {
+    @extend %theme-transition;
     display: grid;
     gap: 1rem;
     min-inline-size: 0;
@@ -587,6 +680,13 @@
     font-weight: 700;
 }
 
+.config-group__description {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    line-height: 1.5;
+}
+
 .config-page-list {
     display: grid;
     gap: 0.75rem;
@@ -636,10 +736,13 @@
 
 .config-collection__item {
     @extend %flex-column-start-stretch;
+    @extend %theme-transition;
     gap: 0.75rem;
     padding: 0.75rem;
     border: 1px solid var(--border);
     border-radius: 0.5rem;
+    background: var(--bg-light);
+    color: var(--text);
 }
 
 .config-collection__item > div {
@@ -649,6 +752,7 @@
 
 .config-collection__add,
 .config-collection__remove {
+    @extend %theme-transition;
     border: 1px solid var(--border);
     border-radius: 0.35rem;
     padding: 0.45rem 0.65rem;
@@ -657,8 +761,31 @@
     cursor: pointer;
 }
 
+.config-collection__add:hover,
+.config-collection__add:focus-visible {
+    border-color: var(--primary);
+    outline: 0;
+    background: color-mix(in srgb, var(--primary) 12%, var(--bg));
+    color: var(--primary);
+}
+
 .config-collection__remove {
     align-self: flex-end;
+    color: var(--danger);
+}
+
+.config-collection__impact {
+    margin: 0;
+    color: var(--danger);
+    font-size: 0.8rem;
+    line-height: 1.45;
+}
+
+.config-collection__remove:hover,
+.config-collection__remove:focus-visible {
+    border-color: var(--danger);
+    outline: 0;
+    background: color-mix(in srgb, var(--danger) 10%, var(--bg));
 }
 
 .config-file__row {
@@ -670,6 +797,7 @@
 }
 
 .config-file__zone {
+    @extend %theme-transition;
     position: relative;
     flex: 1 1 24rem;
     border: 1px dashed var(--border);
@@ -685,8 +813,15 @@
 }
 
 .config-file__zone.is-drag-over {
-    border-color: var(--text);
-    background: var(--bg-light);
+    border-color: var(--primary);
+    background: color-mix(in srgb, var(--primary) 8%, var(--bg-light));
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 18%, transparent);
+}
+
+.config-file__zone:hover,
+.config-file__zone:focus-within {
+    border-color: var(--primary);
+    background: color-mix(in srgb, var(--primary) 5%, var(--bg));
 }
 
 .config-file__input {

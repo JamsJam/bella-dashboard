@@ -21,7 +21,7 @@ final class FaceAccessoryRepository extends ServiceEntityRepository implements A
     {
         $name = $this->normalizeName($name);
 
-        if ($name === '' || $name === 'none') {
+        if ('' === $name || 'none' === $name) {
             throw new \InvalidArgumentException('Invalid face accessory name.');
         }
 

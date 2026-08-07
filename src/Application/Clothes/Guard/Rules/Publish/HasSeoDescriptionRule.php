@@ -16,11 +16,11 @@ final readonly class HasSeoDescriptionRule implements ClotheVariantsPublishRuleI
     public function validateVariants(array $variants): ?string
     {
         foreach ($variants as $variant) {
-            if (trim((string) $variant->getMetadescription()) === '') {
+            if ('' === trim((string) $variant->getMetadescription())) {
                 return 'Chaque variante doit avoir une meta description SEO.';
             }
         }
 
-        return $variants !== [] ? null : 'Au moins une variante est requise.';
+        return [] !== $variants ? null : 'Au moins une variante est requise.';
     }
 }

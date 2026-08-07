@@ -28,7 +28,7 @@ final readonly class AvatarPartRenameQueueService
         }
 
         $sourcePath = $this->resolveSourcePath($avatarPart);
-        if ($sourcePath === null || !is_file($sourcePath)) {
+        if (null === $sourcePath || !is_file($sourcePath)) {
             throw new \RuntimeException('Avatar PNG file not found.', 422);
         }
 
@@ -37,7 +37,7 @@ final readonly class AvatarPartRenameQueueService
         }
 
         $fileId = bin2hex(random_bytes(16));
-        $uploadDir = $this->projectDir.'/var/avatar-temp/'.$fileId;
+        $uploadDir = $this->projectDir . '/var/avatar-temp/' . $fileId;
 
         if (!is_dir($uploadDir) && !mkdir($uploadDir, 0775, true) && !is_dir($uploadDir)) {
             throw new \RuntimeException('Unable to create avatar temporary directory.', 500);
@@ -45,13 +45,13 @@ final readonly class AvatarPartRenameQueueService
 
         $originalName = basename($sourcePath);
         $storedName = $this->createStoredImageFilename($originalName);
-        $tempPath = $uploadDir.'/'.$storedName;
+        $tempPath = $uploadDir . '/' . $storedName;
 
         $this->copySourceFile($sourcePath, $tempPath);
 
         $sourceChecksum = hash_file('sha256', $sourcePath);
         $temporaryChecksum = hash_file('sha256', $tempPath);
-        if ($sourceChecksum === false || $temporaryChecksum === false || !hash_equals($sourceChecksum, $temporaryChecksum)) {
+        if (false === $sourceChecksum || false === $temporaryChecksum || !hash_equals($sourceChecksum, $temporaryChecksum)) {
             @unlink($tempPath);
             @rmdir($uploadDir);
 
@@ -61,7 +61,7 @@ final readonly class AvatarPartRenameQueueService
         $avatarTemp = (new AvatarTemp())
             ->setOriginalName($originalName)
             ->setStoredName($storedName)
-            ->setRelativePath($part.'/'.$originalName)
+            ->setRelativePath($part . '/' . $originalName)
             ->setTempPath($tempPath)
             ->setMimeType('image/png')
             ->setFileSize((int) filesize($tempPath))
@@ -109,7 +109,7 @@ final readonly class AvatarPartRenameQueueService
             $image = is_array($images) ? ($images[0] ?? $images['front'] ?? reset($images) ?: null) : null;
         }
 
-        if (!is_string($image) || trim($image) === '') {
+        if (!is_string($image) || '' === trim($image)) {
             return null;
         }
 
@@ -118,10 +118,12 @@ final readonly class AvatarPartRenameQueueService
         }
 
         $relativePath = ltrim($image, '/');
-        foreach ([
-            $this->projectDir.'/public/'.$relativePath,
-            $this->projectDir.'/'.$relativePath,
-        ] as $path) {
+        foreach (
+            [
+            $this->projectDir . '/public/' . $relativePath,
+            $this->projectDir . '/' . $relativePath,
+            ] as $path
+        ) {
             if (is_file($path)) {
                 return $path;
             }
@@ -143,10 +145,10 @@ final readonly class AvatarPartRenameQueueService
         $slugger = new AsciiSlugger();
         $safeName = strtolower((string) $slugger->slug($baseName));
 
-        if ($safeName === '') {
+        if ('' === $safeName) {
             $safeName = 'avatar';
         }
 
-        return $safeName.'-'.bin2hex(random_bytes(4)).'.png';
+        return $safeName . '-' . bin2hex(random_bytes(4)) . '.png';
     }
 }

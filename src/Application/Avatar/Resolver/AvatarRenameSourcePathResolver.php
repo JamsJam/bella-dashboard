@@ -19,11 +19,11 @@ final readonly class AvatarRenameSourcePathResolver
     {
         $sourcePath = $avatarTemp->getTempPath();
 
-        if ($sourcePath === null || !is_file($sourcePath)) {
+        if (null === $sourcePath || !is_file($sourcePath)) {
             throw new \RuntimeException('Temporary avatar file not found.');
         }
 
-        $this->assertPathIsInside($sourcePath, $this->projectDir.'/var/avatar-temp');
+        $this->assertPathIsInside($sourcePath, $this->projectDir . '/var/avatar-temp');
 
         if (!$this->avatarImageUploadValidator->isValidPngFile($sourcePath)) {
             throw new \RuntimeException('Temporary avatar file is not a valid PNG.');
@@ -34,13 +34,13 @@ final readonly class AvatarRenameSourcePathResolver
 
     private function assertPathIsInside(string $path, string $allowedRoot): void
     {
-        $allowedRoot = rtrim($allowedRoot, '/').'/';
+        $allowedRoot = rtrim($allowedRoot, '/') . '/';
         $directory = is_dir($path) ? $path : dirname($path);
 
         $realAllowedRoot = realpath($allowedRoot);
         $realDirectory = realpath($directory);
 
-        if ($realAllowedRoot === false || $realDirectory === false || !str_starts_with($realDirectory.'/', rtrim($realAllowedRoot, '/').'/')) {
+        if (false === $realAllowedRoot || false === $realDirectory || !str_starts_with($realDirectory . '/', rtrim($realAllowedRoot, '/') . '/')) {
             throw new \RuntimeException('Path is outside the allowed avatar directory.');
         }
     }

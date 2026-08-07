@@ -25,7 +25,7 @@ final readonly class DeliveryDatePolicy
 
     public function isAllowed(?\DateTimeImmutable $deliveryDate): bool
     {
-        return $deliveryDate !== null
+        return null !== $deliveryDate
             && $deliveryDate->setTimezone(new \DateTimeZone(self::TIMEZONE))->setTime(0, 0) >= $this->minimumDeliveryDate();
     }
 

@@ -22,7 +22,7 @@ final readonly class SkinColorProvider implements ProviderInterface
 
         foreach ($this->skinColorRepository->findBy([], ['name' => 'ASC']) as $skinColor) {
             $id = $skinColor->getId();
-            if ($id === null) {
+            if (null === $id) {
                 continue;
             }
 

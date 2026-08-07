@@ -16,8 +16,7 @@ final class StripeWebhookController extends AbstractController
         Request $request,
         StripeWebhookService $stripeWebhookService,
         LoggerService $logger,
-    ): JsonResponse
-    {
+    ): JsonResponse {
         try {
             $stripeWebhookService->handle(
                 payload: $request->getContent(),

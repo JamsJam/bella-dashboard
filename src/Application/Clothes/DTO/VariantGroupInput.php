@@ -35,7 +35,7 @@ class VariantGroupInput
     #[Assert\Callback]
     public function validateColor(ExecutionContextInterface $context): void
     {
-        if ($this->color === null && trim((string) $this->newColorName) === '') {
+        if (null === $this->color && '' === trim((string) $this->newColorName)) {
             $context->buildViolation('Sélectionnez ou créez une couleur.')->atPath('color')->addViolation();
         }
     }

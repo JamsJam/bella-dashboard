@@ -22,7 +22,7 @@ final readonly class AutoDeliverShippedOrderMessageHandler
             $order = $this->entityManager->getRepository(Orders::class)->findForUpdate($message->orderId);
             if (
                 !$order instanceof Orders
-                || $order->getOrderStatus() !== OrderStatus::Shipped
+                || OrderStatus::Shipped !== $order->getOrderStatus()
                 || $order->getTrackingNumber() !== $message->trackingNumber
             ) {
                 return;

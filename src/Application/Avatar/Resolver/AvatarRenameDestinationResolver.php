@@ -3,8 +3,8 @@
 namespace App\Application\Avatar\Resolver;
 
 use App\Application\Avatar\Mapper\AvatarRenameFilterMapper;
-use App\Entity\Clothes\Clothes;
 use App\Application\Avatar\Model\AvatarRenameInstruction;
+use App\Entity\Clothes\Clothes;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
@@ -21,7 +21,7 @@ final readonly class AvatarRenameDestinationResolver
     public function resolveWebDirectory(AvatarRenameInstruction $message): string
     {
         $categoryDirectory = $message->category;
-        if ($message->category === 'face') {
+        if ('face' === $message->category) {
             $categoryDirectory = $this->hasFaceAccessory($message) ? 'accessoire' : 'visage';
         }
 
@@ -36,41 +36,41 @@ final readonly class AvatarRenameDestinationResolver
             $value = $message->filters[$filterId] ?? null;
             $filterName = $this->extractFilterName($value);
 
-            if ($value === null || $filterName === '') {
+            if (null === $value || '' === $filterName) {
                 continue;
             }
 
             $folderName = $this->resolveFilterFolderName($message->category, $filterId, $filterName);
-            if ($folderName !== '') {
+            if ('' !== $folderName) {
                 $segments[] = $folderName;
             }
         }
 
-        return '/'.implode('/', $segments);
+        return '/' . implode('/', $segments);
     }
 
     private function hasFaceAccessory(AvatarRenameInstruction $message): bool
     {
         $accessory = $this->extractFilterName($message->filters['accessory'] ?? null);
 
-        return $accessory !== '' && $accessory !== '-none-';
+        return '' !== $accessory && '-none-' !== $accessory;
     }
 
     public function resolveAbsoluteDirectory(string $webDirectory): string
     {
-        return $this->projectDir.'/public'.$webDirectory;
+        return $this->projectDir . '/public' . $webDirectory;
     }
 
     public function assertDestinationPathIsAllowed(string $path): void
     {
-        $allowedRoot = $this->projectDir.'/public/images/upload/avatar';
-        $allowedRoot = rtrim($allowedRoot, '/').'/';
+        $allowedRoot = $this->projectDir . '/public/images/upload/avatar';
+        $allowedRoot = rtrim($allowedRoot, '/') . '/';
         $directory = is_dir($path) ? $path : dirname($path);
 
         $realAllowedRoot = realpath($allowedRoot);
         $realDirectory = realpath($directory);
 
-        if ($realAllowedRoot === false || $realDirectory === false || !str_starts_with($realDirectory.'/', rtrim($realAllowedRoot, '/').'/')) {
+        if (false === $realAllowedRoot || false === $realDirectory || !str_starts_with($realDirectory . '/', rtrim($realAllowedRoot, '/') . '/')) {
             throw new \RuntimeException('Path is outside the allowed avatar directory.');
         }
     }
@@ -78,7 +78,7 @@ final readonly class AvatarRenameDestinationResolver
     private function resolveFilterFolderName(string $part, string $filterId, string $value): string
     {
         $sourceClass = $this->avatarRenameFilterMapper->getFilterSourceClass($part, $filterId);
-        if ($sourceClass === null) {
+        if (null === $sourceClass) {
             return '';
         }
 
@@ -88,7 +88,7 @@ final readonly class AvatarRenameDestinationResolver
                 throw new \InvalidArgumentException('Unknown avatar filter id.');
             }
 
-            if ($filterId === 'clothes' && $entity instanceof Clothes && $entity->getSlug() !== null) {
+            if ('clothes' === $filterId && $entity instanceof Clothes && null !== $entity->getSlug()) {
                 return $this->normalizeToken($entity->getSlug());
             }
 
@@ -109,7 +109,7 @@ final readonly class AvatarRenameDestinationResolver
 
     private function resolveEntityLabel(object $entity): string
     {
-        if (method_exists($entity, 'getName') && is_string($entity->getName()) && $entity->getName() !== '') {
+        if (method_exists($entity, 'getName') && is_string($entity->getName()) && '' !== $entity->getName()) {
             return $entity->getName();
         }
 

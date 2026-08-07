@@ -2,14 +2,13 @@
 
 namespace App\Repository\Avatar\Hairs;
 
-use App\Entity\Avatar\Hairs\Hairscolor;
 use App\Application\Avatar\Interface\AvatarFilterValueRepositoryInterface;
+use App\Entity\Avatar\Hairs\Hairscolor;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
  * @extends ServiceEntityRepository<Hairscolor>
- * 
  */
 class HairscolorRepository extends ServiceEntityRepository implements AvatarFilterValueRepositoryInterface
 {
@@ -22,7 +21,7 @@ class HairscolorRepository extends ServiceEntityRepository implements AvatarFilt
     {
         $name = $this->normalizeName($name);
 
-        if ($name === '') {
+        if ('' === $name) {
             throw new \InvalidArgumentException('Invalid hair color name.');
         }
 

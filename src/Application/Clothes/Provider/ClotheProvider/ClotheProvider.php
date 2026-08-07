@@ -1,40 +1,38 @@
-<?php 
+<?php
 
 namespace App\Application\Clothes\Provider\ClotheProvider;
 
 use App\Entity\Clothes\Clothes;
+use App\Enum\ClotheStatus;
 use App\Repository\Clothes\ClothesRepository;
 use App\Repository\Clothes\ClothesVariantRepository;
-use App\Enum\ClotheStatus;
 
-
-
-final class ClotheProvider 
+final class ClotheProvider
 {
     public function __construct(
         private ClothesRepository $clothesRepository,
         private ClothesVariantRepository $clothesVariantRepository,
-    ){}
+    ) {
+    }
 
     public function searchDistinctClothes(
-        ?string $orderBy="id", 
-        ?string $direction=null,
-        ?string $query=null,
-        ?int $limit=10,
-        ?int $offset=0
-        ) :array
-    {
+        ?string $orderBy = 'id',
+        ?string $direction = null,
+        ?string $query = null,
+        ?int $limit = 10,
+        ?int $offset = 0,
+    ): array {
         $allowedOrder = match ($orderBy) {
-            "collection" => 'col.name',
-            "category" => 'cat.name',
-            default => 'c.name'
+            'collection' => 'col.name',
+            'category' => 'cat.name',
+            default => 'c.name',
         };
         $allowedDirecrtions = match (strtolower($direction)) {
-            "desc" => 'desc',
-            default => 'asc'
+            'desc' => 'desc',
+            default => 'asc',
         };
 
-        $clothes = $this->clothesRepository->findDistinctBySlug($allowedOrder, $allowedDirecrtions ,$query, $limit, $offset) ?? [] ;
+        $clothes = $this->clothesRepository->findDistinctBySlug($allowedOrder, $allowedDirecrtions, $query, $limit, $offset) ?? [];
 
         return $clothes;
     }
@@ -74,9 +72,9 @@ final class ClotheProvider
         );
     }
 
-    public function getBestSellers(?int $limit) :array
+    public function getBestSellers(?int $limit): array
     {
-        $clothes = $this->clothesRepository->findBestSellersDistinctBySlug($limit) ?? [] ;
+        $clothes = $this->clothesRepository->findBestSellersDistinctBySlug($limit) ?? [];
 
         return $clothes;
     }
@@ -89,9 +87,9 @@ final class ClotheProvider
         return $this->clothesRepository->findDistinctBestsellerEntities($limit) ?? [];
     }
 
-    public function getClotheInCarousel(?int $limit) :array
+    public function getClotheInCarousel(?int $limit): array
     {
-        $clothes = $this->clothesRepository->findInCarouselDistinctBySlug($limit) ?? [] ;
+        $clothes = $this->clothesRepository->findInCarouselDistinctBySlug($limit) ?? [];
 
         return $clothes;
     }
@@ -99,10 +97,5 @@ final class ClotheProvider
     public function getClotheVariantsBySlug(string $slug): array
     {
         return $this->clothesRepository->findVariantsBySlug($slug);
-    }
-
-    public function getSameCollectionClothes(string $slug, int $limit = 8): array
-    {
-        return $this->clothesRepository->findDistinctCollectionItemsBySlug($slug, $limit);
     }
 }

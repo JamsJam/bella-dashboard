@@ -4,9 +4,11 @@ namespace App\Application\Config\Dto;
 
 final class ClothesConfigDto
 {
+    /** @param list<SizeGuideItemDto> $sizeGuideItems */
     public function __construct(
         public int $bestsellerCount = 4,
         public int $featuredCount = 4,
+        public array $sizeGuideItems = [],
     ) {
     }
 

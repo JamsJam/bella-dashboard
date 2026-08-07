@@ -12,14 +12,20 @@ final class MouthFixtures extends AbstractBaseFixtures implements DependentFixtu
 {
     public function load(ObjectManager $manager): void
     {
-        foreach (['pink', 'red', 'natural'] as $colorIndex => $colorName) {
-            foreach (['smile', 'neutral'] as $shapeIndex => $shapeName) {
+        foreach (AvatarFilterFixtures::MOUTH_COLORS as $colorIndex => $colorName) {
+            foreach (AvatarFilterFixtures::MOUTH_SHAPES as $shapeIndex => $shapeName) {
                 $name = sprintf('mouth__%s__%s', $colorName, $shapeName);
 
                 $mouth = (new Mouths())
                     ->setName($name)
-                    ->setColor($this->getReference(FixtureReferences::MOUTH_COLORS.$colorIndex, \App\Entity\Avatar\Mouths\Mouthscolor::class))
-                    ->setShape($this->getReference(FixtureReferences::MOUTH_SHAPES.$shapeIndex, \App\Entity\Avatar\Mouths\Mouthshape::class))
+                    ->setColor($this->getReference(
+                        FixtureReferences::MOUTH_COLORS . $colorIndex,
+                        \App\Entity\Avatar\Mouths\Mouthscolor::class,
+                    ))
+                    ->setShape($this->getReference(
+                        FixtureReferences::MOUTH_SHAPES . $shapeIndex,
+                        \App\Entity\Avatar\Mouths\Mouthshape::class,
+                    ))
                     ->setImage($this->fakeAvatarPngPath('mouth', $name))
                     ->setChecksum($this->fakeChecksum());
 

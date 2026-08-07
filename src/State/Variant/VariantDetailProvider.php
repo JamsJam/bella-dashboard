@@ -10,11 +10,11 @@ use App\ApiResource\Variant\RelatedVariantDTO;
 use App\ApiResource\Variant\SizeGuideDTO;
 use App\ApiResource\Variant\SizeGuideMeasurementDTO;
 use App\ApiResource\Variant\SizeGuideSizeDTO;
-use App\ApiResource\Variant\VariantColorDTO;
 use App\ApiResource\Variant\VariantCategoryDTO;
+use App\ApiResource\Variant\VariantColorDTO;
 use App\ApiResource\Variant\VariantDetailDTO;
-use App\ApiResource\Variant\VariantSizeDTO;
 use App\ApiResource\Variant\VariantReviewDTO;
+use App\ApiResource\Variant\VariantSizeDTO;
 use App\Entity\Clothes\Clothes;
 use App\Entity\Clothes\ClothesVariant;
 use App\Entity\Reviews\Review;
@@ -37,12 +37,12 @@ final readonly class VariantDetailProvider implements ProviderInterface
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): VariantDetailDTO
     {
         $slug = $uriVariables['slug'] ?? null;
-        if (!is_string($slug) || preg_match('/^[a-zA-Z0-9_-]+$/', $slug) !== 1) {
+        if (!is_string($slug) || 1 !== preg_match('/^[a-zA-Z0-9_-]+$/', $slug)) {
             throw new NotFoundHttpException('Déclinaison introuvable.');
         }
 
         $variants = $this->variantRepository->findOnlineBySlug($slug);
-        if ($variants === []) {
+        if ([] === $variants) {
             throw new NotFoundHttpException(sprintf('La déclinaison "%s" est introuvable.', $slug));
         }
 
@@ -50,12 +50,12 @@ final readonly class VariantDetailProvider implements ProviderInterface
         $clothes = $variant->getClothes();
         $collection = $clothes?->getCollection();
         $category = $collection?->getCategory();
-        if ($category === null) {
+        if (null === $category) {
             throw new NotFoundHttpException(sprintf('La catégorie de la déclinaison "%s" est introuvable.', $slug));
         }
 
         $collectionId = $collection?->getId();
-        $collectionVariants = $collectionId === null
+        $collectionVariants = null === $collectionId
             ? $variants
             : $this->publishableVariants($this->variantRepository->findOnlineByCollection($collectionId));
         $images = $this->images($variants);
@@ -94,7 +94,7 @@ final readonly class VariantDetailProvider implements ProviderInterface
         $groups = [];
         foreach ($variants as $variant) {
             $slug = $variant->getSlug();
-            if (is_string($slug) && $slug !== '') {
+            if (is_string($slug) && '' !== $slug) {
                 $groups[$slug][] = $variant;
             }
         }
@@ -108,14 +108,14 @@ final readonly class VariantDetailProvider implements ProviderInterface
     }
 
     /** @param list<ClothesVariant> $variants
-     *  @return list<string>
+     * @return list<string>
      */
     private function images(array $variants): array
     {
         $images = [];
         foreach ($variants as $variant) {
             foreach ($variant->getImages() ?? [] as $path) {
-                if (is_string($path) && $path !== '') {
+                if (is_string($path) && '' !== $path) {
                     $images[$path] = $this->absoluteUrl($path);
                 }
             }
@@ -125,7 +125,7 @@ final readonly class VariantDetailProvider implements ProviderInterface
     }
 
     /** @param list<ClothesVariant> $variants
-     *  @return list<VariantSizeDTO>
+     * @return list<VariantSizeDTO>
      */
     private function sizes(array $variants): array
     {
@@ -133,7 +133,7 @@ final readonly class VariantDetailProvider implements ProviderInterface
         foreach ($variants as $variant) {
             $size = $variant->getSize()?->getName();
             $variantId = $variant->getId();
-            if (is_string($size) && $size !== '' && $variantId !== null) {
+            if (is_string($size) && '' !== $size && null !== $variantId) {
                 $sizes[$size] = new VariantSizeDTO(
                     id: $variantId,
                     name: $size,
@@ -146,6 +146,7 @@ final readonly class VariantDetailProvider implements ProviderInterface
 
     /**
      * @param list<ClothesVariant> $variants
+     *
      * @return list<VariantColorDTO>
      */
     private function colors(array $variants, ?int $clothesId): array
@@ -158,7 +159,7 @@ final readonly class VariantDetailProvider implements ProviderInterface
 
             $name = $variant->getColor()?->getName();
             $slug = $variant->getSlug();
-            if (!is_string($name) || $name === '' || !is_string($slug) || $slug === '') {
+            if (!is_string($name) || '' === $name || !is_string($slug) || '' === $slug) {
                 continue;
             }
 
@@ -171,6 +172,7 @@ final readonly class VariantDetailProvider implements ProviderInterface
 
     /**
      * @param list<ClothesVariant> $variants
+     *
      * @return list<ClothesVariantItemDTO>
      */
     private function clothesVariants(array $variants, ?int $clothesId): array
@@ -185,9 +187,9 @@ final readonly class VariantDetailProvider implements ProviderInterface
             $name = $variant->getName();
             $color = $variant->getColor()?->getName();
             if (
-                !is_string($slug) || $slug === ''
-                || !is_string($name) || $name === ''
-                || !is_string($color) || $color === ''
+                !is_string($slug) || '' === $slug
+                || !is_string($name) || '' === $name
+                || !is_string($color) || '' === $color
             ) {
                 continue;
             }
@@ -205,6 +207,7 @@ final readonly class VariantDetailProvider implements ProviderInterface
 
     /**
      * @param list<ClothesVariant> $variants
+     *
      * @return list<RelatedVariantDTO>
      */
     private function relatedProducts(array $variants, string $currentSlug): array
@@ -212,7 +215,7 @@ final readonly class VariantDetailProvider implements ProviderInterface
         $groups = [];
         foreach ($variants as $variant) {
             $slug = $variant->getSlug();
-            if (!is_string($slug) || $slug === '' || $slug === $currentSlug) {
+            if (!is_string($slug) || '' === $slug || $slug === $currentSlug) {
                 continue;
             }
             $groups[$slug][] = $variant;
@@ -234,7 +237,7 @@ final readonly class VariantDetailProvider implements ProviderInterface
 
     private function sizeGuide(?SizeGuide $guide): ?SizeGuideDTO
     {
-        if ($guide === null) {
+        if (null === $guide) {
             return null;
         }
 
@@ -249,11 +252,11 @@ final readonly class VariantDetailProvider implements ProviderInterface
             $measurementDTOs = [];
             foreach ($measurements as $measurement) {
                 $type = $measurement->getType();
-                if ($type === null) {
+                if (null === $type) {
                     continue;
                 }
                 $measurementDTOs[] = new SizeGuideMeasurementDTO(
-                    code: (string) $type->getCode(),
+                    uuid: $type->getUuid()->toRfc4122(),
                     label: (string) $type->getLabel(),
                     value: (string) $measurement->getValue(),
                     unit: (string) $measurement->getUnit(),
@@ -283,16 +286,16 @@ final readonly class VariantDetailProvider implements ProviderInterface
 
     private function absoluteUrl(string $path): string
     {
-        if (preg_match('#^https?://#i', $path) === 1) {
+        if (1 === preg_match('#^https?://#i', $path)) {
             return $path;
         }
 
         $request = $this->requestStack->getCurrentRequest();
 
         if (str_starts_with($path, '//')) {
-            return ($request?->getScheme() ?? 'https').':'.$path;
+            return ($request?->getScheme() ?? 'https') . ':' . $path;
         }
 
-        return $request === null ? $path : $request->getSchemeAndHttpHost().'/'.ltrim($path, '/');
+        return null === $request ? $path : $request->getSchemeAndHttpHost() . '/' . ltrim($path, '/');
     }
 }

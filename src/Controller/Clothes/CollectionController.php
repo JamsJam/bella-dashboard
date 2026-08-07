@@ -2,8 +2,8 @@
 
 namespace App\Controller\Clothes;
 
-use App\Application\Clothes\Guard\Collection\CollectionOnlineGuard;
 use App\Application\Clothes\Guard\ClotheOnlineGuard;
+use App\Application\Clothes\Guard\Collection\CollectionOnlineGuard;
 use App\Application\Clothes\Services\ClothesCreationService;
 use App\Application\Clothes\Services\ClotheService;
 use App\Application\Clothes\Services\CollectionCreationService;
@@ -49,8 +49,7 @@ final class CollectionController extends AbstractController
         Request $request,
         EntityManagerInterface $entityManager,
         CsrfTokenManagerInterface $csrfTokenManager,
-    ): Response
-    {
+    ): Response {
         return $this->render('clothes/collections/index.html.twig', [
             'breadscrumbs' => $this->createBreadscrumbs('Collections'),
             'tabs' => $this->createTabs(),
@@ -63,8 +62,7 @@ final class CollectionController extends AbstractController
         Request $request,
         EntityManagerInterface $entityManager,
         CsrfTokenManagerInterface $csrfTokenManager,
-    ): JsonResponse
-    {
+    ): JsonResponse {
         $table = $this->createTableData($request, $entityManager, $csrfTokenManager);
 
         return $this->json([
@@ -84,8 +82,8 @@ final class CollectionController extends AbstractController
         LoggerService $logger,
         FlashService $flashService,
     ): Response {
-        //todo >>>>>>>>>>>>>>>>>
-        //todo : add symfony like form validation (isValid/isSubmitted) and use form type for collection and clothes
+        // todo >>>>>>>>>>>>>>>>>
+        // todo : add symfony like form validation (isValid/isSubmitted) and use form type for collection and clothes
         if ($request->isMethod('POST')) {
             $token = (string) $request->getPayload()->get('_token');
 
@@ -116,8 +114,8 @@ final class CollectionController extends AbstractController
 
             return $this->redirectToRoute('app_clothe_collection');
         }
-        //todo <<<<<<<<<<<<<<<<<
-        
+        // todo <<<<<<<<<<<<<<<<<
+
         return $this->render('clothes/collections/add.html.twig', [
             'breadscrumbs' => $this->createBreadscrumbs('Ajouter une collection'),
             'tabs' => [
@@ -135,15 +133,13 @@ final class CollectionController extends AbstractController
         ]);
     }
 
-
     #[Route('/collections/{id}', name: 'app_clothes_collection', requirements: ['id' => '\d+'], methods: ['GET'])]
     public function show(
         Collections $collection,
         CsrfTokenManagerInterface $csrfTokenManager,
         CollectionOnlineGuard $collectionOnlineGuard,
         ClotheOnlineGuard $clotheOnlineGuard,
-    ): Response
-    {
+    ): Response {
         $publicationValidation = $collectionOnlineGuard->canPublish($collection);
 
         return $this->render('clothes/collections/show.html.twig', [
@@ -198,7 +194,7 @@ final class CollectionController extends AbstractController
             return $this->json(['success' => false, 'error' => 'Invalid CSRF token.'], Response::HTTP_FORBIDDEN);
         }
 
-        if ($state === 'on' && !$collectionPublicationService->publish($collection)) {
+        if ('on' === $state && !$collectionPublicationService->publish($collection)) {
             $logger->warning('Collection publication rejected.', [
                 'collection_id' => $collection->getId(),
             ]);
@@ -209,7 +205,7 @@ final class CollectionController extends AbstractController
             ], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
-        if ($state === 'off') {
+        if ('off' === $state) {
             $collectionPublicationService->unpublish($collection);
         }
 
@@ -260,8 +256,7 @@ final class CollectionController extends AbstractController
         Request $request,
         EntityManagerInterface $entityManager,
         CsrfTokenManagerInterface $csrfTokenManager,
-    ): array
-    {
+    ): array {
         $search = trim((string) $request->query->get('search', ''));
         $sort = $this->normalizeSort((string) $request->query->get('sort', 'name'));
         $direction = $this->normalizeDirection((string) $request->query->get('direction', 'asc'));
@@ -275,10 +270,10 @@ final class CollectionController extends AbstractController
             ->addGroupBy('cat.id')
             ->orderBy(self::SORTS[$sort], $direction);
 
-        if ($search !== '') {
+        if ('' !== $search) {
             $queryBuilder
                 ->andWhere('LOWER(col.name) LIKE :search OR LOWER(cat.name) LIKE :search')
-                ->setParameter('search', '%'.mb_strtolower($search).'%');
+                ->setParameter('search', '%' . mb_strtolower($search) . '%');
         }
 
         $results = $queryBuilder
@@ -362,10 +357,10 @@ final class CollectionController extends AbstractController
         );
 
         $toggle = new ToggleModel(
-            id: 'collection-online-'.$collection->getId(),
+            id: 'collection-online-' . $collection->getId(),
             label: $collection->isOnline() ? 'En ligne' : 'Hors ligne',
             checked: (bool) $collection->isOnline(),
-            name: 'collection_online_'.$collection->getId(),
+            name: 'collection_online_' . $collection->getId(),
             payload: [
                 'on' => $onlineAction->toArray(),
                 'off' => $offlineAction->toArray(),
@@ -397,8 +392,8 @@ final class CollectionController extends AbstractController
             }
 
             $slug = (string) $clothe->getSlug();
-            if ($slug === '') {
-                $slug = 'clothe-'.$clothe->getId();
+            if ('' === $slug) {
+                $slug = 'clothe-' . $clothe->getId();
             }
 
             if (!isset($items[$slug])) {
@@ -415,10 +410,10 @@ final class CollectionController extends AbstractController
 
             foreach ($clothe->getVariants() as $variant) {
                 $size = $variant->getSize()?->getName();
-                if ($size !== null && $size !== '') {
+                if (null !== $size && '' !== $size) {
                     $items[$slug]['sizes'][$size] = [
                         'name' => $size,
-                        'isOnline' => $variant->getPublicationStatus() === ClotheStatus::Online,
+                        'isOnline' => ClotheStatus::Online === $variant->getPublicationStatus(),
                         'stock' => $variant->getStock(),
                     ];
                 }
@@ -441,7 +436,7 @@ final class CollectionController extends AbstractController
     {
         $index = array_search($size, ClotheService::AVAILABLE_SIZES, true);
 
-        return $index === false ? 999 : $index;
+        return false === $index ? 999 : $index;
     }
 
     /**
@@ -458,17 +453,17 @@ final class CollectionController extends AbstractController
 
     private function getDeleteCsrfTokenId(Collections $collection): string
     {
-        return 'collection_delete_'.((string) $collection->getId());
+        return 'collection_delete_' . ((string) $collection->getId());
     }
 
     private function getOnlineCsrfTokenId(Collections $collection): string
     {
-        return 'collection_online_'.((string) $collection->getId());
+        return 'collection_online_' . ((string) $collection->getId());
     }
 
     private function getCollectionRowId(Collections $collection): string
     {
-        return 'collection-row-'.((string) $collection->getId());
+        return 'collection-row-' . ((string) $collection->getId());
     }
 
     private function normalizeSort(string $sort): string
@@ -478,6 +473,6 @@ final class CollectionController extends AbstractController
 
     private function normalizeDirection(string $direction): string
     {
-        return strtolower($direction) === 'desc' ? 'desc' : 'asc';
+        return 'desc' === strtolower($direction) ? 'desc' : 'asc';
     }
 }

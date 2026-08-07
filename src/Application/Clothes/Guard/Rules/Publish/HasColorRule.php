@@ -9,7 +9,7 @@ final readonly class HasColorRule implements ClothePublishRuleInterface
     public function validate(Clothes $clothe): ?string
     {
         foreach ($clothe->getVariants() as $variant) {
-            if ($variant->getColor() !== null) {
+            if (null !== $variant->getColor()) {
                 return null;
             }
         }

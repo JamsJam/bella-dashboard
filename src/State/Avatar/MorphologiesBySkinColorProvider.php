@@ -32,7 +32,7 @@ final readonly class MorphologiesBySkinColorProvider implements ProviderInterfac
         $morphologies = [];
         foreach ($this->morphologieRepository->findAvailableForSkinColor($skinColor) as $morphology) {
             $id = $morphology->getId();
-            if ($id === null) {
+            if (null === $id) {
                 continue;
             }
 
@@ -45,7 +45,7 @@ final readonly class MorphologiesBySkinColorProvider implements ProviderInterfac
     private function skinColorId(array $uriVariables): int
     {
         $id = filter_var($uriVariables['id'] ?? null, FILTER_VALIDATE_INT);
-        if ($id === false || $id <= 0) {
+        if (false === $id || $id <= 0) {
             throw new NotFoundHttpException('Couleur de peau introuvable.');
         }
 

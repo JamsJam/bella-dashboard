@@ -123,7 +123,7 @@ final readonly class CheckoutCartService
             'city' => trim((string) $shippingInfo->city),
             'country' => strtoupper(trim((string) $shippingInfo->country)),
             'deliveryDate' => $shippingInfo->deliveryDate,
-            'selectedDelivery' => $shippingInfo->selectedDelivery !== null
+            'selectedDelivery' => null !== $shippingInfo->selectedDelivery
                 ? (int) round($shippingInfo->selectedDelivery)
                 : null,
         ];
@@ -133,7 +133,7 @@ final readonly class CheckoutCartService
     {
         $value = trim((string) $value);
 
-        return $value !== '' ? $value : null;
+        return '' !== $value ? $value : null;
     }
 
     private function includedVat(int $productsTotalTtc, float $vatRate): int
@@ -172,37 +172,26 @@ final readonly class CheckoutCartService
 
         foreach ($items as $itemIndex => $payload) {
             if (!is_array($payload)) {
-                throw new InvalidCheckoutRequestException(sprintf(
-                    'L’article à la position %d doit être un objet contenant "variantId" et "quantity".',
-                    $itemIndex,
-                ));
+                throw new InvalidCheckoutRequestException(sprintf('L’article à la position %d doit être un objet contenant "variantId" et "quantity".', $itemIndex));
             }
 
             foreach (['variantId', 'quantity'] as $field) {
                 if (!array_key_exists($field, $payload)) {
-                    throw new InvalidCheckoutRequestException(sprintf(
-                        'L’article à la position %d ne contient pas le champ obligatoire "%s".',
-                        $itemIndex,
-                        $field,
-                    ));
+                    throw new InvalidCheckoutRequestException(sprintf('L’article à la position %d ne contient pas le champ obligatoire "%s".', $itemIndex, $field));
                 }
             }
 
             $variantId = filter_var($payload['variantId'], FILTER_VALIDATE_INT);
             $quantity = filter_var($payload['quantity'], FILTER_VALIDATE_INT);
 
-            if ($variantId === false || $variantId <= 0 || $quantity === false || $quantity <= 0) {
-                throw new InvalidCheckoutRequestException(sprintf(
-                    'Article invalide : "variantId" et "quantity" doivent être des entiers strictement positifs (variantId reçu : %s, quantité reçue : %s).',
-                    json_encode($payload['variantId']),
-                    json_encode($payload['quantity']),
-                ));
+            if (false === $variantId || $variantId <= 0 || false === $quantity || $quantity <= 0) {
+                throw new InvalidCheckoutRequestException(sprintf('Article invalide : "variantId" et "quantity" doivent être des entiers strictement positifs (variantId reçu : %s, quantité reçue : %s).', json_encode($payload['variantId']), json_encode($payload['quantity'])));
             }
 
             $quantitiesByVariant[$variantId] = ($quantitiesByVariant[$variantId] ?? 0) + $quantity;
         }
 
-        if ($quantitiesByVariant === []) {
+        if ([] === $quantitiesByVariant) {
             throw new InvalidCheckoutRequestException('Le panier doit contenir au moins un article.');
         }
 
@@ -216,11 +205,8 @@ final readonly class CheckoutCartService
         $variant = $this->entityManager->getRepository(ClothesVariant::class)->findOneWithProductForUpdate($variantId);
         $clothe = $variant?->getClothes();
 
-        if (!$variant instanceof ClothesVariant || $variant->getPublicationStatus() !== \App\Enum\ClotheStatus::Online) {
-            throw new InvalidCheckoutRequestException(sprintf(
-                'Le variant %d est introuvable, hors ligne ou associé à un vêtement indisponible.',
-                $variantId,
-            ));
+        if (!$variant instanceof ClothesVariant || \App\Enum\ClotheStatus::Online !== $variant->getPublicationStatus()) {
+            throw new InvalidCheckoutRequestException(sprintf('Le variant %d est introuvable, hors ligne ou associé à un vêtement indisponible.', $variantId));
         }
 
         if ($variant->getStock() < $quantity) {
@@ -229,10 +215,7 @@ final readonly class CheckoutCartService
 
         $unitPriceTTC = (int) $clothe->getPrice();
         if ($unitPriceTTC <= 0) {
-            throw new InvalidCheckoutRequestException(sprintf(
-                'Le vêtement associé au variant %d ne possède pas de prix valide.',
-                $variantId,
-            ));
+            throw new InvalidCheckoutRequestException(sprintf('Le vêtement associé au variant %d ne possède pas de prix valide.', $variantId));
         }
 
         $variant
@@ -250,19 +233,19 @@ final readonly class CheckoutCartService
     public function releaseReservation(Orders $order, string $status): bool
     {
         $orderId = $order->getId();
-        if ($orderId === null) {
+        if (null === $orderId) {
             return false;
         }
 
         return $this->entityManager->wrapInTransaction(function () use ($orderId, $status): bool {
             $lockedOrder = $this->entityManager->getRepository(Orders::class)->findForUpdate($orderId);
-            if (!$lockedOrder instanceof Orders || $lockedOrder->getStatus() !== Orders::STATUS_PENDING_PAYMENT) {
+            if (!$lockedOrder instanceof Orders || Orders::STATUS_PENDING_PAYMENT !== $lockedOrder->getStatus()) {
                 return false;
             }
 
             foreach ($lockedOrder->getCart()?->getItems() ?? [] as $item) {
                 $variantId = $item->getVariant()?->getId();
-                if ($variantId === null) {
+                if (null === $variantId) {
                     continue;
                 }
 
@@ -279,7 +262,7 @@ final readonly class CheckoutCartService
             $lockedOrder->setStatus($status);
 
             if (
-                $status === Orders::STATUS_PAYMENT_EXPIRED
+                Orders::STATUS_PAYMENT_EXPIRED === $status
                 && $this->orderWorkflow->can($lockedOrder, OrderWorkflow::TRANSITION_CANCEL)
             ) {
                 $this->orderWorkflow->apply($lockedOrder, OrderWorkflow::TRANSITION_CANCEL);
@@ -290,5 +273,4 @@ final readonly class CheckoutCartService
             return true;
         });
     }
-
 }

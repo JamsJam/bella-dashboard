@@ -77,7 +77,7 @@ abstract readonly class AbstractConfigProvider
         $path = $this->path($fileName);
         $yaml = Yaml::dump($data, 8, 4);
 
-        if (file_put_contents($path, $yaml) === false) {
+        if (false === file_put_contents($path, $yaml)) {
             throw new \RuntimeException(sprintf('Unable to write configuration file "%s".', $path));
         }
 
@@ -90,7 +90,7 @@ abstract readonly class AbstractConfigProvider
         $slug = preg_replace('/[^a-z0-9_-]+/', '-', $slug) ?: 'home';
         $slug = trim($slug, '-_');
 
-        return $slug !== '' ? $slug : 'home';
+        return '' !== $slug ? $slug : 'home';
     }
 
     protected function fileExists(string $fileName): bool
@@ -105,7 +105,7 @@ abstract readonly class AbstractConfigProvider
      */
     protected function listFiles(string $prefix): array
     {
-        $files = glob($this->configDirectory().'/'.$prefix.'*.yaml') ?: [];
+        $files = glob($this->configDirectory() . '/' . $prefix . '*.yaml') ?: [];
 
         return array_values(array_map(
             static fn (string $path): string => basename($path, '.yaml'),
@@ -120,7 +120,7 @@ abstract readonly class AbstractConfigProvider
 
     private function path(string $fileName): string
     {
-        return $this->configDirectory().'/'.$fileName.'.yaml';
+        return $this->configDirectory() . '/' . $fileName . '.yaml';
     }
 
     private function restoreDefaultConfig(string $fileName): void
@@ -130,7 +130,7 @@ abstract readonly class AbstractConfigProvider
             return;
         }
 
-        $defaultPath = $this->projectDir.'/config/default_'.$fileName.'.yaml';
+        $defaultPath = $this->projectDir . '/config/default_' . $fileName . '.yaml';
         if (!is_file($defaultPath)) {
             return;
         }
@@ -141,21 +141,17 @@ abstract readonly class AbstractConfigProvider
         }
 
         if (!copy($defaultPath, $path) && !is_file($path)) {
-            throw new \RuntimeException(sprintf(
-                'Unable to restore configuration file "%s" from "%s".',
-                $path,
-                $defaultPath,
-            ));
+            throw new \RuntimeException(sprintf('Unable to restore configuration file "%s" from "%s".', $path, $defaultPath));
         }
     }
 
     private function configDirectory(): string
     {
-        return $this->projectDir.'/var/config';
+        return $this->projectDir . '/var/config';
     }
 
     private function cacheKey(string $fileName): string
     {
-        return self::CACHE_PREFIX.str_replace(['/', '\\', '.'], '_', $fileName);
+        return self::CACHE_PREFIX . str_replace(['/', '\\', '.'], '_', $fileName);
     }
 }

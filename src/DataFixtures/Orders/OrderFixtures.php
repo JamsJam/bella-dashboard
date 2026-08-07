@@ -37,7 +37,7 @@ final class OrderFixtures extends AbstractBaseFixtures implements DependentFixtu
         for ($orderIndex = 0; $orderIndex < self::ORDER_COUNT; ++$orderIndex) {
             /** @var Customers $customer */
             $customer = $this->getReference(
-                FixtureReferences::CUSTOMERS.($orderIndex % self::CUSTOMER_COUNT),
+                FixtureReferences::CUSTOMERS . ($orderIndex % self::CUSTOMER_COUNT),
                 Customers::class,
             );
 
@@ -53,9 +53,9 @@ final class OrderFixtures extends AbstractBaseFixtures implements DependentFixtu
             $this->persistTouched($manager, $cart);
 
             $orderStatus = $this->orderStatus($orderIndex);
-            $outsideGuadeloupe = $orderStatus === OrderStatus::Shipped
-                || ($orderStatus === OrderStatus::Processing && intdiv($orderIndex, 10) % 2 === 1)
-                || ($orderStatus === OrderStatus::Delivered && intdiv($orderIndex, 10) % 2 === 1);
+            $outsideGuadeloupe = OrderStatus::Shipped === $orderStatus
+                || (OrderStatus::Processing === $orderStatus && 1 === intdiv($orderIndex, 10) % 2)
+                || (OrderStatus::Delivered === $orderStatus && 1 === intdiv($orderIndex, 10) % 2);
             $order = (new Orders())
                 ->setCart($cart)
                 ->setCustomer($customer)
@@ -90,14 +90,14 @@ final class OrderFixtures extends AbstractBaseFixtures implements DependentFixtu
                     ->setStripeInvoiceUrl(sprintf('https://invoice.example.test/%02d', $orderIndex + 1));
             }
 
-            if ($orderStatus === OrderStatus::AwaitingDelivery) {
+            if (OrderStatus::AwaitingDelivery === $orderStatus) {
                 $order->setDeliveryDate(
                     (new \DateTimeImmutable('today', new \DateTimeZone('Europe/Paris')))
                         ->modify(sprintf('+%d days', 1 + (intdiv($orderIndex, 10) % 5))),
                 );
             }
 
-            if ($orderStatus === OrderStatus::Delivered) {
+            if (OrderStatus::Delivered === $orderStatus) {
                 $deliveredAt = (new \DateTimeImmutable('today', new \DateTimeZone('Europe/Paris')))
                     ->modify(sprintf('-%d days', 1 + (intdiv($orderIndex, 10) % 10)));
                 $order->setDeliveredAt($deliveredAt);
@@ -107,8 +107,8 @@ final class OrderFixtures extends AbstractBaseFixtures implements DependentFixtu
                 }
             }
 
-            if ($orderStatus === OrderStatus::Shipped || ($orderStatus === OrderStatus::Delivered && $outsideGuadeloupe)) {
-                $daysAgo = $orderStatus === OrderStatus::Delivered
+            if (OrderStatus::Shipped === $orderStatus || (OrderStatus::Delivered === $orderStatus && $outsideGuadeloupe)) {
+                $daysAgo = OrderStatus::Delivered === $orderStatus
                     ? 21 + (intdiv($orderIndex, 10) % 10)
                     : intdiv($orderIndex, 10) % 10;
                 $order
@@ -120,7 +120,7 @@ final class OrderFixtures extends AbstractBaseFixtures implements DependentFixtu
             }
 
             $this->persistTouched($manager, $order);
-            $this->addReference(FixtureReferences::ORDERS.$orderIndex, $order);
+            $this->addReference(FixtureReferences::ORDERS . $orderIndex, $order);
         }
 
         $manager->flush();
@@ -143,7 +143,7 @@ final class OrderFixtures extends AbstractBaseFixtures implements DependentFixtu
     {
         /** @var ClothesVariant $variant */
         $variant = $this->getReference(
-            FixtureReferences::CLOTHES_VARIANTS.$this->faker->numberBetween(0, self::VARIANT_COUNT - 1),
+            FixtureReferences::CLOTHES_VARIANTS . $this->faker->numberBetween(0, self::VARIANT_COUNT - 1),
             ClothesVariant::class,
         );
 

@@ -61,6 +61,18 @@
             "migrations/.gitignore"
         ]
     },
+    "friendsofphp/php-cs-fixer": {
+        "version": "3.95",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "main",
+            "version": "3.39",
+            "ref": "97aaf9026490db73b86c23d49e5774bc89d2b232"
+        },
+        "files": [
+            ".php-cs-fixer.dist.php"
+        ]
+    },
     "lexik/jwt-authentication-bundle": {
         "version": "3.2",
         "recipe": {
@@ -99,6 +111,9 @@
             "tests/bootstrap.php",
             "bin/phpunit"
         ]
+    },
+    "squizlabs/php_codesniffer": {
+        "version": "3.13.6"
     },
     "stripe/stripe-php": {
         "version": "20.1",
@@ -249,6 +264,15 @@
         "files": [
             "config/packages/notifier.yaml"
         ]
+    },
+    "symfony/panther": {
+        "version": "2.4",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "main",
+            "version": "1.0",
+            "ref": "eac1868f830a3e332764bb3919ab02311b3340c8"
+        }
     },
     "symfony/property-info": {
         "version": "7.4",

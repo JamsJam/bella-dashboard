@@ -16,6 +16,13 @@ framework:
                 retry_strategy:
                     max_retries: 3
                     multiplier: 2
+            image_deformation:
+                dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
+                options:
+                    queue_name: image_deformation
+                retry_strategy:
+                    max_retries: 3
+                    multiplier: 2
             failed: 'doctrine://default?queue_name=failed'
             # sync: 'sync://'
 
@@ -29,6 +36,7 @@ framework:
             Symfony\Component\Notifier\Message\ChatMessage: async
             Symfony\Component\Notifier\Message\SmsMessage: async
             App\Message\Avatar\RenameAvatarMessage: avatar_rename
+            App\Message\ImageDeformation\DeformImageMessage: image_deformation
             App\Payment\Stripe\Webhook\Message\StripeCheckoutSessionMessage: async
             App\Application\Orders\Delivery\DeliveryReminderMessage: async
             App\Application\Orders\Delivery\AutoDeliverShippedOrderMessage: async
@@ -42,4 +50,5 @@ when@test:
             transports:
                 async: 'in-memory://'
                 avatar_rename: 'in-memory://'
+                image_deformation: 'in-memory://'
                 failed: 'in-memory://'

@@ -42,9 +42,9 @@ final readonly class NotificationService
         $this->assertContactConfigurationExists();
 
         $config = $this->contactConfigService->get();
-        $email = $config->ownerEmail !== '' ? $config->ownerEmail : $config->developerContact->email;
+        $email = '' !== $config->ownerEmail ? $config->ownerEmail : $config->developerContact->email;
 
-        if ($email === '') {
+        if ('' === $email) {
             $this->flashService->warning('Configure l’application avant d’envoyer des notifications.');
             throw new \RuntimeException('Aucun email expediteur configure dans la configuration de contact.');
         }
@@ -57,9 +57,9 @@ final readonly class NotificationService
         $this->assertContactConfigurationExists();
 
         $config = $this->contactConfigService->get();
-        $email = $config->ownerEmail !== '' ? $config->ownerEmail : $config->developerContact->email;
+        $email = '' !== $config->ownerEmail ? $config->ownerEmail : $config->developerContact->email;
 
-        if ($email === '') {
+        if ('' === $email) {
             $this->flashService->warning('Configure l’application avant d’envoyer des notifications.');
             throw new \RuntimeException('Aucun email administrateur configure dans la configuration de contact.');
         }

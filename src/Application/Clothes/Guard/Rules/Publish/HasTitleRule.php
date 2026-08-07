@@ -8,6 +8,6 @@ final readonly class HasTitleRule implements ClothePublishRuleInterface
 {
     public function validate(Clothes $clothe): ?string
     {
-        return trim((string) $clothe->getName()) !== '' ? null : 'Le titre du vetement est requis.';
+        return '' !== trim((string) $clothe->getName()) ? null : 'Le titre du vetement est requis.';
     }
 }

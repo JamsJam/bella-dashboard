@@ -25,9 +25,9 @@ final readonly class DeliveryReminderMessageHandler
             $order = $this->entityManager->getRepository(Orders::class)->findForUpdate($message->orderId);
             if (
                 !$order instanceof Orders
-                || $order->getOrderStatus() !== OrderStatus::AwaitingDelivery
+                || OrderStatus::AwaitingDelivery !== $order->getOrderStatus()
                 || $order->getDeliveryDate()?->format('Y-m-d') !== $message->deliveryDate
-                || $order->getDeliveryReminderSentAt() !== null
+                || null !== $order->getDeliveryReminderSentAt()
             ) {
                 return;
             }

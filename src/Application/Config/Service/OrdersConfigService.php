@@ -42,18 +42,18 @@ final readonly class OrdersConfigService
     private function storeFlag(UploadedFile $file, ShippingFeeDto $shippingFee): string
     {
         $publicPath = '/images/upload/config/flags';
-        $directory = $this->projectDir.'/public'.$publicPath;
+        $directory = $this->projectDir . '/public' . $publicPath;
 
         if (!is_dir($directory) && !mkdir($directory, 0775, true) && !is_dir($directory)) {
             throw new \RuntimeException(sprintf('Unable to create upload directory "%s".', $directory));
         }
 
-        $destination = $shippingFee->destination !== '' ? $shippingFee->destination : 'drapeau';
+        $destination = '' !== $shippingFee->destination ? $shippingFee->destination : 'drapeau';
         $slug = strtolower((string) (new AsciiSlugger())->slug($destination));
         $filename = sprintf('flag-%s-%s.png', $slug, bin2hex(random_bytes(4)));
 
         $file->move($directory, $filename);
 
-        return $publicPath.'/'.$filename;
+        return $publicPath . '/' . $filename;
     }
 }

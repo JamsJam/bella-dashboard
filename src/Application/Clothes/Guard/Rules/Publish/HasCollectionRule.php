@@ -8,6 +8,6 @@ final readonly class HasCollectionRule implements ClothePublishRuleInterface
 {
     public function validate(Clothes $clothe): ?string
     {
-        return $clothe->getCollection() !== null ? null : 'La collection est requise.';
+        return null !== $clothe->getCollection() ? null : 'La collection est requise.';
     }
 }

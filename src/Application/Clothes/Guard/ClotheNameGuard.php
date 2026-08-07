@@ -17,7 +17,7 @@ final readonly class ClotheNameGuard
         $name = $this->normalizeName($name);
         $slug = $this->createSlug($name);
 
-        if ($this->clothesRepository->findOneByNameOrSlugExcludingSlug($name, $slug, $currentSlug) !== null) {
+        if (null !== $this->clothesRepository->findOneByNameOrSlugExcludingSlug($name, $slug, $currentSlug)) {
             throw new \InvalidArgumentException('Un autre vetement utilise deja ce nom.');
         }
 
@@ -28,7 +28,7 @@ final readonly class ClotheNameGuard
     {
         $slug = strtolower((string) (new AsciiSlugger())->slug($name));
 
-        if ($slug === '') {
+        if ('' === $slug) {
             throw new \InvalidArgumentException('Le nom du vetement doit generer un slug valide.');
         }
 
@@ -39,12 +39,11 @@ final readonly class ClotheNameGuard
     {
         $name = trim($name);
 
-        if ($name === '') {
+        if ('' === $name) {
             throw new \InvalidArgumentException('Le nom du vetement est obligatoire.');
         }
 
-        $name = preg_split('/\s+/u', $name, 2)[0] ?? '';
-        $name = mb_strtolower($name);
+        $name = preg_replace('/\s+/u', ' ', $name) ?? '';
 
         return $name;
     }

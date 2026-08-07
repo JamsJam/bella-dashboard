@@ -280,6 +280,172 @@
     font-size: 0.9rem;
 }
 
+// Image deformation
+.image-deformation {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(15rem, 1fr);
+    align-items: start;
+    gap: 1.25rem;
+}
+
+.image-deformation__card,
+.image-deformation__specs {
+    border: 1px solid var(--border-muted);
+    border-radius: 0.65rem;
+    background: var(--bg-light);
+    box-shadow: $shadow;
+}
+
+.image-deformation__card {
+    padding: clamp(1rem, 3vw, 1.75rem);
+}
+
+.image-deformation__card-header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    margin-block-end: 1.25rem;
+
+    h2 { color: var(--text); }
+    p { color: var(--text-muted); max-inline-size: 62ch; }
+}
+
+.image-deformation__eyebrow {
+    color: var(--primary);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.image-deformation__form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.image-deformation__dropzone {
+    position: relative;
+    display: flex;
+    min-block-size: 13rem;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    padding: 2rem;
+    overflow: hidden;
+    border: 2px dashed var(--border);
+    border-radius: 0.55rem;
+    background: color-mix(in srgb, var(--primary) 4%, var(--bg));
+    color: var(--text);
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.2s, background-color 0.2s, box-shadow 0.2s;
+
+    &:hover,
+    &:focus-within {
+        border-color: var(--primary);
+        background: color-mix(in srgb, var(--primary) 9%, var(--bg));
+        box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 16%, transparent);
+    }
+}
+
+.image-deformation__upload-icon {
+    display: grid;
+    inline-size: 3rem;
+    block-size: 3rem;
+    place-items: center;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--primary) 14%, var(--bg));
+    color: var(--primary);
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.image-deformation__upload-title { font-weight: 700; }
+.image-deformation__upload-hint { color: var(--text-muted); font-size: 0.85rem; }
+
+.image-deformation__file-input {
+    position: absolute;
+    inset: 0;
+    inline-size: 100%;
+    block-size: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.image-deformation__selection {
+    color: var(--text);
+    font-size: 0.9rem;
+    overflow-wrap: anywhere;
+}
+
+.image-deformation__button {
+    display: inline-flex;
+    min-block-size: 2.75rem;
+    align-items: center;
+    justify-content: center;
+    align-self: flex-start;
+    padding: 0.65rem 1rem;
+    border: 1px solid var(--primary);
+    border-radius: 0.4rem;
+    background: var(--primary);
+    color: var(--bg-light);
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.2s, box-shadow 0.2s;
+
+    &:hover:not(:disabled) {
+        transform: translateY(-1px);
+        box-shadow: $shadow;
+    }
+
+    &:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+    &:disabled { cursor: wait; opacity: 0.55; }
+}
+
+.image-deformation__button--download {
+    background: color-mix(in srgb, var(--success) 16%, var(--bg-light));
+    border-color: var(--success);
+    color: var(--success);
+}
+
+.image-deformation__result {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-block-start: 1rem;
+    padding-block-start: 1rem;
+    border-top: 1px solid var(--border-muted);
+}
+
+.image-deformation__status { color: var(--text-muted); }
+
+.image-deformation__specs {
+    padding: 1.25rem;
+
+    h2 { margin-block-end: 1rem; color: var(--text); font-size: 1rem; }
+    dl { display: flex; flex-direction: column; gap: 0; }
+    dl div {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        padding-block: 0.75rem;
+        border-bottom: 1px solid var(--border-muted);
+    }
+    dl div:last-child { border-bottom: 0; }
+    dt { color: var(--text-muted); }
+    dd { color: var(--text); font-weight: 700; text-align: end; }
+}
+
+@media (max-width: 52rem) {
+    .image-deformation { grid-template-columns: 1fr; }
+    .image-deformation__button { inline-size: 100%; }
+}
+
 .avatar-rename {
     position: relative;
     display: block;

@@ -6,13 +6,13 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\ApiResource\Orders\CheckoutCartInput;
 use App\ApiResource\Orders\CheckoutCartOutput;
-use App\Application\Orders\Services\CheckoutCartService;
 use App\Application\Orders\Exception\InvalidCheckoutRequestException;
+use App\Application\Orders\Services\CheckoutCartService;
 use App\Entity\Orders\Orders;
 use App\Entity\Users\Customers;
 use App\Payment\Stripe\Services\StripeCheckoutService;
-use Symfony\Bundle\SecurityBundle\Security;
 use Stripe\Exception\InvalidRequestException;
+use Symfony\Bundle\SecurityBundle\Security;
 
 /**
  * @implements ProcessorInterface<CheckoutCartInput, CheckoutCartOutput>
@@ -62,16 +62,16 @@ final readonly class CreateCheckoutCartProcessor implements ProcessorInterface
 
     private function stripeErrorMessage(InvalidRequestException $exception): string
     {
-        $details = ['Stripe a refusé la création de la session Checkout : '.$exception->getMessage()];
+        $details = ['Stripe a refusé la création de la session Checkout : ' . $exception->getMessage()];
 
         if ($exception->getStripeParam()) {
-            $details[] = 'Paramètre concerné : '.$exception->getStripeParam();
+            $details[] = 'Paramètre concerné : ' . $exception->getStripeParam();
         }
         if ($exception->getStripeCode()) {
-            $details[] = 'Code Stripe : '.$exception->getStripeCode();
+            $details[] = 'Code Stripe : ' . $exception->getStripeCode();
         }
         if ($exception->getRequestId()) {
-            $details[] = 'Identifiant de requête Stripe : '.$exception->getRequestId();
+            $details[] = 'Identifiant de requête Stripe : ' . $exception->getRequestId();
         }
 
         return implode(' ', $details);

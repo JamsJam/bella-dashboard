@@ -2,12 +2,11 @@
 
 namespace App\Repository\Clothes;
 
-use App\Enum\ClotheStatus;
-
 use App\Entity\Clothes\Clothes;
-use App\Entity\Clothes\ClothesVariant;
 use App\Entity\Clothes\Clothescolor;
 use App\Entity\Clothes\Clothessize;
+use App\Entity\Clothes\ClothesVariant;
+use App\Enum\ClotheStatus;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\DBAL\LockMode;
 use Doctrine\Persistence\ManagerRegistry;
@@ -28,6 +27,7 @@ class ClothesVariantRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, ClothesVariant::class);
@@ -201,25 +201,25 @@ class ClothesVariantRepository extends ServiceEntityRepository
             ->addOrderBy('size.name', 'ASC')
             ->addOrderBy('variant.id', 'ASC');
 
-        if ($colors !== []) {
+        if ([] !== $colors) {
             $qb
                 ->andWhere('LOWER(color.name) IN (:colors)')
                 ->setParameter('colors', array_map(static fn (string $color): string => mb_strtolower($color), $colors));
         }
 
-        if ($sizes !== []) {
+        if ([] !== $sizes) {
             $qb
                 ->andWhere('LOWER(size.name) IN (:sizes)')
                 ->setParameter('sizes', array_map(static fn (string $size): string => mb_strtolower($size), $sizes));
         }
 
-        if ($minimumPrice !== null) {
+        if (null !== $minimumPrice) {
             $qb
                 ->andWhere('clothes.price >= :minimumPrice')
                 ->setParameter('minimumPrice', $minimumPrice);
         }
 
-        if ($maximumPrice !== null) {
+        if (null !== $maximumPrice) {
             $qb
                 ->andWhere('clothes.price <= :maximumPrice')
                 ->setParameter('maximumPrice', $maximumPrice);
@@ -288,7 +288,7 @@ class ClothesVariantRepository extends ServiceEntityRepository
             ->addOrderBy('size.name', 'ASC')
             ->addOrderBy('v.id', 'ASC');
 
-        if ($query !== null && trim($query) !== '') {
+        if (null !== $query && '' !== trim($query)) {
             $qb
                 ->andWhere($qb->expr()->orX(
                     'LOWER(c.name) LIKE :query',
@@ -298,16 +298,16 @@ class ClothesVariantRepository extends ServiceEntityRepository
                     'LOWER(category.name) LIKE :query',
                     'LOWER(color.name) LIKE :query',
                 ))
-                ->setParameter('query', '%'.mb_strtolower(trim($query)).'%');
+                ->setParameter('query', '%' . mb_strtolower(trim($query)) . '%');
         }
 
-        if ($category !== null && $category > 0) {
+        if (null !== $category && $category > 0) {
             $qb
                 ->andWhere('category.id = :category')
                 ->setParameter('category', $category);
         }
 
-        if ($collection !== null && $collection > 0) {
+        if (null !== $collection && $collection > 0) {
             $qb
                 ->andWhere('collection.id = :collection')
                 ->setParameter('collection', $collection);
@@ -317,26 +317,36 @@ class ClothesVariantRepository extends ServiceEntityRepository
             $qb->andWhere('v.isBestseller = true');
         }
 
-        if ($status instanceof ClotheStatus) {
-            $qb->andWhere('v.publicationStatus = :status')->setParameter('status', $status);
-        }
-
         $groups = [];
+        $highestStatuses = [];
         foreach ($qb->getQuery()->getResult() as $variant) {
-            if (!$variant instanceof ClothesVariant || $variant->getSlug() === null) {
+            if (!$variant instanceof ClothesVariant || null === $variant->getSlug()) {
                 continue;
             }
 
-            $groups[$variant->getSlug()] ??= $variant;
+            $slug = $variant->getSlug();
+            $groups[$slug] ??= $variant;
+            $variantStatus = $variant->getPublicationStatus();
+            if (!isset($highestStatuses[$slug]) || $variantStatus->progressionRank() > $highestStatuses[$slug]->progressionRank()) {
+                $highestStatuses[$slug] = $variantStatus;
+            }
+        }
+
+        if ($status instanceof ClotheStatus) {
+            $groups = array_filter(
+                $groups,
+                static fn (ClothesVariant $variant, string $slug): bool => ($highestStatuses[$slug] ?? null) === $status,
+                ARRAY_FILTER_USE_BOTH,
+            );
         }
 
         $groups = array_values($groups);
 
-        if ($offset !== null && $offset > 0) {
+        if (null !== $offset && $offset > 0) {
             $groups = array_slice($groups, $offset);
         }
 
-        if ($limit !== null) {
+        if (null !== $limit) {
             $groups = array_slice($groups, 0, $limit);
         }
 

@@ -20,7 +20,7 @@ final readonly class VariantStockProvider implements ProviderInterface
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): VariantStock
     {
         $id = filter_var($uriVariables['id'] ?? null, FILTER_VALIDATE_INT);
-        if ($id === false || $id <= 0) {
+        if (false === $id || $id <= 0) {
             throw new NotFoundHttpException('Déclinaison introuvable.');
         }
 
@@ -34,7 +34,7 @@ final readonly class VariantStockProvider implements ProviderInterface
         return new VariantStock(
             variantId: $id,
             stock: $stock,
-            available: $variant->getPublicationStatus() === \App\Enum\ClotheStatus::Online && $stock > 0,
+            available: \App\Enum\ClotheStatus::Online === $variant->getPublicationStatus() && $stock > 0,
         );
     }
 }

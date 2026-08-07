@@ -2,7 +2,6 @@
 
 namespace App\Controller\Avatar;
 
-
 use App\Application\Avatar\Services\AvatarProductGridService;
 use App\Application\Avatar\Services\SearchAvatarService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -11,10 +10,9 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Attribute\MapQueryParameter;
 use Symfony\Component\Routing\Attribute\Route;
 
-
 final class SearchAvatarController extends AbstractController
 {
-    #[Route('/avatar/search',name: 'app_search_avatar',methods: ['GET'])]
+    #[Route('/avatar/search', name: 'app_search_avatar', methods: ['GET'])]
     public function index(
         #[MapQueryParameter] ?string $partie,
         #[MapQueryParameter] ?string $search,
@@ -28,12 +26,9 @@ final class SearchAvatarController extends AbstractController
         #[MapQueryParameter] ?string $accessory,
         #[MapQueryParameter] ?string $sort,
         #[MapQueryParameter] ?string $direction,
-        Request $request, 
-        SearchAvatarService $searchAvatarService
-        ): JsonResponse
-    {
-
-
+        Request $request,
+        SearchAvatarService $searchAvatarService,
+    ): JsonResponse {
         $items = $searchAvatarService->search(
             partie : $partie,
             filters : [
@@ -48,26 +43,24 @@ final class SearchAvatarController extends AbstractController
                 'accessory' => $accessory ?? 0,
                 'sort' => $sort ?? 'createdAt',
                 'direction' => $direction ?? 'desc',
-
             ]
             // $collection
         );
 
         return $this->json([
             'items' => $items,
-            ]);
+        ]);
     }
-    
 
-    #[Route('/avatar/filters',name: 'app_search_avatar_filters',methods: ['GET'])]
+    #[Route('/avatar/filters', name: 'app_search_avatar_filters', methods: ['GET'])]
     public function getFilters(
         #[MapQueryParameter] ?string $part,
-        AvatarProductGridService $avatarProductGridService
-    ): JsonResponse
-    {
+        AvatarProductGridService $avatarProductGridService,
+    ): JsonResponse {
         $filters = $avatarProductGridService->getFiltersForPart($part);
 
-        return new JsonResponse([
+        return new JsonResponse(
+            [
             'filters' => $filters,
             ],
             status: 200,

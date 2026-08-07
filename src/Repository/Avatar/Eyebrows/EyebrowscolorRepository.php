@@ -2,8 +2,8 @@
 
 namespace App\Repository\Avatar\Eyebrows;
 
-use App\Entity\Avatar\Eyebrows\Eyebrowscolor;
 use App\Application\Avatar\Interface\AvatarFilterValueRepositoryInterface;
+use App\Entity\Avatar\Eyebrows\Eyebrowscolor;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -21,7 +21,7 @@ class EyebrowscolorRepository extends ServiceEntityRepository implements AvatarF
     {
         $name = $this->normalizeName($name);
 
-        if ($name === '') {
+        if ('' === $name) {
             throw new \InvalidArgumentException('Invalid eyebrows color name.');
         }
 

@@ -3,7 +3,6 @@
         <form
             method="post"
             action="{{ action }}"
-            data-turbo="false"
             {{ stimulus_controller('clothe-size-modal') }}
             {{ stimulus_action('clothe-size-modal', 'confirmRemovedSizes', 'submit')|stimulus_action('clothe-size-modal', 'toggleStock', 'change') }}
         >

@@ -27,12 +27,12 @@ final readonly class ClotheOnlineGuard
         foreach ($this->publishRules as $rule) {
             $error = $rule->validate($clothe);
 
-            if ($error !== null) {
+            if (null !== $error) {
                 $errors[] = $error;
             }
         }
 
-        return new ClothePublishValidationResult($errors === [], $errors);
+        return new ClothePublishValidationResult([] === $errors, $errors);
     }
 
     public function canPublishVariant(ClothesVariant $variant): ClothePublishValidationResult
@@ -52,13 +52,13 @@ final readonly class ClotheOnlineGuard
 
         $variantError = $this->validateVariant($variant);
 
-        if ($variantError !== null) {
+        if (null !== $variantError) {
             $errors[] = $variantError;
         }
 
         $errors = array_values(array_unique($errors));
 
-        return new ClothePublishValidationResult($errors === [], $errors);
+        return new ClothePublishValidationResult([] === $errors, $errors);
     }
 
     /**
@@ -66,7 +66,7 @@ final readonly class ClotheOnlineGuard
      */
     public function canPublishVariants(array $variants): ClothePublishValidationResult
     {
-        if ($variants === []) {
+        if ([] === $variants) {
             return new ClothePublishValidationResult(false, ['Au moins une variante est requise.']);
         }
 
@@ -85,14 +85,14 @@ final readonly class ClotheOnlineGuard
 
             $variantError = $this->validateVariant($variant);
 
-            if ($variantError !== null) {
+            if (null !== $variantError) {
                 $errors[] = sprintf('%s : %s', $variant->getName() ?? 'Variante', $variantError);
             }
         }
 
         $errors = array_values(array_unique($errors));
 
-        return new ClothePublishValidationResult($errors === [], $errors);
+        return new ClothePublishValidationResult([] === $errors, $errors);
     }
 
     /**
@@ -109,7 +109,7 @@ final readonly class ClotheOnlineGuard
                 ? $rule->validateVariants($variants)
                 : $rule->validate($clothe);
 
-            if ($error !== null) {
+            if (null !== $error) {
                 $errors[] = $error;
             }
         }
@@ -127,12 +127,12 @@ final readonly class ClotheOnlineGuard
      */
     public function areVariantsOnline(array $variants): bool
     {
-        if ($variants === []) {
+        if ([] === $variants) {
             return false;
         }
 
         foreach ($variants as $variant) {
-            if (!$variant instanceof ClothesVariant || $variant->getPublicationStatus() !== ClotheStatus::Online) {
+            if (!$variant instanceof ClothesVariant || ClotheStatus::Online !== $variant->getPublicationStatus()) {
                 return false;
             }
         }

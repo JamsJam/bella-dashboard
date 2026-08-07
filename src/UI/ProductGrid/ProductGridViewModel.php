@@ -2,15 +2,12 @@
 
 namespace App\UI\ProductGrid;
 
-
-
-
 final readonly class ProductGridViewModel
 {
     /**
-     * @param list<ProductGridItemModel> $items
+     * @param list<ProductGridItemModel>   $items
      * @param list<ProductGridFilterModel> $filters
-     * @param array<string, mixed> $selectedFilters
+     * @param array<string, mixed>         $selectedFilters
      */
     public function __construct(
         public string $id,
@@ -42,19 +39,12 @@ final readonly class ProductGridViewModel
         public string $searchParamName = 'search',
         public ?string $initialSearch = null,
         public array $selectedFilters = [],
-        
         public bool $paginate = false,
         public int $itemsPerPage = 20,
         public ?string $paginationParamName = 'page',
         public ?string $paginationNextLabel = 'Next',
         public ?string $paginationPreviousLabel = 'Previous',
         public string $part = 'body',
-
-        
-
-
     ) {
-
-        
     }
 }

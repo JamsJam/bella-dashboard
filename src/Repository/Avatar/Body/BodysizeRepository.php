@@ -21,7 +21,7 @@ class BodysizeRepository extends ServiceEntityRepository implements AvatarFilter
     {
         $name = $this->normalizeName($name);
 
-        if ($name === '') {
+        if ('' === $name) {
             throw new \InvalidArgumentException('Invalid body size name.');
         }
 

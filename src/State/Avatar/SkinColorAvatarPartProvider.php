@@ -35,7 +35,7 @@ final readonly class SkinColorAvatarPartProvider implements ProviderInterface
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): SkinColorAvatarPartList
     {
         $skinColorId = filter_var($uriVariables['id'] ?? null, FILTER_VALIDATE_INT);
-        if ($skinColorId === false || $skinColorId <= 0) {
+        if (false === $skinColorId || $skinColorId <= 0) {
             throw new NotFoundHttpException('Couleur de peau introuvable.');
         }
 
@@ -52,9 +52,9 @@ final readonly class SkinColorAvatarPartProvider implements ProviderInterface
         $criteria = ['skincolor' => $skinColor];
         $morphotypeId = null;
 
-        if ($type === 'bodies' && array_key_exists('morphotypeId', $uriVariables)) {
+        if ('bodies' === $type && array_key_exists('morphotypeId', $uriVariables)) {
             $morphotypeId = filter_var($uriVariables['morphotypeId'], FILTER_VALIDATE_INT);
-            if ($morphotypeId === false || $morphotypeId <= 0) {
+            if (false === $morphotypeId || $morphotypeId <= 0) {
                 throw new NotFoundHttpException('Morphotype introuvable.');
             }
 
@@ -67,10 +67,12 @@ final readonly class SkinColorAvatarPartProvider implements ProviderInterface
         }
 
         $items = [];
-        foreach ($this->entityManager->getRepository(self::PART_CLASSES[$type])->findBy(
-            $criteria,
-            ['name' => 'ASC'],
-        ) as $part) {
+        foreach (
+            $this->entityManager->getRepository(self::PART_CLASSES[$type])->findBy(
+                $criteria,
+                ['name' => 'ASC'],
+            ) as $part
+        ) {
             if (
                 !method_exists($part, 'getId')
                 || !method_exists($part, 'getName')
@@ -80,7 +82,7 @@ final readonly class SkinColorAvatarPartProvider implements ProviderInterface
             }
 
             if (
-                $type === 'faces'
+                'faces' === $type
                 && !$this->faceAccessoryNameMatcher->matchesWithoutAccessory((string) $part->getName())
             ) {
                 continue;
@@ -88,7 +90,7 @@ final readonly class SkinColorAvatarPartProvider implements ProviderInterface
 
             $id = $part->getId();
             $image = $part->getImage();
-            if (!is_int($id) || !is_string($image) || $image === '') {
+            if (!is_int($id) || !is_string($image) || '' === $image) {
                 continue;
             }
 
@@ -109,15 +111,15 @@ final readonly class SkinColorAvatarPartProvider implements ProviderInterface
 
     private function absoluteUrl(string $path): string
     {
-        if (filter_var($path, FILTER_VALIDATE_URL) !== false) {
+        if (false !== filter_var($path, FILTER_VALIDATE_URL)) {
             return $path;
         }
 
         $request = $this->requestStack->getCurrentRequest();
-        if ($request === null) {
+        if (null === $request) {
             return $path;
         }
 
-        return $request->getSchemeAndHttpHost().'/'.ltrim($path, '/');
+        return $request->getSchemeAndHttpHost() . '/' . ltrim($path, '/');
     }
 }

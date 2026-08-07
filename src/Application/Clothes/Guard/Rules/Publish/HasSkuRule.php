@@ -9,7 +9,7 @@ final readonly class HasSkuRule implements ClothePublishRuleInterface
     public function validate(Clothes $clothe): ?string
     {
         foreach ($clothe->getVariants() as $variant) {
-            if (trim((string) $variant->getSku()) === '') {
+            if ('' === trim((string) $variant->getSku())) {
                 return 'Chaque variante doit avoir un SKU.';
             }
         }

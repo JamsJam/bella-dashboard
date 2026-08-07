@@ -15,7 +15,8 @@ final readonly class ReviewRequestService
         private EntityManagerInterface $entityManager,
         private ReviewRepository $reviewRepository,
         private ClockInterface $clock,
-    ) {}
+    ) {
+    }
 
     /** @return list<Review> */
     public function createForOrder(Orders $order): array
@@ -29,7 +30,7 @@ final readonly class ReviewRequestService
         $seen = [];
         foreach ($order->getCart()->getItems() as $item) {
             $variant = $item->getVariant();
-            if ($variant === null || isset($seen[(int) $variant->getId()])) {
+            if (null === $variant || isset($seen[(int) $variant->getId()])) {
                 continue;
             }
             $seen[(int) $variant->getId()] = true;
@@ -45,6 +46,7 @@ final readonly class ReviewRequestService
             $reviews[] = $review;
         }
         $this->entityManager->flush();
+
         return $reviews;
     }
 }

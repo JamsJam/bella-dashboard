@@ -11,7 +11,7 @@ final readonly class ClotheCompletenessResult
 
     public function isComplete(): bool
     {
-        return $this->errors === [];
+        return [] === $this->errors;
     }
 
     /** @return list<string> */

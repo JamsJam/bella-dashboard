@@ -28,7 +28,6 @@ final class GeneralConfigController extends AbstractConfigController
 
         $form->handleRequest($request);
 
-
         if ($form->isSubmitted() && $form->isValid()) {
             /** @var GeneralConfigDto $config */
             $config = $form->getData();

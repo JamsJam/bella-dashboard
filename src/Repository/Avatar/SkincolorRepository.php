@@ -2,8 +2,8 @@
 
 namespace App\Repository\Avatar;
 
-use App\Entity\Avatar\Skincolor;
 use App\Application\Avatar\Interface\AvatarFilterValueRepositoryInterface;
+use App\Entity\Avatar\Skincolor;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -21,7 +21,7 @@ class SkincolorRepository extends ServiceEntityRepository implements AvatarFilte
     {
         $name = $this->normalizeName($name);
 
-        if ($name === '') {
+        if ('' === $name) {
             throw new \InvalidArgumentException('Invalid skin color name.');
         }
 

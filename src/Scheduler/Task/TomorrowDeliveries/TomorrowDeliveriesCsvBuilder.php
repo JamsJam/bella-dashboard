@@ -12,7 +12,7 @@ final class TomorrowDeliveriesCsvBuilder
     public function build(array $orders): string
     {
         $stream = fopen('php://temp', 'r+');
-        if ($stream === false) {
+        if (false === $stream) {
             throw new \RuntimeException('Impossible de créer le fichier des livraisons.');
         }
 
@@ -47,7 +47,7 @@ final class TomorrowDeliveriesCsvBuilder
         $csv = stream_get_contents($stream);
         fclose($stream);
 
-        if ($csv === false) {
+        if (false === $csv) {
             throw new \RuntimeException('Impossible de lire le fichier des livraisons.');
         }
 
@@ -62,7 +62,7 @@ final class TomorrowDeliveriesCsvBuilder
     {
         foreach ($keys as $key) {
             $value = trim((string) ($shipping[$key] ?? ''));
-            if ($value !== '') {
+            if ('' !== $value) {
                 return $value;
             }
         }
@@ -85,6 +85,6 @@ final class TomorrowDeliveriesCsvBuilder
             trim((string) ($shipping['destination'] ?? '')),
         ]);
 
-        return $parts === [] ? 'Non renseignée' : implode(', ', $parts);
+        return [] === $parts ? 'Non renseignée' : implode(', ', $parts);
     }
 }

@@ -61,6 +61,11 @@ export default class extends Controller {
     }
 
     removeCollectionItem(event) {
+        const message = event.currentTarget.dataset.confirm;
+        if (message && !window.confirm(message)) {
+            return;
+        }
+
         this.findClosestTarget(this.sectionTargets, event.currentTarget)?.remove();
     }
 

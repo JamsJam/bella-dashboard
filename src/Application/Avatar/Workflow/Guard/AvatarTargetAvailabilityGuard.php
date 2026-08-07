@@ -2,11 +2,11 @@
 
 namespace App\Application\Avatar\Workflow\Guard;
 
-use App\Application\Avatar\Resolver\AvatarRenameDestinationResolver;
-use App\Application\Avatar\Workflow\AvatarRenameValidationContext;
-use App\Application\Avatar\Workflow\AvatarRenameGuardContextStore;
-use App\Entity\AvatarTemp;
 use App\Application\Avatar\Model\AvatarRenameInstruction;
+use App\Application\Avatar\Resolver\AvatarRenameDestinationResolver;
+use App\Application\Avatar\Workflow\AvatarRenameGuardContextStore;
+use App\Application\Avatar\Workflow\AvatarRenameValidationContext;
+use App\Entity\AvatarTemp;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Component\Workflow\Event\GuardEvent;
 use Symfony\Component\Workflow\TransitionBlocker;
@@ -46,8 +46,8 @@ final readonly class AvatarTargetAvailabilityGuard
                 filters: $context->filters,
             );
             $webDirectory = $this->destinationResolver->resolveWebDirectory($message);
-            $destination = $this->destinationResolver->resolveAbsoluteDirectory($webDirectory).'/'.$context->newName;
-            $context->recordAvailability(is_file($destination), is_file($destination) ? $webDirectory.'/'.$context->newName : null);
+            $destination = $this->destinationResolver->resolveAbsoluteDirectory($webDirectory) . '/' . $context->newName;
+            $context->recordAvailability(is_file($destination), is_file($destination) ? $webDirectory . '/' . $context->newName : null);
         } catch (\Throwable) {
             $event->addTransitionBlocker(new TransitionBlocker(
                 'La destination du renommage est invalide.',

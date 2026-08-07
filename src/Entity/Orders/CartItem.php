@@ -81,7 +81,7 @@ class CartItem
     public function setVariant(?ClothesVariant $variant): static
     {
         $this->variant = $variant;
-        if ($variant instanceof ClothesVariant && $variant->getId() !== null) {
+        if ($variant instanceof ClothesVariant && null !== $variant->getId()) {
             $this->productId = $variant->getId();
         }
 

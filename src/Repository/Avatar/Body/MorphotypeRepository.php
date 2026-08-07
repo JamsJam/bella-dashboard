@@ -24,7 +24,7 @@ class MorphotypeRepository extends ServiceEntityRepository implements AvatarFilt
     {
         $name = $this->normalizeName($name);
 
-        if ($name === '') {
+        if ('' === $name) {
             throw new \InvalidArgumentException('Invalid morphotype name.');
         }
 
@@ -40,7 +40,7 @@ class MorphotypeRepository extends ServiceEntityRepository implements AvatarFilt
     {
         $name = $this->normalizeName($name);
 
-        if ($name === '') {
+        if ('' === $name) {
             throw new \InvalidArgumentException('Invalid morphotype name.');
         }
 

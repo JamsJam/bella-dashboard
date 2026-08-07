@@ -13,7 +13,7 @@ final readonly class HasNameRule implements CategoryPublishRuleInterface
 
     public function validate(Category $category): ?string
     {
-        return trim((string) $category->getName()) !== ''
+        return '' !== trim((string) $category->getName())
             ? null
             : 'Le nom de la categorie est requis.';
     }

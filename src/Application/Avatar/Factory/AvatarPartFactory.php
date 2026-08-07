@@ -22,7 +22,7 @@ final readonly class AvatarPartFactory
     {
         $entityClass = $this->avatarResolverService->resolveEntity($category);
 
-        if ($entityClass === null || !class_exists($entityClass)) {
+        if (null === $entityClass || !class_exists($entityClass)) {
             throw new \InvalidArgumentException(sprintf('Unknown avatar part category "%s".', $category));
         }
 

@@ -2,16 +2,16 @@
 
 namespace App\Controller\Orders;
 
-use App\Application\Orders\Workflow\OrderWorkflow;
 use App\Application\Orders\Delivery\MarkOrderDeliveredService;
+use App\Application\Orders\Workflow\OrderWorkflow;
 use App\Entity\Orders\Orders;
 use App\Enum\OrderStatus;
 use App\Repository\Orders\OrdersRepository;
 use App\Service\BreadscrumbsService;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Clock\ClockInterface;
 use Symfony\Component\DependencyInjection\Attribute\Target;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -67,7 +67,7 @@ final class DeliveriesController extends AbstractController
             return $this->json(['message' => 'Paramètres de période invalides.'], Response::HTTP_BAD_REQUEST);
         }
 
-        $start = $direction === 'before'
+        $start = 'before' === $direction
             ? $boundary->modify(sprintf('-%d days', self::LOAD_MORE_DAYS))
             : $boundary->modify('+1 day');
         $days = $this->createDays($start, self::LOAD_MORE_DAYS, $this->today($clock), $ordersRepository);
@@ -118,7 +118,7 @@ final class DeliveriesController extends AbstractController
             throw $this->createNotFoundException('Commande introuvable.');
         }
 
-        if (!$this->isCsrfTokenValid('mark_order_delivered_'.$id, (string) $request->request->get('_csrf_token'))) {
+        if (!$this->isCsrfTokenValid('mark_order_delivered_' . $id, (string) $request->request->get('_csrf_token'))) {
             throw $this->createAccessDeniedException('Jeton CSRF invalide.');
         }
 
@@ -148,7 +148,7 @@ final class DeliveriesController extends AbstractController
 
         foreach ($ordersRepository->findPaidAwaitingDeliveryBetween($start, $end) as $order) {
             $date = ($order->getDeliveryDate() ?? $order->getDeliveredAt())?->format('Y-m-d');
-            if ($date !== null) {
+            if (null !== $date) {
                 $ordersByDate[$date][] = $order;
             }
         }

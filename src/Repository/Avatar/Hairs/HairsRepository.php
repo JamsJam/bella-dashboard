@@ -3,7 +3,6 @@
 namespace App\Repository\Avatar\Hairs;
 
 use App\Application\Avatar\Interface\AvatarPartModelInterface;
-use App\Entity\Avatar\Eyebrows\Eyebrows;
 use App\Entity\Avatar\Hairs\Hairs;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -27,13 +26,13 @@ class HairsRepository extends ServiceEntityRepository implements AvatarPartModel
     ): array {
         $qb = $this->createQueryBuilder('h');
 
-        if ($color !== 0 && $color !== null) {
+        if (0 !== $color && null !== $color) {
             $qb->leftJoin('h.color', 'c')
                 ->andWhere('c.id = :color')
                 ->setParameter('color', $color);
         }
 
-        if ($shape !== 0 && $shape !== null) {
+        if (0 !== $shape && null !== $shape) {
             $qb->leftJoin('h.shape', 's')
                 ->andWhere('s.id = :shape')
                 ->setParameter('shape', $shape);
@@ -42,9 +41,6 @@ class HairsRepository extends ServiceEntityRepository implements AvatarPartModel
         return $qb->getQuery()->getArrayResult();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function findPartByFilters(array $filters = []): array
     {
         return $this->findAllByFilters(
@@ -53,9 +49,6 @@ class HairsRepository extends ServiceEntityRepository implements AvatarPartModel
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function findAllPart(): array
     {
         return $this->findAll();

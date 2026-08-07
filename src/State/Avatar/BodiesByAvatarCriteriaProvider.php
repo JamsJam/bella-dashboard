@@ -54,7 +54,7 @@ final readonly class BodiesByAvatarCriteriaProvider implements ProviderInterface
         foreach ($this->bodyRepository->findForAvatarSelection($skinColor, $morphotype, $clothes) as $body) {
             $id = $body->getId();
             $image = $body->getImage();
-            if ($id === null || $image === null || $image === '') {
+            if (null === $id || null === $image || '' === $image) {
                 continue;
             }
 
@@ -77,7 +77,7 @@ final readonly class BodiesByAvatarCriteriaProvider implements ProviderInterface
     private function clothesParameter(): int|string|null
     {
         $value = $this->requestStack->getCurrentRequest()?->query->get('clothes');
-        if ($value === null || $value === '' || strtolower((string) $value) === 'null') {
+        if (null === $value || '' === $value || 'null' === strtolower((string) $value)) {
             return null;
         }
 
@@ -89,7 +89,7 @@ final readonly class BodiesByAvatarCriteriaProvider implements ProviderInterface
     private function positiveId(mixed $value, string $errorMessage): int
     {
         $id = filter_var($value, FILTER_VALIDATE_INT);
-        if ($id === false || $id <= 0) {
+        if (false === $id || $id <= 0) {
             throw new NotFoundHttpException($errorMessage);
         }
 
@@ -98,12 +98,12 @@ final readonly class BodiesByAvatarCriteriaProvider implements ProviderInterface
 
     private function absoluteUrl(string $path): string
     {
-        if (filter_var($path, FILTER_VALIDATE_URL) !== false) {
+        if (false !== filter_var($path, FILTER_VALIDATE_URL)) {
             return $path;
         }
 
         $request = $this->requestStack->getCurrentRequest();
 
-        return $request === null ? $path : $request->getSchemeAndHttpHost().'/'.ltrim($path, '/');
+        return null === $request ? $path : $request->getSchemeAndHttpHost() . '/' . ltrim($path, '/');
     }
 }

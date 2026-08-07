@@ -28,6 +28,8 @@
 
                 {% if orders_form|default(false) %}
                     {% include 'config/_orders_config_fields.html.twig' with { form: form } only %}
+                {% elseif clothes_form|default(false) %}
+                    {% include 'config/_clothes_config_fields.html.twig' with { form: form } only %}
                 {% elseif categories_form|default(false) %}
                     {% include 'config/_categories_config_fields.html.twig' with { form: form } only %}
                 {% elseif homepage_form|default(false) %}

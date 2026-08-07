@@ -26,13 +26,13 @@ class NoseRepository extends ServiceEntityRepository implements AvatarPartModelI
     ): array {
         $qb = $this->createQueryBuilder('n');
 
-        if ($skincolor !== 0 && $skincolor !== null) {
+        if (0 !== $skincolor && null !== $skincolor) {
             $qb->leftJoin('n.skincolor', 'sc')
                 ->andWhere('sc.id = :skincolor')
                 ->setParameter('skincolor', $skincolor);
         }
 
-        if ($shape !== 0 && $shape !== null) {
+        if (0 !== $shape && null !== $shape) {
             $qb->leftJoin('n.shape', 's')
                 ->andWhere('s.id = :shape')
                 ->setParameter('shape', $shape);
@@ -41,11 +41,6 @@ class NoseRepository extends ServiceEntityRepository implements AvatarPartModelI
         return $qb->getQuery()->getArrayResult();
     }
 
-
-
-    /**
-     * {@inheritdoc}
-     */
     public function findPartByFilters(array $filters = []): array
     {
         return $this->findAllByFilters(
@@ -54,9 +49,6 @@ class NoseRepository extends ServiceEntityRepository implements AvatarPartModelI
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function findAllPart(): array
     {
         return $this->findAll();

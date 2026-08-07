@@ -2,8 +2,8 @@
 
 namespace App\Application\Avatar\Services;
 
-use App\Entity\AvatarTemp;
 use App\Application\Avatar\Model\AvatarRenameInstruction;
+use App\Entity\AvatarTemp;
 
 final class AvatarRenameNameParser
 {
@@ -22,7 +22,7 @@ final class AvatarRenameNameParser
         $newName = (string) $avatarTemp->getFinalName();
         $parts = explode('__', pathinfo($newName, PATHINFO_FILENAME));
         $categoryToken = array_shift($parts);
-        $category = $categoryToken === 'visage' ? 'face' : (string) $categoryToken;
+        $category = 'visage' === $categoryToken ? 'face' : (string) $categoryToken;
 
         if (!isset(self::FILTERS_BY_CATEGORY[$category])) {
             throw new \InvalidArgumentException('Unknown avatar category encoded in final filename.');

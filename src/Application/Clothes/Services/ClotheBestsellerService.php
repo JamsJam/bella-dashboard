@@ -105,7 +105,6 @@ final readonly class ClotheBestsellerService
         );
     }
 
-
     public function getMaxItems(): int
     {
         return $this->configService->get()->bestsellerCount;
@@ -120,7 +119,7 @@ final readonly class ClotheBestsellerService
         $maxItems = $this->getMaxItems();
         $overflowSlugs = array_slice($slugs, $maxItems);
 
-        if ($overflowSlugs !== [] && !$pruneOverflow) {
+        if ([] !== $overflowSlugs && !$pruneOverflow) {
             return new BestsellerUpdateResult(
                 success: false,
                 requiresPruning: true,
@@ -161,6 +160,7 @@ final readonly class ClotheBestsellerService
 
     /**
      * @param list<Clothes> $clothes
+     *
      * @return list<string>
      */
     private function extractSlugs(array $clothes): array
@@ -173,12 +173,13 @@ final readonly class ClotheBestsellerService
 
     /**
      * @param list<int> $ids
+     *
      * @return list<ClothesVariant>
      */
     private function findVariantsByIds(array $ids): array
     {
         $ids = array_values(array_unique(array_filter($ids, static fn (int $id): bool => $id > 0)));
-        if ($ids === []) {
+        if ([] === $ids) {
             return [];
         }
 
@@ -187,6 +188,7 @@ final readonly class ClotheBestsellerService
 
     /**
      * @param list<ClothesVariant> $variants
+     *
      * @return list<string>
      */
     private function extractVariantSlugs(array $variants): array

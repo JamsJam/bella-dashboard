@@ -26,15 +26,15 @@ final readonly class CategoryOnlineGuard
             $error = $rule->validate($category);
             $checks[] = [
                 'label' => $rule->getLabel(),
-                'isValid' => $error === null,
+                'isValid' => null === $error,
                 'error' => $error,
             ];
 
-            if ($error !== null) {
+            if (null !== $error) {
                 $errors[] = $error;
             }
         }
 
-        return new CategoryPublishValidationResult($errors === [], $errors, $checks);
+        return new CategoryPublishValidationResult([] === $errors, $errors, $checks);
     }
 }

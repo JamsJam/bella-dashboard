@@ -89,7 +89,7 @@ final class BestsellerController extends AbstractController
                     'csrfToken' => $csrfTokenManager->getToken('clothe_bestseller')->getValue(),
                     'bestsellers' => array_merge($result->bestsellers, $result->overflow),
                     'maxItems' => $result->maxItems,
-                    'errorMessage' => $result->message.' Decoche les elements a supprimer avant d enregistrer.',
+                    'errorMessage' => $result->message . ' Decoche les elements a supprimer avant d enregistrer.',
                 ]);
 
                 return new Response(
@@ -188,7 +188,7 @@ final class BestsellerController extends AbstractController
         $payload = $this->readJsonPayload($request);
         $slugs = $request->request->all('slugs') ?: ($payload['slugs'] ?? []);
 
-        if ((!is_array($slugs) || $slugs === []) && isset($payload['slug'])) {
+        if ((!is_array($slugs) || [] === $slugs) && isset($payload['slug'])) {
             $slugs = [$payload['slug']];
         }
 

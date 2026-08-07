@@ -3,14 +3,69 @@
 {% block title %}Ajouter des variantes{% endblock %}
 
 {% block body %}
-    <article class="collection-add">
-        <header class="admin-page__header">
-            <h1 class="title">Ajouter des variantes</h1>
+    <article class="collection-add clothe-create" aria-labelledby="variant-add-title">
+        <header class="admin-page__header clothe-create__header">
+            <div>
+                <p class="clothe-create__eyebrow">Catalogue</p>
+                <h1 id="variant-add-title" class="title">Ajouter des variantes</h1>
+                <p class="admin-page__subtitle">
+                    Sélectionne un vêtement, une couleur et les tailles à ajouter.
+                </p>
+            </div>
         </header>
-        {{ form_start(form, {attr: {class: 'collection-form', enctype: 'multipart/form-data'}}) }}
+
+        {{ form_start(form, {
+            attr: {
+                class: 'collection-form clothe-create__form',
+                enctype: 'multipart/form-data',
+                'data-controller': 'clothe-form'
+            }
+        }) }}
             {{ form_errors(form) }}
-            {{ form_widget(form) }}
-            <button type="submit" class="clothe-show__action">Ajouter les variantes</button>
+
+            <section class="collection-form__section clothe-create__section" aria-labelledby="variant-information-title">
+                <div class="clothe-create__section-heading">
+                    <span class="clothe-create__step" aria-hidden="true">01</span>
+                    <div>
+                        <h2 id="variant-information-title">Vêtement concerné</h2>
+                        <p>Les nouvelles variantes reprendront le nom, le prix et la collection de ce vêtement.</p>
+                    </div>
+                </div>
+
+                {{ form_row(form.clothe, {row_attr: {class: 'clothe-create__field'}}) }}
+            </section>
+
+            <section class="collection-form__section clothe-create__section" aria-labelledby="variant-details-title">
+                <div class="clothe-create__section-heading">
+                    <span class="clothe-create__step" aria-hidden="true">02</span>
+                    <div>
+                        <h2 id="variant-details-title">Détails des variantes</h2>
+                        <p>Une variante sera créée pour chaque taille sélectionnée.</p>
+                    </div>
+                </div>
+
+                <fieldset class="collection-form__variant">
+                    <legend>Couleur et tailles</legend>
+                    <div class="clothe-create__variant-fields">
+                        {{ form_row(form.color) }}
+                        {{ form_row(form.newColorName) }}
+                        {{ form_row(form.newColorHex) }}
+                        {{ form_row(form.sizes) }}
+                        {{ form_row(form.description) }}
+                        {{ form_row(form.metaDescription) }}
+                        {{ form_row(form.images) }}
+                    </div>
+                </fieldset>
+            </section>
+
+            <footer class="collection-form__actions">
+                <p class="clothe-create__submit-help">
+                    Les nouvelles variantes seront vérifiées par le workflow de publication.
+                </p>
+                <button type="submit" class="clothe-show__action clothe-create__submit">
+                    Ajouter les variantes
+                </button>
+            </footer>
         {{ form_end(form) }}
     </article>
 {% endblock %}

@@ -24,11 +24,11 @@ final readonly class CollectionOnlineGuard
         foreach ($this->publishRules as $rule) {
             $error = $rule->validate($collection);
 
-            if ($error !== null) {
+            if (null !== $error) {
                 $errors[] = $error;
             }
         }
 
-        return new CollectionPublishValidationResult($errors === [], $errors);
+        return new CollectionPublishValidationResult([] === $errors, $errors);
     }
 }

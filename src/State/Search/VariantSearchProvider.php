@@ -31,12 +31,12 @@ final readonly class VariantSearchProvider implements ProviderInterface
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): array
     {
         $categorySlug = $uriVariables['category'] ?? null;
-        if (!is_string($categorySlug) || preg_match('/^[a-zA-Z0-9_-]+$/', $categorySlug) !== 1) {
+        if (!is_string($categorySlug) || 1 !== preg_match('/^[a-zA-Z0-9_-]+$/', $categorySlug)) {
             throw new NotFoundHttpException('Catégorie introuvable.');
         }
 
         $category = $this->categoryRepository->findOneBy(['slug' => $categorySlug, 'isOnline' => true]);
-        if (!$category instanceof Category || $category->getId() === null) {
+        if (!$category instanceof Category || null === $category->getId()) {
             throw new NotFoundHttpException(sprintf('La catégorie "%s" est introuvable.', $categorySlug));
         }
 
@@ -46,12 +46,12 @@ final readonly class VariantSearchProvider implements ProviderInterface
         [$minimumPrice, $maximumPrice] = $this->priceRange($request?->query->all('price') ?? []);
 
         $variants = $this->variantRepository->searchOnlineByCategory(
-                categoryId: $category->getId(),
-                colors: $colors,
-                sizes: $sizes,
-                minimumPrice: $minimumPrice,
-                maximumPrice: $maximumPrice,
-            );
+            categoryId: $category->getId(),
+            colors: $colors,
+            sizes: $sizes,
+            minimumPrice: $minimumPrice,
+            maximumPrice: $maximumPrice,
+        );
 
         $groups = array_values($this->groupBySlug($variants));
 
@@ -75,27 +75,27 @@ final readonly class VariantSearchProvider implements ProviderInterface
         foreach ($variant->getClothes()?->getVariants() ?? [] as $availableVariant) {
             if (
                 $availableVariant->getSlug() === $variant->getSlug()
-                && $availableVariant->getPublicationStatus() === \App\Enum\ClotheStatus::Online
+                && \App\Enum\ClotheStatus::Online === $availableVariant->getPublicationStatus()
                 && $availableVariant->getStock() > 0
             ) {
                 $availableGroup[] = $availableVariant;
             }
         }
 
-        foreach ($availableGroup !== [] ? $availableGroup : $group as $groupVariant) {
+        foreach ([] !== $availableGroup ? $availableGroup : $group as $groupVariant) {
             foreach ($groupVariant->getImages() ?? [] as $path) {
-                if (is_string($path) && $path !== '') {
+                if (is_string($path) && '' !== $path) {
                     $imagePaths[$path] = $path;
                 }
             }
 
             $color = $groupVariant->getColor()?->getName();
-            if (is_string($color) && $color !== '') {
+            if (is_string($color) && '' !== $color) {
                 $colors[$color] = $color;
             }
 
             $size = $groupVariant->getSize()?->getName();
-            if (is_string($size) && $size !== '') {
+            if (is_string($size) && '' !== $size) {
                 $sizes[$size] = $size;
             }
         }
@@ -124,7 +124,7 @@ final readonly class VariantSearchProvider implements ProviderInterface
 
         foreach ($variants as $variant) {
             $slug = $variant->getSlug();
-            if ($slug !== null && $slug !== '') {
+            if (null !== $slug && '' !== $slug) {
                 $groups[$slug][] = $variant;
             }
         }
@@ -147,7 +147,7 @@ final readonly class VariantSearchProvider implements ProviderInterface
             }
 
             $value = trim($value);
-            if ($value !== '') {
+            if ('' !== $value) {
                 $normalized[] = $value;
             }
         }
@@ -168,7 +168,7 @@ final readonly class VariantSearchProvider implements ProviderInterface
 
         $prices = [];
         foreach ($values as $value) {
-            if (!is_scalar($value) || filter_var($value, FILTER_VALIDATE_INT) === false || (int) $value < 0) {
+            if (!is_scalar($value) || false === filter_var($value, FILTER_VALIDATE_INT) || (int) $value < 0) {
                 throw new BadRequestHttpException('Les prix doivent être des nombres entiers positifs exprimés en centimes.');
             }
 
@@ -177,7 +177,7 @@ final readonly class VariantSearchProvider implements ProviderInterface
 
         $minimum = $prices[0] ?? null;
         $maximum = $prices[1] ?? null;
-        if ($minimum !== null && $maximum !== null && $minimum > $maximum) {
+        if (null !== $minimum && null !== $maximum && $minimum > $maximum) {
             throw new BadRequestHttpException('Le prix minimum ne peut pas être supérieur au prix maximum.');
         }
 
@@ -195,13 +195,13 @@ final readonly class VariantSearchProvider implements ProviderInterface
         $request = $this->requestStack->getCurrentRequest();
 
         foreach ($paths as $path) {
-            if (!is_string($path) || $path === '') {
+            if (!is_string($path) || '' === $path) {
                 continue;
             }
 
-            $urls[] = preg_match('#^https?://#i', $path) === 1 || str_starts_with($path, '//') || $request === null
+            $urls[] = 1 === preg_match('#^https?://#i', $path) || str_starts_with($path, '//') || null === $request
                 ? $path
-                : $request->getSchemeAndHttpHost().'/'.ltrim($path, '/');
+                : $request->getSchemeAndHttpHost() . '/' . ltrim($path, '/');
         }
 
         return $urls;

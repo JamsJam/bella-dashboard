@@ -5,7 +5,7 @@ namespace App\Application\Clothes\Guard\Category;
 final readonly class CategoryPublishValidationResult
 {
     /**
-     * @param list<string>                                                        $errors
+     * @param list<string>                                                  $errors
      * @param list<array{label: string, isValid: bool, error: string|null}> $checks
      */
     public function __construct(

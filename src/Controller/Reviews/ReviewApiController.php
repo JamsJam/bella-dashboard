@@ -37,14 +37,14 @@ final class ReviewApiController extends AbstractController
     public function submit(string $uuid, Request $request, ReviewRepository $reviews, ReviewWorkflowService $workflow): JsonResponse
     {
         $review = $this->findReview($reviews, $uuid);
-        if ($review->getStatus() !== ReviewStatus::Requested) {
+        if (ReviewStatus::Requested !== $review->getStatus()) {
             return $this->json(['message' => 'Cet avis a déjà été envoyé.'], Response::HTTP_CONFLICT);
         }
 
         try {
             $payload = $request->toArray();
             $workflow->submit($review, (int) ($payload['rating'] ?? 0), (string) ($payload['comment'] ?? ''));
-        } catch (\JsonException|\InvalidArgumentException|\DomainException $exception) {
+        } catch (\JsonException | \InvalidArgumentException | \DomainException $exception) {
             return $this->json(['message' => $exception->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
@@ -57,6 +57,7 @@ final class ReviewApiController extends AbstractController
         if (!$review instanceof Review) {
             throw $this->createNotFoundException('Avis introuvable.');
         }
+
         return $review;
     }
 
@@ -69,15 +70,15 @@ final class ReviewApiController extends AbstractController
 
         foreach ($variants as $variant) {
             foreach ($variant->getImages() ?? [] as $path) {
-                if (!is_string($path) || trim($path) === '') {
+                if (!is_string($path) || '' === trim($path)) {
                     continue;
                 }
 
                 $path = trim($path);
-                if (preg_match('#^https?://#i', $path) !== 1) {
+                if (1 !== preg_match('#^https?://#i', $path)) {
                     $path = str_starts_with($path, '//')
-                        ? $request->getScheme().':'.$path
-                        : $request->getSchemeAndHttpHost().'/'.ltrim($path, '/');
+                        ? $request->getScheme() . ':' . $path
+                        : $request->getSchemeAndHttpHost() . '/' . ltrim($path, '/');
                 }
                 $paths[$path] = $path;
             }

@@ -1,0 +1,45 @@
+<div class="modal-backdrop">
+    <dialog class="modal" open aria-labelledby="clothe-schedule-modal-title">
+        <form method="post" action="{{ action }}">
+            <header class="modal__header">
+                <div>
+                    <h2 id="clothe-schedule-modal-title">Programmer la mise en ligne</h2>
+                    <p class="modal__subtitle">{{ clotheName }}</p>
+                </div>
+                <button type="button" class="modal__close" onclick="this.closest('.modal-backdrop').remove()" aria-label="Fermer">
+                    &times;
+                </button>
+            </header>
+
+            <div class="modal__body">
+                <input type="hidden" name="_csrf_token" value="{{ csrfToken }}">
+                <p>Sélectionnez les variantes à mettre en ligne automatiquement à la date choisie.</p>
+                <fieldset class="clothe-schedule__variants">
+                    <legend>Variantes publiables</legend>
+                    {% for variant in variants %}
+                        <label class="clothe-schedule__variant">
+                            <input type="checkbox" name="variantIds[]" value="{{ variant.id }}" checked>
+                            <span>
+                                <strong>{{ variant.name }}</strong>
+                                <small>Taille {{ variant.size.name|default('non renseignée') }}</small>
+                            </span>
+                        </label>
+                    {% endfor %}
+                </fieldset>
+                <label class="collection-form__field">
+                    <span>Date et heure de publication</span>
+                    <input type="datetime-local" name="scheduledAt" min="{{ minimumDate }}" required autofocus>
+                </label>
+            </div>
+
+            <footer class="modal__actions">
+                <button type="button" class="clothe-show__button" onclick="this.closest('.modal-backdrop').remove()">
+                    Annuler
+                </button>
+                <button type="submit" class="clothe-show__action" data-turbo-submits-with="Programmation…">
+                    Programmer la sélection
+                </button>
+            </footer>
+        </form>
+    </dialog>
+</div>

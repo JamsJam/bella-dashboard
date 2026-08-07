@@ -36,21 +36,21 @@ final readonly class StripeConfig
 
     public function getSuccessUrl(): string
     {
-        return rtrim($this->frontAppUrl, '/').'/'.ltrim($this->successPath, '/');
+        return rtrim($this->frontAppUrl, '/') . '/' . ltrim($this->successPath, '/');
     }
 
     public function getCancelUrl(): string
     {
-        return rtrim($this->frontAppUrl, '/').'/payment/cancel';
+        return rtrim($this->frontAppUrl, '/') . '/payment/cancel';
     }
 
     public function getCartUrl(): string
     {
-        return rtrim($this->frontAppUrl, '/').'/cart';
+        return rtrim($this->frontAppUrl, '/') . '/cart';
     }
 
     private function isProd(): bool
     {
-        return $this->environment === 'prod';
+        return 'prod' === $this->environment;
     }
 }

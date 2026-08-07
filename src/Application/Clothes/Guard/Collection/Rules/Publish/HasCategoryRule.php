@@ -8,7 +8,7 @@ final readonly class HasCategoryRule implements CollectionPublishRuleInterface
 {
     public function validate(Collections $collection): ?string
     {
-        return $collection->getCategory() !== null
+        return null !== $collection->getCategory()
             ? null
             : 'La categorie de la collection est requise.';
     }

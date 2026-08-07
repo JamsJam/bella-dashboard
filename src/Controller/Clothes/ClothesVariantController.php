@@ -2,16 +2,19 @@
 
 namespace App\Controller\Clothes;
 
-use App\Application\Clothes\Services\ClotheService;
 use App\Application\Clothes\DTO\VariantFormInput;
 use App\Application\Clothes\Form\VariantType;
+use App\Application\Clothes\Guard\ClotheVariantColorGuard;
+use App\Application\Clothes\Services\ClotheService;
 use App\Application\Clothes\Services\ClotheVariantFactory;
 use App\Application\Clothes\Services\ClotheWorkflowService;
 use App\Entity\Clothes\Clothes;
-use App\Entity\Clothes\ClothesVariant;
 use App\Entity\Clothes\Clothescolor;
 use App\Entity\Clothes\Clothessize;
+use App\Entity\Clothes\ClothesVariant;
+use App\Enum\ClotheStatus;
 use App\Notifier\Services\FlashService;
+use App\Service\BreadscrumbsService;
 use App\Service\LoggerService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -21,7 +24,6 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Symfony\Component\String\Slugger\AsciiSlugger;
-use App\Enum\ClotheStatus;
 
 final class ClothesVariantController extends AbstractController
 {
@@ -32,6 +34,7 @@ final class ClothesVariantController extends AbstractController
         ClotheVariantFactory $variantFactory,
         ClotheWorkflowService $workflowService,
         FlashService $flashService,
+        BreadscrumbsService $breadscrumbs,
     ): Response {
         $input = new VariantFormInput();
         $form = $this->createForm(VariantType::class, $input);
@@ -54,7 +57,13 @@ final class ClothesVariantController extends AbstractController
             }
         }
 
-        return $this->render('clothes/variants/add.html.twig', ['form' => $form]);
+        return $this->render('clothes/variants/add.html.twig', [
+            'breadscrumbs' => $breadscrumbs->resolve(
+                (string) $request->attributes->get('_route'),
+                currentLabel: 'Ajouter des variantes',
+            ),
+            'form' => $form,
+        ]);
     }
 
     #[Route('/clothes/variants/{id}/edit/modal', name: 'app_clothes_variant_edit_modal', requirements: ['id' => '\d+'], methods: ['GET'])]
@@ -68,7 +77,7 @@ final class ClothesVariantController extends AbstractController
             'isGroup' => false,
             'availableSizes' => ClotheService::AVAILABLE_SIZES,
             'action' => $this->generateUrl('app_clothes_variant_update', ['id' => $variant->getId()]),
-            'csrfToken' => $csrfTokenManager->getToken('clothe_variant_edit_'.$variant->getId())->getValue(),
+            'csrfToken' => $csrfTokenManager->getToken('clothe_variant_edit_' . $variant->getId())->getValue(),
         ]);
 
         return $this->renderModalStream($html);
@@ -94,7 +103,40 @@ final class ClothesVariantController extends AbstractController
             'isGroup' => true,
             'colors' => $entityManager->getRepository(Clothescolor::class)->findBy([], ['name' => 'ASC']),
             'action' => $this->generateUrl('app_clothes_variant_group_update', ['slug' => $slug, 'color' => $color]),
-            'csrfToken' => $csrfTokenManager->getToken('clothe_variant_group_edit_'.$slug.'_'.$color)->getValue(),
+            'csrfToken' => $csrfTokenManager->getToken('clothe_variant_group_edit_' . $slug . '_' . $color)->getValue(),
+        ]);
+
+        return $this->renderModalStream($html);
+    }
+
+    #[Route(
+        '/clothes/{slug}/variants/color/{color}/seo/modal',
+        name: 'app_clothes_variant_group_seo_modal',
+        requirements: ['color' => '\d+'],
+        methods: ['GET'],
+    )]
+    public function editSeoModal(
+        string $slug,
+        int $color,
+        ClotheService $clotheService,
+        CsrfTokenManagerInterface $csrfTokenManager,
+    ): Response {
+        $variants = $this->resolveColorVariants($clotheService->getClotheVariantsBySlug($slug), $color);
+        $variant = $variants[0] ?? null;
+
+        if (!$variant instanceof ClothesVariant) {
+            throw $this->createNotFoundException('Variant not found.');
+        }
+
+        $html = $this->renderView('clothes/variants/_seo_modal.html.twig', [
+            'variant' => $variant,
+            'action' => $this->generateUrl('app_clothes_variant_group_seo_update', [
+                'slug' => $slug,
+                'color' => $color,
+            ]),
+            'csrfToken' => $csrfTokenManager
+                ->getToken('clothe_variant_group_seo_' . $slug . '_' . $color)
+                ->getValue(),
         ]);
 
         return $this->renderModalStream($html);
@@ -109,7 +151,7 @@ final class ClothesVariantController extends AbstractController
         FlashService $flashService,
         LoggerService $logger,
     ): RedirectResponse {
-        if (!$this->isCsrfTokenValid('clothe_variant_create_'.$slug, (string) $request->request->get('_csrf_token'))) {
+        if (!$this->isCsrfTokenValid('clothe_variant_create_' . $slug, (string) $request->request->get('_csrf_token'))) {
             $flashService->error('Token CSRF invalide.');
             $logger->warning('Invalid CSRF token for clothe variant creation.', ['slug' => $slug]);
 
@@ -186,7 +228,7 @@ final class ClothesVariantController extends AbstractController
         $clothe = $this->resolveVariantClothe($variant);
         $slug = (string) $clothe->getSlug();
 
-        if (!$this->isCsrfTokenValid('clothe_variant_edit_'.$variant->getId(), (string) $request->request->get('_csrf_token'))) {
+        if (!$this->isCsrfTokenValid('clothe_variant_edit_' . $variant->getId(), (string) $request->request->get('_csrf_token'))) {
             $flashService->error('Token CSRF invalide.');
             $logger->warning('Invalid CSRF token for clothe variant update.', ['variant_id' => $variant->getId()]);
 
@@ -233,10 +275,11 @@ final class ClothesVariantController extends AbstractController
         Request $request,
         ClotheService $clotheService,
         EntityManagerInterface $entityManager,
+        ClotheVariantColorGuard $colorGuard,
         FlashService $flashService,
         LoggerService $logger,
     ): RedirectResponse {
-        if (!$this->isCsrfTokenValid('clothe_variant_group_edit_'.$slug.'_'.$color, (string) $request->request->get('_csrf_token'))) {
+        if (!$this->isCsrfTokenValid('clothe_variant_group_edit_' . $slug . '_' . $color, (string) $request->request->get('_csrf_token'))) {
             $flashService->error('Token CSRF invalide.');
             $logger->warning('Invalid CSRF token for clothe variant group update.', [
                 'slug' => $slug,
@@ -256,14 +299,12 @@ final class ClothesVariantController extends AbstractController
 
         try {
             $newColor = $this->resolveColor($request, $entityManager);
-            $now = new \DateTimeImmutable();
-            $price = $request->request->getInt('price');
-            if ($price <= 0) {
-                throw new \InvalidArgumentException('Renseigne un prix valide.');
+            $currentColor = $variant->getColor();
+            if (!$currentColor instanceof Clothescolor) {
+                throw new \InvalidArgumentException('Impossible de retrouver la couleur actuelle.');
             }
-
-            $description = $this->normalizeNullableText($request->request->get('description'));
-            $metaDescription = $this->normalizeMetaDescription($request->request->get('metadescription'));
+            $colorGuard->assertAvailable($clothe, $newColor, $currentColor);
+            $now = new \DateTimeImmutable();
             $newSlug = $this->createVariantSlug((string) $clothe->getName(), $newColor);
 
             foreach ($variants as $variant) {
@@ -273,18 +314,14 @@ final class ClothesVariantController extends AbstractController
                     ->setSlug($this->createVariantSlug((string) $clothe->getName(), $newColor))
                     ->setColor($newColor)
                     ->setSku($this->createSku($clothe, $newColor, $variant->getSize()))
-                    ->setDescription($description)
-                    ->setMetadescription($metaDescription)
                     ->setEditedAt($now);
 
                 $this->assertVariantUnique($variant, $entityManager);
             }
 
-            $clothe
-                ->setPrice($price)
-                ->setEditedAt($now);
+            $clothe->setEditedAt($now);
             $entityManager->flush();
-            $flashService->success('Variant mis a jour.');
+            $flashService->success('Couleur des variantes mise à jour.');
             $logger->info('Clothe variant group updated.', [
                 'slug' => $slug,
                 'color_id' => $color,
@@ -302,6 +339,70 @@ final class ClothesVariantController extends AbstractController
         return $this->redirectToRoute('app_clothes_show', ['slug' => $newSlug ?? $slug]);
     }
 
+    #[Route(
+        '/clothes/{slug}/variants/color/{color}/seo',
+        name: 'app_clothes_variant_group_seo_update',
+        requirements: ['color' => '\d+'],
+        methods: ['POST'],
+    )]
+    public function updateSeo(
+        string $slug,
+        int $color,
+        Request $request,
+        ClotheService $clotheService,
+        EntityManagerInterface $entityManager,
+        FlashService $flashService,
+        LoggerService $logger,
+    ): RedirectResponse {
+        $csrfToken = (string) $request->request->get('_csrf_token');
+        if (!$this->isCsrfTokenValid('clothe_variant_group_seo_' . $slug . '_' . $color, $csrfToken)) {
+            $flashService->error('Token CSRF invalide.');
+            $logger->warning('Invalid CSRF token for clothe variant SEO update.', [
+                'slug' => $slug,
+                'color_id' => $color,
+            ]);
+
+            return $this->redirectToRoute('app_clothes_show', ['slug' => $slug]);
+        }
+
+        $variants = $this->resolveColorVariants($clotheService->getClotheVariantsBySlug($slug), $color);
+        if ([] === $variants) {
+            throw $this->createNotFoundException('Variant not found.');
+        }
+
+        try {
+            $description = $this->normalizeNullableText($request->request->get('description'));
+            $metaDescription = $this->normalizeMetaDescription($request->request->get('metadescription'));
+            $now = new \DateTimeImmutable();
+
+            foreach ($variants as $variant) {
+                $variant
+                    ->setDescription($description)
+                    ->setMetadescription($metaDescription)
+                    ->setEditedAt($now);
+            }
+
+            $clothe = $this->resolveVariantClothe($variants[0]);
+            $clothe->setEditedAt($now);
+            $entityManager->flush();
+            $flashService->success('Description et description SEO mises à jour.');
+            $logger->info('Clothe variant group SEO updated.', [
+                'slug' => $slug,
+                'color_id' => $color,
+                'variants_count' => count($variants),
+            ]);
+        } catch (\InvalidArgumentException $exception) {
+            $flashService->error($exception->getMessage());
+            $logger->warning('Clothe variant group SEO update rejected.', [
+                'slug' => $slug,
+                'color_id' => $color,
+                'error' => $exception->getMessage(),
+            ]);
+        }
+
+        return $this->redirectToRoute('app_clothes_show', ['slug' => $slug]);
+    }
+
     #[Route('/clothes/variants/{id}/delete', name: 'app_clothes_variant_delete', requirements: ['id' => '\d+'], methods: ['POST'])]
     public function delete(
         ClothesVariant $variant,
@@ -313,7 +414,7 @@ final class ClothesVariantController extends AbstractController
         $clothe = $this->resolveVariantClothe($variant);
         $slug = (string) $clothe->getSlug();
 
-        if (!$this->isCsrfTokenValid('clothe_variant_delete_'.$variant->getId(), (string) $request->request->get('_csrf_token'))) {
+        if (!$this->isCsrfTokenValid('clothe_variant_delete_' . $variant->getId(), (string) $request->request->get('_csrf_token'))) {
             $flashService->error('Token CSRF invalide.');
             $logger->warning('Invalid CSRF token for clothe variant deletion.', ['variant_id' => $variant->getId()]);
 
@@ -378,6 +479,7 @@ final class ClothesVariantController extends AbstractController
 
     /**
      * @param list<ClothesVariant> $variants
+     *
      * @return list<ClothesVariant>
      */
     private function resolveColorVariants(array $variants, int $colorId): array
@@ -391,9 +493,9 @@ final class ClothesVariantController extends AbstractController
     private function resolveColor(Request $request, EntityManagerInterface $entityManager): Clothescolor
     {
         $newColorName = trim((string) $request->request->get('newColorName', ''));
-        if ($newColorName !== '') {
+        if ('' !== $newColorName) {
             $colorHex = ltrim(trim((string) $request->request->get('newColorHex', '')), '#');
-            if ($colorHex !== '' && !preg_match('/^[a-fA-F0-9]{6}$/', $colorHex)) {
+            if ('' !== $colorHex && !preg_match('/^[a-fA-F0-9]{6}$/', $colorHex)) {
                 throw new \InvalidArgumentException('Le code couleur doit etre au format hexadecimal.');
             }
 
@@ -405,7 +507,7 @@ final class ClothesVariantController extends AbstractController
             $now = new \DateTimeImmutable();
             $color = (new Clothescolor())
                 ->setName($newColorName)
-                ->setHexa($colorHex !== '' ? strtolower($colorHex) : null)
+                ->setHexa('' !== $colorHex ? strtolower($colorHex) : null)
                 ->setCreatedAt($now)
                 ->setEditedAt($now);
 
@@ -414,7 +516,7 @@ final class ClothesVariantController extends AbstractController
             return $color;
         }
 
-        if ((string) $request->request->get('color', '') === '__new__') {
+        if ('__new__' === (string) $request->request->get('color', '')) {
             throw new \InvalidArgumentException('Renseigne le nom de la nouvelle couleur.');
         }
 
@@ -454,9 +556,9 @@ final class ClothesVariantController extends AbstractController
     private function resolveSizes(Request $request, EntityManagerInterface $entityManager): array
     {
         $submittedSizes = $request->request->all('sizes');
-        if ($submittedSizes === []) {
+        if ([] === $submittedSizes) {
             $legacySize = trim((string) $request->request->get('size', ''));
-            $submittedSizes = $legacySize !== '' ? [$legacySize] : [];
+            $submittedSizes = '' !== $legacySize ? [$legacySize] : [];
         }
 
         if (!is_array($submittedSizes)) {
@@ -468,7 +570,7 @@ final class ClothesVariantController extends AbstractController
             $submittedSizes,
         ))));
 
-        if ($sizeNames === []) {
+        if ([] === $sizeNames) {
             throw new \InvalidArgumentException('Selectionne au moins une taille.');
         }
 
@@ -481,7 +583,7 @@ final class ClothesVariantController extends AbstractController
     private function resolveStock(Request $request): int
     {
         $stock = filter_var($request->request->get('stock'), FILTER_VALIDATE_INT);
-        if ($stock === false || $stock < 0) {
+        if (false === $stock || $stock < 0) {
             throw new \InvalidArgumentException('Le stock doit etre un entier positif ou nul.');
         }
 
@@ -492,13 +594,13 @@ final class ClothesVariantController extends AbstractController
     {
         $value = trim((string) $value);
 
-        return $value !== '' ? $value : null;
+        return '' !== $value ? $value : null;
     }
 
     private function normalizeMetaDescription(mixed $value): ?string
     {
         $value = $this->normalizeNullableText($value);
-        if ($value !== null && mb_strlen($value) > 200) {
+        if (null !== $value && mb_strlen($value) > 200) {
             throw new \InvalidArgumentException('La meta description est limitee a 200 caracteres.');
         }
 
@@ -543,11 +645,7 @@ final class ClothesVariantController extends AbstractController
                 mb_strtolower((string) $existingVariant->getColor()?->getName()) === mb_strtolower($colorName)
                 && mb_strtolower((string) $existingVariant->getSize()?->getName()) === mb_strtolower($sizeName)
             ) {
-                throw new \InvalidArgumentException(sprintf(
-                    'Une variante existe deja pour la couleur %s et la taille %s.',
-                    $colorName,
-                    $sizeName,
-                ));
+                throw new \InvalidArgumentException(sprintf('Une variante existe deja pour la couleur %s et la taille %s.', $colorName, $sizeName));
             }
         }
 
@@ -555,6 +653,5 @@ final class ClothesVariantController extends AbstractController
         if ($existingSku instanceof ClothesVariant && $existingSku->getId() !== $variantId) {
             throw new \InvalidArgumentException(sprintf('Le SKU %s est deja utilise.', (string) $variant->getSku()));
         }
-
     }
 }

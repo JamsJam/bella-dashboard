@@ -18,11 +18,11 @@ final class BodyFixtures extends AbstractBaseFixtures implements DependentFixtur
     {
         foreach (AvatarFilterFixtures::SKIN_COLORS as $skinColorIndex => $skinColorName) {
             /** @var Skincolor $skinColor */
-            $skinColor = $this->getReference(FixtureReferences::SKIN_COLORS.$skinColorIndex, Skincolor::class);
+            $skinColor = $this->getReference(FixtureReferences::SKIN_COLORS . $skinColorIndex, Skincolor::class);
 
             foreach (AvatarFilterFixtures::MORPHOTYPES as $morphotypeIndex => $morphotypeName) {
                 /** @var Morphotype $morphotype */
-                $morphotype = $this->getReference(FixtureReferences::MORPHOTYPES.$morphotypeIndex, Morphotype::class);
+                $morphotype = $this->getReference(FixtureReferences::MORPHOTYPES . $morphotypeIndex, Morphotype::class);
                 $morphologieName = AvatarFilterFixtures::MORPHOLOGIES[$morphotypeIndex];
                 $compatibleClothes = $this->getCompatibleClothes($morphotype);
 
@@ -71,20 +71,15 @@ final class BodyFixtures extends AbstractBaseFixtures implements DependentFixtur
         $sizeName = $morphotype->getSize()?->getName();
         $sizeIndex = array_search($sizeName, ClothesFixtures::SIZES, true);
 
-        if ($sizeIndex === false) {
+        if (false === $sizeIndex) {
             return [];
         }
 
         $clothes = [];
         $collectionCount = count(ClothesFixtures::COLLECTIONS);
-        $colorCount = count(ClothesFixtures::COLORS);
-        $sizeCount = count(ClothesFixtures::SIZES);
 
-        for ($collectionIndex = 0; $collectionIndex < $collectionCount; $collectionIndex++) {
-            for ($colorIndex = 0; $colorIndex < $colorCount; $colorIndex++) {
-                $referenceIndex = (($collectionIndex * $colorCount + $colorIndex) * $sizeCount) + $sizeIndex;
-                $clothes[] = $this->getReference(FixtureReferences::CLOTHES.$referenceIndex, Clothes::class);
-            }
+        for ($collectionIndex = 0; $collectionIndex < $collectionCount; ++$collectionIndex) {
+            $clothes[] = $this->getReference(FixtureReferences::CLOTHES . $collectionIndex, Clothes::class);
         }
 
         return $clothes;

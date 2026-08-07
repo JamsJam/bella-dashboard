@@ -2,12 +2,10 @@
 
 namespace App\Application\Avatar\Provider;
 
-use App\Application\Avatar\Services\AvatarResolverService;
 use App\Application\Avatar\Services\AvatarPartSortService;
+use App\Application\Avatar\Services\AvatarResolverService;
 use App\Application\Avatar\Services\FaceAccessoryNameMatcher;
-use BadFunctionCallException;
 use Doctrine\ORM\EntityManagerInterface;
-use InvalidArgumentException;
 
 final class AvatarSearchProvider
 {
@@ -20,27 +18,28 @@ final class AvatarSearchProvider
     }
 
     /**
-     * Recherche des avatars en fonction des critères fournis
+     * Recherche des avatars en fonction des critères fournis.
      *
-     * @param string|null $partie La partie de l'avatar à rechercher (body, hair, eyes, etc.)
-     * @param array $filters Tableau associatif des filtres à appliquer (search, color, shape, skinColor, morphologie, morphotype, clothes, collection)
+     * @param string|null $partie  La partie de l'avatar à rechercher (body, hair, eyes, etc.)
+     * @param array       $filters Tableau associatif des filtres à appliquer (search, color, shape, skinColor, morphologie, morphotype, clothes, collection)
+     *
      * @return array Tableau des avatars trouvés
      */
     public function searchAvatarPart(
         ?string $partie,
-        array $filters = []
-    ): array | InvalidArgumentException {
+        array $filters = [],
+    ): array|\InvalidArgumentException {
         $results = [];
         $partie = $partie ? strtolower($partie) : 'body';
-        
-        $entityClass  = $this->getEntityClassForPart($partie);
+
+        $entityClass = $this->getEntityClassForPart($partie);
         if ($entityClass) {
             $repository = $this->entityManager->getRepository($entityClass);
-            
+
             $partResults = $this->searchInRepository(
-                repository: $repository, 
+                repository: $repository,
                 filters: $filters
-                );
+            );
 
             $partResults = match ($partie) {
                 'face' => $this->filterFacesWithoutAccessories($partResults),
@@ -59,16 +58,17 @@ final class AvatarSearchProvider
     }
 
     /**
-     * Effectue une recherche dans un repository spécifique
+     * Effectue une recherche dans un repository spécifique.
      *
      * @param object $repository Le repository dans lequel effectuer la recherche
-     * @param array $filters Les filtres de recherche
+     * @param array  $filters    Les filtres de recherche
+     *
      * @return array Résultats de la recherche
      */
     private function searchInRepository(
         object $repository,
-        array $filters
-    ): array | BadFunctionCallException {
+        array $filters,
+    ): array|\BadFunctionCallException {
         // Utiliser la méthode findAllByFilters si elle existe dans le repository
         if (method_exists($repository, 'findPartByFilters')) {
             $skinColors = isset($filters['skinColor']) ? $filters['skinColor'] : null;
@@ -82,7 +82,6 @@ final class AvatarSearchProvider
             $accessory = isset($filters['accessory']) ? $filters['accessory'] : null;
             $sort = isset($filters['sort']) ? $filters['sort'] : null;
             $direction = isset($filters['direction']) ? $filters['direction'] : null;
-
 
             $filters = [
                 'search' => $search,
@@ -98,25 +97,21 @@ final class AvatarSearchProvider
                 'direction' => $direction,
             ];
 
-            
             $results = $repository->findPartByFilters(
                 array_filter($filters),
-
             );
 
             return $this->filterBySearch($results, $search);
-
-        }else{
-            return new BadFunctionCallException('Method not found');
         }
 
+        return new \BadFunctionCallException('Method not found');
     }
 
     private function filterBySearch(array $results, ?string $search): array
     {
         $search = trim((string) $search);
 
-        if ($search === '') {
+        if ('' === $search) {
             return $results;
         }
 
@@ -125,7 +120,7 @@ final class AvatarSearchProvider
                 ? (string) ($result['name'] ?? '')
                 : (method_exists($result, 'getName') ? (string) $result->getName() : '');
 
-            return stripos($name, $search) !== false;
+            return false !== stripos($name, $search);
         }));
     }
 
@@ -156,32 +151,29 @@ final class AvatarSearchProvider
         }));
     }
 
-
-
-
-
-
-    /** Récupère le repository correspondant à une partie d'avatar donnée
+    /** Récupère le repository correspondant à une partie d'avatar donnée.
      *
      * @param string $part La partie de l'avatar (body, face, eyebrows, etc.)
+     *
      * @return object Le repository correspondant à la partie d'avatar
-     * @throws InvalidArgumentException Si la partie d'avatar n'est pas reconnue
+     *
+     * @throws \InvalidArgumentException Si la partie d'avatar n'est pas reconnue
      */
-    private function getRepositoryClassForPart(string $part): string | InvalidArgumentException
+    private function getRepositoryClassForPart(string $part): string|\InvalidArgumentException
     {
-            return $this->resolverService->resolveRepository($part);
-        
+        return $this->resolverService->resolveRepository($part);
     }
 
-    /** Récupère l'entité correspondant à une partie d'avatar donnée
+    /** Récupère l'entité correspondant à une partie d'avatar donnée.
      *
      * @param string $part La partie de l'avatar (body, face, eyebrows, etc.)
+     *
      * @return string Le nom de l'entité correspondant à la partie d'avatar
-     * @throws InvalidArgumentException Si la partie d'avatar n'est pas reconnue
+     *
+     * @throws \InvalidArgumentException Si la partie d'avatar n'est pas reconnue
      */
-    private function getEntityClassForPart(string $part): string | InvalidArgumentException
+    private function getEntityClassForPart(string $part): string|\InvalidArgumentException
     {
-            return $this->resolverService->resolveEntity($part);
-        
+        return $this->resolverService->resolveEntity($part);
     }
 }

@@ -70,7 +70,7 @@ final readonly class AvatarRenameFilterMapper
 
     public function getSetterForFilter(string $filterId): string
     {
-        return self::SETTERS_BY_FILTER[$filterId] ?? 'set'.ucfirst($filterId);
+        return self::SETTERS_BY_FILTER[$filterId] ?? 'set' . ucfirst($filterId);
     }
 
     /**
@@ -80,7 +80,7 @@ final readonly class AvatarRenameFilterMapper
     {
         return array_values(array_filter(
             self::STORAGE_PATH_FILTERS,
-            fn (string $filterId): bool => $this->getFilterSourceClass($part, $filterId) !== null,
+            fn (string $filterId): bool => null !== $this->getFilterSourceClass($part, $filterId),
         ));
     }
 }

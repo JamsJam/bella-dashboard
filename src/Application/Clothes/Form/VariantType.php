@@ -12,7 +12,12 @@ final class VariantType extends VariantGroupType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
-        $builder->add('clothe', EntityType::class, ['class' => Clothes::class, 'choice_label' => 'name', 'placeholder' => 'Sélectionner un vêtement']);
+        $builder->add('clothe', EntityType::class, [
+            'class' => Clothes::class,
+            'choice_label' => 'name',
+            'placeholder' => 'Sélectionner un vêtement',
+            'label' => 'Vêtement',
+        ]);
         parent::buildForm($builder, $options);
     }
 

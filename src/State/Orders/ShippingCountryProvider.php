@@ -40,19 +40,19 @@ final readonly class ShippingCountryProvider implements ProviderInterface
 
     private function absoluteUrl(?string $path): ?string
     {
-        if ($path === null || $path === '') {
+        if (null === $path || '' === $path) {
             return null;
         }
 
-        if (filter_var($path, FILTER_VALIDATE_URL) !== false) {
+        if (false !== filter_var($path, FILTER_VALIDATE_URL)) {
             return $path;
         }
 
         $request = $this->requestStack->getCurrentRequest();
-        if ($request === null) {
+        if (null === $request) {
             return $path;
         }
 
-        return $request->getSchemeAndHttpHost().'/'.ltrim($path, '/');
+        return $request->getSchemeAndHttpHost() . '/' . ltrim($path, '/');
     }
 }

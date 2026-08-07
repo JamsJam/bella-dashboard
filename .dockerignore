@@ -1,0 +1,10 @@
+.git
+.idea
+.phpunit.cache
+.DS_Store
+.env.local
+.env.test.local
+public/images/upload
+var
+vendor
+

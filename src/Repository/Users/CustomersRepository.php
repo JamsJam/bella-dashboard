@@ -33,9 +33,8 @@ class CustomersRepository extends ServiceEntityRepository implements PasswordUpg
         $this->getEntityManager()->flush();
     }
 
-    public function findExpiredUnconfirmedCustomers(): Array
+    public function findExpiredUnconfirmedCustomers(): array
     {
-
         return $this->CreateQueryBuilder('c')
             ->andWhere('c.isSignupConfirmed = :confirmed')
             ->andWhere('c.signupVerificationExpiresAt IS NOT NULL')

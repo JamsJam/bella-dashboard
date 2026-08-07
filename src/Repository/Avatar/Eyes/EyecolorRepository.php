@@ -2,8 +2,8 @@
 
 namespace App\Repository\Avatar\Eyes;
 
-use App\Entity\Avatar\Eyes\Eyecolor;
 use App\Application\Avatar\Interface\AvatarFilterValueRepositoryInterface;
+use App\Entity\Avatar\Eyes\Eyecolor;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -21,7 +21,7 @@ class EyecolorRepository extends ServiceEntityRepository implements AvatarFilter
     {
         $name = $this->normalizeName($name);
 
-        if ($name === '') {
+        if ('' === $name) {
             throw new \InvalidArgumentException('Invalid eye color name.');
         }
 

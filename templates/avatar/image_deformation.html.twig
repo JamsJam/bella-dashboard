@@ -1,0 +1,70 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Déformer une image{% endblock %}
+
+{% block body %}
+    <article class="avatar-page" aria-labelledby="image-deformation-title">
+        <header class="avatar-page__header">
+            <h1 id="image-deformation-title" class="title">Déformer une image</h1>
+            <p class="avatar-page__subtitle">
+                L’image est forcée à 400 px de largeur, placée sur un canvas transparent de 400 × 2051 px à x = 10 et y = 307, puis exportée en PNG.
+            </p>
+        </header>
+
+        <section class="image-deformation" {{ stimulus_controller('image_deformation', {
+            uploadUrl: path('app_avatar_image_deformation_submit')
+        }) }}>
+            <div class="image-deformation__card">
+                <div class="image-deformation__card-header">
+                    <span class="image-deformation__eyebrow">Transformation PNG</span>
+                    <h2>Préparer l’image</h2>
+                    <p>Sélectionnez un PNG. Le traitement est placé dans une file dédiée et le fichier final sera disponible ici.</p>
+                </div>
+
+                <form class="image-deformation__form" enctype="multipart/form-data" {{ stimulus_action('image_deformation', 'submit', 'submit') }}>
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token('image_deformation') }}">
+
+                    <label class="image-deformation__dropzone" for="image-deformation-file">
+                        <span class="image-deformation__upload-icon" aria-hidden="true">↑</span>
+                        <span class="image-deformation__upload-title">Choisir une image PNG</span>
+                        <span class="image-deformation__upload-hint">PNG uniquement · 20 Mo maximum</span>
+                        <input
+                            class="image-deformation__file-input"
+                            id="image-deformation-file"
+                            type="file"
+                            name="image"
+                            accept="image/png,.png"
+                            required
+                            {{ stimulus_action('image_deformation', 'selectFile', 'change') }}
+                            {{ stimulus_target('image_deformation', 'file') }}
+                        >
+                    </label>
+                    <p class="image-deformation__selection" hidden {{ stimulus_target('image_deformation', 'selection') }}></p>
+
+                    <button type="submit" class="image-deformation__button" {{ stimulus_target('image_deformation', 'submit') }}>
+                        Lancer la transformation
+                    </button>
+                </form>
+
+                <div class="image-deformation__result">
+                    <p class="image-deformation__status" role="status" aria-live="polite" {{ stimulus_target('image_deformation', 'status') }}>
+                        En attente d’une image.
+                    </p>
+                    <a class="image-deformation__button image-deformation__button--download" hidden {{ stimulus_target('image_deformation', 'download') }}>
+                        Télécharger le PNG
+                    </a>
+                </div>
+            </div>
+
+            <aside class="image-deformation__specs" aria-label="Paramètres de transformation">
+                <h2>Paramètres appliqués</h2>
+                <dl>
+                    <div><dt>Largeur de l’image</dt><dd>400 px</dd></div>
+                    <div><dt>Canvas final</dt><dd>400 × 2051 px</dd></div>
+                    <div><dt>Position</dt><dd>x 10 · y 307</dd></div>
+                    <div><dt>Format</dt><dd>PNG transparent</dd></div>
+                </dl>
+            </aside>
+        </section>
+    </article>
+{% endblock %}

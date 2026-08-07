@@ -29,7 +29,7 @@ final readonly class TomorrowDeliveriesHandler
             ->modify('+1 day');
         $orders = $this->ordersRepository->findPaidAwaitingDeliveryOn($deliveryDate);
 
-        if ($orders === []) {
+        if ([] === $orders) {
             return;
         }
 

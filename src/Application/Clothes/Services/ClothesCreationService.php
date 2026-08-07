@@ -16,7 +16,7 @@ final class ClothesCreationService
     public function createForCollectionFromRequest(Request $request, Collections $collection): void
     {
         $clothes = $request->request->all('clothes');
-        if (!is_array($clothes) || $clothes === []) {
+        if (!is_array($clothes) || [] === $clothes) {
             return;
         }
 
@@ -26,14 +26,14 @@ final class ClothesCreationService
                 continue;
             }
 
-            $uploadedImages = $request->files->all('clotheImages_'.$index);
+            $uploadedImages = $request->files->all('clotheImages_' . $index);
             $enabledClothes[] = [
                 'data' => $data,
                 'images' => is_array($uploadedImages) ? $uploadedImages : [],
             ];
         }
 
-        if ($enabledClothes === []) {
+        if ([] === $enabledClothes) {
             return;
         }
 

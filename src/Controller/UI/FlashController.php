@@ -19,7 +19,7 @@ final class FlashController extends AbstractController
         #[Autowire('%kernel.environment%')]
         string $environment,
     ): Response {
-        if ($request->headers->get('Turbo-Frame') === self::FRAME_ID) {
+        if (self::FRAME_ID === $request->headers->get('Turbo-Frame')) {
             $response = $this->render('ui/components/_flash.html.twig');
             $response->setPrivate();
             $response->headers->set('Cache-Control', 'no-store, private');
@@ -27,7 +27,7 @@ final class FlashController extends AbstractController
             return $response;
         }
 
-        if ($environment === 'dev') {
+        if ('dev' === $environment) {
             $flashes = [];
 
             foreach ($request->getSession()->getFlashBag()->all() as $type => $messages) {

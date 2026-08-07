@@ -22,7 +22,7 @@ class SizeGuideMeasurement
     private ?string $unit = null;
 
     #[ORM\ManyToOne(inversedBy: 'measurements')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?MeasurementType $type = null;
 
     #[ORM\ManyToOne(inversedBy: 'measurements')]

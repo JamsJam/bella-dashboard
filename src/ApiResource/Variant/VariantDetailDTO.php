@@ -19,11 +19,11 @@ use App\State\Variant\VariantDetailProvider;
 final readonly class VariantDetailDTO
 {
     /**
-     * @param list<string> $images
-     * @param list<VariantSizeDTO> $sizes
-     * @param list<VariantColorDTO> $colors
+     * @param list<string>            $images
+     * @param list<VariantSizeDTO>    $sizes
+     * @param list<VariantColorDTO>   $colors
      * @param list<RelatedVariantDTO> $relatedProducts
-     * @param list<VariantReviewDTO> $reviews
+     * @param list<VariantReviewDTO>  $reviews
      */
     public function __construct(
         public string $name,

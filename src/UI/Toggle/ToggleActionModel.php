@@ -22,11 +22,11 @@ final readonly class ToggleActionModel
             'method' => $this->method,
         ];
 
-        if ($this->csrfToken !== null) {
+        if (null !== $this->csrfToken) {
             $action['csrfToken'] = $this->csrfToken;
         }
 
-        if ($this->label !== null) {
+        if (null !== $this->label) {
             $action['label'] = $this->label;
         }
 

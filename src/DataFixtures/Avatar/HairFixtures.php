@@ -12,17 +12,23 @@ final class HairFixtures extends AbstractBaseFixtures implements DependentFixtur
 {
     public function load(ObjectManager $manager): void
     {
-        foreach (['black', 'brown', 'red'] as $colorIndex => $colorName) {
-            foreach (['short', 'long', 'curly'] as $shapeIndex => $shapeName) {
+        foreach (AvatarFilterFixtures::HAIR_COLORS as $colorIndex => $colorName) {
+            foreach (AvatarFilterFixtures::HAIR_SHAPES as $shapeIndex => $shapeName) {
                 $name = sprintf('hair__%s__%s', $colorName, $shapeName);
 
                 $hair = (new Hairs())
                     ->setName($name)
-                    ->setColor($this->getReference(FixtureReferences::HAIR_COLORS.$colorIndex, \App\Entity\Avatar\Hairs\Hairscolor::class))
-                    ->setShape($this->getReference(FixtureReferences::HAIR_SHAPES.$shapeIndex, \App\Entity\Avatar\Hairs\Hairshape::class))
+                    ->setColor($this->getReference(
+                        FixtureReferences::HAIR_COLORS . $colorIndex,
+                        \App\Entity\Avatar\Hairs\Hairscolor::class,
+                    ))
+                    ->setShape($this->getReference(
+                        FixtureReferences::HAIR_SHAPES . $shapeIndex,
+                        \App\Entity\Avatar\Hairs\Hairshape::class,
+                    ))
                     ->setImages([
-                        'front' => $this->fakeAvatarPngPath('hair', $name.'__front'),
-                        'back' => $this->fakeAvatarPngPath('hair', $name.'__back'),
+                        'front' => $this->fakeAvatarPngPath('hair', $name . '__front'),
+                        'back' => $this->fakeAvatarPngPath('hair', $name . '__back'),
                     ])
                     ->setChecksum($this->fakeChecksum());
 

@@ -13,7 +13,8 @@ final readonly class ReviewWorkflowService
         private EntityManagerInterface $entityManager,
         private EmailNotificationService $emails,
         private ClockInterface $clock,
-    ) {}
+    ) {
+    }
 
     public function submit(Review $review, int $rating, string $comment): void
     {
@@ -31,7 +32,7 @@ final readonly class ReviewWorkflowService
         $accepted ? $review->accept($this->clock->now()) : $review->reject($this->clock->now());
         $this->entityManager->flush();
         $email = $review->getCustomer()->getEmail();
-        if ($email !== null && $email !== '') {
+        if (null !== $email && '' !== $email) {
             $this->emails->sendTemplatedEmail(
                 $email,
                 $accepted ? 'Votre avis a été validé' : 'Décision concernant votre avis',
@@ -47,7 +48,7 @@ final readonly class ReviewWorkflowService
         $this->entityManager->flush();
 
         $email = $review->getCustomer()->getEmail();
-        if ($email !== null && $email !== '') {
+        if (null !== $email && '' !== $email) {
             $this->emails->sendTemplatedEmail(
                 $email,
                 'BellaGP a répondu à votre avis',

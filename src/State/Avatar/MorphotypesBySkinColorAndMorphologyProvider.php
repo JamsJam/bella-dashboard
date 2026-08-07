@@ -41,7 +41,7 @@ final readonly class MorphotypesBySkinColorAndMorphologyProvider implements Prov
             $id = $morphotype->getId();
             $size = $morphotype->getSize();
             $sizeId = $size?->getId();
-            if ($id === null || $sizeId === null) {
+            if (null === $id || null === $sizeId) {
                 continue;
             }
 
@@ -59,7 +59,7 @@ final readonly class MorphotypesBySkinColorAndMorphologyProvider implements Prov
     private function positiveId(mixed $value, string $errorMessage): int
     {
         $id = filter_var($value, FILTER_VALIDATE_INT);
-        if ($id === false || $id <= 0) {
+        if (false === $id || $id <= 0) {
             throw new NotFoundHttpException($errorMessage);
         }
 

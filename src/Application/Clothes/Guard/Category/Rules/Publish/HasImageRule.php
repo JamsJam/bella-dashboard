@@ -13,7 +13,7 @@ final readonly class HasImageRule implements CategoryPublishRuleInterface
 
     public function validate(Category $category): ?string
     {
-        return trim((string) $category->getImage()) !== ''
+        return '' !== trim((string) $category->getImage())
             ? null
             : 'Une image de categorie est requise.';
     }

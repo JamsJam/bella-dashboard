@@ -38,14 +38,14 @@ final readonly class GeneralConfigService
     private function storeImage(UploadedFile $file, string $prefix): string
     {
         $publicPath = '/images/upload/config';
-        $directory = $this->projectDir.'/public'.$publicPath;
+        $directory = $this->projectDir . '/public' . $publicPath;
 
         if (!is_dir($directory) && !mkdir($directory, 0775, true) && !is_dir($directory)) {
             throw new \RuntimeException(sprintf('Unable to create upload directory "%s".', $directory));
         }
 
         $extension = strtolower((string) ($file->guessExtension() ?: $file->getClientOriginalExtension()));
-        if ($extension === 'jpeg') {
+        if ('jpeg' === $extension) {
             $extension = 'jpg';
         }
 
@@ -55,6 +55,6 @@ final readonly class GeneralConfigService
 
         $file->move($directory, $filename);
 
-        return $publicPath.'/'.$filename;
+        return $publicPath . '/' . $filename;
     }
 }

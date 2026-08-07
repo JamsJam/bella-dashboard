@@ -54,7 +54,7 @@ final class OrderWorkflowSubscriber implements EventSubscriberInterface
             $reasons[] = $message;
         }
 
-        if ($reasons !== []) {
+        if ([] !== $reasons) {
             $this->logBlockedGuard($order, OrderWorkflow::TRANSITION_PROCESS, $reasons);
         }
     }
@@ -66,7 +66,7 @@ final class OrderWorkflowSubscriber implements EventSubscriberInterface
             return;
         }
 
-        if ($order->getStatus() !== Orders::STATUS_PAYMENT_EXPIRED) {
+        if (Orders::STATUS_PAYMENT_EXPIRED !== $order->getStatus()) {
             $message = 'Le paiement de la commande n’est pas expiré.';
             $event->addTransitionBlocker(new TransitionBlocker(
                 $message,
@@ -112,7 +112,7 @@ final class OrderWorkflowSubscriber implements EventSubscriberInterface
             );
         }
 
-        if ($order->getDeliveryDate() === null) {
+        if (null === $order->getDeliveryDate()) {
             $this->addBlocker(
                 $event,
                 $reasons,
@@ -131,7 +131,7 @@ final class OrderWorkflowSubscriber implements EventSubscriberInterface
             );
         }
 
-        if ($reasons !== []) {
+        if ([] !== $reasons) {
             $this->logBlockedGuard($order, OrderWorkflow::TRANSITION_SCHEDULE_DELIVERY, $reasons);
         }
     }
@@ -154,8 +154,8 @@ final class OrderWorkflowSubscriber implements EventSubscriberInterface
         }
 
         if (
-            $order->getOrderStatus() === \App\Enum\OrderStatus::AwaitingDelivery
-            && $order->getDeliveryDate() === null
+            \App\Enum\OrderStatus::AwaitingDelivery === $order->getOrderStatus()
+            && null === $order->getDeliveryDate()
         ) {
             $this->addBlocker(
                 $event,
@@ -166,8 +166,8 @@ final class OrderWorkflowSubscriber implements EventSubscriberInterface
         }
 
         if (
-            $order->getOrderStatus() === \App\Enum\OrderStatus::Shipped
-            && trim((string) $order->getTrackingNumber()) === ''
+            \App\Enum\OrderStatus::Shipped === $order->getOrderStatus()
+            && '' === trim((string) $order->getTrackingNumber())
         ) {
             $this->addBlocker(
                 $event,
@@ -177,7 +177,7 @@ final class OrderWorkflowSubscriber implements EventSubscriberInterface
             );
         }
 
-        if ($reasons !== []) {
+        if ([] !== $reasons) {
             $this->logBlockedGuard($order, OrderWorkflow::TRANSITION_MARK_DELIVERED, $reasons);
         }
     }
@@ -217,7 +217,7 @@ final class OrderWorkflowSubscriber implements EventSubscriberInterface
             );
         }
 
-        if (trim((string) $order->getTrackingNumber()) === '') {
+        if ('' === trim((string) $order->getTrackingNumber())) {
             $this->addBlocker(
                 $event,
                 $reasons,
@@ -226,7 +226,7 @@ final class OrderWorkflowSubscriber implements EventSubscriberInterface
             );
         }
 
-        if ($reasons !== []) {
+        if ([] !== $reasons) {
             $this->logBlockedGuard($order, OrderWorkflow::TRANSITION_SHIP, $reasons);
         }
     }
@@ -235,7 +235,7 @@ final class OrderWorkflowSubscriber implements EventSubscriberInterface
     {
         $order = $event->getSubject();
         $transition = $event->getTransition();
-        if (!$order instanceof Orders || $transition === null) {
+        if (!$order instanceof Orders || null === $transition) {
             return;
         }
 
@@ -308,6 +308,6 @@ final class OrderWorkflowSubscriber implements EventSubscriberInterface
     private function orderIdentifier(Orders $order): string
     {
         return $order->getOrderReference()
-            ?? ($order->getId() !== null ? (string) $order->getId() : 'inconnue');
+            ?? (null !== $order->getId() ? (string) $order->getId() : 'inconnue');
     }
 }

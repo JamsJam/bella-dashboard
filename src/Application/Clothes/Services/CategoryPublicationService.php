@@ -2,8 +2,8 @@
 
 namespace App\Application\Clothes\Services;
 
-use App\Application\Clothes\Guard\ClotheOnlineGuard;
 use App\Application\Clothes\Guard\Category\CategoryOnlineGuard;
+use App\Application\Clothes\Guard\ClotheOnlineGuard;
 use App\Application\Clothes\Guard\Collection\CollectionOnlineGuard;
 use App\Entity\Category\Category;
 use App\Entity\Clothes\Clothes;
@@ -27,7 +27,7 @@ final readonly class CategoryPublicationService
         $result = $this->categoryOnlineGuard->canPublish($category);
 
         if (!$result->canPublish()) {
-            $this->flashService->error('La catégorie ne peut pas être mise en ligne : '.implode(', ', $result->getErrors()));
+            $this->flashService->error('La catégorie ne peut pas être mise en ligne : ' . implode(', ', $result->getErrors()));
 
             return false;
         }

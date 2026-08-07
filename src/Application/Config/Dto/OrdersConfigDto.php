@@ -6,7 +6,7 @@ final class OrdersConfigDto
 {
     /**
      * @param array<int, ShippingFeeDto> $shippingFees
-     * @param array<int, CarrierDto> $carriers
+     * @param array<int, CarrierDto>     $carriers
      */
     public function __construct(
         public float $vat = 20.0,
@@ -27,7 +27,7 @@ final class OrdersConfigDto
             }
         }
 
-        if ($shippingFees === []) {
+        if ([] === $shippingFees) {
             $shippingFees[] = new ShippingFeeDto('France', 'FR', 0);
         }
 
@@ -37,7 +37,7 @@ final class OrdersConfigDto
                 $carriers[] = CarrierDto::fromArray($carrier);
             }
         }
-        if ($carriers === []) {
+        if ([] === $carriers) {
             $carriers = [
                 new CarrierDto('La Poste', 'https://www.laposte.fr/outils/suivre-vos-envois?code='),
                 new CarrierDto('Colissimo', 'https://www.laposte.fr/outils/suivre-vos-envois?code='),

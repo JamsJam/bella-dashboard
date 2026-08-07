@@ -12,14 +12,20 @@ final class NoseFixtures extends AbstractBaseFixtures implements DependentFixtur
 {
     public function load(ObjectManager $manager): void
     {
-        foreach (['small', 'straight', 'button'] as $shapeIndex => $shapeName) {
-            foreach ([0, 1] as $skinColorIndex) {
-                $name = sprintf('nose__%s__%s', AvatarFilterFixtures::SKIN_COLORS[$skinColorIndex], $shapeName);
+        foreach (AvatarFilterFixtures::NOSE_SHAPES as $shapeIndex => $shapeName) {
+            foreach (AvatarFilterFixtures::SKIN_COLORS as $skinColorIndex => $skinColorName) {
+                $name = sprintf('nose__%s__%s', $skinColorName, $shapeName);
 
                 $nose = (new Nose())
                     ->setName($name)
-                    ->setSkincolor($this->getReference(FixtureReferences::SKIN_COLORS.$skinColorIndex, \App\Entity\Avatar\Skincolor::class))
-                    ->setShape($this->getReference(FixtureReferences::NOSE_SHAPES.$shapeIndex, \App\Entity\Avatar\Noses\Noseshape::class))
+                    ->setSkincolor($this->getReference(
+                        FixtureReferences::SKIN_COLORS . $skinColorIndex,
+                        \App\Entity\Avatar\Skincolor::class,
+                    ))
+                    ->setShape($this->getReference(
+                        FixtureReferences::NOSE_SHAPES . $shapeIndex,
+                        \App\Entity\Avatar\Noses\Noseshape::class,
+                    ))
                     ->setImage($this->fakeAvatarPngPath('nose', $name))
                     ->setChecksum($this->fakeChecksum());
 

@@ -7,10 +7,10 @@ use App\Message\Avatar\RenameAvatarMessage;
 use App\Service\LoggerService;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Messenger\Event\WorkerMessageFailedEvent;
 use Symfony\Component\Workflow\WorkflowInterface;
-use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 final readonly class AvatarRenameFailureSubscriber implements EventSubscriberInterface
 {
@@ -51,7 +51,7 @@ final readonly class AvatarRenameFailureSubscriber implements EventSubscriberInt
         }
 
         $avatarTemp = $manager->find(AvatarTemp::class, $message->avatarTempId);
-        if (!$avatarTemp instanceof AvatarTemp || $avatarTemp->getStatus() !== AvatarRenameWorkflow::PLACE_RENAMING) {
+        if (!$avatarTemp instanceof AvatarTemp || AvatarRenameWorkflow::PLACE_RENAMING !== $avatarTemp->getStatus()) {
             return;
         }
 

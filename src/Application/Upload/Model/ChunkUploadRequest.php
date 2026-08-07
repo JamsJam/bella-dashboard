@@ -15,5 +15,6 @@ final readonly class ChunkUploadRequest
         public int $totalChunks,
         public int $fileSize,
         public string $mimeType,
-    ){}
+    ) {
+    }
 }

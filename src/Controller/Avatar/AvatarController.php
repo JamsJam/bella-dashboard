@@ -20,12 +20,11 @@ final class AvatarController extends AbstractController
         Request $request,
         BreadscrumbsService $breadscrumbs,
         AvatarProductGridService $avatarProductGridService,
-    ): Response
-    {
+    ): Response {
         $route = $request->attributes->get('_route');
 
         return $this->render('avatar/index.html.twig', [
-            "breadscrumbs" => $breadscrumbs->resolve($route),
+            'breadscrumbs' => $breadscrumbs->resolve($route),
             'gridData' => $avatarProductGridService->createProductGridView(
                 part: 'body',
                 selectedFilters: [],
@@ -41,13 +40,12 @@ final class AvatarController extends AbstractController
         BreadscrumbsService $breadscrumbs,
         AvatarUploadService $avatarUploadService,
         LoggerService $logger,
-    ): Response
-    {
+    ): Response {
         $route = $request->attributes->get('_route');
 
         if ($request->isMethod('GET')) {
             return $this->render('avatar/add.html.twig', [
-                "breadscrumbs" => $breadscrumbs->resolve($route),
+                'breadscrumbs' => $breadscrumbs->resolve($route),
                 'csrf_token' => $csrfTokenManager->getToken('avatar_upload')->getValue(),
             ]);
         }

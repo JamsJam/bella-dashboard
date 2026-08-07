@@ -2,15 +2,15 @@
 
 namespace App\Application\Clothes\Persister;
 
-use App\Enum\ClotheStatus;
 use App\Application\Clothes\DTO\ClotheImageInput;
 use App\Application\Clothes\Guard\ClotheNameGuard;
 use App\Application\Clothes\Services\ClotheService;
 use App\Entity\Clothes\Clothes;
-use App\Entity\Clothes\ClothesVariant;
 use App\Entity\Clothes\Clothescolor;
 use App\Entity\Clothes\Clothessize;
+use App\Entity\Clothes\ClothesVariant;
 use App\Entity\Collections\Collections;
+use App\Enum\ClotheStatus;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -45,8 +45,8 @@ final class ClothesPersister
 
     /**
      * @param array<string, mixed> $data
-     * @param array<int, mixed> $uploadedImages
-     * @param array<string, true> $reservedSlugs
+     * @param array<int, mixed>    $uploadedImages
+     * @param array<string, true>  $reservedSlugs
      */
     private function createClotheForCollection(array $data, array $uploadedImages, Collections $collection, array &$reservedSlugs): void
     {
@@ -64,7 +64,7 @@ final class ClothesPersister
 
         $reservedSlugs[$slug] = true;
         $images = $this->storeClotheImages($uploadedImages, $name);
-        if ($images === []) {
+        if ([] === $images) {
             throw new \InvalidArgumentException('Ajoute au moins une image pour le vetement.');
         }
         $imagePaths = array_map(static fn (ClotheImageInput $image): string => $image->path, $images);
@@ -78,13 +78,13 @@ final class ClothesPersister
             ->setEditedAt($now);
 
         $variantPayloads = $this->normalizeVariantPayloads($data);
-        if ($variantPayloads === []) {
+        if ([] === $variantPayloads) {
             throw new \InvalidArgumentException('Ajoute au moins une variante au vetement.');
         }
 
         foreach ($variantPayloads as $variantData) {
             $stock = filter_var($variantData['stock'] ?? 0, FILTER_VALIDATE_INT);
-            if ($stock === false || $stock < 0) {
+            if (false === $stock || $stock < 0) {
                 throw new \InvalidArgumentException('Le stock de chaque variante doit etre un entier positif ou nul.');
             }
 
@@ -109,7 +109,7 @@ final class ClothesPersister
                 ->setColor($color)
                 ->setSize($size)
                 ->setSku($this->createSku($name, $color, $size))
-                ->setDescription($description !== '' ? $description : null)
+                ->setDescription('' !== $description ? $description : null)
                 ->setMetadescription($metaDescription)
                 ->setImages($imagePaths)
                 ->setHighlightImage($imagePaths[0] ?? null)
@@ -126,12 +126,13 @@ final class ClothesPersister
 
     /**
      * @param array<string, mixed> $data
+     *
      * @return list<array<string, mixed>>
      */
     private function normalizeVariantPayloads(array $data): array
     {
         $variants = $data['variants'] ?? [];
-        if (is_array($variants) && $variants !== []) {
+        if (is_array($variants) && [] !== $variants) {
             $normalizedVariants = [];
 
             foreach ($variants as $variant) {
@@ -190,9 +191,9 @@ final class ClothesPersister
     {
         $newColorName = trim((string) ($data['newColorName'] ?? ''));
 
-        if ($newColorName !== '') {
+        if ('' !== $newColorName) {
             $colorHex = ltrim(trim((string) ($data['newColorHex'] ?? '')), '#');
-            if ($colorHex !== '' && !preg_match('/^[a-fA-F0-9]{6}$/', $colorHex)) {
+            if ('' !== $colorHex && !preg_match('/^[a-fA-F0-9]{6}$/', $colorHex)) {
                 throw new \InvalidArgumentException('Le code couleur doit etre au format hexadecimal.');
             }
 
@@ -203,7 +204,7 @@ final class ClothesPersister
 
             $color = (new Clothescolor())
                 ->setName($newColorName)
-                ->setHexa($colorHex !== '' ? strtolower($colorHex) : null)
+                ->setHexa('' !== $colorHex ? strtolower($colorHex) : null)
                 ->setCreatedAt(new \DateTimeImmutable())
                 ->setEditedAt(new \DateTimeImmutable());
 
@@ -212,7 +213,7 @@ final class ClothesPersister
             return $color;
         }
 
-        if ((string) ($data['color'] ?? '') === '__new__') {
+        if ('__new__' === (string) ($data['color'] ?? '')) {
             return null;
         }
 
@@ -245,12 +246,13 @@ final class ClothesPersister
 
     /**
      * @param array<int, mixed> $uploadedImages
+     *
      * @return list<ClotheImageInput>
      */
     private function storeClotheImages(array $uploadedImages, string $clotheName): array
     {
         $directorySlug = strtolower((string) (new AsciiSlugger())->slug($clotheName));
-        $directory = $this->projectDir.'/public/images/upload/clothes/'.$directorySlug;
+        $directory = $this->projectDir . '/public/images/upload/clothes/' . $directorySlug;
         if (!is_dir($directory) && !mkdir($directory, 0775, true) && !is_dir($directory)) {
             throw new \RuntimeException('Unable to create clothe upload directory.');
         }
@@ -262,18 +264,18 @@ final class ClothesPersister
             }
 
             $extension = strtolower((string) $image->guessExtension());
-            if ($extension === 'jpeg') {
+            if ('jpeg' === $extension) {
                 $extension = 'jpg';
             }
 
-            if ($extension === '' || !in_array($extension, self::IMAGE_EXTENSIONS, true)) {
+            if ('' === $extension || !in_array($extension, self::IMAGE_EXTENSIONS, true)) {
                 $extension = strtolower((string) $image->getClientOriginalExtension());
             }
 
             $filename = sprintf('%02d-%s.%s', $position + 1, bin2hex(random_bytes(4)), $extension);
             $image->move($directory, $filename);
             $images[] = new ClotheImageInput(
-                path: '/images/upload/clothes/'.$directorySlug.'/'.$filename,
+                path: '/images/upload/clothes/' . $directorySlug . '/' . $filename,
                 originalName: (string) $image->getClientOriginalName(),
                 position: $position,
             );
@@ -310,7 +312,7 @@ final class ClothesPersister
             throw new \InvalidArgumentException('La meta description est limitee a 200 caracteres.');
         }
 
-        return $metaDescription !== '' ? $metaDescription : null;
+        return '' !== $metaDescription ? $metaDescription : null;
     }
 
     private function createVariantName(string $name, Clothescolor $color, Clothessize $size): string
@@ -331,15 +333,11 @@ final class ClothesPersister
         foreach ($clothe->getVariants() as $variant) {
             $colorName = (string) $variant->getColor()?->getName();
             $sizeName = (string) $variant->getSize()?->getName();
-            $combinationKey = mb_strtolower($colorName.'|'.$sizeName);
+            $combinationKey = mb_strtolower($colorName . '|' . $sizeName);
             $skuKey = mb_strtolower((string) $variant->getSku());
 
             if (isset($combinations[$combinationKey])) {
-                throw new \InvalidArgumentException(sprintf(
-                    'Une variante existe deja pour la couleur %s et la taille %s.',
-                    $colorName,
-                    $sizeName,
-                ));
+                throw new \InvalidArgumentException(sprintf('Une variante existe deja pour la couleur %s et la taille %s.', $colorName, $sizeName));
             }
 
             if (isset($skus[$skuKey])) {

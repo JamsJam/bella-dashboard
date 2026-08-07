@@ -19,7 +19,7 @@ final readonly class ClotheWorkflowService
 
     public function apply(ClothesVariant $variant, string $transition, ?\DateTimeImmutable $scheduledAt = null): void
     {
-        if ($transition === 'programmer_publication') {
+        if ('programmer_publication' === $transition) {
             if (!$scheduledAt instanceof \DateTimeImmutable || $scheduledAt <= new \DateTimeImmutable()) {
                 throw new \DomainException('La date de publication doit être future.');
             }
@@ -49,11 +49,43 @@ final readonly class ClotheWorkflowService
         if (str_starts_with($transition, 'archiver_')) {
             $variant->setArchivedAt($now)->setScheduledPublicationAt(null);
         }
-        if ($transition === 'restaurer') {
+        if ('restaurer' === $transition) {
             $variant->setArchivedAt(null);
         }
 
         $variant->setEditedAt($now);
+        $this->entityManager->flush();
+    }
+
+    /**
+     * @param list<ClothesVariant> $variants
+     */
+    public function scheduleAll(array $variants, \DateTimeImmutable $scheduledAt): void
+    {
+        if ([] === $variants) {
+            throw new \DomainException('Aucune variante à programmer.');
+        }
+        if ($scheduledAt <= new \DateTimeImmutable()) {
+            throw new \DomainException('La date de publication doit être future.');
+        }
+
+        foreach ($variants as $variant) {
+            if (ClotheStatus::Publishable !== $variant->getPublicationStatus()) {
+                throw new \DomainException('Toutes les variantes doivent être publiables pour programmer le vêtement.');
+            }
+            if (!$this->clothePublicationStateMachine->can($variant, 'programmer_publication')) {
+                throw new \DomainException(sprintf('La variante « %s » ne peut pas être programmée.', $variant->getName()));
+            }
+        }
+
+        $now = new \DateTimeImmutable();
+        foreach ($variants as $variant) {
+            $variant
+                ->setScheduledPublicationAt($scheduledAt)
+                ->setEditedAt($now);
+            $this->clothePublicationStateMachine->apply($variant, 'programmer_publication');
+        }
+
         $this->entityManager->flush();
     }
 
@@ -74,7 +106,7 @@ final readonly class ClotheWorkflowService
             default => null,
         };
 
-        if ($transition === null) {
+        if (null === $transition) {
             return false;
         }
 

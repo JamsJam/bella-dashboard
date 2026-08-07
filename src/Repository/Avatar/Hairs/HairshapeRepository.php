@@ -2,8 +2,8 @@
 
 namespace App\Repository\Avatar\Hairs;
 
-use App\Entity\Avatar\Hairs\Hairshape;
 use App\Application\Avatar\Interface\AvatarFilterValueRepositoryInterface;
+use App\Entity\Avatar\Hairs\Hairshape;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -21,7 +21,7 @@ class HairshapeRepository extends ServiceEntityRepository implements AvatarFilte
     {
         $name = $this->normalizeName($name);
 
-        if ($name === '') {
+        if ('' === $name) {
             throw new \InvalidArgumentException('Invalid hair shape name.');
         }
 

@@ -77,31 +77,15 @@
         }
     }
 
-    &__status {
+    &__status-list {
         position: absolute;
         inset-block-start: 0.5rem;
         inset-inline-start: 0.5rem;
         z-index: 1;
-        border: 1px solid currentColor;
-        border-radius: 999px;
-        padding: 0.25rem 0.5rem;
-        background: color-mix(in srgb, var(--bg-dark) 82%, transparent);
-        font-size: 0.72rem;
-        font-weight: 700;
-        line-height: 1;
-        box-shadow: $shadow;
-    }
-
-    &__status--online {
-        color: var(--success);
-    }
-
-    &__status--publishable {
-        color: var(--success);
-    }
-
-    &__status--offline {
-        color: var(--warning);
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.3rem;
+        max-inline-size: calc(100% - 1rem);
     }
 
     &__placeholder{

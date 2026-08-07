@@ -16,7 +16,7 @@ final class OrderWorkflowTest extends KernelTestCase
     protected function setUp(): void
     {
         self::bootKernel();
-        $workflow = self::getContainer()->get('state_machine.'.OrderWorkflow::NAME);
+        $workflow = self::getContainer()->get('state_machine.' . OrderWorkflow::NAME);
         self::assertInstanceOf(WorkflowInterface::class, $workflow);
         $this->workflow = $workflow;
     }

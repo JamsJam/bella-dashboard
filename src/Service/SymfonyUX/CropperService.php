@@ -28,12 +28,12 @@ final readonly class CropperService
         $this->createDirectory($directory);
         $file->move($directory, $filename);
 
-        $publicUrl = self::TEMPORARY_PUBLIC_DIRECTORY.'/'.$filename;
+        $publicUrl = self::TEMPORARY_PUBLIC_DIRECTORY . '/' . $filename;
 
         try {
             return $this->createResult($publicUrl, $filename);
         } catch (\Throwable $exception) {
-            @unlink($directory.'/'.$filename);
+            @unlink($directory . '/' . $filename);
 
             throw $exception;
         }
@@ -41,12 +41,12 @@ final readonly class CropperService
 
     public function createFromPublicUrl(?string $publicUrl): ?CropperResult
     {
-        if ($publicUrl === null || $publicUrl === '' || !$this->isCroppable($publicUrl)) {
+        if (null === $publicUrl || '' === $publicUrl || !$this->isCroppable($publicUrl)) {
             return null;
         }
 
         try {
-            $temporaryFilename = str_starts_with($publicUrl, self::TEMPORARY_PUBLIC_DIRECTORY.'/')
+            $temporaryFilename = str_starts_with($publicUrl, self::TEMPORARY_PUBLIC_DIRECTORY . '/')
                 ? basename($publicUrl)
                 : null;
 
@@ -58,14 +58,14 @@ final readonly class CropperService
 
     public function removeTemporaryFile(?CropperResult $image): void
     {
-        if ($image?->temporaryFilename === null) {
+        if (null === $image?->temporaryFilename) {
             return;
         }
 
         $temporaryDirectory = realpath($this->serverPath(self::TEMPORARY_PUBLIC_DIRECTORY));
         $serverPath = realpath($image->serverPath);
 
-        if ($temporaryDirectory !== false && $serverPath !== false && str_starts_with($serverPath, $temporaryDirectory.'/')) {
+        if (false !== $temporaryDirectory && false !== $serverPath && str_starts_with($serverPath, $temporaryDirectory . '/')) {
             @unlink($serverPath);
         }
     }
@@ -86,13 +86,13 @@ final readonly class CropperService
         $this->createDirectory($directory);
 
         $filename = sprintf('%s-crop-%s.%s', $this->sanitizePrefix($prefix), bin2hex(random_bytes(4)), $extension);
-        $serverPath = $directory.'/'.$filename;
+        $serverPath = $directory . '/' . $filename;
 
-        if (file_put_contents($serverPath, $crop->getCroppedImage($format, $quality, true)) === false) {
+        if (false === file_put_contents($serverPath, $crop->getCroppedImage($format, $quality, true))) {
             throw new \RuntimeException(sprintf('Unable to write cropped image "%s".', $serverPath));
         }
 
-        return rtrim($publicDirectory, '/').'/'.$filename;
+        return rtrim($publicDirectory, '/') . '/' . $filename;
     }
 
     private function createResult(string $publicUrl, ?string $temporaryFilename = null): CropperResult
@@ -106,7 +106,7 @@ final readonly class CropperService
     private function resolveExtension(UploadedFile $file): string
     {
         $extension = strtolower((string) $file->guessExtension());
-        if ($extension === 'jpeg') {
+        if ('jpeg' === $extension) {
             $extension = 'jpg';
         }
 
@@ -129,24 +129,24 @@ final readonly class CropperService
     {
         $path = parse_url($publicPath, PHP_URL_PATH);
         $relativePath = ltrim(is_string($path) ? $path : $publicPath, '/');
-        if ($relativePath === '' || str_contains($relativePath, "\0")) {
+        if ('' === $relativePath || str_contains($relativePath, "\0")) {
             throw new \InvalidArgumentException('Invalid public image path.');
         }
 
-        $publicDirectory = $this->projectDir.'/public';
-        $serverPath = $publicDirectory.'/'.$relativePath;
+        $publicDirectory = $this->projectDir . '/public';
+        $serverPath = $publicDirectory . '/' . $relativePath;
 
         if ($mustExist) {
             $realPublicDirectory = realpath($publicDirectory);
             $realServerPath = realpath($serverPath);
-            if ($realPublicDirectory === false || $realServerPath === false || !str_starts_with($realServerPath, $realPublicDirectory.'/')) {
+            if (false === $realPublicDirectory || false === $realServerPath || !str_starts_with($realServerPath, $realPublicDirectory . '/')) {
                 throw new \InvalidArgumentException('The public image does not exist.');
             }
 
             return $realServerPath;
         }
 
-        if (str_contains('/'.$relativePath.'/', '/../')) {
+        if (str_contains('/' . $relativePath . '/', '/../')) {
             throw new \InvalidArgumentException('Invalid public image path.');
         }
 

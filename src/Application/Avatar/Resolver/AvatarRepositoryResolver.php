@@ -1,12 +1,9 @@
 <?php
+
 namespace App\Application\Avatar\Resolver;
-
-
-
 
 final class AvatarRepositoryResolver extends AbstractResolver
 {
-
     public function map(): array
     {
         return [
@@ -20,6 +17,4 @@ final class AvatarRepositoryResolver extends AbstractResolver
             'nose' => \App\Repository\Avatar\Noses\NoseRepository::class,
         ];
     }
-
-
 }

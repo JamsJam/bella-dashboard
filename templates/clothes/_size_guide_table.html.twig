@@ -18,8 +18,8 @@
                                 type="number"
                                 min="0"
                                 step="0.1"
-                                name="measurements[{{ guide.size }}][{{ type.code }}]"
-                                value="{{ guide.measurements[type.code] ?? '' }}"
+                                name="measurements[{{ guide.size }}][{{ type.uuid }}]"
+                                value="{{ guide.measurements[type.uuid] ?? '' }}"
                                 aria-label="{{ type.label }} {{ guide.size }}"
                             >
                         </td>

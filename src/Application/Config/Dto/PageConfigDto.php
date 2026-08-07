@@ -2,10 +2,10 @@
 
 namespace App\Application\Config\Dto;
 
-use Symfony\Component\Yaml\Exception\ParseException;
-use Symfony\Component\Yaml\Yaml;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
+use Symfony\Component\Yaml\Exception\ParseException;
+use Symfony\Component\Yaml\Yaml;
 
 final class PageConfigDto
 {
@@ -61,7 +61,7 @@ final class PageConfigDto
                         static fn (PageSectionDto $section): array => $section->toArray(),
                         $this->sections,
                     ),
-                    static fn (array $section): bool => $section['type'] !== '' || $section['content'] !== [],
+                    static fn (array $section): bool => '' !== $section['type'] || [] !== $section['content'],
                 )),
             ],
         ];
@@ -73,7 +73,7 @@ final class PageConfigDto
         $slug = preg_replace('/[^a-z0-9_-]+/', '-', $slug) ?: 'home';
         $slug = trim($slug, '-_');
 
-        return $slug !== '' ? $slug : 'home';
+        return '' !== $slug ? $slug : 'home';
     }
 
     #[Assert\Callback]
@@ -82,14 +82,9 @@ final class PageConfigDto
         $this->validateYamlBlock($this->openGraphYaml, 'openGraphYaml', $context);
     }
 
-    /**
-     * @param mixed $fallback
-     *
-     * @return mixed
-     */
     private function parseYamlBlock(string $yaml, mixed $fallback): mixed
     {
-        if (trim($yaml) === '') {
+        if ('' === trim($yaml)) {
             return $fallback;
         }
 
@@ -104,7 +99,7 @@ final class PageConfigDto
 
     private function validateYamlBlock(string $yaml, string $propertyPath, ExecutionContextInterface $context): void
     {
-        if (trim($yaml) === '') {
+        if ('' === trim($yaml)) {
             return;
         }
 

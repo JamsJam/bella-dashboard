@@ -28,7 +28,7 @@ final readonly class AccessorizedFaceProvider implements ProviderInterface
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): AccessorizedFaceList
     {
         $skinColorId = filter_var($uriVariables['id'] ?? null, FILTER_VALIDATE_INT);
-        if ($skinColorId === false || $skinColorId <= 0) {
+        if (false === $skinColorId || $skinColorId <= 0) {
             throw new NotFoundHttpException('Couleur de peau introuvable.');
         }
 
@@ -46,7 +46,7 @@ final readonly class AccessorizedFaceProvider implements ProviderInterface
 
             $id = $face->getId();
             $image = $face->getImage();
-            if ($id === null || $image === null || $image === '') {
+            if (null === $id || null === $image || '' === $image) {
                 continue;
             }
 
@@ -65,15 +65,15 @@ final readonly class AccessorizedFaceProvider implements ProviderInterface
 
     private function absoluteUrl(string $path): string
     {
-        if (filter_var($path, FILTER_VALIDATE_URL) !== false) {
+        if (false !== filter_var($path, FILTER_VALIDATE_URL)) {
             return $path;
         }
 
         $request = $this->requestStack->getCurrentRequest();
-        if ($request === null) {
+        if (null === $request) {
             return $path;
         }
 
-        return $request->getSchemeAndHttpHost().'/'.ltrim($path, '/');
+        return $request->getSchemeAndHttpHost() . '/' . ltrim($path, '/');
     }
 }

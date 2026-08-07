@@ -3,7 +3,6 @@
 namespace App\Repository\Avatar\Mouths;
 
 use App\Application\Avatar\Interface\AvatarPartModelInterface;
-use App\Entity\Avatar\Eyebrows\Eyebrows;
 use App\Entity\Avatar\Mouths\Mouths;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -27,13 +26,13 @@ class MouthsRepository extends ServiceEntityRepository implements AvatarPartMode
     ): array {
         $qb = $this->createQueryBuilder('b');
 
-        if ($color !== 0 && $color !== null) {
+        if (0 !== $color && null !== $color) {
             $qb->leftJoin('b.color', 'c')
                 ->andWhere('c.id = :color')
                 ->setParameter('color', $color);
         }
 
-        if ($shape !== 0 && $shape !== null) {
+        if (0 !== $shape && null !== $shape) {
             $qb->leftJoin('b.shape', 's')
                 ->andWhere('s.id = :shape')
                 ->setParameter('shape', $shape);
@@ -42,9 +41,6 @@ class MouthsRepository extends ServiceEntityRepository implements AvatarPartMode
         return $qb->getQuery()->getArrayResult();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function findPartByFilters(array $filters = []): array
     {
         return $this->findAllByFilters(
@@ -53,9 +49,6 @@ class MouthsRepository extends ServiceEntityRepository implements AvatarPartMode
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function findAllPart(): array
     {
         return $this->findAll();

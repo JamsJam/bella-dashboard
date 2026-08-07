@@ -29,7 +29,7 @@ final readonly class HomepageConfigProvider
         $data['last-modifyed'] = (new \DateTimeImmutable())->format(DATE_ATOM);
         $yaml = Yaml::dump($data, 10, 2);
 
-        if (file_put_contents($this->path(), $yaml, LOCK_EX) === false) {
+        if (false === file_put_contents($this->path(), $yaml, LOCK_EX)) {
             throw new \RuntimeException('Impossible d’enregistrer la configuration de la page d’accueil.');
         }
 
@@ -38,6 +38,6 @@ final readonly class HomepageConfigProvider
 
     private function path(): string
     {
-        return $this->projectDir.'/pages/api/homepage.yaml';
+        return $this->projectDir . '/pages/api/homepage.yaml';
     }
 }

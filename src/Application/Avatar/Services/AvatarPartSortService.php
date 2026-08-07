@@ -72,7 +72,7 @@ final readonly class AvatarPartSortService
     {
         $availableSorts = $this->sortsFor($part);
         $sort = is_string($sort) && isset($availableSorts[$sort]) ? $sort : 'createdAt';
-        $multiplier = strtolower((string) $direction) === 'asc' ? 1 : -1;
+        $multiplier = 'asc' === strtolower((string) $direction) ? 1 : -1;
 
         usort($items, function (array|object $left, array|object $right) use ($part, $sort, $multiplier): int {
             $comparison = $this->compare(
@@ -80,7 +80,7 @@ final readonly class AvatarPartSortService
                 $this->value($right, $part, $sort),
             );
 
-            if ($comparison === 0) {
+            if (0 === $comparison) {
                 $comparison = $this->compare(
                     $this->rawValue($left, 'id'),
                     $this->rawValue($right, 'id'),
@@ -103,7 +103,7 @@ final readonly class AvatarPartSortService
 
     private function value(array|object $item, string $part, string $sort): mixed
     {
-        if ($sort === 'createdAt') {
+        if ('createdAt' === $sort) {
             $date = $this->rawValue($item, 'createdAt');
 
             return $date instanceof \DateTimeInterface ? $date->getTimestamp() : strtotime((string) $date);
@@ -118,7 +118,7 @@ final readonly class AvatarPartSortService
             default => null,
         };
 
-        return $segmentIndex === null ? '' : ($segments[$segmentIndex] ?? '');
+        return null === $segmentIndex ? '' : ($segments[$segmentIndex] ?? '');
     }
 
     private function rawValue(array|object $item, string $field): mixed
@@ -127,7 +127,7 @@ final readonly class AvatarPartSortService
             return $item[$field] ?? null;
         }
 
-        $getter = 'get'.ucfirst($field);
+        $getter = 'get' . ucfirst($field);
 
         return method_exists($item, $getter) ? $item->{$getter}() : null;
     }
