@@ -20,14 +20,32 @@ jobs:
       - name: Construire l'environnement de test
         run: make docker-test-up
 
+      - name: Diagnostiquer le runner de test
+        run: |
+          docker compose --profile test ps
+          docker compose --profile test run \
+            --rm \
+            --no-deps \
+            test-runner \
+            php -v
+
       - name: Preparer la base de test
+        timeout-minutes: 2
         run: make docker-test-prepare
 
       - name: Executer les tests par niveau
-        run: docker compose --profile test run --rm test-runner make test
+        run: docker compose --profile test run --rm --no-deps test-runner make test
 
       - name: Executer les linters Symfony
-        run: docker compose --profile test run --rm test-runner make lint
+        run: docker compose --profile test run --rm --no-deps test-runner make lint
+
+      - name: Afficher les diagnostics Docker
+        if: failure()
+        run: |
+          docker compose --profile test ps -a
+          docker compose --profile test logs --tail=200 database
+          docker compose --profile test logs --tail=200 test-app
+          docker compose --profile test logs --tail=200 test-browser
 
       - name: Arreter l'environnement de test
         if: always()

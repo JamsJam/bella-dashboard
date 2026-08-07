@@ -107,21 +107,23 @@ test-avatar-from-integration: test-avatar-integration test-avatar-application te
 # ------------------------------------------------------------------------------
 # ? Construit l’image et démarre MySQL, Symfony et Selenium/Chromium
 docker-test-up:
-	docker compose --profile test build test-app test-runner
-	docker compose --profile test up -d database test-browser test-app
+	docker compose --profile test build test-runner
+	docker compose --profile test up -d --build --wait database test-browser test-app
 
 # ? Crée la base MySQL de test et applique les migrations
 docker-test-prepare:
-	docker compose --profile test run --rm test-runner $(CONSOLE) doctrine:database:create --env=test --if-not-exists
-	docker compose --profile test run --rm test-runner $(CONSOLE) doctrine:migrations:migrate --env=test --no-interaction
+	docker compose --profile test run --rm --no-deps test-runner \
+		$(CONSOLE) doctrine:database:create --env=test --if-not-exists -vvv
+	docker compose --profile test run --rm --no-deps test-runner \
+		$(CONSOLE) doctrine:migrations:migrate --env=test --no-interaction
 
 # ? Exécute tous les volets depuis l’intégration dans le conteneur PHP
 docker-test-run:
-	docker compose --profile test run --rm test-runner make test-from-integration
+	docker compose --profile test run --rm --no-deps test-runner make test-from-integration
 
 # ? Exécute uniquement le volet Avatar depuis l’intégration
 docker-test-avatar-run:
-	docker compose --profile test run --rm test-runner make test-avatar-from-integration
+	docker compose --profile test run --rm --no-deps test-runner make test-avatar-from-integration
 
 # ? Arrête les services de test sans supprimer les données MySQL de développement
 docker-test-down:
