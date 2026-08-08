@@ -19,7 +19,9 @@ final readonly class PublishScheduledClothesHandler
 
     public function __invoke(PublishScheduledClothesMessage $message): void
     {
-        foreach ($this->repository->findScheduledForPublication(new \DateTimeImmutable()) as $variant) {
+        $now = new \DateTimeImmutable('now', new \DateTimeZone('UTC'));
+
+        foreach ($this->repository->findScheduledForPublication($now) as $variant) {
             $this->workflow->apply(
                 $variant,
                 $this->completenessChecker->checkVariant($variant)->isComplete()

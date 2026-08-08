@@ -54,16 +54,48 @@
                         >
                     </label>
 
-                    <label class="login-form__field" for="password">
-                        <span>Mot de passe</span>
-                        <input
-                            type="password"
-                            name="_password"
-                            id="password"
-                            autocomplete="current-password"
-                            required
-                        >
-                    </label>
+                    <div
+                        class="login-form__field"
+                        data-controller="password-visibility"
+                        data-action="turbo:before-cache@document->password-visibility#conceal"
+                    >
+                        <label class="login-form__label" for="password">Mot de passe</label>
+                        <div class="login-form__password-control">
+                            <input
+                                type="password"
+                                name="_password"
+                                id="password"
+                                autocomplete="current-password"
+                                required
+                                data-password-visibility-target="input"
+                                data-action="copy->password-visibility#preventCopy"
+                            >
+                            <button
+                                type="button"
+                                class="login-form__password-toggle"
+                                aria-label="Afficher le mot de passe"
+                                aria-controls="password"
+                                aria-pressed="false"
+                                data-password-visibility-target="button"
+                                data-action="password-visibility#toggle"
+                            >
+                                <span data-password-visibility-target="showIcon" aria-hidden="true">
+                                    {{ ux_icon('mdi:eye-outline', {
+                                        class: 'login-form__password-icon',
+                                        width: '1.25rem',
+                                        height: '1.25rem'
+                                    }) }}
+                                </span>
+                                <span data-password-visibility-target="hideIcon" aria-hidden="true" hidden>
+                                    {{ ux_icon('formkit:eyeclosed', {
+                                        class: 'login-form__password-icon',
+                                        width: '1.25rem',
+                                        height: '1.25rem'
+                                    }) }}
+                                </span>
+                            </button>
+                        </div>
+                    </div>
 
                     <input type="hidden" name="_csrf_token" data-controller="csrf-protection" value="{{ csrf_token('authenticate') }}">
 

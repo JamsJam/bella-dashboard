@@ -17,7 +17,7 @@ use PHPUnit\Framework\TestCase;
 /** Vérifie les informations obligatoires avant publication d’une variante. */
 final class ClotheCompletenessCheckerTest extends TestCase
 {
-    public function testDescriptionMetaAndStockAreNotPublicationRequirements(): void
+    public function testDescriptionAndStockAreNotPublicationRequirements(): void
     {
         $collection = (new Collections())->setName('Été')->setCategory(new Category());
         $color = (new Clothescolor())->setName('Rouge');
@@ -30,13 +30,43 @@ final class ClotheCompletenessCheckerTest extends TestCase
                 ->setSku('ROBE-ROUGE-M')
                 ->setColor($color)
                 ->setSize($size)
+                ->setMetadescription('Découvrez notre robe rouge en taille M.')
                 ->setImages(['/image.jpg'])
                 ->setStock(0),
         );
 
         self::assertTrue(
             (new ClotheCompletenessChecker())->check($clothe)->isComplete(),
-            'Blocage : le stock, la description ou la métadescription empêchent à tort la publication.',
+            'Blocage : le stock ou la description empêchent à tort la publication.',
+        );
+    }
+
+    public function testSeoDescriptionIsRequiredForPublication(): void
+    {
+        $clothe = (new Clothes())
+            ->setName('Robe')
+            ->setPrice(12000)
+            ->setCollection(new Collections());
+        $clothe->addVariant(
+            (new ClothesVariant())
+                ->setName('Robe Rouge M')
+                ->setSlug('robe-rouge')
+                ->setSku('ROBE-ROUGE-M')
+                ->setColor((new Clothescolor())->setName('Rouge'))
+                ->setSize((new Clothessize())->setName('M'))
+                ->setImages(['/image.jpg']),
+        );
+
+        $result = (new ClotheCompletenessChecker())->check($clothe);
+
+        self::assertFalse(
+            $result->isComplete(),
+            'Blocage : une variante sans métadescription SEO est considérée comme complète.',
+        );
+        self::assertStringContainsString(
+            'meta description SEO',
+            implode(' ', $result->errors()),
+            'Blocage : l’erreur de complétude n’explique pas que la métadescription SEO est obligatoire.',
         );
     }
 

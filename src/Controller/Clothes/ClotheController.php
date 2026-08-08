@@ -13,6 +13,7 @@ use App\Application\Clothes\Services\ClotheService;
 use App\Application\Clothes\Services\ClotheSizeGuideService;
 use App\Application\Clothes\Services\ClotheVariantFactory;
 use App\Application\Clothes\Services\ClotheWorkflowService;
+use App\Application\Config\Service\SiteTimezone;
 use App\Entity\Category\Category;
 use App\Entity\Clothes\Clothes;
 use App\Entity\Clothes\Clothescolor;
@@ -400,6 +401,7 @@ final class ClotheController extends AbstractController
         CsrfTokenManagerInterface $csrfTokenManager,
         ClotheCompletenessChecker $completenessChecker,
         WorkflowInterface $clothePublicationStateMachine,
+        SiteTimezone $siteTimezone,
     ): Response {
         $variants = $clotheService->getClotheVariantsBySlug($slug);
 
@@ -437,6 +439,7 @@ final class ClotheController extends AbstractController
             'sizeGuideCsrfToken' => $csrfTokenManager->getToken('clothe_size_guide_' . $slug)->getValue(),
             'canPublish' => $publicationValidation->isComplete(),
             'publicationErrors' => $publicationValidation->errors(),
+            'siteTimezone' => $siteTimezone->name(),
             'variantWorkflows' => array_map(
                 fn (ClothesVariant $variant): array => [
                     'variant' => $variant,
@@ -453,6 +456,7 @@ final class ClotheController extends AbstractController
         string $slug,
         ClotheService $clotheService,
         CsrfTokenManagerInterface $csrfTokenManager,
+        SiteTimezone $siteTimezone,
     ): Response {
         $variants = $clotheService->getClotheVariantsBySlug($slug);
         if ([] === $variants) {
@@ -471,7 +475,8 @@ final class ClotheController extends AbstractController
             'csrfToken' => $csrfTokenManager->getToken('clothe_schedule_' . $slug)->getValue(),
             'clotheName' => $this->resolveMainClothe($variants)->getName(),
             'variants' => $publishableVariants,
-            'minimumDate' => (new \DateTimeImmutable('+1 minute'))->format('Y-m-d\TH:i'),
+            'minimumDate' => $siteTimezone->nowLocal()->modify('+1 minute')->format('Y-m-d\TH:i'),
+            'siteTimezone' => $siteTimezone->name(),
         ]);
 
         return new Response(
@@ -488,6 +493,7 @@ final class ClotheController extends AbstractController
         ClotheService $clotheService,
         ClotheWorkflowService $workflowService,
         FlashService $flashService,
+        SiteTimezone $siteTimezone,
     ): RedirectResponse {
         if (!$this->isCsrfTokenValid('clothe_schedule_' . $slug, (string) $request->request->get('_csrf_token'))) {
             throw $this->createAccessDeniedException('Token CSRF invalide.');
@@ -524,7 +530,7 @@ final class ClotheController extends AbstractController
             }
 
             $value = trim((string) $request->request->get('scheduledAt'));
-            $scheduledAt = '' === $value ? null : new \DateTimeImmutable($value);
+            $scheduledAt = '' === $value ? null : $siteTimezone->localInputToUtc($value);
             if (!$scheduledAt instanceof \DateTimeImmutable) {
                 throw new \DomainException('Choisissez une date de publication.');
             }
@@ -545,6 +551,7 @@ final class ClotheController extends AbstractController
         Request $request,
         ClotheWorkflowService $workflowService,
         FlashService $flashService,
+        SiteTimezone $siteTimezone,
     ): RedirectResponse {
         if (!$this->isCsrfTokenValid('clothe_variant_workflow_' . $variant->getId(), (string) $request->request->get('_token'))) {
             throw $this->createAccessDeniedException('Token CSRF invalide.');
@@ -554,7 +561,7 @@ final class ClotheController extends AbstractController
             $scheduledAt = null;
             if ('programmer_publication' === $transition) {
                 $value = trim((string) $request->request->get('scheduledAt'));
-                $scheduledAt = '' === $value ? null : new \DateTimeImmutable($value);
+                $scheduledAt = '' === $value ? null : $siteTimezone->localInputToUtc($value);
             }
             $workflowService->apply($variant, $transition, $scheduledAt);
             $flashService->success('Nouvel état : ' . $variant->getPublicationStatus()->label() . '.');

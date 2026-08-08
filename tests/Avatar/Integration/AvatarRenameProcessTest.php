@@ -127,8 +127,8 @@ final class AvatarRenameProcessTest extends KernelTestCase
 
             foreach (
                 [
-                [Skincolor::class, $this->token . '_skin'],
-                [Noseshape::class, $this->token . '_shape'],
+                    [Skincolor::class, $this->token . '_skin'],
+                    [Noseshape::class, $this->token . '_shape'],
                 ] as [$class, $name]
             ) {
                 $entity = $this->entityManager->getRepository($class)->findOneBy(['name' => $name]);

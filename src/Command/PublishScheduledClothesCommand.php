@@ -26,7 +26,9 @@ final class PublishScheduledClothesCommand extends Command
         $published = 0;
         $invalidated = 0;
 
-        foreach ($this->repository->findScheduledForPublication(new \DateTimeImmutable()) as $variant) {
+        $now = new \DateTimeImmutable('now', new \DateTimeZone('UTC'));
+
+        foreach ($this->repository->findScheduledForPublication($now) as $variant) {
             $transition = $this->completenessChecker->checkVariant($variant)->isComplete()
                 ? 'publier_automatiquement'
                 : 'invalider_programmation';

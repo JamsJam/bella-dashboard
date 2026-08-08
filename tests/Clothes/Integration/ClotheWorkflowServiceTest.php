@@ -37,6 +37,137 @@ final class ClotheWorkflowServiceTest extends KernelTestCase
         $this->entityManager->getConnection()->beginTransaction();
     }
 
+    /** Vérifie que Doctrine rend publiable un brouillon complet pendant le flush de sa modification. */
+    public function testChangedCompleteDraftAutomaticallyBecomesPublishable(): void
+    {
+        [$variant] = $this->persistVariantGroup(ClotheStatus::Draft, ClotheStatus::Draft);
+        $variantId = (int) $variant->getId();
+
+        $variant->setStock(1)->setEditedAt(new \DateTimeImmutable('+1 second'));
+        $this->entityManager->flush();
+        $this->entityManager->clear();
+
+        $reloadedVariant = $this->entityManager->find(ClothesVariant::class, $variantId);
+
+        self::assertInstanceOf(ClothesVariant::class, $reloadedVariant);
+        self::assertSame(
+            ClotheStatus::Publishable,
+            $reloadedVariant->getPublicationStatus(),
+            'Blocage : un variant complet modifié doit quitter automatiquement le brouillon.',
+        );
+    }
+
+    /** Vérifie qu'un simple flush sans UPDATE SQL ne déclenche pas la publication automatique. */
+    public function testUnchangedCompleteDraftStaysDraft(): void
+    {
+        [$variant] = $this->persistVariantGroup(ClotheStatus::Draft, ClotheStatus::Draft);
+        $variantId = (int) $variant->getId();
+
+        $this->entityManager->flush();
+        $this->entityManager->clear();
+
+        $reloadedVariant = $this->entityManager->find(ClothesVariant::class, $variantId);
+
+        self::assertInstanceOf(ClothesVariant::class, $reloadedVariant);
+        self::assertSame(
+            ClotheStatus::Draft,
+            $reloadedVariant->getPublicationStatus(),
+            'Sécurité : sans modification SQL effective, Doctrine ne doit déclencher aucune transition.',
+        );
+    }
+
+    /** Vérifie qu'un brouillon incomplet reste brouillon après une modification réellement persistée. */
+    public function testChangedIncompleteDraftStaysDraft(): void
+    {
+        [$variant] = $this->persistVariantGroup(ClotheStatus::Draft, ClotheStatus::Draft);
+        $variantId = (int) $variant->getId();
+
+        $variant
+            ->setImages([])
+            ->setStock(1)
+            ->setEditedAt(new \DateTimeImmutable('+1 second'));
+        $this->entityManager->flush();
+        $this->entityManager->clear();
+
+        $reloadedVariant = $this->entityManager->find(ClothesVariant::class, $variantId);
+
+        self::assertInstanceOf(ClothesVariant::class, $reloadedVariant);
+        self::assertSame(
+            ClotheStatus::Draft,
+            $reloadedVariant->getPublicationStatus(),
+            'Sécurité : un variant incomplet ne doit jamais devenir publiable automatiquement.',
+        );
+    }
+
+    /** Vérifie qu'un variant publiable redevient brouillon si une condition obligatoire disparaît. */
+    public function testChangedIncompletePublishableVariantReturnsToDraft(): void
+    {
+        [$variant] = $this->persistVariantGroup(ClotheStatus::Publishable, ClotheStatus::Draft);
+        $variantId = (int) $variant->getId();
+
+        $variant
+            ->setImages([])
+            ->setEditedAt(new \DateTimeImmutable('+1 second'));
+        $this->entityManager->flush();
+        $this->entityManager->clear();
+
+        $reloadedVariant = $this->entityManager->find(ClothesVariant::class, $variantId);
+
+        self::assertInstanceOf(ClothesVariant::class, $reloadedVariant);
+        self::assertSame(
+            ClotheStatus::Draft,
+            $reloadedVariant->getPublicationStatus(),
+            'Blocage : un variant publiable incomplet doit automatiquement repasser en brouillon.',
+        );
+    }
+
+    /** Vérifie qu'une programmation est invalidée dès que le variant devient incomplet. */
+    public function testChangedIncompleteScheduledVariantReturnsToDraft(): void
+    {
+        [$variant] = $this->persistVariantGroup(ClotheStatus::Scheduled, ClotheStatus::Draft);
+        $variantId = (int) $variant->getId();
+
+        $variant
+            ->setScheduledPublicationAt(new \DateTimeImmutable('+1 day'))
+            ->setMetadescription(null)
+            ->setEditedAt(new \DateTimeImmutable('+1 second'));
+        $this->entityManager->flush();
+        $this->entityManager->clear();
+
+        $reloadedVariant = $this->entityManager->find(ClothesVariant::class, $variantId);
+
+        self::assertInstanceOf(ClothesVariant::class, $reloadedVariant);
+        self::assertSame(
+            ClotheStatus::Draft,
+            $reloadedVariant->getPublicationStatus(),
+            'Blocage : un variant planifié incomplet doit automatiquement revenir en brouillon.',
+        );
+        self::assertNull(
+            $reloadedVariant->getScheduledPublicationAt(),
+            'Blocage : une programmation invalidée doit perdre sa date de publication.',
+        );
+    }
+
+    /** Vérifie qu'un variant en ligne incomplet est dépublié puis replacé en brouillon. */
+    public function testChangedIncompleteOnlineVariantReturnsToDraft(): void
+    {
+        [$variant] = $this->persistVariantGroup(ClotheStatus::Online, ClotheStatus::Draft);
+        $variantId = (int) $variant->getId();
+
+        $variant->setMetadescription(null)->setEditedAt(new \DateTimeImmutable('+1 second'));
+        $this->entityManager->flush();
+        $this->entityManager->clear();
+
+        $reloadedVariant = $this->entityManager->find(ClothesVariant::class, $variantId);
+
+        self::assertInstanceOf(ClothesVariant::class, $reloadedVariant);
+        self::assertSame(
+            ClotheStatus::Draft,
+            $reloadedVariant->getPublicationStatus(),
+            'Blocage : un variant en ligne incomplet doit automatiquement revenir en brouillon.',
+        );
+    }
+
     public function testRealServiceSchedulesAndPersistsSelectedPublishableVariants(): void
     {
         [$first, $second] = $this->persistVariantGroup(
@@ -179,6 +310,7 @@ final class ClotheWorkflowServiceTest extends KernelTestCase
             ->setName('Variant ' . $token)
             ->setSlug('clothe-' . $token)
             ->setSku('SKU-' . $token)
+            ->setMetadescription('Meta description ' . $token)
             ->setImages(['/images/' . $token . '.jpg'])
             ->setStock(0)
             ->setPublicationStatus($status);

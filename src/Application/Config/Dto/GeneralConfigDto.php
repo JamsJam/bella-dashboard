@@ -8,6 +8,7 @@ final class GeneralConfigDto
         public string $siteTitle = 'Bella GP',
         public string $siteLogo = '',
         public string $favicon = '',
+        public string $timezone = 'Europe/Paris',
     ) {
     }
 
@@ -20,6 +21,7 @@ final class GeneralConfigDto
             siteTitle: trim((string) ($data['site_title'] ?? '')),
             siteLogo: trim((string) ($data['site_logo'] ?? '')),
             favicon: trim((string) ($data['favicon'] ?? '')),
+            timezone: trim((string) ($data['timezone'] ?? 'Europe/Paris')) ?: 'Europe/Paris',
         );
     }
 
@@ -32,6 +34,7 @@ final class GeneralConfigDto
             'site_title' => $this->siteTitle,
             'site_logo' => $this->siteLogo,
             'favicon' => $this->favicon,
+            'timezone' => $this->timezone,
         ];
     }
 }

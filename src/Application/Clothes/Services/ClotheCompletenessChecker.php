@@ -30,6 +30,9 @@ final readonly class ClotheCompletenessChecker
         if ([] === array_values(array_filter($variant->getImages() ?? []))) {
             $errors[] = 'Ajoutez au moins une image.';
         }
+        if ('' === trim((string) $variant->getMetadescription())) {
+            $errors[] = 'La meta description SEO est obligatoire.';
+        }
 
         return new ClotheCompletenessResult($errors);
     }

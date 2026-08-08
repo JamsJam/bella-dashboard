@@ -45,7 +45,7 @@ final class GeneralConfigController extends AbstractConfigController
         }
 
         return $this->renderFormPage($request, $breadscrumbs, 'Configuration générale', $form->createView(), [
-            'subtitle' => 'Titre du site, logo et favicon.',
+            'subtitle' => 'Titre du site, fuseau horaire, logo et favicon.',
             'back_url' => $this->generateUrl('app_config_index'),
             'back_label' => 'Retour aux configurations',
         ]);

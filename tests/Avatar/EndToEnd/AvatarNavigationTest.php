@@ -6,8 +6,8 @@ use App\Entity\Users\Admin;
 use Doctrine\ORM\EntityManagerInterface;
 use Facebook\WebDriver\WebDriverBy;
 use PHPUnit\Framework\Attributes\Group;
-use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Panther\PantherTestCase;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 /** Vérifie le parcours Avatar dans un vrai navigateur avec JavaScript et Turbo. */
 #[Group('avatar')]

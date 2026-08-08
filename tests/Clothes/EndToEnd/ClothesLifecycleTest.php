@@ -15,9 +15,9 @@ use Facebook\WebDriver\Remote\LocalFileDetector;
 use Facebook\WebDriver\WebDriverBy;
 use Facebook\WebDriver\WebDriverSelect;
 use PHPUnit\Framework\Attributes\Group;
-use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Panther\Client;
 use Symfony\Component\Panther\PantherTestCase;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\String\Slugger\AsciiSlugger;
 
 /** Vérifie le cycle administrateur de création, modification et suppression des variantes. */
@@ -170,6 +170,11 @@ final class ClothesLifecycleTest extends PantherTestCase
             11,
             $this->findVariant($clothe, 'M')?->getStock(),
             'Blocage : la modification du stock de la variante M n’est pas persistée.',
+        );
+        self::assertSame(
+            ClotheStatus::Publishable,
+            $this->findVariant($clothe, 'M')?->getPublicationStatus(),
+            'Blocage : le variant complet modifié ne passe pas automatiquement de brouillon à publiable.',
         );
     }
 

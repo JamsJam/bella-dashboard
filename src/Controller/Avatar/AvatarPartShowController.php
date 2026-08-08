@@ -106,12 +106,12 @@ final class AvatarPartShowController extends AbstractController
 
         foreach (
             [
-            'Couleur' => 'getColor',
-            'Couleur de peau' => 'getSkincolor',
-            'Forme' => 'getShape',
-            'Morphotype' => 'getMorphotype',
-            'Accessoire' => 'getAccessory',
-            'Vetements' => 'getClothes',
+                'Couleur' => 'getColor',
+                'Couleur de peau' => 'getSkincolor',
+                'Forme' => 'getShape',
+                'Morphotype' => 'getMorphotype',
+                'Accessoire' => 'getAccessory',
+                'Vetements' => 'getClothes',
             ] as $label => $getter
         ) {
             if (!method_exists($avatarPart, $getter)) {

@@ -61,7 +61,7 @@ final class SearchAvatarController extends AbstractController
 
         return new JsonResponse(
             [
-            'filters' => $filters,
+                'filters' => $filters,
             ],
             status: 200,
         );

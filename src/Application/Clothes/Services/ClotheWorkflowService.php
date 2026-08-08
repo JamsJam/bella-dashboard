@@ -10,6 +10,8 @@ use Symfony\Component\Workflow\WorkflowInterface;
 
 final readonly class ClotheWorkflowService
 {
+    private const STORAGE_TIMEZONE = 'UTC';
+
     public function __construct(
         private WorkflowInterface $clothePublicationStateMachine,
         private ClotheCompletenessChecker $completenessChecker,
@@ -19,8 +21,17 @@ final readonly class ClotheWorkflowService
 
     public function apply(ClothesVariant $variant, string $transition, ?\DateTimeImmutable $scheduledAt = null): void
     {
+        $this->applyWithoutFlush($variant, $transition, $scheduledAt);
+        $this->entityManager->flush();
+    }
+
+    private function applyWithoutFlush(
+        ClothesVariant $variant,
+        string $transition,
+        ?\DateTimeImmutable $scheduledAt = null,
+    ): void {
         if ('programmer_publication' === $transition) {
-            if (!$scheduledAt instanceof \DateTimeImmutable || $scheduledAt <= new \DateTimeImmutable()) {
+            if (!$scheduledAt instanceof \DateTimeImmutable || $scheduledAt <= $this->nowUtc()) {
                 throw new \DomainException('La date de publication doit être future.');
             }
             $variant->setScheduledPublicationAt($scheduledAt);
@@ -38,7 +49,7 @@ final readonly class ClotheWorkflowService
         }
 
         $this->clothePublicationStateMachine->apply($variant, $transition);
-        $now = new \DateTimeImmutable();
+        $now = $this->nowUtc();
 
         if (in_array($transition, ['publier', 'publier_automatiquement', 'remettre_en_ligne'], true)) {
             $variant->setPublishedAt($now)->setScheduledPublicationAt(null);
@@ -54,7 +65,6 @@ final readonly class ClotheWorkflowService
         }
 
         $variant->setEditedAt($now);
-        $this->entityManager->flush();
     }
 
     /**
@@ -65,7 +75,7 @@ final readonly class ClotheWorkflowService
         if ([] === $variants) {
             throw new \DomainException('Aucune variante à programmer.');
         }
-        if ($scheduledAt <= new \DateTimeImmutable()) {
+        if ($scheduledAt <= $this->nowUtc()) {
             throw new \DomainException('La date de publication doit être future.');
         }
 
@@ -78,7 +88,7 @@ final readonly class ClotheWorkflowService
             }
         }
 
-        $now = new \DateTimeImmutable();
+        $now = $this->nowUtc();
         foreach ($variants as $variant) {
             $variant
                 ->setScheduledPublicationAt($scheduledAt)
@@ -96,6 +106,11 @@ final readonly class ClotheWorkflowService
         }
     }
 
+    private function nowUtc(): \DateTimeImmutable
+    {
+        return new \DateTimeImmutable('now', new \DateTimeZone(self::STORAGE_TIMEZONE));
+    }
+
     public function reconcileVariant(ClothesVariant $variant): bool
     {
         $complete = $this->completenessChecker->checkVariant($variant)->isComplete();
@@ -111,6 +126,36 @@ final readonly class ClotheWorkflowService
         }
 
         $this->apply($variant, $transition);
+
+        return true;
+    }
+
+    public function reconcilePublicationEligibilityWithoutFlush(ClothesVariant $variant): bool
+    {
+        $complete = $this->completenessChecker->checkVariant($variant)->isComplete();
+        $transitions = match ($variant->getPublicationStatus()) {
+            ClotheStatus::Draft => $complete ? ['rendre_publiable'] : [],
+            ClotheStatus::Publishable => $complete ? [] : ['repasser_en_brouillon'],
+            ClotheStatus::Scheduled => $complete ? [] : ['invalider_programmation'],
+            ClotheStatus::Online => $complete ? [] : ['depublier', 'modifier_hors_ligne'],
+            default => [],
+        };
+
+        if ([] === $transitions) {
+            return false;
+        }
+
+        foreach ($transitions as $transition) {
+            if (!$this->clothePublicationStateMachine->can($variant, $transition)) {
+                throw new \DomainException(sprintf(
+                    'La transition automatique « %s » est impossible depuis l’état %s.',
+                    $transition,
+                    $variant->getPublicationStatus()->label(),
+                ));
+            }
+
+            $this->applyWithoutFlush($variant, $transition);
+        }
 
         return true;
     }

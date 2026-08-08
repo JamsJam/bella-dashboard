@@ -24,10 +24,7 @@ final readonly class ClotheVariantColorGuard
                 $existingColor === $newColor
                 || mb_strtolower(trim((string) $existingColor->getName())) === $newColorName
             ) {
-                throw new \InvalidArgumentException(sprintf(
-                    'Le vêtement possède déjà des variantes de couleur %s.',
-                    $newColor->getName(),
-                ));
+                throw new \InvalidArgumentException(sprintf('Le vêtement possède déjà des variantes de couleur %s.', $newColor->getName()));
             }
         }
     }

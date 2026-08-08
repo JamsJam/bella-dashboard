@@ -120,8 +120,8 @@ final readonly class AvatarPartRenameQueueService
         $relativePath = ltrim($image, '/');
         foreach (
             [
-            $this->projectDir . '/public/' . $relativePath,
-            $this->projectDir . '/' . $relativePath,
+                $this->projectDir . '/public/' . $relativePath,
+                $this->projectDir . '/' . $relativePath,
             ] as $path
         ) {
             if (is_file($path)) {

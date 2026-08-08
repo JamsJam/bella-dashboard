@@ -210,7 +210,7 @@
                                         variant: item.variant.publicationStatus.value
                                     } only %}
                                     {% if item.variant.scheduledPublicationAt %}
-                                        <small>Prévue le {{ item.variant.scheduledPublicationAt|date('d/m/Y à H:i') }}</small>
+                                        <small>Prévue le {{ item.variant.scheduledPublicationAt|date('d/m/Y à H:i', siteTimezone) }}</small>
                                     {% endif %}
                                 </td>
                                 <td data-label="Actions">
