@@ -5,6 +5,19 @@ L’application gère notamment le catalogue et ses variantes, les collections,
 les avatars, les commandes, les livraisons, les clients et la configuration
 éditoriale.
 
+## Sommaire
+
+- [Stack technique](#stack-technique)
+- [Get started](#get-started)
+- [Development](#development)
+- [Tests](#tests)
+- [Code quality](#code-quality)
+- [Workflows](#workflows)
+- [Workers](#workers)
+- [Database](#database)
+- [Production](#production)
+- [Documentation](#documentation)
+
 ## Stack technique
 
 - Symfony 7.4 et Doctrine ORM ;

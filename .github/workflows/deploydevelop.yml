@@ -273,11 +273,19 @@ jobs:
             echo "[11/11] Redemarrage des workers Messenger"
             
             APP_ENV=prod APP_DEBUG=0 php bin/console messenger:stop-workers
+            supervisorctl reread
+            supervisorctl update
             supervisorctl start 'messenger-consume:*' \
               || supervisorctl restart 'messenger-consume:*'
             supervisorctl start 'avatar-rename-consume:*' \
               || supervisorctl restart 'avatar-rename-consume:*'
             supervisorctl start 'scheduler-consume:*' \
               || supervisorctl restart 'scheduler-consume:*'
+            supervisorctl start 'scheduler-clothes-consume:*' \
+              || supervisorctl restart 'scheduler-clothes-consume:*'
+            supervisorctl start 'scheduler-clothes-consume:*' \
+              || supervisorctl restart 'scheduler-clothes-consume:*'
+            supervisorctl start 'image-deformation-cleanup-consume:*' \
+              || supervisorctl restart 'image-deformation-cleanup-consume:*'
 
             echo "Deploiement sur le serveur de test termine avec succes."
