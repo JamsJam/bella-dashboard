@@ -22,7 +22,8 @@ COPY composer.json composer.lock symfony.lock ./
 RUN composer install --no-interaction --no-progress --prefer-dist --no-scripts
 
 COPY . .
-RUN composer dump-autoload --classmap-authoritative --no-interaction
-RUN APP_ENV=test php bin/console sass:build
+RUN APP_ENV=test composer run-script post-install-cmd \
+    && composer dump-autoload --classmap-authoritative --no-interaction \
+    && APP_ENV=test php bin/console sass:build
 
 ENV APP_ENV=test
