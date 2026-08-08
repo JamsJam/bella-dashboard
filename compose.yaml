@@ -9,6 +9,7 @@ services:
       MYSQL_USER: ${MYSQL_USER:-app}
     healthcheck:
       test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 2s
       timeout: 5s
       retries: 20
       start_period: 20s
@@ -31,10 +32,11 @@ services:
       database:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "curl --fail --silent http://127.0.0.1:9080/login > /dev/null"]
+      test: ["CMD-SHELL", "php -r '$$socket = @fsockopen(\"127.0.0.1\", 9080); if (!$$socket) { exit(1); } fclose($$socket);'"]
+      interval: 2s
       timeout: 5s
       retries: 20
-      start_period: 10s
+      start_period: 5s
 
   test-browser:
     profiles: ["test"]
@@ -42,6 +44,7 @@ services:
     shm_size: 2gb
     healthcheck:
       test: ["CMD-SHELL", "curl --fail --silent http://127.0.0.1:4444/status > /dev/null"]
+      interval: 2s
       timeout: 5s
       retries: 20
       start_period: 10s
