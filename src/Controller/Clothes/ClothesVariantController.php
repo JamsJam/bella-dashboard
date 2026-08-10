@@ -5,9 +5,9 @@ namespace App\Controller\Clothes;
 use App\Application\Clothes\DTO\VariantFormInput;
 use App\Application\Clothes\Form\VariantType;
 use App\Application\Clothes\Guard\ClotheVariantColorGuard;
-use App\Application\Clothes\Services\ClotheService;
-use App\Application\Clothes\Services\ClotheVariantFactory;
-use App\Application\Clothes\Services\ClotheWorkflowService;
+use App\Application\Clothes\Services\Clothe\ClotheService;
+use App\Application\Clothes\Services\Clothe\ClotheVariantCreationService;
+use App\Application\Clothes\Services\Clothe\ClotheWorkflowService;
 use App\Entity\Clothes\Clothes;
 use App\Entity\Clothes\Clothescolor;
 use App\Entity\Clothes\Clothessize;
@@ -30,9 +30,7 @@ final class ClothesVariantController extends AbstractController
     #[Route('/clothes/variants/add', name: 'app_clothes_variant_add', methods: ['GET', 'POST'], priority: 30)]
     public function add(
         Request $request,
-        EntityManagerInterface $entityManager,
-        ClotheVariantFactory $variantFactory,
-        ClotheWorkflowService $workflowService,
+        ClotheVariantCreationService $creationService,
         FlashService $flashService,
         BreadscrumbsService $breadscrumbs,
     ): Response {
@@ -42,17 +40,11 @@ final class ClothesVariantController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             try {
-                $clothe = $input->clothe;
-                if (!$clothe instanceof Clothes) {
-                    throw new \DomainException('Sélectionnez un vêtement.');
-                }
-                $variantFactory->createGroup($clothe, $input);
-                $entityManager->flush();
-                $workflowService->reconcileCompleteness($clothe);
+                $clothe = $creationService->create($input);
                 $flashService->success('Variantes ajoutées.');
 
                 return $this->redirectToRoute('app_clothes_show', ['slug' => $clothe->getSlug()]);
-            } catch (\DomainException $exception) {
+            } catch (\DomainException | \InvalidArgumentException $exception) {
                 $flashService->error($exception->getMessage());
             }
         }

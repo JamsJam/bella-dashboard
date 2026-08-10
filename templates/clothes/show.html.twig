@@ -58,7 +58,14 @@
             <div class="clothe-show__section-header">
                 <h2 id="clothe-show-presentation-title">Presentation</h2>
                 {% if currentGroup %}
-                    <a href="{{ currentGroup.imagesModalUrl }}" class="clothe-show__button" data-turbo-stream>
+                    <a
+                        href="{{ path('app_clothes_images_modal', {
+                            slug: currentGroup.slug,
+                            color: currentGroup.colorId
+                        }) }}"
+                        class="clothe-show__button"
+                        data-turbo-stream
+                    >
                         Gerer la galerie
                     </a>
                 {% endif %}
@@ -102,7 +109,19 @@
                             <dd>
                                 {{ clothe.color ?: 'Non renseignee' }}
                                 {% if currentGroup %}
-                                    <a href="{{ currentGroup.editUrl }}" class="clothe-show__button" data-turbo-stream>
+                                    <a
+                                        href="{{ currentGroup.colorId
+                                            ? path('app_clothes_variant_group_edit_modal', {
+                                                slug: currentGroup.slug,
+                                                color: currentGroup.colorId
+                                            })
+                                            : path('app_clothes_variant_edit_modal', {
+                                                id: currentGroup.sizes|first.id
+                                            })
+                                        }}"
+                                        class="clothe-show__button"
+                                        data-turbo-stream
+                                    >
                                         Modifier la couleur
                                     </a>
                                 {% endif %}
@@ -134,8 +153,15 @@
         <section class="clothe-show__section" aria-labelledby="clothe-show-seo-title">
             <div class="clothe-show__section-header">
                 <h2 id="clothe-show-seo-title">SEO</h2>
-                {% if currentGroup and currentGroup.seoEditUrl %}
-                    <a href="{{ currentGroup.seoEditUrl }}" class="clothe-show__button" data-turbo-stream>Modifier</a>
+                {% if currentGroup and currentGroup.colorId %}
+                    <a
+                        href="{{ path('app_clothes_variant_group_seo_modal', {
+                            slug: currentGroup.slug,
+                            color: currentGroup.colorId
+                        }) }}"
+                        class="clothe-show__button"
+                        data-turbo-stream
+                    >Modifier</a>
                 {% endif %}
             </div>
             <dl class="clothe-show__seo">
@@ -222,7 +248,11 @@
                                                     action="{{ path('app_clothes_workflow_transition', {id: item.variant.id, transition: transition.name}) }}"
                                                     class="clothe-publication__action-form"
                                                 >
-                                                    <input type="hidden" name="_token" value="{{ item.csrfToken }}">
+                                                    <input
+                                                        type="hidden"
+                                                        name="_token"
+                                                        value="{{ csrf_token('clothe_variant_workflow_' ~ item.variant.id) }}"
+                                                    >
                                                     <button
                                                         type="submit"
                                                         class="clothe-publication__action{% if transition.name in ['publier', 'publier_automatiquement', 'remettre_en_ligne', 'rendre_publiable'] %} clothe-publication__action--primary{% elseif transition.name starts with 'archiver_' %} clothe-publication__action--danger{% endif %}"
@@ -256,15 +286,49 @@
                 <form
                     class="clothe-show__highlight-card"
                     method="post"
-                    action="{{ highlightImageForms.featured.action }}"
+                    action="{{ path('app_clothes_highlight_image_update', {
+                        slug: clothe.slug,
+                        slot: 'carousel'
+                    }) }}"
                     enctype="multipart/form-data"
                     {{ stimulus_controller('clothe-highlight-dropzone') }}
                 >
-                    <input type="hidden" name="_csrf_token" value="{{ highlightImageForms.featured.csrfToken }}">
+                    <input
+                        type="hidden"
+                        name="_csrf_token"
+                        value="{{ csrf_token('clothe_highlight_image_' ~ clothe.slug ~ '_carousel') }}"
+                    >
                     <header class="clothe-show__highlight-card-header">
                         <h3>Mise en avant</h3>
                         {% if currentGroup %}
-                            {{ currentGroup.featuredToggle|raw }}
+                            {% include 'ui/components/toggle/_toggle.html.twig' with {
+                                toggle: {
+                                    id: 'clothe-featured-' ~ clothe.id ~ currentGroup.toggleIdSuffix,
+                                    label: 'Mise en avant',
+                                    checked: currentGroup.isInCarousel,
+                                    name: 'featured',
+                                    eventName: 'clothe-featured:change',
+                                    payload: {
+                                        on: {
+                                            url: path('app_clothes_featured_update'),
+                                            method: 'POST',
+                                            csrfToken: csrf_token('clothe_featured'),
+                                            label: 'Mise en avant',
+                                            ids: currentGroup.variantIds,
+                                            mode: 'add'
+                                        },
+                                        off: {
+                                            url: path('app_clothes_featured_update'),
+                                            method: 'POST',
+                                            csrfToken: csrf_token('clothe_featured'),
+                                            label: 'Mise en avant',
+                                            ids: [],
+                                            mode: 'remove',
+                                            slug: currentGroup.slug
+                                        }
+                                    }
+                                }
+                            } only %}
                         {% endif %}
                     </header>
                     <div class="clothe-show__highlight-media">
@@ -300,15 +364,48 @@
                 <form
                     class="clothe-show__highlight-card"
                     method="post"
-                    action="{{ highlightImageForms.bestseller.action }}"
+                    action="{{ path('app_clothes_highlight_image_update', {
+                        slug: clothe.slug,
+                        slot: 'bestseller'
+                    }) }}"
                     enctype="multipart/form-data"
                     {{ stimulus_controller('clothe-highlight-dropzone') }}
                 >
-                    <input type="hidden" name="_csrf_token" value="{{ highlightImageForms.bestseller.csrfToken }}">
+                    <input
+                        type="hidden"
+                        name="_csrf_token"
+                        value="{{ csrf_token('clothe_highlight_image_' ~ clothe.slug ~ '_bestseller') }}"
+                    >
                     <header class="clothe-show__highlight-card-header">
                         <h3>Bestseller</h3>
                         {% if currentGroup %}
-                            {{ currentGroup.bestsellerToggle|raw }}
+                            {% include 'ui/components/toggle/_toggle.html.twig' with {
+                                toggle: {
+                                    id: 'clothe-bestseller-' ~ clothe.id ~ currentGroup.toggleIdSuffix,
+                                    label: 'Bestseller',
+                                    checked: currentGroup.isBestseller,
+                                    name: 'bestseller',
+                                    payload: {
+                                        on: {
+                                            url: path('app_clothes_bestsellers_update'),
+                                            method: 'POST',
+                                            csrfToken: csrf_token('clothe_bestseller'),
+                                            label: 'Bestseller',
+                                            ids: currentGroup.variantIds,
+                                            mode: 'add'
+                                        },
+                                        off: {
+                                            url: path('app_clothes_bestsellers_update'),
+                                            method: 'POST',
+                                            csrfToken: csrf_token('clothe_bestseller'),
+                                            label: 'Bestseller',
+                                            ids: [],
+                                            mode: 'remove',
+                                            slug: currentGroup.slug
+                                        }
+                                    }
+                                }
+                            } only %}
                         {% endif %}
                     </header>
                     <div class="clothe-show__highlight-media">
@@ -349,7 +446,11 @@
         <section class="clothe-show__section" aria-labelledby="clothe-show-stock-title">
             <div class="clothe-show__section-header">
                 <h2 id="clothe-show-stock-title">Tailles</h2>
-                <a href="{{ sizesManageUrl }}" class="clothe-show__button" data-turbo-stream>
+                <a
+                    href="{{ path('app_clothes_sizes_modal', {slug: clothe.slug}) }}"
+                    class="clothe-show__button"
+                    data-turbo-stream
+                >
                     Gerer les tailles
                 </a>
             </div>
@@ -387,13 +488,19 @@
             <h2 id="clothe-show-size-guide-title">Guide des tailles</h2>
             <form
                 method="post"
-                action="{{ sizeGuideUpdateUrl }}"
+                action="{{ path('app_clothes_size_guide_update', {slug: clothe.slug}) }}"
                 class="clothe-show__size-guide-form"
                 {{ stimulus_controller('clothe-size-guide', {
-                    previewUrl: sizeGuidePreviewUrl
+                    previewUrl: path('app_clothes_size_guide_preview', {
+                        slug: clothe.slug
+                    })
                 }) }}
             >
-                <input type="hidden" name="_csrf_token" value="{{ sizeGuideCsrfToken }}">
+                <input
+                    type="hidden"
+                    name="_csrf_token"
+                    value="{{ csrf_token('clothe_size_guide_' ~ clothe.slug) }}"
+                >
 
                 <p class="clothe-show__empty">Unite : {{ clothe.sizeGuide.unit }}</p>
 

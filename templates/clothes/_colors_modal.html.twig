@@ -3,17 +3,20 @@
         <header class="modal__header">
             <div>
                 <h2 id="clothes-colors-title">Gestion des couleurs des vêtements</h2>
-                <p class="modal__subtitle">{{ colors|length }} couleur{{ colors|length > 1 ? 's' : '' }} enregistrée{{ colors|length > 1 ? 's' : '' }}</p>
+                <p class="modal__subtitle">{{ modal.colors|length }} couleur{{ modal.colors|length > 1 ? 's' : '' }} enregistrée{{ modal.colors|length > 1 ? 's' : '' }}</p>
             </div>
             <button type="button" class="modal__close" onclick="this.closest('.modal-backdrop').remove()" aria-label="Fermer">×</button>
         </header>
 
         <div class="modal__body">
-            {% if colors is not empty %}
+            {% if modal.colors is not empty %}
                 <ul class="avatar-colors">
-                    {% for color in colors %}
+                    {% for color in modal.colors %}
                         {% set hasValidHexa = color.hexa and color.hexa matches '/^[0-9a-fA-F]{6}$/' %}
-                        <li class="avatar-colors__item">
+                        <li
+                            class="avatar-colors__item"
+                            data-color-id="{{ color.id }}"
+                        >
                             <span
                                 class="avatar-colors__swatch"
                                 style="background-color: {{ hasValidHexa ? '#' ~ color.hexa : 'transparent' }}"
@@ -30,10 +33,10 @@
 
                             <form
                                 method="post"
-                                action="{{ color.deleteUrl }}"
+                                action="{{ path('app_clothes_color_delete', { id: color.id }) }}"
                                 data-turbo-confirm="Supprimer « {{ color.name }} » supprimera également {{ color.variantsCount }} variant(s), leurs images et les vêtements devenus vides. Confirmer la suppression ?"
                             >
-                                <input type="hidden" name="_csrf_token" value="{{ color.csrfToken }}">
+                                <input type="hidden" name="_csrf_token" value="{{ csrf_token('clothes_color_delete_' ~ color.id) }}">
                                 <button type="submit" class="avatar-colors__delete">Supprimer</button>
                             </form>
                         </li>

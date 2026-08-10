@@ -2,7 +2,7 @@
 
 namespace App\Tests\Clothes\Unit;
 
-use App\Application\Clothes\Services\ClotheCompletenessChecker;
+use App\Application\Clothes\Services\Clothe\ClotheCompletenessChecker;
 use App\Entity\Category\Category;
 use App\Entity\Clothes\Clothes;
 use App\Entity\Clothes\Clothescolor;

@@ -15,7 +15,7 @@ BDI := vendor/bin/bdi
 # * Le scan de style est non modifiant par défaut
 DR ?= 1
 
-.PHONY: dev test test-unit test-integration test-application test-e2e test-from-integration test-clothes test-clothes-unit test-clothes-integration test-clothes-application test-clothes-e2e test-avatar test-avatar-unit test-avatar-integration test-avatar-application test-avatar-e2e test-browser-install test-avatar-from-integration docker-test docker-test-avatar docker-test-up docker-test-prepare docker-test-run docker-test-avatar-run docker-test-down lint lint-container lint-translations lint-twig lint-xliff lint-yaml cs-scan
+.PHONY: dev test test-prepare test-unit test-integration test-application test-e2e test-from-integration test-clothes test-clothes-unit test-clothes-integration test-clothes-application test-clothes-e2e test-avatar test-avatar-unit test-avatar-integration test-avatar-application test-avatar-e2e test-browser-install test-avatar-from-integration docker-test docker-test-avatar docker-test-up docker-test-prepare docker-test-run docker-test-avatar-run docker-test-down lint lint-container lint-translations lint-twig lint-xliff lint-yaml cs-scan
 
 # ==============================================================================
 # * ENVIRONNEMENT DE DÉVELOPPEMENT
@@ -36,16 +36,21 @@ test: test-unit test-integration test-application test-e2e
 test-unit:
 	$(PHPUNIT) --group unit --display-all-issues
 
+# ? Crée la base de test si nécessaire et applique toutes les migrations en attente
+test-prepare:
+	$(CONSOLE) doctrine:database:create --env=test --if-not-exists --no-interaction
+	$(CONSOLE) doctrine:migrations:migrate --env=test --no-interaction
+
 # ? Toutes les intégrations Symfony, Doctrine, Messenger et Workflow
-test-integration:
+test-integration: test-prepare
 	$(PHPUNIT) --group integration --display-all-issues
 
 # ? Tous les parcours HTTP BrowserKit et DomCrawler
-test-application:
+test-application: test-prepare
 	$(PHPUNIT) --group application --display-all-issues
 
 # ? Tous les parcours dans un vrai navigateur Panther
-test-e2e:
+test-e2e: test-prepare
 	$(PHPUNIT) --group end-to-end --display-all-issues
 
 # ? Tous les niveaux nécessitant l’infrastructure, sans les tests unitaires
@@ -62,15 +67,15 @@ test-clothes-unit:
 	$(PHPUNIT) tests/Clothes/Unit --display-all-issues
 
 # ? Tests avec le vrai conteneur Symfony, Doctrine et Workflow
-test-clothes-integration:
+test-clothes-integration: test-prepare
 	$(PHPUNIT) tests/Clothes/Integration --display-all-issues
 
 # ? Tests HTTP avec BrowserKit, DomCrawler, formulaires et MySQL test
-test-clothes-application:
+test-clothes-application: test-prepare
 	$(PHPUNIT) tests/Clothes/Application --display-all-issues
 
 # ? Parcours vêtements dans un vrai navigateur avec JavaScript, Turbo et Stimulus
-test-clothes-e2e:
+test-clothes-e2e: test-prepare
 	$(PHPUNIT) tests/Clothes/EndToEnd --display-all-issues
 
 # ------------------------------------------------------------------------------
@@ -84,15 +89,15 @@ test-avatar-unit:
 	$(PHPUNIT) tests/Avatar/Unit --display-all-issues
 
 # ? Tests avec le vrai conteneur Symfony, Doctrine, Messenger et Workflow
-test-avatar-integration:
+test-avatar-integration: test-prepare
 	$(PHPUNIT) tests/Avatar/Integration --display-all-issues
 
 # ? Tests HTTP avec BrowserKit, DomCrawler, sécurité et MySQL test
-test-avatar-application:
+test-avatar-application: test-prepare
 	$(PHPUNIT) tests/Avatar/Application --display-all-issues
 
 # ? Tests dans un vrai navigateur avec JavaScript, Turbo et Stimulus
-test-avatar-e2e:
+test-avatar-e2e: test-prepare
 	$(PHPUNIT) tests/Avatar/EndToEnd --display-all-issues
 
 # ? Détecte le navigateur local et installe le WebDriver compatible dans drivers/

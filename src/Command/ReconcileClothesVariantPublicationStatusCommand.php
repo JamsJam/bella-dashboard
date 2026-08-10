@@ -2,7 +2,7 @@
 
 namespace App\Command;
 
-use App\Application\Clothes\Services\ClotheWorkflowService;
+use App\Application\Clothes\Services\Clothe\ClotheWorkflowService;
 use App\Entity\Clothes\ClothesVariant;
 use App\Repository\Clothes\ClothesVariantRepository;
 use Symfony\Component\Console\Attribute\AsCommand;

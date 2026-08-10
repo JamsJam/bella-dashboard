@@ -2,16 +2,22 @@
 
 namespace App\Application\Clothes\Provider\ClotheProvider;
 
+use App\Entity\Category\Category;
 use App\Entity\Clothes\Clothes;
+use App\Entity\Collections\Collections;
 use App\Enum\ClotheStatus;
+use App\Repository\Category\CategoryRepository;
 use App\Repository\Clothes\ClothesRepository;
 use App\Repository\Clothes\ClothesVariantRepository;
+use App\Repository\Collections\CollectionsRepository;
 
 final class ClotheProvider
 {
     public function __construct(
         private ClothesRepository $clothesRepository,
         private ClothesVariantRepository $clothesVariantRepository,
+        private CategoryRepository $categoryRepository,
+        private CollectionsRepository $collectionsRepository,
     ) {
     }
 
@@ -97,5 +103,21 @@ final class ClotheProvider
     public function getClotheVariantsBySlug(string $slug): array
     {
         return $this->clothesRepository->findVariantsBySlug($slug);
+    }
+
+    /**
+     * @return list<Category>
+     */
+    public function findCategoriesByName(): array
+    {
+        return $this->categoryRepository->findBy([], ['name' => 'ASC']);
+    }
+
+    /**
+     * @return list<Collections>
+     */
+    public function findCollectionsByName(): array
+    {
+        return $this->collectionsRepository->findBy([], ['name' => 'ASC']);
     }
 }

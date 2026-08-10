@@ -5,6 +5,7 @@ namespace App\Application\Avatar\Workflow\Guard;
 use App\Application\Avatar\Workflow\AvatarRenameCompletionContext;
 use App\Application\Avatar\Workflow\AvatarRenameGuardContextStore;
 use App\Entity\AvatarTemp;
+use App\Service\FileManagerService;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Component\Workflow\Event\GuardEvent;
 use Symfony\Component\Workflow\TransitionBlocker;
@@ -16,6 +17,7 @@ final class AvatarRenameCompletedGuard
 
     public function __construct(
         private readonly AvatarRenameGuardContextStore $contextStore,
+        private readonly FileManagerService $fileManager,
     ) {
     }
 
@@ -30,7 +32,7 @@ final class AvatarRenameCompletedGuard
             return;
         }
 
-        if (!is_file($context->destinationPath) || basename($context->destinationPath) !== $context->expectedName) {
+        if (!$this->fileManager->isFile($context->destinationPath) || basename($context->destinationPath) !== $context->expectedName) {
             $this->block($event, 'Le fichier renommé est absent ou porte un nom incorrect.');
 
             return;

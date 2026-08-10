@@ -16,6 +16,7 @@ use App\Entity\AvatarTemp;
 use App\Entity\Clothes\Clothes;
 use App\Message\Avatar\RenameAvatarMessage;
 use App\Repository\Clothes\ClothesRepository;
+use App\Service\FileManagerService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Workflow\WorkflowInterface;
@@ -31,6 +32,7 @@ final readonly class AvatarRenameService
         private AvatarRenameFilterValueResolver $filterValueResolver,
         private AvatarRenameNameParser $nameParser,
         private AvatarRenameGuardContextStore $guardContextStore,
+        private FileManagerService $fileManager,
         #[Autowire(service: 'state_machine.avatar_rename')]
         private WorkflowInterface $workflow,
     ) {
@@ -63,7 +65,9 @@ final readonly class AvatarRenameService
         $destinationWebDir = $this->destinationResolver->resolveWebDirectory($message);
         $destinationDir = $this->destinationResolver->resolveAbsoluteDirectory($destinationWebDir);
 
-        if (!is_dir($destinationDir) && !mkdir($destinationDir, 0775, true) && !is_dir($destinationDir)) {
+        try {
+            $this->fileManager->ensureDirectory($destinationDir);
+        } catch (\Throwable) {
             throw new \RuntimeException('Unable to create final avatar directory.');
         }
 
@@ -72,7 +76,7 @@ final readonly class AvatarRenameService
         $imagePath = $destinationWebDir . '/' . $message->newName;
 
         $temporaryPath = $avatarTemp->getTempPath();
-        if ((null === $temporaryPath || !is_file($temporaryPath)) && is_file($destinationPath)) {
+        if ((null === $temporaryPath || !$this->fileManager->isFile($temporaryPath)) && $this->fileManager->isFile($destinationPath)) {
             $this->completePartiallySuccessfulRename($avatarTemp, $message, $destinationPath, $imagePath);
 
             return;
@@ -86,7 +90,7 @@ final readonly class AvatarRenameService
         }
 
         $isExistingPart = false;
-        if (file_exists($destinationPath)) {
+        if ($this->fileManager->exists($destinationPath)) {
             $avatarPart = $this->partResolver->resolveExistingPart($message, $imagePath);
             if (is_object($avatarPart)) {
                 $isExistingPart = true;
@@ -100,14 +104,12 @@ final readonly class AvatarRenameService
             $this->hydrateAvatarPart($avatarPart, $message, $checksum, $imagePath);
         }
 
-        if (file_exists($destinationPath) && !unlink($destinationPath)) {
-            throw new \RuntimeException('Unable to replace existing avatar file.');
+        if ($this->fileManager->exists($destinationPath)) {
+            $this->fileManager->remove($destinationPath);
         }
 
-        if (!rename($sourcePath, $destinationPath)) {
-            throw new \RuntimeException('Unable to rename avatar file.');
-        }
-        @rmdir(dirname($sourcePath));
+        $this->fileManager->move($sourcePath, $destinationPath);
+        $this->fileManager->removeEmptyDirectory(dirname($sourcePath));
 
         if (!$isExistingPart) {
             $this->entityManager->persist($avatarPart);

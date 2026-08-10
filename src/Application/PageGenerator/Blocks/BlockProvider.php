@@ -2,7 +2,7 @@
 
 namespace App\Application\PageGenerator\Blocks;
 
-use App\Application\Clothes\Services\ClotheService;
+use App\Application\Clothes\Services\Clothe\ClotheService;
 use App\Application\PageGenerator\Blocks\Back\AdminSortableTableBlock;
 use App\Application\PageGenerator\Blocks\Back\AdminTabsBlock;
 use App\Application\PageGenerator\Services\PaginateService;

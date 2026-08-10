@@ -3,6 +3,7 @@
 namespace App\Application\Avatar\Services;
 
 use App\Entity\AvatarTemp;
+use App\Service\FileManagerService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\String\Slugger\AsciiSlugger;
@@ -13,6 +14,7 @@ final readonly class AvatarPartRenameQueueService
         private AvatarResolverService $avatarResolverService,
         private AvatarImageUploadValidator $avatarImageUploadValidator,
         private EntityManagerInterface $entityManager,
+        private FileManagerService $fileManager,
         #[Autowire('%kernel.project_dir%')]
         private string $projectDir,
     ) {
@@ -28,7 +30,7 @@ final readonly class AvatarPartRenameQueueService
         }
 
         $sourcePath = $this->resolveSourcePath($avatarPart);
-        if (null === $sourcePath || !is_file($sourcePath)) {
+        if (null === $sourcePath || !$this->fileManager->isFile($sourcePath)) {
             throw new \RuntimeException('Avatar PNG file not found.', 422);
         }
 
@@ -39,7 +41,9 @@ final readonly class AvatarPartRenameQueueService
         $fileId = bin2hex(random_bytes(16));
         $uploadDir = $this->projectDir . '/var/avatar-temp/' . $fileId;
 
-        if (!is_dir($uploadDir) && !mkdir($uploadDir, 0775, true) && !is_dir($uploadDir)) {
+        try {
+            $this->fileManager->ensureDirectory($uploadDir);
+        } catch (\Throwable) {
             throw new \RuntimeException('Unable to create avatar temporary directory.', 500);
         }
 
@@ -52,8 +56,7 @@ final readonly class AvatarPartRenameQueueService
         $sourceChecksum = hash_file('sha256', $sourcePath);
         $temporaryChecksum = hash_file('sha256', $tempPath);
         if (false === $sourceChecksum || false === $temporaryChecksum || !hash_equals($sourceChecksum, $temporaryChecksum)) {
-            @unlink($tempPath);
-            @rmdir($uploadDir);
+            $this->fileManager->remove([$tempPath, $uploadDir]);
 
             throw new \RuntimeException('Avatar temporary copy checksum mismatch.', 500);
         }
@@ -71,11 +74,12 @@ final readonly class AvatarPartRenameQueueService
         $this->entityManager->persist($avatarTemp);
         $this->entityManager->flush();
 
-        if (!unlink($sourcePath)) {
+        try {
+            $this->fileManager->remove($sourcePath);
+        } catch (\Throwable) {
             $this->entityManager->remove($avatarTemp);
             $this->entityManager->flush();
-            @unlink($tempPath);
-            @rmdir($uploadDir);
+            $this->fileManager->remove([$tempPath, $uploadDir]);
 
             throw new \RuntimeException('Unable to remove original avatar file after queuing its verified copy.', 500);
         }
@@ -85,15 +89,14 @@ final readonly class AvatarPartRenameQueueService
             $this->entityManager->flush();
         } catch (\Throwable $exception) {
             // The verified temporary copy allows restoring the original if Doctrine fails.
-            @copy($tempPath, $sourcePath);
+            $this->fileManager->copy($tempPath, $sourcePath, true);
             $this->entityManager->remove($avatarTemp);
             $this->entityManager->flush();
-            @unlink($tempPath);
-            @rmdir($uploadDir);
+            $this->fileManager->remove([$tempPath, $uploadDir]);
             throw $exception;
         }
 
-        @rmdir(dirname($sourcePath));
+        $this->fileManager->removeEmptyDirectory(dirname($sourcePath));
 
         return $avatarTemp;
     }
@@ -113,7 +116,7 @@ final readonly class AvatarPartRenameQueueService
             return null;
         }
 
-        if (str_starts_with($image, '/') && is_file($image)) {
+        if (str_starts_with($image, '/') && $this->fileManager->isFile($image)) {
             return $image;
         }
 
@@ -124,7 +127,7 @@ final readonly class AvatarPartRenameQueueService
                 $this->projectDir . '/' . $relativePath,
             ] as $path
         ) {
-            if (is_file($path)) {
+            if ($this->fileManager->isFile($path)) {
                 return $path;
             }
         }
@@ -134,7 +137,9 @@ final readonly class AvatarPartRenameQueueService
 
     private function copySourceFile(string $sourcePath, string $tempPath): void
     {
-        if (!copy($sourcePath, $tempPath)) {
+        try {
+            $this->fileManager->copy($sourcePath, $tempPath);
+        } catch (\Throwable) {
             throw new \RuntimeException('Unable to copy avatar file to rename queue.', 500);
         }
     }

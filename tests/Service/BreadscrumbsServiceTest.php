@@ -32,6 +32,10 @@ class BreadscrumbsServiceTest extends TestCase
 
         self::assertSame([
             [
+                'label' => 'Dashboard',
+                'route' => 'app_dashboard',
+            ],
+            [
                 'label' => 'Utilisateurs',
                 'route' => 'app_user',
             ],
@@ -47,6 +51,10 @@ class BreadscrumbsServiceTest extends TestCase
         $result = $this->service->resolve('app_order_pending');
 
         self::assertSame([
+            [
+                'label' => 'Dashboard',
+                'route' => 'app_dashboard',
+            ],
             [
                 'label' => 'Commandes',
                 'route' => 'app_order',
@@ -64,6 +72,10 @@ class BreadscrumbsServiceTest extends TestCase
 
         self::assertSame([
             [
+                'label' => 'Dashboard',
+                'route' => 'app_dashboard',
+            ],
+            [
                 'label' => 'Product',
                 'route' => 'app_product',
             ],
@@ -76,18 +88,10 @@ class BreadscrumbsServiceTest extends TestCase
 
     public function testResolveRouteWithoutAppPrefix(): void
     {
-        $result = $this->service->resolve('user_index');
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('must start with "app_"');
 
-        self::assertSame([
-            [
-                'label' => 'Utilisateurs',
-                'route' => 'app_user',
-            ],
-            [
-                'label' => 'Index',
-                'route' => 'app_user_index',
-            ],
-        ], $result);
+        $this->service->resolve('user_index');
     }
 
     public function testResolveEmptyRouteThrowsException(): void
@@ -103,5 +107,21 @@ class BreadscrumbsServiceTest extends TestCase
         $this->expectExceptionMessage('contains an empty segment');
 
         $this->service->resolve('app_user__index');
+    }
+
+    public function testResolveCollectionRoutesThroughClothes(): void
+    {
+        self::assertSame([
+            ['label' => 'Dashboard', 'route' => 'app_dashboard'],
+            ['label' => 'Vêtements', 'route' => 'app_clothes'],
+            ['label' => 'Collections'],
+        ], $this->service->resolve('app_clothe_collection', currentLabel: 'Collections'));
+
+        self::assertSame([
+            ['label' => 'Dashboard', 'route' => 'app_dashboard'],
+            ['label' => 'Vêtements', 'route' => 'app_clothes'],
+            ['label' => 'Collections'],
+            ['label' => 'Collection été'],
+        ], $this->service->resolve('app_clothes_collection', currentLabel: 'Collection été'));
     }
 }

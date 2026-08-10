@@ -2,7 +2,7 @@
 
 namespace App\Tests\Clothes\Integration;
 
-use App\Application\Clothes\Services\ClotheWorkflowService;
+use App\Application\Clothes\Services\Clothe\ClotheWorkflowService;
 use App\Entity\Category\Category;
 use App\Entity\Clothes\Clothes;
 use App\Entity\Clothes\Clothescolor;

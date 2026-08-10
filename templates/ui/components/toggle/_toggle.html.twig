@@ -1,11 +1,11 @@
 {% if toggle is defined %}
-    {% set id = toggle.id %}
-    {% set name = toggle.name %}
-    {% set label = toggle.label %}
-    {% set checked = toggle.checked %}
-    {% set disabled = toggle.disabled %}
-    {% set eventName = toggle.eventName %}
-    {% set payload = toggle.payload %}
+    {% set id = toggle.id|default(null) %}
+    {% set name = toggle.name|default(null) %}
+    {% set label = toggle.label|default(null) %}
+    {% set checked = toggle.checked|default(false) %}
+    {% set disabled = toggle.disabled|default(false) %}
+    {% set eventName = toggle.eventName|default('toggle:change') %}
+    {% set payload = toggle.payload|default({}) %}
 {% endif %}
 
 {% set id = id|default('toggle-' ~ random()) %}

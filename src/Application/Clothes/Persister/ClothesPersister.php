@@ -4,7 +4,7 @@ namespace App\Application\Clothes\Persister;
 
 use App\Application\Clothes\DTO\ClotheImageInput;
 use App\Application\Clothes\Guard\ClotheNameGuard;
-use App\Application\Clothes\Services\ClotheService;
+use App\Application\Clothes\Services\Clothe\ClotheService;
 use App\Entity\Clothes\Clothes;
 use App\Entity\Clothes\Clothescolor;
 use App\Entity\Clothes\Clothessize;
@@ -27,6 +27,17 @@ final class ClothesPersister
         #[Autowire('%kernel.project_dir%')]
         private readonly string $projectDir,
     ) {
+    }
+
+    public function save(Clothes $clothe): void
+    {
+        $this->persist($clothe);
+        $this->entityManager->flush();
+    }
+
+    public function persist(Clothes $clothe): void
+    {
+        $this->entityManager->persist($clothe);
     }
 
     /**

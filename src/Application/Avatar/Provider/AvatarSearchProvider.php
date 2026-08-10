@@ -46,6 +46,7 @@ final class AvatarSearchProvider
                 'accessory' => $this->filterAccessories($partResults),
                 default => $partResults,
             };
+
             $results[$partie] = $this->avatarPartSortService->sort(
                 $partResults,
                 $partie,
@@ -128,7 +129,8 @@ final class AvatarSearchProvider
     {
         return $this->filterFacesByName(
             $results,
-            fn (string $name): bool => $this->faceAccessoryNameMatcher->matches($name),
+            fn (string $name): bool =>
+                $this->faceAccessoryNameMatcher->matches($name),
         );
     }
 
@@ -136,19 +138,30 @@ final class AvatarSearchProvider
     {
         return $this->filterFacesByName(
             $results,
-            fn (string $name): bool => $this->faceAccessoryNameMatcher->matchesWithoutAccessory($name),
+            fn (string $name): bool =>
+                $this->faceAccessoryNameMatcher
+                    ->matchesWithoutAccessory($name),
         );
     }
 
-    private function filterFacesByName(array $results, callable $matches): array
-    {
-        return array_values(array_filter($results, static function (array|object $result) use ($matches): bool {
-            $name = is_array($result)
-                ? (string) ($result['name'] ?? '')
-                : (method_exists($result, 'getName') ? (string) $result->getName() : '');
+    private function filterFacesByName(
+        array $results,
+        callable $matches,
+    ): array {
+        return array_values(array_filter(
+            $results,
+            static function (array|object $result) use ($matches): bool {
+                $name = is_array($result)
+                    ? (string) ($result['name'] ?? '')
+                    : (
+                        method_exists($result, 'getName')
+                            ? (string) $result->getName()
+                            : ''
+                    );
 
-            return $matches($name);
-        }));
+                return $matches($name);
+            },
+        ));
     }
 
     /** Récupère le repository correspondant à une partie d'avatar donnée.

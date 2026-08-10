@@ -22,8 +22,6 @@ final class FaceAccessoryNameMatcherTest extends TestCase
     {
         yield 'accessory' => ['visage__clair__ovale__lunettes', true];
         yield 'without accessory' => ['visage__clair__ovale__-none-', false];
-        yield 'missing fourth part' => ['visage__clair__ovale', false];
-        yield 'empty fourth part' => ['visage__clair__ovale__', false];
     }
 
     #[DataProvider('namesWithoutAccessory')]
@@ -37,6 +35,19 @@ final class FaceAccessoryNameMatcherTest extends TestCase
         yield 'without accessory' => ['visage__clair__ovale__-none-', true];
         yield 'with accessory' => ['visage__clair__ovale__lunettes', false];
         yield 'none is not the suffix' => ['visage__clair__ovale__-none-__extra', false];
-        yield 'missing fourth part' => ['visage__clair__ovale', false];
+    }
+
+    #[DataProvider('invalidNames')]
+    public function testItRejectsAnInvalidFaceName(string $name): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+
+        (new FaceAccessoryNameMatcher())->matches($name);
+    }
+
+    public static function invalidNames(): iterable
+    {
+        yield 'missing last segment' => ['visage__clair__ovale'];
+        yield 'empty last segment' => ['visage__clair__ovale__'];
     }
 }

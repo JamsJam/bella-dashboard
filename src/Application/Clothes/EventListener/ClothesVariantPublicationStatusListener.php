@@ -2,7 +2,7 @@
 
 namespace App\Application\Clothes\EventListener;
 
-use App\Application\Clothes\Services\ClotheWorkflowService;
+use App\Application\Clothes\Services\Clothe\ClotheWorkflowService;
 use App\Entity\Clothes\ClothesVariant;
 use Doctrine\Bundle\DoctrineBundle\Attribute\AsDoctrineListener;
 use Doctrine\ORM\Event\OnFlushEventArgs;

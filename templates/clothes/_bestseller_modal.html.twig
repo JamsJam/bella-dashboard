@@ -3,39 +3,37 @@
         <header class="modal__header">
             <div>
                 <h2 id="bestseller-modal-title">Bestsellers</h2>
-                <p class="modal__subtitle">{{ bestsellers|length }}/{{ maxItems }} vetement(s)</p>
+                <p class="modal__subtitle">{{ modal.bestsellers|length }}/{{ modal.maxItems }} vetement(s)</p>
             </div>
             <button type="button" class="modal__close" onclick="this.closest('.modal-backdrop').remove()" aria-label="Fermer">x</button>
         </header>
 
-        <form method="post" action="{{ action }}">
+        <form method="post" action="{{ path('app_clothes_bestsellers_update') }}">
             <div class="modal__body">
-                <input type="hidden" name="_csrf_token" value="{{ csrfToken }}">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token('clothe_bestseller') }}">
                 <input type="hidden" name="mode" value="replace">
 
-                {% if errorMessage|default(null) %}
-                    <p class="modal__error">{{ errorMessage }}</p>
+                {% if modal.errorMessage %}
+                    <p class="modal__error">{{ modal.errorMessage }}</p>
                 {% endif %}
 
-                {% if bestsellers is not empty %}
+                {% if modal.bestsellers is not empty %}
                     <fieldset class="clothe-bestseller-list">
                         <legend class="modal__subtitle">Decoche les vetements a retirer de la liste.</legend>
 
-                        {% for clothe in bestsellers %}
+                        {% for clothe in modal.bestsellers %}
                             <label class="clothe-bestseller-list__item">
                                 <input type="checkbox" name="ids[]" value="{{ clothe.id }}" checked>
-                                {% set images = clothe.images ?? [] %}
-                                {% set image = images[0]|default(clothe.collection ? clothe.collection.image : '') %}
                                 <span class="clothe-bestseller-list__preview">
-                                    {% if image %}
-                                        <img src="{{ image }}" alt="{{ clothe.name }}">
+                                    {% if clothe.imageUrl %}
+                                        <img src="{{ clothe.imageUrl }}" alt="{{ clothe.name }}">
                                     {% else %}
                                         <span>Aucune image</span>
                                     {% endif %}
                                 </span>
                                 <span class="clothe-bestseller-list__content">
                                     <strong>{{ clothe.name }}</strong>
-                                    <small>{{ clothe.collection ? clothe.collection.name : 'Collection inconnue' }}</small>
+                                    <small>{{ clothe.attributes.collection ?: 'Collection inconnue' }}</small>
                                 </span>
                             </label>
                         {% endfor %}

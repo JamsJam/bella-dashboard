@@ -13,6 +13,7 @@ use App\Enum\ClotheStatus;
 use Doctrine\ORM\EntityManagerInterface;
 use Facebook\WebDriver\Remote\LocalFileDetector;
 use Facebook\WebDriver\WebDriverBy;
+use Facebook\WebDriver\WebDriverExpectedCondition;
 use Facebook\WebDriver\WebDriverSelect;
 use PHPUnit\Framework\Attributes\Group;
 use Symfony\Component\Panther\Client;
@@ -199,9 +200,14 @@ final class ClothesLifecycleTest extends PantherTestCase
             'Blocage : annuler la confirmation a tout de même supprimé la variante.',
         );
 
+        $modalForm = $this->client->getWebDriver()->findElement(
+            WebDriverBy::cssSelector('#modal-root form'),
+        );
         $this->modalSubmitButton()->click();
         $this->client->getWebDriver()->switchTo()->alert()->accept();
-        $this->client->waitForStaleness('#modal-root form');
+        $this->client->getWebDriver()->wait()->until(
+            WebDriverExpectedCondition::stalenessOf($modalForm),
+        );
 
         self::assertNull($this->findVariant($clothe, 'M'), 'Blocage : la variante confirmée n’a pas été supprimée.');
         self::assertInstanceOf(
@@ -324,8 +330,13 @@ final class ClothesLifecycleTest extends PantherTestCase
 
     private function submitSizesModal(): void
     {
+        $modalForm = $this->client->getWebDriver()->findElement(
+            WebDriverBy::cssSelector('#modal-root form'),
+        );
         $this->modalSubmitButton()->click();
-        $this->client->waitForStaleness('#modal-root form');
+        $this->client->getWebDriver()->wait()->until(
+            WebDriverExpectedCondition::stalenessOf($modalForm),
+        );
     }
 
     private function findVariant(Clothes $clothe, string $size): ?ClothesVariant

@@ -2,8 +2,8 @@
 
 namespace App\Command;
 
-use App\Application\Clothes\Services\ClotheCompletenessChecker;
-use App\Application\Clothes\Services\ClotheWorkflowService;
+use App\Application\Clothes\Services\Clothe\ClotheCompletenessChecker;
+use App\Application\Clothes\Services\Clothe\ClotheWorkflowService;
 use App\Repository\Clothes\ClothesVariantRepository;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;

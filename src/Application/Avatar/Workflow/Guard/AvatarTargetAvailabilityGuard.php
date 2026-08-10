@@ -7,6 +7,7 @@ use App\Application\Avatar\Resolver\AvatarRenameDestinationResolver;
 use App\Application\Avatar\Workflow\AvatarRenameGuardContextStore;
 use App\Application\Avatar\Workflow\AvatarRenameValidationContext;
 use App\Entity\AvatarTemp;
+use App\Service\FileManagerService;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Component\Workflow\Event\GuardEvent;
 use Symfony\Component\Workflow\TransitionBlocker;
@@ -19,6 +20,7 @@ final readonly class AvatarTargetAvailabilityGuard
     public function __construct(
         private AvatarRenameDestinationResolver $destinationResolver,
         private AvatarRenameGuardContextStore $contextStore,
+        private FileManagerService $fileManager,
     ) {
     }
 
@@ -47,7 +49,8 @@ final readonly class AvatarTargetAvailabilityGuard
             );
             $webDirectory = $this->destinationResolver->resolveWebDirectory($message);
             $destination = $this->destinationResolver->resolveAbsoluteDirectory($webDirectory) . '/' . $context->newName;
-            $context->recordAvailability(is_file($destination), is_file($destination) ? $webDirectory . '/' . $context->newName : null);
+            $exists = $this->fileManager->isFile($destination);
+            $context->recordAvailability($exists, $exists ? $webDirectory . '/' . $context->newName : null);
         } catch (\Throwable) {
             $event->addTransitionBlocker(new TransitionBlocker(
                 'La destination du renommage est invalide.',

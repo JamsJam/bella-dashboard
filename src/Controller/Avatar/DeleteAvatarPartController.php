@@ -3,10 +3,10 @@
 namespace App\Controller\Avatar;
 
 use App\Application\Avatar\Services\AvatarResolverService;
+use App\Application\Avatar\Services\AvatarUploadedFileService;
 use App\Service\LoggerService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -22,8 +22,7 @@ final class DeleteAvatarPartController extends AbstractController
         AvatarResolverService $avatarResolverService,
         EntityManagerInterface $entityManager,
         LoggerService $logger,
-        #[Autowire('%kernel.project_dir%')]
-        string $projectDir,
+        AvatarUploadedFileService $uploadedFileService,
     ): JsonResponse {
         if (!$this->isCsrfTokenValid('avatar_part_delete', (string) $request->headers->get('X-CSRF-TOKEN', ''))) {
             $logger->warning('Invalid CSRF token for avatar part deletion.', [
@@ -84,7 +83,7 @@ final class DeleteAvatarPartController extends AbstractController
 
         foreach ($imagePaths as $imagePath) {
             try {
-                $this->deleteUploadedImage($imagePath, $projectDir);
+                $uploadedFileService->deleteFromWebPath($imagePath);
             } catch (\Throwable $exception) {
                 $logger->exception($exception, 'Avatar part deleted but its image could not be deleted.', [
                     'part' => $part,
@@ -126,38 +125,5 @@ final class DeleteAvatarPartController extends AbstractController
         }
 
         return [];
-    }
-
-    private function deleteUploadedImage(string $imagePath, string $projectDir): void
-    {
-        $relativePath = parse_url($imagePath, PHP_URL_PATH);
-        if (!is_string($relativePath) || !str_starts_with($relativePath, '/images/upload/avatar/')) {
-            return;
-        }
-
-        $uploadRoot = realpath($projectDir . '/public/images/upload/avatar');
-        $absolutePath = $projectDir . '/public' . $relativePath;
-        $realPath = realpath($absolutePath);
-
-        if (
-            false === $uploadRoot
-            || false === $realPath
-            || !str_starts_with($realPath, rtrim($uploadRoot, '/') . '/')
-        ) {
-            return;
-        }
-
-        if (!unlink($realPath)) {
-            throw new \RuntimeException(sprintf('Unable to delete avatar image "%s".', $relativePath));
-        }
-
-        $directory = dirname($realPath);
-        while ($directory !== $uploadRoot && str_starts_with($directory, rtrim($uploadRoot, '/') . '/')) {
-            if (!@rmdir($directory)) {
-                break;
-            }
-
-            $directory = dirname($directory);
-        }
     }
 }

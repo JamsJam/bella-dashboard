@@ -7,7 +7,12 @@ final class BreadscrumbsService
     private const ROOT_ROUTE = 'app_dashboard';
 
     private const ROUTE_PARENTS = [
+        'app_clothe_add' => 'app_clothes',
         'app_clothes_variant_add' => 'app_clothes',
+        'app_clothe_collection' => 'app_clothes',
+        'app_clothe_collection_add' => 'app_clothe_collection',
+        'app_clothes_collection' => 'app_clothe_collection',
+        'app_clothe_category_show' => 'app_clothes_categories',
     ];
 
     private const LABELS = [
@@ -20,6 +25,7 @@ final class BreadscrumbsService
         'clothes' => 'Vêtements',
         'categories' => 'Catégories',
         'collections' => 'Collections',
+        'collection' => 'Collections',
         'config' => 'Configuration',
         'page' => 'Shop',
         'contact' => 'Contact',

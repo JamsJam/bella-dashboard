@@ -1,6 +1,6 @@
 <div class="modal-backdrop">
     <dialog class="modal" open aria-labelledby="category-create-modal-title">
-        <form method="post" action="{{ action }}" enctype="multipart/form-data" data-turbo="false">
+        <form method="post" action="{{ path('app_clothes_categories_create') }}" enctype="multipart/form-data" data-turbo="false">
             <header class="modal__header">
                 <h2 id="category-create-modal-title">Creer une categorie</h2>
                 <button type="button" class="modal__close" onclick="this.closest('.modal-backdrop').remove()" aria-label="Fermer">
@@ -9,7 +9,7 @@
             </header>
 
             <div class="modal__body">
-                <input type="hidden" name="_csrf_token" value="{{ csrfToken }}">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token('category_create') }}">
 
                 <label class="category-form__field">
                     <span>Nom</span>

@@ -6,6 +6,7 @@ use App\Application\Avatar\Model\AvatarUploadResult;
 use App\Application\Upload\Model\ChunkUploadRequest;
 use App\Application\Upload\Services\ChunkedUploadService;
 use App\Entity\AvatarTemp;
+use App\Service\FileManagerService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -19,6 +20,7 @@ final readonly class AvatarUploadService
         private ChunkedUploadService $chunkedUploadService,
         private AvatarImageUploadValidator $avatarImageUploadValidator,
         private EntityManagerInterface $entityManager,
+        private FileManagerService $fileManager,
         #[Autowire('%kernel.project_dir%')]
         private string $projectDir,
     ) {
@@ -85,7 +87,9 @@ final readonly class AvatarUploadService
     {
         $uploadDir = $this->projectDir . '/var/avatar-temp/' . $request->fileId;
 
-        if (!is_dir($uploadDir) && !mkdir($uploadDir, 0775, true) && !is_dir($uploadDir)) {
+        try {
+            $this->fileManager->ensureDirectory($uploadDir);
+        } catch (\Throwable) {
             $this->chunkedUploadService->cleanup($request->fileId);
 
             return AvatarUploadResult::error('Unable to create avatar temporary directory', Response::HTTP_INTERNAL_SERVER_ERROR);
@@ -103,7 +107,7 @@ final readonly class AvatarUploadService
         }
 
         if (filesize($finalPath) !== $request->fileSize || !$this->avatarImageUploadValidator->isValidPngFile($finalPath)) {
-            @unlink($finalPath);
+            $this->fileManager->remove($finalPath);
             $this->chunkedUploadService->cleanup($request->fileId);
 
             return AvatarUploadResult::error('Invalid PNG file', Response::HTTP_BAD_REQUEST);
@@ -159,7 +163,7 @@ final readonly class AvatarUploadService
     {
         $path = $uploadDir . '/' . $filename;
 
-        if (!file_exists($path)) {
+        if (!$this->fileManager->exists($path)) {
             return $path;
         }
 

@@ -5,6 +5,7 @@ namespace App\Application\Avatar\Resolver;
 use App\Application\Avatar\Mapper\AvatarRenameFilterMapper;
 use App\Application\Avatar\Model\AvatarRenameInstruction;
 use App\Entity\Clothes\Clothes;
+use App\Service\FileManagerService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
@@ -13,6 +14,7 @@ final readonly class AvatarRenameDestinationResolver
     public function __construct(
         private EntityManagerInterface $entityManager,
         private AvatarRenameFilterMapper $avatarRenameFilterMapper,
+        private FileManagerService $fileManager,
         #[Autowire('%kernel.project_dir%')]
         private string $projectDir,
     ) {
@@ -64,13 +66,9 @@ final readonly class AvatarRenameDestinationResolver
     public function assertDestinationPathIsAllowed(string $path): void
     {
         $allowedRoot = $this->projectDir . '/public/images/upload/avatar';
-        $allowedRoot = rtrim($allowedRoot, '/') . '/';
-        $directory = is_dir($path) ? $path : dirname($path);
+        $directory = dirname($path);
 
-        $realAllowedRoot = realpath($allowedRoot);
-        $realDirectory = realpath($directory);
-
-        if (false === $realAllowedRoot || false === $realDirectory || !str_starts_with($realDirectory . '/', rtrim($realAllowedRoot, '/') . '/')) {
+        if (!$this->fileManager->isPathWithin($directory, $allowedRoot)) {
             throw new \RuntimeException('Path is outside the allowed avatar directory.');
         }
     }

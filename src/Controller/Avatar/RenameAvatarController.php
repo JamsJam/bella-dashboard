@@ -2,8 +2,12 @@
 
 namespace App\Controller\Avatar;
 
+use App\Application\Avatar\Exception\AvatarInputValidationException;
 use App\Application\Avatar\Mapper\AvatarFilterMapper;
-use App\Application\Avatar\Mapper\AvatarRenameFilterMapper;
+use App\Application\Avatar\Mapper\AvatarTempViewMapper;
+use App\Application\Avatar\Resolver\AvatarTemporaryFileResolver;
+use App\Application\Avatar\Services\AvatarRenameBatchInputService;
+use App\Application\Avatar\Services\AvatarRenameValidationInputService;
 use App\Application\Avatar\Services\AvatarValidatedFilterValueService;
 use App\Application\Avatar\Workflow\AvatarRenameGuardContextStore;
 use App\Application\Avatar\Workflow\AvatarRenameValidationContext;
@@ -13,6 +17,7 @@ use App\Entity\AvatarTemp;
 use App\Message\Avatar\RenameAvatarMessage;
 use App\Notifier\Services\FlashService;
 use App\Service\BreadscrumbsService;
+use App\Service\FileManagerService;
 use App\Service\LoggerService;
 use Doctrine\DBAL\LockMode;
 use Doctrine\ORM\EntityManagerInterface;
@@ -37,6 +42,7 @@ final class RenameAvatarController extends AbstractController
         EntityManagerInterface $entityManager,
         BreadscrumbsService $breadscrumbs,
         AvatarFilterMapper $avatarFilterMapper,
+        AvatarTempViewMapper $avatarTempViewMapper,
     ): Response {
         $avatarTemps = $entityManager->getRepository(AvatarTemp::class)->findBy(
             ['status' => [AvatarRenameWorkflow::PLACE_UPLOADED, AvatarRenameWorkflow::PLACE_VALIDATED, AvatarRenameWorkflow::PLACE_ERROR]],
@@ -45,7 +51,7 @@ final class RenameAvatarController extends AbstractController
 
         return $this->render('avatar/rename.html.twig', [
             'breadscrumbs' => $breadscrumbs->resolve((string) $request->attributes->get('_route')),
-            'avatars' => array_map(fn (AvatarTemp $avatarTemp): array => $this->mapAvatarTemp($avatarTemp), $avatarTemps),
+            'avatars' => array_map($avatarTempViewMapper->map(...), $avatarTemps),
             'partLabels' => array_filter(
                 $avatarFilterMapper->getPartLabels(),
                 static fn (string $part): bool => 'accessory' !== $part,
@@ -59,7 +65,7 @@ final class RenameAvatarController extends AbstractController
     public function validateName(
         AvatarTemp $avatarTemp,
         Request $request,
-        AvatarRenameFilterMapper $renameFilterMapper,
+        AvatarRenameValidationInputService $validationInputService,
         EntityManagerInterface $entityManager,
         #[Autowire(service: 'state_machine.avatar_rename')]
         WorkflowInterface $workflow,
@@ -74,40 +80,31 @@ final class RenameAvatarController extends AbstractController
             return $this->json(['error' => 'Token CSRF invalide.'], Response::HTTP_FORBIDDEN);
         }
 
-        $newName = (string) $request->request->get('name', '');
-        $category = (string) $request->request->get('category', '');
-        $filters = json_decode((string) $request->request->get('filters', '{}'), true);
-        $authorization = filter_var($request->request->get('authorization', false), FILTER_VALIDATE_BOOL);
-
-        if (!$this->isSafeAvatarName($newName) || '' === $category || !is_array($filters)) {
-            $logger->warning('Invalid avatar rename check payload.', [
-                'name' => $newName,
-                'category' => $category,
-            ]);
-            $flashService->error('Nom invalide.');
-
-            return $this->json(['error' => 'Nom invalide.'], Response::HTTP_BAD_REQUEST);
-        }
-
-        $missingFilters = $this->getMissingRequiredFilters($category, $filters, $renameFilterMapper);
-        if ([] !== $missingFilters) {
-            $message = sprintf(
-                'Tous les paramètres sont obligatoires pour renommer cet avatar. Paramètre(s) manquant(s) : %s.',
-                implode(', ', $missingFilters),
+        try {
+            $input = $validationInputService->prepare(
+                name: (string) $request->request->get('name', ''),
+                category: (string) $request->request->get('category', ''),
+                filtersJson: (string) $request->request->get('filters', '{}'),
+                authorization: $request->request->get('authorization', false),
             );
-            $logger->warning('Avatar rename blocked by missing required filters.', [
-                'category' => $category,
-                'missing_filters' => $missingFilters,
+        } catch (AvatarInputValidationException $exception) {
+            $logger->warning('Invalid avatar rename check payload.', [
+                'name' => (string) $request->request->get('name', ''),
+                'category' => (string) $request->request->get('category', ''),
+                'violations' => $exception->errors(),
             ]);
+            $message = $exception->firstError();
             $flashService->error($message);
 
-            return $this->json(
-                ['error' => $message],
-                Response::HTTP_UNPROCESSABLE_ENTITY,
-            );
+            return $this->json([
+                'error' => $message,
+                'violations' => $exception->errors(),
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
-        $context = new AvatarRenameValidationContext($newName, $category, $filters, $authorization);
+        /** @var array<string, mixed> $filters */
+        $filters = $input->filters;
+        $context = new AvatarRenameValidationContext($input->name, $input->category, $filters, $input->authorization);
         $guardContextStore->setValidation($avatarTemp, $context);
 
         try {
@@ -117,8 +114,8 @@ final class RenameAvatarController extends AbstractController
                 if (AvatarOverwriteAuthorizationGuard::BLOCKER_TARGET_ALREADY_EXISTS === $blocker->getCode()) {
                     $html = $this->renderView('avatar/_rename_confirmation_modal.html.twig', [
                         'avatar' => $avatarTemp,
-                        'name' => $newName,
-                        'category' => $category,
+                        'name' => $input->name,
+                        'category' => $input->category,
                         'filters' => json_encode($filters, JSON_THROW_ON_ERROR),
                         'previewUrl' => $context->previewUrl(),
                     ]);
@@ -138,11 +135,11 @@ final class RenameAvatarController extends AbstractController
             $guardContextStore->clearValidation($avatarTemp);
         }
 
-        $validatedFilterValueService->persistNewValues($category, $filters);
-        $avatarTemp->setFinalName($newName);
+        $validatedFilterValueService->persistNewValues($input->category, $filters);
+        $avatarTemp->setFinalName($input->name);
         $entityManager->flush();
 
-        return $this->json(['success' => true, 'status' => $avatarTemp->getStatus(), 'name' => $newName]);
+        return $this->json(['success' => true, 'status' => $avatarTemp->getStatus(), 'name' => $input->name]);
     }
 
     #[Route('', name: 'app_avatar_rename_submit', methods: ['POST'])]
@@ -152,6 +149,7 @@ final class RenameAvatarController extends AbstractController
         EntityManagerInterface $entityManager,
         FlashService $flashService,
         LoggerService $logger,
+        AvatarRenameBatchInputService $batchInputService,
         #[Autowire(service: 'state_machine.avatar_rename')]
         WorkflowInterface $workflow,
     ): RedirectResponse {
@@ -162,21 +160,21 @@ final class RenameAvatarController extends AbstractController
             return $this->redirectToRoute('app_avatar_rename');
         }
 
-        $renames = json_decode((string) $request->request->get('renames', '[]'), true);
-        if (!is_array($renames)) {
-            $flashService->error('Payload de renommage invalide.');
-            $logger->warning('Invalid avatar rename payload.');
+        try {
+            $input = $batchInputService->prepare(
+                (string) $request->request->get('renames', '[]'),
+            );
+        } catch (AvatarInputValidationException $exception) {
+            $flashService->error($exception->firstError());
+            $logger->warning('Invalid avatar rename payload.', [
+                'violations' => $exception->errors(),
+            ]);
 
             return $this->redirectToRoute('app_avatar_rename');
         }
 
         $dispatched = 0;
-        foreach ($renames as $rename) {
-            if (!$this->isRenamePayloadValid($rename)) {
-                continue;
-            }
-
-            $avatarTempId = (int) $rename['avatarTempId'];
+        foreach ($input->avatarTempIds() as $avatarTempId) {
             $started = $entityManager->wrapInTransaction(function (EntityManagerInterface $manager) use ($avatarTempId, $workflow): bool {
                 $avatarTemp = $manager->find(AvatarTemp::class, $avatarTempId, LockMode::PESSIMISTIC_WRITE);
                 if (!$avatarTemp instanceof AvatarTemp || AvatarRenameWorkflow::PLACE_VALIDATED !== $avatarTemp->getStatus()) {
@@ -279,8 +277,8 @@ final class RenameAvatarController extends AbstractController
         Request $request,
         EntityManagerInterface $entityManager,
         LoggerService $logger,
-        #[Autowire('%kernel.project_dir%')]
-        string $projectDir,
+        AvatarTemporaryFileResolver $temporaryFileResolver,
+        FileManagerService $fileManager,
     ): Response {
         $csrfToken = (string) ($request->headers->get('X-CSRF-TOKEN') ?: $request->request->get('_csrf_token', ''));
         if (!$this->isCsrfTokenValid('avatar_temp_delete', $csrfToken)) {
@@ -300,10 +298,10 @@ final class RenameAvatarController extends AbstractController
             return $this->json(['success' => false, 'error' => 'Cette image ne peut pas etre supprimee.'], Response::HTTP_CONFLICT);
         }
 
-        $tempPath = $avatarTemp->getTempPath();
-        if (null !== $tempPath && is_file($tempPath) && $this->isPathInside($tempPath, $projectDir . '/var/avatar-temp')) {
-            @unlink($tempPath);
-            @rmdir(dirname($tempPath));
+        $tempPath = $temporaryFileResolver->resolve($avatarTemp);
+        if (null !== $tempPath) {
+            $fileManager->remove($tempPath);
+            $fileManager->removeEmptyDirectory(dirname($tempPath));
         }
 
         $entityManager->remove($avatarTemp);
@@ -319,35 +317,17 @@ final class RenameAvatarController extends AbstractController
         return $this->redirectToRoute('app_avatar_rename');
     }
 
-    private function mapAvatarTemp(AvatarTemp $avatarTemp): array
-    {
-        return [
-            'id' => $avatarTemp->getId(),
-            'originalName' => $avatarTemp->getOriginalName(),
-            'storedName' => $avatarTemp->getStoredName(),
-            'preview' => $this->generateUrl('app_avatar_rename_preview', ['id' => $avatarTemp->getId()]),
-            'deleteUrl' => $this->generateUrl('app_avatar_rename_delete', ['id' => $avatarTemp->getId()]),
-            'validateUrl' => $this->generateUrl('app_avatar_rename_validate', ['id' => $avatarTemp->getId()]),
-            'retryUrl' => $this->generateUrl('app_avatar_rename_retry', ['id' => $avatarTemp->getId()]),
-            'cancelValidationUrl' => $this->generateUrl('app_avatar_rename_cancel_validation', ['id' => $avatarTemp->getId()]),
-            'status' => $avatarTemp->getStatus(),
-            'finalName' => $avatarTemp->getFinalName(),
-        ];
-    }
-
     #[Route('/preview/{id}', name: 'app_avatar_rename_preview', requirements: ['id' => '\d+'], methods: ['GET'])]
     public function preview(
         AvatarTemp $avatarTemp,
-        #[Autowire('%kernel.project_dir%')]
-        string $projectDir,
+        AvatarTemporaryFileResolver $temporaryFileResolver,
     ): Response {
         if (!in_array($avatarTemp->getStatus(), [AvatarRenameWorkflow::PLACE_UPLOADED, AvatarRenameWorkflow::PLACE_VALIDATED, AvatarRenameWorkflow::PLACE_ERROR], true)) {
             throw $this->createNotFoundException('Avatar temporary image not found.');
         }
 
-        $path = $avatarTemp->getTempPath();
-
-        if (null === $path || !is_file($path) || !$this->isPathInside($path, $projectDir . '/var/avatar-temp')) {
+        $path = $temporaryFileResolver->resolve($avatarTemp);
+        if (null === $path) {
             throw $this->createNotFoundException('Avatar temporary image not found.');
         }
 
@@ -361,59 +341,5 @@ final class RenameAvatarController extends AbstractController
         $response->setPrivate();
 
         return $response;
-    }
-
-    private function isPathInside(string $path, string $allowedRoot): bool
-    {
-        $allowedRoot = rtrim($allowedRoot, '/') . '/';
-        $directory = is_dir($path) ? $path : dirname($path);
-
-        $realAllowedRoot = realpath($allowedRoot);
-        $realDirectory = realpath($directory);
-
-        return false !== $realAllowedRoot
-            && false !== $realDirectory
-            && str_starts_with($realDirectory . '/', rtrim($realAllowedRoot, '/') . '/');
-    }
-
-    private function isRenamePayloadValid(mixed $rename): bool
-    {
-        if (!is_array($rename)) {
-            return false;
-        }
-
-        return isset($rename['avatarTempId']) && is_numeric($rename['avatarTempId']);
-    }
-
-    private function isSafeAvatarName(string $newName): bool
-    {
-        return 1 === preg_match('/^[A-Za-z0-9_-]+\.png$/', $newName)
-            && !str_contains($newName, '/')
-            && !str_contains($newName, '\\')
-            && !str_contains($newName, '..');
-    }
-
-    /**
-     * @param array<string, mixed> $filters
-     *
-     * @return list<string>
-     */
-    private function getMissingRequiredFilters(
-        string $category,
-        array $filters,
-        AvatarRenameFilterMapper $renameFilterMapper,
-    ): array {
-        return array_values(array_filter(
-            $renameFilterMapper->getRequiredFilters($category),
-            static function (string $filterId) use ($filters): bool {
-                $value = $filters[$filterId] ?? null;
-
-                if (is_array($value)) {
-                    $value = $value['name'] ?? null;
-                }
-
-                return !is_scalar($value) || '' === trim((string) $value);
-            },
-        ));
     }
 }

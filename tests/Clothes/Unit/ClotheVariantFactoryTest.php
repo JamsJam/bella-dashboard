@@ -3,34 +3,21 @@
 namespace App\Tests\Clothes\Unit;
 
 use App\Application\Clothes\DTO\VariantGroupInput;
-use App\Application\Clothes\Services\ClotheVariantFactory;
+use App\Application\Clothes\Services\Clothe\ClotheVariantFactory;
 use App\Entity\Clothes\Clothes;
 use App\Entity\Clothes\Clothescolor;
 use App\Entity\Clothes\Clothessize;
 use App\Enum\ClotheStatus;
-use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 /** Vérifie la construction des variantes sans conteneur Symfony ni base de données. */
 #[Group('clothes')]
 #[Group('unit')]
 final class ClotheVariantFactoryTest extends TestCase
 {
-    private string $temporaryProjectDir;
-
-    protected function setUp(): void
-    {
-        $this->temporaryProjectDir = sys_get_temp_dir() . '/bellagp-clothes-unit-' . bin2hex(random_bytes(5));
-        mkdir($this->temporaryProjectDir, 0775, true);
-    }
-
     public function testOneVariantIsCreatedPerSizeWithSharedColorPropertiesAndSlug(): void
     {
-        $imagePath = $this->temporaryProjectDir . '/source.png';
-        file_put_contents($imagePath, 'image de test');
-
         $clothe = (new Clothes())->setName('Robe Éclipse')->setPrice(5900);
         $color = (new Clothescolor())->setName('Bleu Nuit')->setHexa('112233');
         $small = (new Clothessize())->setName('S');
@@ -40,13 +27,13 @@ final class ClotheVariantFactoryTest extends TestCase
         $input->sizes = [$small, $medium];
         $input->description = 'Description commune';
         $input->metaDescription = 'Méta-description commune';
-        $input->images = [new UploadedFile($imagePath, 'source.png', 'image/png', null, true)];
-
-        $factory = new ClotheVariantFactory(
-            $this->createStub(EntityManagerInterface::class),
-            $this->temporaryProjectDir,
+        $factory = new ClotheVariantFactory();
+        $variants = $factory->createGroup(
+            clothe: $clothe,
+            input: $input,
+            color: $color,
+            images: ['/images/source.png'],
         );
-        $variants = $factory->createGroup($clothe, $input);
 
         self::assertCount(2, $variants, 'Blocage : une variante doit être créée pour chaque taille sélectionnée.');
         self::assertSame('robe-eclipse-bleu-nuit', $variants[0]->getSlug(), 'Blocage : le slug commun couleur est incorrect.');
@@ -59,19 +46,4 @@ final class ClotheVariantFactoryTest extends TestCase
         self::assertSame(0, $variants[0]->getStock(), 'Blocage : le stock initial d’une variante doit être égal à zéro.');
     }
 
-    protected function tearDown(): void
-    {
-        if (is_dir($this->temporaryProjectDir)) {
-            $iterator = new \RecursiveIteratorIterator(
-                new \RecursiveDirectoryIterator($this->temporaryProjectDir, \FilesystemIterator::SKIP_DOTS),
-                \RecursiveIteratorIterator::CHILD_FIRST,
-            );
-            foreach ($iterator as $item) {
-                $item->isDir() ? rmdir($item->getPathname()) : unlink($item->getPathname());
-            }
-            rmdir($this->temporaryProjectDir);
-        }
-
-        parent::tearDown();
-    }
 }

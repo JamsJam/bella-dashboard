@@ -62,13 +62,22 @@ final class ClothesColorManagementTest extends WebTestCase
             'Gestion des couleurs des vêtements',
             'Blocage : le titre de la modale est absent.',
         );
-        self::assertSelectorTextContains(
-            '.avatar-colors__content small',
+        $colorItem = $crawler->filter(sprintf(
+            '[data-color-id="%d"]',
+            $this->color->getId(),
+        ));
+        self::assertCount(
+            1,
+            $colorItem,
+            'Blocage : la couleur créée par le test est absente de la modale.',
+        );
+        self::assertStringContainsString(
             '0 vêtement relié',
-            'Blocage : le nombre de vêtements reliés à la couleur est absent.',
+            $colorItem->filter('.avatar-colors__content small')->text(),
+            'Blocage : le compteur de la couleur créée est incorrect.',
         );
 
-        $form = $crawler->filter('form[action$="/delete"]')->form();
+        $form = $colorItem->filter('form[action$="/delete"]')->form();
         $this->client->submit($form);
         self::assertResponseIsSuccessful('Blocage : la suppression Turbo de la couleur a échoué.');
         self::assertResponseHeaderSame('Content-Type', 'text/vnd.turbo-stream.html; charset=UTF-8');

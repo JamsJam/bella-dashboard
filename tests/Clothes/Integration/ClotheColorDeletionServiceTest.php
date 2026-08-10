@@ -2,7 +2,7 @@
 
 namespace App\Tests\Clothes\Integration;
 
-use App\Application\Clothes\Services\ClotheColorDeletionService;
+use App\Application\Clothes\Services\Color\ClotheColorDeletionService;
 use App\Entity\Category\Category;
 use App\Entity\Clothes\Clothes;
 use App\Entity\Clothes\Clothescolor;

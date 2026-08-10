@@ -3,6 +3,7 @@
 namespace App\Application\Avatar\Services;
 
 use App\Application\Upload\Model\ChunkUploadRequest;
+use App\Service\FileManagerService;
 
 final class AvatarImageUploadValidator
 {
@@ -10,6 +11,11 @@ final class AvatarImageUploadValidator
         'image/png',
         'application/octet-stream',
     ];
+
+    public function __construct(
+        private readonly FileManagerService $fileManager,
+    ) {
+    }
 
     public function validateMetadata(ChunkUploadRequest $request): ?string
     {
@@ -47,7 +53,7 @@ final class AvatarImageUploadValidator
 
     public function isValidPngFile(string $path): bool
     {
-        if (!is_file($path) || 'png' !== strtolower(pathinfo($path, PATHINFO_EXTENSION))) {
+        if (!$this->fileManager->isFile($path) || 'png' !== strtolower(pathinfo($path, PATHINFO_EXTENSION))) {
             return false;
         }
 
