@@ -3,7 +3,6 @@
 namespace App\Entity;
 
 use App\Repository\SizeGuideMeasurementRepository;
-use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: SizeGuideMeasurementRepository::class)]
@@ -15,7 +14,7 @@ class SizeGuideMeasurement
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(type: Types::DECIMAL, precision: 6, scale: 2)]
+    #[ORM\Column(length: 20)]
     private ?string $value = null;
 
     #[ORM\Column(length: 8)]

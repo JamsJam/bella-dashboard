@@ -52,14 +52,14 @@ final readonly class ClotheSizeGuideService
                     continue;
                 }
 
-                $value = str_replace(',', '.', trim((string) $value));
-                if ('' === $value || !is_numeric($value) || (float) $value <= 0) {
+                $value = trim((string) $value);
+                if ('' === $value) {
                     continue;
                 }
 
                 $measurement = $this->findOrCreateMeasurement($size, $selectedTypesByUuid[$typeUuid]);
                 $measurement
-                    ->setValue(number_format((float) $value, 2, '.', ''))
+                    ->setValue($value)
                     ->setUnit(self::UNIT);
             }
         }

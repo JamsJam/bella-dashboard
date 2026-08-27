@@ -35,5 +35,11 @@ final class MeasurementTypeMappingTest extends KernelTestCase
             $measurementMetadata->associationMappings['type']->joinColumns[0]->onDelete,
             'Blocage : la base ne supprimera pas les mesures associées au type.',
         );
+        self::assertSame(
+            'string',
+            $measurementMetadata->getTypeOfField('value'),
+            'Blocage : une mesure libre ou un intervalle ne pourrait pas être enregistré.',
+        );
+        self::assertSame(100, $measurementMetadata->fieldMappings['value']->length);
     }
 }
