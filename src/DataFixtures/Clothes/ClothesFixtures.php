@@ -21,25 +21,19 @@ use Doctrine\Persistence\ObjectManager;
 final class ClothesFixtures extends AbstractBaseFixtures implements FixtureGroupInterface
 {
     public const CATEGORIES = [
-        'T-shirts',
-        'Sweats',
-        'Accessoires',
+        'Chemises',
     ];
 
     public const COLLECTIONS = [
-        'Bella Basic',
-        'Urban Mood',
-        'Soft Club',
-        'Island Days',
-        'Tropical Line',
+        'Été',
     ];
 
     public const CLOTHES = [
-        'T-shirt essentiel',
-        'Sweat oversize',
-        'Bonnet côtelé',
-        'Débardeur soleil',
-        'Hoodie palmiers',
+        'Chemise en lin',
+        'Chemise cubaine',
+        'Chemise oversize',
+        'Chemise à rayures',
+        'Chemise florale',
     ];
 
     public const COLORS = [
@@ -47,9 +41,14 @@ final class ClothesFixtures extends AbstractBaseFixtures implements FixtureGroup
         ['name' => 'white', 'hex' => 'ffffff'],
         ['name' => 'pink', 'hex' => 'f4a6b8'],
         ['name' => 'blue', 'hex' => '2f5fdf'],
+        ['name' => 'green', 'hex' => '3f8f62'],
+        ['name' => 'yellow', 'hex' => 'f4c542'],
     ];
 
-    public const SIZES = ['XS', 'S', 'M', 'L'];
+    public const SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
+
+    /** Nombre de couleurs pour chacun des cinq vêtements. */
+    public const COLOR_COUNTS_BY_CLOTHE = [2, 3, 4, 5, 6];
 
     private const MEASUREMENT_TYPES = [
         'sleeve_length' => 'Longueur de manche',
@@ -67,6 +66,8 @@ final class ClothesFixtures extends AbstractBaseFixtures implements FixtureGroup
         'S' => ['sleeve_length' => 20, 'chest_width' => 49, 'shoulder_width' => 42, 'body_length' => 68],
         'M' => ['sleeve_length' => 21, 'chest_width' => 52, 'shoulder_width' => 44, 'body_length' => 70],
         'L' => ['sleeve_length' => 22, 'chest_width' => 55, 'shoulder_width' => 46, 'body_length' => 72],
+        'XL' => ['sleeve_length' => 23, 'chest_width' => 58, 'shoulder_width' => 48, 'body_length' => 74],
+        'XXL' => ['sleeve_length' => 24, 'chest_width' => 61, 'shoulder_width' => 50, 'body_length' => 76],
     ];
 
     private const BOTTOM_GUIDE = [
@@ -74,6 +75,8 @@ final class ClothesFixtures extends AbstractBaseFixtures implements FixtureGroup
         'S' => ['waist_width' => 37, 'hip_width' => 51, 'inseam_length' => 76, 'pants_length' => 100],
         'M' => ['waist_width' => 40, 'hip_width' => 54, 'inseam_length' => 78, 'pants_length' => 102],
         'L' => ['waist_width' => 43, 'hip_width' => 57, 'inseam_length' => 80, 'pants_length' => 104],
+        'XL' => ['waist_width' => 46, 'hip_width' => 60, 'inseam_length' => 82, 'pants_length' => 106],
+        'XXL' => ['waist_width' => 49, 'hip_width' => 63, 'inseam_length' => 84, 'pants_length' => 108],
     ];
 
     public function load(ObjectManager $manager): void
@@ -125,7 +128,7 @@ final class ClothesFixtures extends AbstractBaseFixtures implements FixtureGroup
                 ->setIsOnline(true);
 
             $this->persistTouched($manager, $category);
-            $this->addReference(FixtureReferences::CLOTHES_CATEGORIES . $index, $category);
+            $this->addReference(FixtureReferences::CLOTHES_CATEGORIES.$index, $category);
             $categories[] = $category;
         }
 
@@ -149,7 +152,7 @@ final class ClothesFixtures extends AbstractBaseFixtures implements FixtureGroup
                 ->setIsOnline(true);
 
             $this->persistTouched($manager, $collection);
-            $this->addReference(FixtureReferences::COLLECTIONS . $index, $collection);
+            $this->addReference(FixtureReferences::COLLECTIONS.$index, $collection);
             $collections[] = $collection;
         }
 
@@ -169,7 +172,7 @@ final class ClothesFixtures extends AbstractBaseFixtures implements FixtureGroup
                 ->setHexa($data['hex']);
 
             $this->persistTouched($manager, $color);
-            $this->addReference(FixtureReferences::CLOTHES_COLORS . $index, $color);
+            $this->addReference(FixtureReferences::CLOTHES_COLORS.$index, $color);
             $colors[] = $color;
         }
 
@@ -187,7 +190,7 @@ final class ClothesFixtures extends AbstractBaseFixtures implements FixtureGroup
             $size = (new Clothessize())->setName($name);
 
             $this->persistTouched($manager, $size);
-            $this->addReference(FixtureReferences::CLOTHES_SIZES . $index, $size);
+            $this->addReference(FixtureReferences::CLOTHES_SIZES.$index, $size);
             $sizes[] = $size;
         }
 
@@ -209,8 +212,8 @@ final class ClothesFixtures extends AbstractBaseFixtures implements FixtureGroup
     ): void {
         $variantReferenceIndex = 0;
 
-        foreach ($collections as $collectionIndex => $collection) {
-            $clotheName = self::CLOTHES[$collectionIndex];
+        foreach (self::CLOTHES as $clotheIndex => $clotheName) {
+            $collection = $collections[0];
             $sizeGuide = $this->createSizeGuide(
                 $manager,
                 $this->isBottomCollection($collection) ? self::BOTTOM_GUIDE : self::TOP_GUIDE,
@@ -221,7 +224,7 @@ final class ClothesFixtures extends AbstractBaseFixtures implements FixtureGroup
                 ->setPrice($this->faker->randomElement([1990, 2490, 2990, 3990]))
                 ->setCollection($collection);
 
-            foreach ($colors as $color) {
+            foreach (array_slice($colors, 0, self::COLOR_COUNTS_BY_CLOTHE[$clotheIndex]) as $color) {
                 $colorName = (string) $color->getName();
                 $variantSlug = $this->slug(sprintf('%s %s', $clotheName, $colorName));
                 $description = $this->faker->sentence(12);
@@ -260,13 +263,13 @@ final class ClothesFixtures extends AbstractBaseFixtures implements FixtureGroup
                         ->setPublishedAt(new \DateTimeImmutable());
 
                     $clothe->addVariant($variant);
-                    $this->addReference(FixtureReferences::CLOTHES_VARIANTS . $variantReferenceIndex, $variant);
+                    $this->addReference(FixtureReferences::CLOTHES_VARIANTS.$variantReferenceIndex, $variant);
                     ++$variantReferenceIndex;
                 }
             }
 
             $this->persistTouched($manager, $clothe);
-            $this->addReference(FixtureReferences::CLOTHES . $collectionIndex, $clothe);
+            $this->addReference(FixtureReferences::CLOTHES.$clotheIndex, $clothe);
         }
     }
 

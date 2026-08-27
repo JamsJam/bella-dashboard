@@ -9,6 +9,7 @@ use App\Entity\Avatar\Body\Body;
 use App\Entity\Avatar\Body\Morphotype;
 use App\Entity\Avatar\Skincolor;
 use App\Entity\Clothes\Clothes;
+use App\Entity\Clothes\ClothesVariant;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 
@@ -16,38 +17,41 @@ final class BodyFixtures extends AbstractBaseFixtures implements DependentFixtur
 {
     public function load(ObjectManager $manager): void
     {
+        $clothesVariantGroups = $this->getClothesVariantGroups();
+
         foreach (AvatarFilterFixtures::SKIN_COLORS as $skinColorIndex => $skinColorName) {
             /** @var Skincolor $skinColor */
-            $skinColor = $this->getReference(FixtureReferences::SKIN_COLORS . $skinColorIndex, Skincolor::class);
+            $skinColor = $this->getReference(FixtureReferences::SKIN_COLORS.$skinColorIndex, Skincolor::class);
 
-            foreach (AvatarFilterFixtures::MORPHOTYPES as $morphotypeIndex => $morphotypeName) {
-                /** @var Morphotype $morphotype */
-                $morphotype = $this->getReference(FixtureReferences::MORPHOTYPES . $morphotypeIndex, Morphotype::class);
-                $morphologieName = AvatarFilterFixtures::MORPHOLOGIES[$morphotypeIndex];
-                $compatibleClothes = $this->getCompatibleClothes($morphotype);
+            foreach (AvatarFilterFixtures::MORPHOLOGIES as $morphologyIndex => $morphologieName) {
+                foreach (AvatarFilterFixtures::BODY_SIZES as $sizeIndex => $bodySizeName) {
+                    $morphotypeIndex = $morphologyIndex * count(AvatarFilterFixtures::BODY_SIZES) + $sizeIndex;
+                    /** @var Morphotype $morphotype */
+                    $morphotype = $this->getReference(FixtureReferences::MORPHOTYPES.$morphotypeIndex, Morphotype::class);
 
-                $this->createBody(
-                    manager: $manager,
-                    skinColor: $skinColor,
-                    skinColorName: $skinColorName,
-                    morphotype: $morphotype,
-                    morphologieName: $morphologieName,
-                    morphotypeName: $morphotypeName,
-                    clothe: null,
-                    clotheSlug: '-none-',
-                );
-
-                foreach ($compatibleClothes as $clothe) {
                     $this->createBody(
                         manager: $manager,
                         skinColor: $skinColor,
                         skinColorName: $skinColorName,
                         morphotype: $morphotype,
                         morphologieName: $morphologieName,
-                        morphotypeName: $morphotypeName,
-                        clothe: $clothe,
-                        clotheSlug: (string) $clothe->getSlug(),
+                        bodySizeName: $bodySizeName,
+                        clotheSlug: '-none-',
+                        clothesVariants: [],
                     );
+
+                    foreach ($clothesVariantGroups as $clotheSlug => $clothesVariants) {
+                        $this->createBody(
+                            manager: $manager,
+                            skinColor: $skinColor,
+                            skinColorName: $skinColorName,
+                            morphotype: $morphotype,
+                            morphologieName: $morphologieName,
+                            bodySizeName: $bodySizeName,
+                            clotheSlug: $clotheSlug,
+                            clothesVariants: $clothesVariants,
+                        );
+                    }
                 }
             }
         }
@@ -64,42 +68,43 @@ final class BodyFixtures extends AbstractBaseFixtures implements DependentFixtur
     }
 
     /**
-     * @return list<Clothes>
+     * Une variante de vêtement d'avatar est un groupe couleur partageant le même slug.
+     * Toutes les tailles de ce groupe sont liées aux mêmes corps.
+     *
+     * @return array<string, list<ClothesVariant>>
      */
-    private function getCompatibleClothes(Morphotype $morphotype): array
+    private function getClothesVariantGroups(): array
     {
-        $sizeName = $morphotype->getSize()?->getName();
-        $sizeIndex = array_search($sizeName, ClothesFixtures::SIZES, true);
+        $groups = [];
 
-        if (false === $sizeIndex) {
-            return [];
+        foreach (ClothesFixtures::CLOTHES as $clotheIndex => $unused) {
+            $clothe = $this->getReference(FixtureReferences::CLOTHES.$clotheIndex, Clothes::class);
+
+            foreach ($clothe->getVariants() as $variant) {
+                $slug = (string) $variant->getSlug();
+                $groups[$slug][] = $variant;
+            }
         }
 
-        $clothes = [];
-        $collectionCount = count(ClothesFixtures::COLLECTIONS);
-
-        for ($collectionIndex = 0; $collectionIndex < $collectionCount; ++$collectionIndex) {
-            $clothes[] = $this->getReference(FixtureReferences::CLOTHES . $collectionIndex, Clothes::class);
-        }
-
-        return $clothes;
+        return $groups;
     }
 
+    /** @param list<ClothesVariant> $clothesVariants */
     private function createBody(
         ObjectManager $manager,
         Skincolor $skinColor,
         string $skinColorName,
         Morphotype $morphotype,
         string $morphologieName,
-        string $morphotypeName,
-        ?Clothes $clothe,
+        string $bodySizeName,
         string $clotheSlug,
+        array $clothesVariants,
     ): void {
         $name = sprintf(
             'body__%s__%s__%s__%s',
             $skinColorName,
             $morphologieName,
-            $morphotypeName,
+            strtolower($bodySizeName),
             $clotheSlug,
         );
 
@@ -107,9 +112,12 @@ final class BodyFixtures extends AbstractBaseFixtures implements DependentFixtur
             ->setName($name)
             ->setSkincolor($skinColor)
             ->setMorphotype($morphotype)
-            ->setClothe($clothe)
             ->setImage($this->fakeAvatarPngPath('body', $name))
             ->setChecksum($this->fakeChecksum());
+
+        foreach ($clothesVariants as $variant) {
+            $body->addClothesVariant($variant);
+        }
 
         $this->persistTouched($manager, $body);
     }

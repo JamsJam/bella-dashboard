@@ -12,28 +12,27 @@ final class HairFixtures extends AbstractBaseFixtures implements DependentFixtur
 {
     public function load(ObjectManager $manager): void
     {
-        foreach (AvatarFilterFixtures::HAIR_COLORS as $colorIndex => $colorName) {
-            foreach (AvatarFilterFixtures::HAIR_SHAPES as $shapeIndex => $shapeName) {
-                $name = sprintf('hair__%s__%s', $colorName, $shapeName);
+        foreach (AvatarFilterFixtures::HAIR_COLORS as $index => $colorName) {
+            $shapeName = AvatarFilterFixtures::HAIR_SHAPES[$index];
+            $name = sprintf('hair__%s__%s', $colorName, $shapeName);
 
-                $hair = (new Hairs())
-                    ->setName($name)
-                    ->setColor($this->getReference(
-                        FixtureReferences::HAIR_COLORS . $colorIndex,
-                        \App\Entity\Avatar\Hairs\Hairscolor::class,
-                    ))
-                    ->setShape($this->getReference(
-                        FixtureReferences::HAIR_SHAPES . $shapeIndex,
-                        \App\Entity\Avatar\Hairs\Hairshape::class,
-                    ))
-                    ->setImages([
-                        'front' => $this->fakeAvatarPngPath('hair', $name . '__front'),
-                        'back' => $this->fakeAvatarPngPath('hair', $name . '__back'),
-                    ])
-                    ->setChecksum($this->fakeChecksum());
+            $hair = (new Hairs())
+                ->setName($name)
+                ->setColor($this->getReference(
+                    FixtureReferences::HAIR_COLORS.$index,
+                    \App\Entity\Avatar\Hairs\Hairscolor::class,
+                ))
+                ->setShape($this->getReference(
+                    FixtureReferences::HAIR_SHAPES.$index,
+                    \App\Entity\Avatar\Hairs\Hairshape::class,
+                ))
+                ->setImages([
+                    'front' => $this->fakeAvatarPngPath('hair', $name.'__front'),
+                    'back' => $this->fakeAvatarPngPath('hair', $name.'__back'),
+                ])
+                ->setChecksum($this->fakeChecksum());
 
-                $this->persistTouched($manager, $hair);
-            }
+            $this->persistTouched($manager, $hair);
         }
 
         $manager->flush();

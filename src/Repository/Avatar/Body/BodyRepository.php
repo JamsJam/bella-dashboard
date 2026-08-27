@@ -74,9 +74,10 @@ class BodyRepository extends ServiceEntityRepository implements AvatarPartModelI
     public function findAllByFilters(
         ?int $skincolor = null,
         ?int $morphologie = null,
+        ?int $bodySize = null,
         ?int $morphotype = null,
         int|string|null $clothes = null,
-        // ?int $collection = null,
+        ?int $collection = null,
     ): array {
         $qb = $this->createQueryBuilder('b');
 
@@ -86,51 +87,57 @@ class BodyRepository extends ServiceEntityRepository implements AvatarPartModelI
                 ->setParameter('skincolor', $skincolor);
         }
 
-        if (0 !== $morphotype && null !== $morphotype) {
+        if ((0 !== $morphotype && null !== $morphotype)
+            || (0 !== $morphologie && null !== $morphologie)
+            || (0 !== $bodySize && null !== $bodySize)) {
             $qb->leftJoin('b.morphotype', 'mt')
-                ->andWhere('mt.id = :morphotype')
-                ->setParameter('morphotype', $morphotype);
+            ;
+        }
+
+        if (0 !== $morphotype && null !== $morphotype) {
+            $qb->andWhere('mt.id = :morphotype')
+                ->setParameter('morphotype', $morphotype)
+            ;
         }
 
         if (0 !== $morphologie && null !== $morphologie) {
-            // Si le morphotype n'est pas spécifié, on doit faire une jointure pour accéder à la morphologie
-            if (null === $morphotype || 0 === $morphotype) {
-                $qb->leftJoin('b.morphotype', 'mt');
-            }
-
             $qb->leftJoin('mt.morphologie', 'ml')
                 ->andWhere('ml.id = :morphologie')
                 ->setParameter('morphologie', $morphologie);
         }
 
-        if (0 !== $clothes && null !== $clothes && '' !== $clothes && '0' !== $clothes) {
-            $qb->distinct();
-            $qb->leftJoin('b.clothes', 'cl');
+        if (0 !== $bodySize && null !== $bodySize) {
+            $qb->leftJoin('mt.size', 'bs')
+                ->andWhere('bs.id = :bodySize')
+                ->setParameter('bodySize', $bodySize);
+        }
 
+        $hasClothes = 0 !== $clothes && null !== $clothes && '' !== $clothes && '0' !== $clothes;
+        $hasCollection = 0 !== $collection && null !== $collection;
+
+        if ($hasClothes || $hasCollection) {
+            $qb->distinct()
+                ->innerJoin('b.clothesVariants', 'cv')
+                ->innerJoin('cv.clothes', 'cl');
+        }
+
+        if ($hasClothes) {
             if (is_numeric($clothes)) {
                 $qb
                     ->andWhere('cl.id = :clothes')
                     ->setParameter('clothes', (int) $clothes);
             } else {
                 $qb
-                    ->andWhere('cl.slug = :clothes')
+                    ->andWhere('cv.slug = :clothes')
                     ->setParameter('clothes', (string) $clothes);
             }
         }
 
-        // if ($collection !== 0 && $collection !== null) {
-        //     if (empty($clothes)) {
-        //         $qb->leftJoin('b.clothe', 'cl');
-        //     }
-        //     $qb->leftJoin('cl.collection', 'co');
-        //     $or = $qb->expr()->orX();
-        //     foreach ($collection as $i => $id) {
-        //         $param = 'collection_'.$i;          // nom unique : skincolor_0, _1, …
-        //         $or->add($qb->expr()->eq('co.id', ':'.$param));
-        //         $qb->setParameter($param, $id);
-        //     }
-        //     $qb->andWhere($or);
-        // }
+        if ($hasCollection) {
+            $qb->innerJoin('cl.collection', 'co')
+                ->andWhere('co.id = :collection')
+                ->setParameter('collection', $collection);
+        }
 
         return
         $qb
@@ -144,9 +151,10 @@ class BodyRepository extends ServiceEntityRepository implements AvatarPartModelI
         return $this->findAllByFilters(
             $filters['skinColor'] ?? null,
             $filters['morphologie'] ?? null,
+            $filters['bodySize'] ?? null,
             $filters['morphotype'] ?? null,
             $filters['clothes'] ?? null,
-            // $filters['collection'] ?? []
+            $filters['collection'] ?? null,
         );
     }
 

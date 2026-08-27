@@ -21,7 +21,7 @@ final class AvatarSearchProvider
      * Recherche des avatars en fonction des critères fournis.
      *
      * @param string|null $partie  La partie de l'avatar à rechercher (body, hair, eyes, etc.)
-     * @param array       $filters Tableau associatif des filtres à appliquer (search, color, shape, skinColor, morphologie, morphotype, clothes, collection)
+     * @param array       $filters Tableau associatif des filtres à appliquer (search, color, shape, skinColor, morphologie, bodySize, morphotype, clothes, collection)
      *
      * @return array Tableau des avatars trouvés
      */
@@ -77,6 +77,7 @@ final class AvatarSearchProvider
             $color = isset($filters['color']) ? $filters['color'] : null;
             $shape = isset($filters['shape']) ? $filters['shape'] : null;
             $morphologie = isset($filters['morphologie']) ? $filters['morphologie'] : null;
+            $bodySize = isset($filters['bodySize']) ? $filters['bodySize'] : null;
             $morphotype = isset($filters['morphotype']) ? $filters['morphotype'] : null;
             $clothes = isset($filters['clothes']) ? $filters['clothes'] : null;
             $collection = isset($filters['collection']) ? $filters['collection'] : null;
@@ -90,6 +91,7 @@ final class AvatarSearchProvider
                 'shape' => $shape,
                 'skinColor' => $skinColors,
                 'morphologie' => $morphologie,
+                'bodySize' => $bodySize,
                 'morphotype' => $morphotype,
                 'clothes' => $clothes,
                 'collection' => $collection,

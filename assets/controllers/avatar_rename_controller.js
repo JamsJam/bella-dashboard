@@ -351,6 +351,12 @@ export default class extends Controller {
                 return;
             }
 
+            if (filterName === 'clothes') {
+                filters[filterName] = select.value;
+
+                return;
+            }
+
             filters[filterName] = select.value === this.constructor.newFilterValue ? customValue : selectedLabel;
         });
 
@@ -379,7 +385,7 @@ export default class extends Controller {
                         <option value="-none-">Pas de vêtement</option>
                     ` : ''}
                     ${filter.options.filter((option) => this.isUsableFilterOption(option)).map((option) => `
-                        <option value="${this.escapeAttribute(option.value)}">${this.escapeHtml(option.label)}</option>
+                        <option value="${this.escapeAttribute(option.value)}">${this.escapeHtml(part === 'body' && filter.id === 'clothes' ? option.value : option.label)}</option>
                     `).join('')}
                     ${filter.allowCreate ? `
                         <option value="${this.constructor.newFilterValue}">Nouvelle ${this.escapeHtml(filter.label.toLowerCase())}</option>

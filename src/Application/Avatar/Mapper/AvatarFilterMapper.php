@@ -18,6 +18,7 @@ use App\Entity\Avatar\Mouths\Mouthshape;
 use App\Entity\Avatar\Noses\Noseshape;
 use App\Entity\Avatar\Skincolor;
 use App\Entity\Clothes\Clothes;
+use App\Entity\Clothes\ClothesVariant;
 use App\Entity\Collections\Collections;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -217,19 +218,25 @@ final class AvatarFilterMapper
     private function createClothesSlugOptions(string $emptyLabel): array
     {
         $options = [['value' => '', 'label' => $emptyLabel]];
-        $repository = $this->entityManager->getRepository(Clothes::class);
+        $repository = $this->entityManager->getRepository(ClothesVariant::class);
 
-        if (!method_exists($repository, 'findDistinctEntitiesByName')) {
+        if (!method_exists($repository, 'findGroupsBySlug')) {
             return $options;
         }
 
-        foreach ($repository->findDistinctEntitiesByName(orderBy: 'c.name', direction: 'asc') as $clothe) {
-            if (!$clothe instanceof Clothes || null === $clothe->getSlug() || '' === $clothe->getSlug()) {
+        foreach ($repository->findGroupsBySlug(orderBy: 'c.name', direction: 'asc') as $variant) {
+            if (!$variant instanceof ClothesVariant || null === $variant->getSlug() || '' === $variant->getSlug()) {
                 continue;
             }
 
-            $label = $clothe->getName() ?: $clothe->getSlug();
-            $options[] = ['value' => $clothe->getSlug(), 'label' => $label];
+            $clotheName = $variant->getClothes()?->getName();
+            $colorName = $variant->getColor()?->getName();
+            $label = trim(sprintf('%s — %s', (string) $clotheName, (string) $colorName), " —");
+
+            $options[] = [
+                'value' => $variant->getSlug(),
+                'label' => '' !== $label ? $label : $variant->getSlug(),
+            ];
         }
 
         return $options;

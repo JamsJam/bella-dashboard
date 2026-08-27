@@ -21,7 +21,7 @@ final class OrderFixtures extends AbstractBaseFixtures implements DependentFixtu
 {
     private const ORDER_COUNT = 500;
     private const CUSTOMER_COUNT = 20;
-    private const VARIANT_COUNT = 80;
+    private const VARIANT_COUNT = 120;
     private const SHIPPING_FEE = 890;
 
     public function __construct(
@@ -37,7 +37,7 @@ final class OrderFixtures extends AbstractBaseFixtures implements DependentFixtu
         for ($orderIndex = 0; $orderIndex < self::ORDER_COUNT; ++$orderIndex) {
             /** @var Customers $customer */
             $customer = $this->getReference(
-                FixtureReferences::CUSTOMERS . ($orderIndex % self::CUSTOMER_COUNT),
+                FixtureReferences::CUSTOMERS.($orderIndex % self::CUSTOMER_COUNT),
                 Customers::class,
             );
 
@@ -120,7 +120,7 @@ final class OrderFixtures extends AbstractBaseFixtures implements DependentFixtu
             }
 
             $this->persistTouched($manager, $order);
-            $this->addReference(FixtureReferences::ORDERS . $orderIndex, $order);
+            $this->addReference(FixtureReferences::ORDERS.$orderIndex, $order);
         }
 
         $manager->flush();
@@ -143,7 +143,7 @@ final class OrderFixtures extends AbstractBaseFixtures implements DependentFixtu
     {
         /** @var ClothesVariant $variant */
         $variant = $this->getReference(
-            FixtureReferences::CLOTHES_VARIANTS . $this->faker->numberBetween(0, self::VARIANT_COUNT - 1),
+            FixtureReferences::CLOTHES_VARIANTS.$this->faker->numberBetween(0, self::VARIANT_COUNT - 1),
             ClothesVariant::class,
         );
 

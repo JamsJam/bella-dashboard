@@ -13,6 +13,7 @@ final class FixtureReferences
     public const EYE_COLORS = 'avatar.eye_color.';
     public const EYE_SHAPES = 'avatar.eye_shape.';
     public const FACE_SHAPES = 'avatar.face_shape.';
+    public const FACE_ACCESSORIES = 'avatar.face_accessory.';
     public const HAIR_COLORS = 'avatar.hair_color.';
     public const HAIR_SHAPES = 'avatar.hair_shape.';
     public const MOUTH_COLORS = 'avatar.mouth_color.';

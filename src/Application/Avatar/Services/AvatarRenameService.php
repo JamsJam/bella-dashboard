@@ -14,6 +14,7 @@ use App\Application\Avatar\Workflow\AvatarRenameWorkflow;
 use App\Entity\Avatar\Body\Body;
 use App\Entity\AvatarTemp;
 use App\Entity\Clothes\Clothes;
+use App\Entity\Clothes\ClothesVariant;
 use App\Message\Avatar\RenameAvatarMessage;
 use App\Repository\Clothes\ClothesRepository;
 use App\Service\FileManagerService;
@@ -180,18 +181,17 @@ final readonly class AvatarRenameService
         }
 
         $body = new Body();
-        $clothes = $this->resolveClothesForBody($message);
-        foreach ($clothes as $clothe) {
-            $body->addClothe($clothe);
+        foreach ($this->resolveClothesVariantsForBody($message) as $variant) {
+            $body->addClothesVariant($variant);
         }
 
         return $body;
     }
 
     /**
-     * @return list<Clothes>
+     * @return list<ClothesVariant>
      */
-    private function resolveClothesForBody(AvatarRenameInstruction $message): array
+    private function resolveClothesVariantsForBody(AvatarRenameInstruction $message): array
     {
         $value = $message->filters['clothes'] ?? null;
         $slug = $this->resolveClothesSlug($value);
@@ -205,9 +205,7 @@ final readonly class AvatarRenameService
             throw new \RuntimeException('Invalid clothes repository.');
         }
 
-        $clothe = $repository->findOneByVariantSlug($slug);
-
-        return $clothe instanceof Clothes ? [$clothe] : [];
+        return $repository->findVariantsBySlug($slug);
     }
 
     private function resolveClothesSlug(mixed $value): string
@@ -296,8 +294,13 @@ final readonly class AvatarRenameService
         $this->hydrateAvatarFilters($avatarPart, $message);
 
         if ('body' === $message->category && $avatarPart instanceof Body) {
-            $clothes = $this->resolveClothesForBody($message);
-            $avatarPart->setClothe($clothes[0] ?? null);
+            foreach (clone $avatarPart->getClothesVariants() as $variant) {
+                $avatarPart->removeClothesVariant($variant);
+            }
+
+            foreach ($this->resolveClothesVariantsForBody($message) as $variant) {
+                $avatarPart->addClothesVariant($variant);
+            }
         }
     }
 
