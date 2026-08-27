@@ -40,6 +40,6 @@ final class MeasurementTypeMappingTest extends KernelTestCase
             $measurementMetadata->getTypeOfField('value'),
             'Blocage : une mesure libre ou un intervalle ne pourrait pas être enregistré.',
         );
-        self::assertSame(100, $measurementMetadata->fieldMappings['value']->length);
+        self::assertSame(20, $measurementMetadata->fieldMappings['value']->length);
     }
 }
