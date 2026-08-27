@@ -18,6 +18,68 @@
             font-size: 0.92rem;
             font-weight: 600;
         }
+
+        &__control {
+            position: relative;
+        }
+
+        &__color-dropdown {
+            position: relative;
+
+            summary { list-style: none; }
+            summary::-webkit-details-marker { display: none; }
+        }
+
+        &__color-summary,
+        &__color-option {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            width: 100%;
+            color: var(--text-muted);
+        }
+
+        &__color-summary {
+            padding: 0.65rem 0.75rem;
+            border: 2px solid var(--border-muted);
+            border-radius: 0.6rem;
+            background: var(--bg);
+            cursor: pointer;
+        }
+
+        &__color-menu {
+            position: absolute;
+            z-index: 30;
+            top: calc(100% + 0.35rem);
+            width: 100%;
+            max-height: 16rem;
+            overflow-y: auto;
+            padding: 0.4rem;
+            border: 1px solid var(--border-muted);
+            border-radius: 0.65rem;
+            background: var(--bg);
+            box-shadow: 0 0.75rem 2rem rgb(0 0 0 / 18%);
+        }
+
+        &__color-option {
+            padding: 0.6rem;
+            border: 0;
+            border-radius: 0.45rem;
+            background: transparent;
+            cursor: pointer;
+            text-align: left;
+
+            &:hover,
+            &:focus-visible { background: var(--bg-light); color: var(--text); }
+        }
+
+        &__color-option-dot {
+            flex: 0 0 0.9rem;
+            width: 0.9rem;
+            height: 0.9rem;
+            border: 1px solid var(--border);
+            border-radius: 50%;
+        }
         
         
         

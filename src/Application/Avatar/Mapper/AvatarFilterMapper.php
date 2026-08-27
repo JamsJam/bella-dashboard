@@ -24,6 +24,23 @@ use Doctrine\ORM\EntityManagerInterface;
 
 final class AvatarFilterMapper
 {
+    private const COLOR_FALLBACKS = [
+        'light' => '#F2D2B6',
+        'medium' => '#C68642',
+        'dark' => '#6B3E26',
+        'brown' => '#6F4E37',
+        'blond' => '#D9B45B',
+        'black' => '#1C1C1C',
+        'red' => '#B33A3A',
+        'blue' => '#4A90E2',
+        'green' => '#5C8A4D',
+        'grey' => '#808080',
+        'gray' => '#808080',
+        'pink' => '#D9829B',
+        'natural' => '#B76E79',
+        'plum' => '#7A3E65',
+    ];
+
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
         private readonly AvatarPartSortService $avatarPartSortService,
@@ -208,7 +225,14 @@ final class AvatarFilterMapper
             $label = $this->resolveLabel($entity);
 
             if (null !== $id && null !== $label && '' !== $label) {
-                $options[] = ['value' => $id, 'label' => $label];
+                $option = ['value' => $id, 'label' => $label];
+                if (method_exists($entity, 'getHexa')) {
+                    $hexa = strtoupper(ltrim((string) $entity->getHexa(), '#'));
+                    $option['color'] = 1 === preg_match('/^[0-9A-F]{6}$/', $hexa)
+                        ? '#' . $hexa
+                        : self::COLOR_FALLBACKS[strtolower($label)] ?? null;
+                }
+                $options[] = $option;
             }
         }
 

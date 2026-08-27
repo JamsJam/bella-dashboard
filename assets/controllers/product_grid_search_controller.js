@@ -26,6 +26,7 @@ export default class extends Controller {
 
     connect() {
         this.debounceTimer = null;
+        this.enhanceColorFilters();
         this.performSearch();
     }
 
@@ -45,6 +46,7 @@ export default class extends Controller {
     //? =================================
 
     async onFilterChange(event) {
+        this.updateColorSwatch(event.target);
         if (event.target.name === this.resourceParamNameValue && this.updateFilterUrlValue) {
             await this.renderFilters(event.target.value || this.resourceKeyValue);
         }
@@ -60,15 +62,82 @@ export default class extends Controller {
                 return this.optionsPrototypeValue
                     .replaceAll('__VALUE__', this.escapeHtml(option.value))
                     .replaceAll('__LABEL__', this.escapeHtml(option.label))
+                    .replaceAll('__COLOR__', this.escapeHtml(option.color || ''))
                     .replaceAll('__SELECTED__', String(option.value) === String(filter.selected) ? ' selected' : '')
                 }).join('');
 
             return this.filterPrototypeValue
                 .replaceAll('__ID__', this.escapeHtml(filter.id))
                 .replaceAll('__LABEL__', this.escapeHtml(filter.label))
+                .replaceAll('__IS_COLOR__', filter.isColor ? 'true' : 'false')
                 .replaceAll('__OPTIONS__', optionsHtml)
         }).join('');
 
+        this.enhanceColorFilters();
+
+    }
+
+    enhanceColorFilters() {
+        this.filtersTarget.querySelectorAll('[data-color-filter="true"] select').forEach((select) => {
+            const control = select.closest('[data-color-filter="true"]');
+            if (!control || control.dataset.colorEnhanced === 'true') return;
+
+            control.dataset.colorEnhanced = 'true';
+            select.hidden = true;
+
+            const dropdown = document.createElement('details');
+            dropdown.className = 'filter__color-dropdown';
+            const summary = document.createElement('summary');
+            summary.className = 'filter__color-summary';
+            const selectedDot = document.createElement('span');
+            selectedDot.className = 'filter__color-option-dot';
+            selectedDot.setAttribute('aria-hidden', 'true');
+            const selectedLabel = document.createElement('span');
+            selectedLabel.className = 'filter__color-option-label';
+            summary.append(selectedDot, selectedLabel);
+
+            const menu = document.createElement('div');
+            menu.className = 'filter__color-menu';
+            Array.from(select.options).forEach((option) => {
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = 'filter__color-option';
+                button.dataset.value = option.value;
+                const dot = document.createElement('span');
+                dot.className = 'filter__color-option-dot';
+                this.applyColor(dot, option.dataset.color || '');
+                const label = document.createElement('span');
+                label.textContent = option.textContent.trim();
+                button.append(dot, label);
+                button.addEventListener('click', () => {
+                    select.value = option.value;
+                    dropdown.open = false;
+                    select.dispatchEvent(new Event('change', { bubbles: true }));
+                });
+                menu.append(button);
+            });
+
+            dropdown.append(summary, menu);
+            control.append(dropdown);
+            this.updateColorSwatch(select);
+        });
+    }
+
+    updateColorSwatch(select) {
+        const control = select?.closest('[data-color-filter="true"]');
+        const dot = control?.querySelector('.filter__color-summary .filter__color-option-dot');
+        const label = control?.querySelector('.filter__color-option-label');
+        if (!dot || !label) return;
+
+        const option = select.selectedOptions[0];
+        this.applyColor(dot, option?.dataset.color || '');
+        label.textContent = option?.textContent.trim() || '';
+    }
+
+    applyColor(dot, color) {
+        const isValid = /^#[0-9a-f]{6}$/i.test(color);
+        dot.hidden = !isValid;
+        dot.style.backgroundColor = isValid ? color : '';
     }
 
     async fetchFilters(part) {

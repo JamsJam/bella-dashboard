@@ -38,6 +38,22 @@ final class AvatarFilterFixtures extends AbstractBaseFixtures
     public const MOUTH_SHAPES = ['smile', 'neutral', 'large', 'heart'];
     public const NOSE_SHAPES = ['small', 'straight', 'button', 'wide'];
 
+    private const COLOR_HEX_BY_NAME = [
+        'light' => 'F2D2B6',
+        'medium' => 'C68642',
+        'dark' => '6B3E26',
+        'brown' => '6F4E37',
+        'blond' => 'D9B45B',
+        'black' => '1C1C1C',
+        'red' => 'B33A3A',
+        'blue' => '4A90E2',
+        'green' => '5C8A4D',
+        'grey' => '808080',
+        'pink' => 'D9829B',
+        'natural' => 'B76E79',
+        'plum' => '7A3E65',
+    ];
+
     public function load(ObjectManager $manager): void
     {
         $skinColors = $this->createNamedEntities(
@@ -109,6 +125,9 @@ final class AvatarFilterFixtures extends AbstractBaseFixtures
 
         foreach ($names as $index => $name) {
             $entity = (new $className())->setName($name);
+            if (method_exists($entity, 'setHexa') && isset(self::COLOR_HEX_BY_NAME[$name])) {
+                $entity->setHexa(self::COLOR_HEX_BY_NAME[$name]);
+            }
             $this->persistTouched($manager, $entity);
             $this->addReference($referencePrefix.$index, $entity);
             $entities[] = $entity;

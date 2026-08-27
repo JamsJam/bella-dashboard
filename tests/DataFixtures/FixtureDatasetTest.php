@@ -82,6 +82,9 @@ final class FixtureDatasetTest extends TestCase
         }
 
         self::assertCount(3, $this->ofType($persisted, Skincolor::class));
+        foreach ($this->ofType($persisted, Skincolor::class) as $skinColor) {
+            self::assertMatchesRegularExpression('/^[0-9A-F]{6}$/', (string) $skinColor->getHexa());
+        }
         self::assertCount(5, $this->ofType($persisted, Morphologie::class));
         self::assertCount(4, $this->ofType($persisted, Bodysize::class));
         self::assertCount(20, $this->ofType($persisted, Morphotype::class));
