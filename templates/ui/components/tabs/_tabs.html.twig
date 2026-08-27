@@ -15,6 +15,16 @@
 
 <nav class="tabs" role="tablist" aria-label="{{ tabsAriaLabel }}">
     {% for tab in tabItems %}
+        {% if tab.items is defined %}
+            <details class="tabs__dropdown">
+                <summary class="tab">{{ tab.label }}</summary>
+                <div class="tabs__dropdown-menu">
+                    {% for item in tab.items %}
+                        <a href="{{ item.href }}" data-turbo-stream>{{ item.label }}</a>
+                    {% endfor %}
+                </div>
+            </details>
+        {% else %}
         <a
             role="tab"
             aria-selected="{{ tab.isActive ? 'true' : 'false' }}"
@@ -32,5 +42,6 @@
         >
             {{ tab.label }}
         </a>
+        {% endif %}
     {% endfor %}
 </nav>

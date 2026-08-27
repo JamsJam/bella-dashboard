@@ -4,13 +4,11 @@
     { id: 'add', label: 'Ajouter', href: path("app_avatar_add"), isActive: false },
     { id: 'rename', label: 'Renommer', href: path("app_avatar_rename"), isActive: false },
     { id: 'deformation', label: 'Déformer une image', href: path('app_avatar_deformation'), isActive: false },
-    {
-        id: 'colors',
-        label: 'Gérer les couleurs',
-        href: path('app_avatar_colors_modal'),
-        isActive: false,
-        attr: {'data-turbo-stream': ''}
-    }
+    { id: 'manage', label: 'Gérer', isActive: false, items: [
+        { label: 'Gérer les couleurs', href: path('app_avatar_colors_modal') },
+        { label: 'Gérer les formes', href: path('app_avatar_attributes_modal', { group: 'shapes', type: 'face' }) },
+        { label: 'Gérer les tailles', href: path('app_avatar_attributes_modal', { group: 'sizes', type: 'body' }) }
+    ] }
 ] %}
 
 {% block title %}Gestion des avatars{% endblock %}
