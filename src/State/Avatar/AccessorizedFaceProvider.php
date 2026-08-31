@@ -6,11 +6,8 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\ApiResource\Avatar\AccessorizedFace;
 use App\ApiResource\Avatar\AccessorizedFaceList;
-use App\Application\Avatar\Services\FaceAccessoryNameMatcher;
 use App\Entity\Avatar\Faces\Faces;
-use App\Entity\Avatar\Skincolor;
 use App\Repository\Avatar\Faces\FacesRepository;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -19,46 +16,52 @@ final readonly class AccessorizedFaceProvider implements ProviderInterface
 {
     public function __construct(
         private FacesRepository $facesRepository,
-        private FaceAccessoryNameMatcher $faceAccessoryNameMatcher,
         private RequestStack $requestStack,
-        private EntityManagerInterface $entityManager,
     ) {
     }
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): AccessorizedFaceList
     {
-        $skinColorId = filter_var($uriVariables['id'] ?? null, FILTER_VALIDATE_INT);
-        if (false === $skinColorId || $skinColorId <= 0) {
-            throw new NotFoundHttpException('Couleur de peau introuvable.');
+        $faceId = filter_var($uriVariables['id'] ?? null, FILTER_VALIDATE_INT);
+        if (false === $faceId || $faceId <= 0) {
+            throw new NotFoundHttpException('Tête introuvable.');
         }
 
-        $skinColor = $this->entityManager->find(Skincolor::class, $skinColorId);
-        if (!$skinColor instanceof Skincolor) {
-            throw new NotFoundHttpException(sprintf('La couleur de peau %d est introuvable.', $skinColorId));
+        $face = $this->facesRepository->find($faceId);
+        if (!$face instanceof Faces) {
+            throw new NotFoundHttpException(sprintf('La tête %d est introuvable.', $faceId));
+        }
+
+        $skinColorId = $face->getSkincolor()?->getId();
+        $faceShapeId = $face->getShape()?->getId();
+        if (null === $skinColorId || null === $faceShapeId) {
+            throw new NotFoundHttpException(sprintf('La tête %d est incomplète.', $faceId));
         }
 
         $items = [];
 
-        foreach ($this->facesRepository->findBy(['skincolor' => $skinColor], ['name' => 'ASC']) as $face) {
-            if (!$face instanceof Faces || !$this->faceAccessoryNameMatcher->matches((string) $face->getName())) {
+        foreach ($this->facesRepository->findAccessorizedFor($face) as $accessorizedFace) {
+            if (!$accessorizedFace instanceof Faces) {
                 continue;
             }
 
-            $id = $face->getId();
-            $image = $face->getImage();
+            $id = $accessorizedFace->getId();
+            $image = $accessorizedFace->getImage();
             if (null === $id || null === $image || '' === $image) {
                 continue;
             }
 
             $items[] = new AccessorizedFace(
                 id: $id,
-                name: (string) $face->getName(),
+                name: (string) $accessorizedFace->getName(),
                 image: $this->absoluteUrl($image),
             );
         }
 
         return new AccessorizedFaceList(
+            faceId: $faceId,
             skinColorId: $skinColorId,
+            faceShapeId: $faceShapeId,
             items: $items,
         );
     }

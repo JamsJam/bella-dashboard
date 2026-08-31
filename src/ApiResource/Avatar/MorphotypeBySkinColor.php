@@ -9,6 +9,7 @@ final readonly class MorphotypeBySkinColor
         public string $name,
         public int $sizeId,
         public string $size,
+        public string $image,
     ) {
     }
 }

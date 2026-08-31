@@ -4,6 +4,7 @@ namespace App\Repository\Avatar\Body;
 
 use App\Application\Avatar\Interface\AvatarPartModelInterface;
 use App\Entity\Avatar\Body\Body;
+use App\Entity\Avatar\Body\Morphologie;
 use App\Entity\Avatar\Body\Morphotype;
 use App\Entity\Avatar\Skincolor;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
@@ -51,6 +52,67 @@ class BodyRepository extends ServiceEntityRepository implements AvatarPartModelI
         }
 
         return $queryBuilder->getQuery()->getResult();
+    }
+
+    public function findPreviewForMorphology(Skincolor $skinColor, Morphologie $morphology): ?Body
+    {
+        return $this->findPreview($skinColor, null, $morphology);
+    }
+
+    public function findPreviewForMorphotype(Skincolor $skinColor, Morphotype $morphotype): ?Body
+    {
+        return $this->findPreview($skinColor, $morphotype, null);
+    }
+
+    private function findPreview(
+        Skincolor $skinColor,
+        ?Morphotype $morphotype,
+        ?Morphologie $morphology,
+    ): ?Body {
+        $queryBuilder = $this->createQueryBuilder('body')
+            ->leftJoin('body.clothesVariants', 'clothesVariant')
+            ->andWhere('body.skincolor = :skinColor')
+            ->andWhere('clothesVariant.id IS NULL')
+            ->setParameter('skinColor', $skinColor)
+            ->orderBy('body.name', 'ASC')
+            ->setMaxResults(1);
+
+        if ($morphotype instanceof Morphotype) {
+            $queryBuilder
+                ->andWhere('body.morphotype = :morphotype')
+                ->setParameter('morphotype', $morphotype);
+        } elseif ($morphology instanceof Morphologie) {
+            $queryBuilder
+                ->join('body.morphotype', 'previewMorphotype')
+                ->andWhere('previewMorphotype.morphologie = :morphology')
+                ->setParameter('morphology', $morphology);
+        }
+
+        $body = $queryBuilder->getQuery()->getOneOrNullResult();
+
+        if (!$body instanceof Body) {
+            $fallbackCriteria = ['skincolor' => $skinColor];
+            if ($morphotype instanceof Morphotype) {
+                $fallbackCriteria['morphotype'] = $morphotype;
+            } elseif ($morphology instanceof Morphologie) {
+                $fallback = $this->createQueryBuilder('body')
+                    ->join('body.morphotype', 'fallbackMorphotype')
+                    ->andWhere('body.skincolor = :skinColor')
+                    ->andWhere('fallbackMorphotype.morphologie = :morphology')
+                    ->setParameter('skinColor', $skinColor)
+                    ->setParameter('morphology', $morphology)
+                    ->orderBy('body.name', 'ASC')
+                    ->setMaxResults(1)
+                    ->getQuery()
+                    ->getOneOrNullResult();
+
+                return $fallback instanceof Body ? $fallback : null;
+            }
+
+            $body = $this->findOneBy($fallbackCriteria, ['name' => 'ASC']);
+        }
+
+        return $body instanceof Body ? $body : null;
     }
 
     //    /**

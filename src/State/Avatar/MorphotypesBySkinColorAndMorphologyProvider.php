@@ -8,8 +8,10 @@ use App\ApiResource\Avatar\MorphotypeBySkinColor;
 use App\ApiResource\Avatar\MorphotypeBySkinColorList;
 use App\Entity\Avatar\Body\Morphologie;
 use App\Entity\Avatar\Skincolor;
+use App\Repository\Avatar\Body\BodyRepository;
 use App\Repository\Avatar\Body\MorphotypeRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /** @implements ProviderInterface<MorphotypeBySkinColorList> */
@@ -18,6 +20,8 @@ final readonly class MorphotypesBySkinColorAndMorphologyProvider implements Prov
     public function __construct(
         private EntityManagerInterface $entityManager,
         private MorphotypeRepository $morphotypeRepository,
+        private BodyRepository $bodyRepository,
+        private RequestStack $requestStack,
     ) {
     }
 
@@ -45,11 +49,17 @@ final readonly class MorphotypesBySkinColorAndMorphologyProvider implements Prov
                 continue;
             }
 
+            $image = $this->bodyRepository->findPreviewForMorphotype($skinColor, $morphotype)?->getImage();
+            if (null === $image || '' === $image) {
+                continue;
+            }
+
             $morphotypes[] = new MorphotypeBySkinColor(
                 id: $id,
                 name: (string) $morphotype->getName(),
                 sizeId: $sizeId,
                 size: (string) $size->getName(),
+                image: $this->absoluteUrl($image),
             );
         }
 
@@ -64,5 +74,16 @@ final readonly class MorphotypesBySkinColorAndMorphologyProvider implements Prov
         }
 
         return $id;
+    }
+
+    private function absoluteUrl(string $path): string
+    {
+        if (false !== filter_var($path, FILTER_VALIDATE_URL)) {
+            return $path;
+        }
+
+        $request = $this->requestStack->getCurrentRequest();
+
+        return null === $request ? $path : $request->getSchemeAndHttpHost() . '/' . ltrim($path, '/');
     }
 }

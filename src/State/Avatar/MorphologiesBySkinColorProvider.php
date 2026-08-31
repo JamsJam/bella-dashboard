@@ -7,8 +7,10 @@ use ApiPlatform\State\ProviderInterface;
 use App\ApiResource\Avatar\MorphologyBySkinColor;
 use App\ApiResource\Avatar\MorphologyBySkinColorList;
 use App\Entity\Avatar\Skincolor;
+use App\Repository\Avatar\Body\BodyRepository;
 use App\Repository\Avatar\Body\MorphologieRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /** @implements ProviderInterface<MorphologyBySkinColorList> */
@@ -17,6 +19,8 @@ final readonly class MorphologiesBySkinColorProvider implements ProviderInterfac
     public function __construct(
         private EntityManagerInterface $entityManager,
         private MorphologieRepository $morphologieRepository,
+        private BodyRepository $bodyRepository,
+        private RequestStack $requestStack,
     ) {
     }
 
@@ -36,7 +40,16 @@ final readonly class MorphologiesBySkinColorProvider implements ProviderInterfac
                 continue;
             }
 
-            $morphologies[] = new MorphologyBySkinColor($id, (string) $morphology->getName());
+            $image = $this->bodyRepository->findPreviewForMorphology($skinColor, $morphology)?->getImage();
+            if (null === $image || '' === $image) {
+                continue;
+            }
+
+            $morphologies[] = new MorphologyBySkinColor(
+                id: $id,
+                name: (string) $morphology->getName(),
+                image: $this->absoluteUrl($image),
+            );
         }
 
         return new MorphologyBySkinColorList($skinColorId, $morphologies);
@@ -50,5 +63,16 @@ final readonly class MorphologiesBySkinColorProvider implements ProviderInterfac
         }
 
         return $id;
+    }
+
+    private function absoluteUrl(string $path): string
+    {
+        if (false !== filter_var($path, FILTER_VALIDATE_URL)) {
+            return $path;
+        }
+
+        $request = $this->requestStack->getCurrentRequest();
+
+        return null === $request ? $path : $request->getSchemeAndHttpHost() . '/' . ltrim($path, '/');
     }
 }
