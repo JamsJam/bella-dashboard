@@ -25,7 +25,7 @@ use App\State\Avatar\BodiesByClothesProvider;
 )]
 final readonly class BodyByClothesList
 {
-    /** @param list<BodyByAvatarCriteria> $bodies */
+    /** @param list<BodyByClothes> $bodies */
     public function __construct(
         public string $clothes,
         public array $bodies,
