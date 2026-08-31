@@ -54,6 +54,27 @@ class BodyRepository extends ServiceEntityRepository implements AvatarPartModelI
         return $queryBuilder->getQuery()->getResult();
     }
 
+    /** @return list<Body> */
+    public function findByClothesSlug(string $clothes): array
+    {
+        $queryBuilder = $this->createQueryBuilder('body')
+            ->orderBy('body.name', 'ASC');
+
+        if ('none' === strtolower($clothes)) {
+            $queryBuilder
+                ->leftJoin('body.clothesVariants', 'clothesVariant')
+                ->andWhere('clothesVariant.id IS NULL');
+        } else {
+            $queryBuilder
+                ->distinct()
+                ->innerJoin('body.clothesVariants', 'clothesVariant')
+                ->andWhere('clothesVariant.slug = :clothes')
+                ->setParameter('clothes', $clothes);
+        }
+
+        return $queryBuilder->getQuery()->getResult();
+    }
+
     public function findPreviewForMorphology(Skincolor $skinColor, Morphologie $morphology): ?Body
     {
         return $this->findPreview($skinColor, null, $morphology);
