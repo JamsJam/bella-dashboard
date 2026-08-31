@@ -63,6 +63,8 @@ final readonly class AvatarValidatedFilterValueService
         $name = trim((string) $name);
 
         // Existing select options carry their numeric Doctrine identifier.
-        return '' !== $name && '-none-' !== $name && !ctype_digit($name);
+        return '' !== $name
+            && '-none-' !== $name
+            && ('morphologie' === $filterId || !ctype_digit($name));
     }
 }

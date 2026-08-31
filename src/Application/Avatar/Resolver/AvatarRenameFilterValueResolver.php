@@ -19,7 +19,7 @@ final readonly class AvatarRenameFilterValueResolver
 
     public function resolve(string $sourceClass, string $part, string $filterId, mixed $value, array $filters = []): object
     {
-        if (is_string($value) && ctype_digit($value)) {
+        if ('morphologie' !== $filterId && is_string($value) && ctype_digit($value)) {
             $entity = $this->entityManager->find($sourceClass, (int) $value);
 
             if (is_object($entity)) {
@@ -79,14 +79,6 @@ final readonly class AvatarRenameFilterValueResolver
 
     private function resolveMorphologie(mixed $value): Morphologie
     {
-        if (is_string($value) && ctype_digit($value)) {
-            $morphologie = $this->entityManager->find(Morphologie::class, (int) $value);
-
-            if ($morphologie instanceof Morphologie) {
-                return $morphologie;
-            }
-        }
-
         $repository = $this->entityManager->getRepository(Morphologie::class);
         if (!$repository instanceof AvatarFilterValueRepositoryInterface) {
             throw new \InvalidArgumentException('Repository for morphologies cannot create avatar filter values.');

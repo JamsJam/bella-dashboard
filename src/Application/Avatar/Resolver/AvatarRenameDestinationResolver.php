@@ -80,7 +80,7 @@ final readonly class AvatarRenameDestinationResolver
             return '';
         }
 
-        if (ctype_digit($value)) {
+        if ('morphologie' !== $filterId && ctype_digit($value)) {
             $entity = $this->entityManager->find($sourceClass, (int) $value);
             if (!is_object($entity)) {
                 throw new \InvalidArgumentException('Unknown avatar filter id.');
