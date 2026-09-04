@@ -60,6 +60,7 @@ jobs:
       - name: Recuperer le depot
         uses: actions/checkout@v6
 
+        
       - name: Deployer sur le serveur
         uses: appleboy/ssh-action@v1.2.5
         env:
