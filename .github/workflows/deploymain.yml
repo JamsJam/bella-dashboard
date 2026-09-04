@@ -165,13 +165,12 @@ jobs:
             cd "$PROJECT_DIR"
             pwd
 
-            echo "==========[3/11] Recuperation du dernier code de develop=========="
+            echo "==========[3/11] Recuperation du dernier code de main=========="
 
-            git fetch origin develop
-            git checkout develop
-            git reset --hard origin/develop
+            git fetch origin main
+            git reset --hard origin/main
 
-            echo "==========[4/11] Mise a jour de la configuration de test=========="
+            echo "==========[4/11] Mise a jour de la configuration de production=========="
 
             dotenv_quote() {
             php -r '
@@ -182,7 +181,7 @@ jobs:
             ' "$1"
             }
 
-            DEFAULT_URI_VALUE="$(dotenv_quote "https://test-${APP_DOMAIN}")"
+            DEFAULT_URI_VALUE="$(dotenv_quote "https://${APP_DOMAIN}")"
             DATABASE_URL_VALUE="$(dotenv_quote "$DATABASE_URL_SOURCE")"
             APP_SECRET_VALUE="$(dotenv_quote "$APP_SECRET_SOURCE")"
 
