@@ -4,8 +4,11 @@ namespace App\Entity\Avatar\Body;
 
 use App\Entity\Avatar\Skincolor;
 use App\Entity\Clothes\Clothes;
+use App\Entity\Clothes\ClothesVariant;
 use App\Entity\Traits\DateFieldsTrait;
 use App\Repository\Avatar\Body\BodyRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: BodyRepository::class)]
@@ -29,14 +32,22 @@ class Body
     #[ORM\JoinColumn(nullable: false)]
     private ?Morphotype $morphotype = null;
 
-    #[ORM\ManyToOne(inversedBy: 'bodies')]
-    private ?Clothes $clothe = null;
+    /**
+     * @var Collection<int, ClothesVariant>
+     */
+    #[ORM\ManyToMany(targetEntity: ClothesVariant::class, mappedBy: 'bodies')]
+    private Collection $clothesVariants;
 
     #[ORM\Column(length: 255)]
     private ?string $image = null;
 
     #[ORM\Column(length: 64)]
     private ?string $checksum = null;
+
+    public function __construct()
+    {
+        $this->clothesVariants = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -81,12 +92,92 @@ class Body
 
     public function getClothe(): ?Clothes
     {
-        return $this->clothe;
+        $variant = $this->clothesVariants->first();
+
+        return $variant instanceof ClothesVariant ? $variant->getClothes() : null;
     }
 
     public function setClothe(?Clothes $clothe): static
     {
-        $this->clothe = $clothe;
+        foreach (clone $this->clothesVariants as $variant) {
+            $this->removeClothesVariant($variant);
+        }
+
+        if ($clothe instanceof Clothes) {
+            $this->addClothe($clothe);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Clothes>
+     */
+    public function getClothes(): Collection
+    {
+        $clothes = [];
+
+        foreach ($this->clothesVariants as $variant) {
+            $clothe = $variant->getClothes();
+            if (!$clothe instanceof Clothes) {
+                continue;
+            }
+
+            if (null !== $clothe->getId()) {
+                $clothes[$clothe->getId()] = $clothe;
+                continue;
+            }
+
+            $clothes[] = $clothe;
+        }
+
+        return new ArrayCollection(array_values($clothes));
+    }
+
+    public function addClothe(Clothes $clothe): static
+    {
+        foreach ($clothe->getVariants() as $variant) {
+            $this->addClothesVariant($variant);
+        }
+
+        return $this;
+    }
+
+    public function removeClothe(Clothes $clothe): static
+    {
+        foreach ($clothe->getVariants() as $variant) {
+            $this->removeClothesVariant($variant);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, ClothesVariant>
+     */
+    public function getClothesVariants(): Collection
+    {
+        return $this->clothesVariants;
+    }
+
+    public function addClothesVariant(ClothesVariant $variant): static
+    {
+        if (!$this->clothesVariants->contains($variant)) {
+            $this->clothesVariants->add($variant);
+
+            if (!$variant->getBodies()->contains($this)) {
+                $variant->getBodies()->add($this);
+            }
+        }
+
+        return $this;
+    }
+
+    public function removeClothesVariant(ClothesVariant $variant): static
+    {
+        if ($this->clothesVariants->removeElement($variant)) {
+            $variant->getBodies()->removeElement($this);
+        }
 
         return $this;
     }

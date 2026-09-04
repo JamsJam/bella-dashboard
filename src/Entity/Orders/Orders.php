@@ -4,15 +4,19 @@ namespace App\Entity\Orders;
 
 use App\Entity\Traits\DateFieldsTrait;
 use App\Entity\Users\Customers;
+use App\Enum\OrderStatus;
 use App\Repository\Orders\OrdersRepository;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: OrdersRepository::class)]
 class Orders
 {
     use DateFieldsTrait;
+
+    public const STATUS_PENDING_PAYMENT = 'pending_payment';
+    public const STATUS_PAID = 'paid';
+    public const STATUS_PAYMENT_EXPIRED = 'payment_expired';
+    public const STATUS_CHECKOUT_CREATION_FAILED = 'checkout_creation_failed';
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -28,10 +32,13 @@ class Orders
     #[ORM\Column(length: 255)]
     private ?string $status = null;
 
+    #[ORM\Column(enumType: OrderStatus::class, options: ['default' => OrderStatus::Created->value])]
+    private OrderStatus $orderStatus = OrderStatus::Created;
+
     #[ORM\ManyToOne(inversedBy: 'orders')]
     private ?Customers $customer = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255, unique: true)]
     private ?string $orderReference = null;
 
     #[ORM\Column]
@@ -40,18 +47,51 @@ class Orders
     #[ORM\Column]
     private array $shippinfo = [];
 
-    /**
-     * @var Collection<int, Cart>
-     */
-    #[ORM\OneToMany(targetEntity: Cart::class, mappedBy: 'orders', orphanRemoval: true)]
-    private Collection $cart;
+    #[ORM\OneToOne(inversedBy: 'order', targetEntity: Cart::class)]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Cart $cart = null;
 
     #[ORM\Column]
     private ?int $tva = null;
 
+    #[ORM\Column(length: 255, nullable: true, unique: true)]
+    private ?string $stripeCheckoutSessionId = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $stripePaymentIntentId = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $stripeInvoiceId = null;
+
+    #[ORM\Column(length: 2048, nullable: true)]
+    private ?string $stripeInvoiceUrl = null;
+
+    #[ORM\Column(type: 'date_immutable', nullable: true)]
+    private ?\DateTimeImmutable $deliveryDate = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $deliveryReminderSentAt = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $trackingNumber = null;
+
+    #[ORM\Column(length: 100, nullable: true)]
+    private ?string $carrierName = null;
+
+    #[ORM\Column(length: 2048, nullable: true)]
+    private ?string $carrierTrackingUrl = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $shippedAt = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $deliveredAt = null;
+
     public function __construct()
     {
-        $this->cart = new ArrayCollection();
+        $now = new \DateTimeImmutable();
+        $this->setCreatedAt($now);
+        $this->setEditedAt($now);
     }
 
     public function getId(): ?int
@@ -91,8 +131,47 @@ class Orders
     public function setStatus(string $status): static
     {
         $this->status = $status;
+        $this->setEditedAt(new \DateTimeImmutable());
 
         return $this;
+    }
+
+    public function getOrderStatus(): OrderStatus
+    {
+        return $this->orderStatus;
+    }
+
+    public function setOrderStatus(OrderStatus $orderStatus): static
+    {
+        $this->orderStatus = $orderStatus;
+        $this->setEditedAt(new \DateTimeImmutable());
+
+        return $this;
+    }
+
+    public function isPaid(): bool
+    {
+        return self::STATUS_PAID === $this->status;
+    }
+
+    public function hasInvoice(): bool
+    {
+        return null !== $this->stripeInvoiceId
+            && '' !== $this->stripeInvoiceId
+            && null !== $this->stripeInvoiceUrl
+            && '' !== $this->stripeInvoiceUrl;
+    }
+
+    public function isShippingToGuadeloupe(): bool
+    {
+        return 'guadeloupe' === mb_strtolower(trim((string) ($this->shippinfo['destination'] ?? '')));
+    }
+
+    public function isShippingOutsideGuadeloupe(): bool
+    {
+        $destination = mb_strtolower(trim((string) ($this->shippinfo['destination'] ?? '')));
+
+        return '' !== $destination && 'guadeloupe' !== $destination;
     }
 
     public function getCustomer(): ?Customers
@@ -143,32 +222,15 @@ class Orders
         return $this;
     }
 
-    /**
-     * @return Collection<int, Cart>
-     */
-    public function getCart(): Collection
+    public function getCart(): ?Cart
     {
         return $this->cart;
     }
 
-    public function addCart(Cart $cart): static
+    public function setCart(Cart $cart): static
     {
-        if (!$this->cart->contains($cart)) {
-            $this->cart->add($cart);
-            $cart->setOrders($this);
-        }
-
-        return $this;
-    }
-
-    public function removeCart(Cart $cart): static
-    {
-        if ($this->cart->removeElement($cart)) {
-            // set the owning side to null (unless already changed)
-            if ($cart->getOrders() === $this) {
-                $cart->setOrders(null);
-            }
-        }
+        $this->cart = $cart;
+        $cart->setOrder($this);
 
         return $this;
     }
@@ -181,6 +243,153 @@ class Orders
     public function setTva(int $tva): static
     {
         $this->tva = $tva;
+
+        return $this;
+    }
+
+    public function getStripeCheckoutSessionId(): ?string
+    {
+        return $this->stripeCheckoutSessionId;
+    }
+
+    public function setStripeCheckoutSessionId(?string $stripeCheckoutSessionId): static
+    {
+        $this->stripeCheckoutSessionId = $stripeCheckoutSessionId;
+
+        return $this;
+    }
+
+    public function getStripePaymentIntentId(): ?string
+    {
+        return $this->stripePaymentIntentId;
+    }
+
+    public function setStripePaymentIntentId(?string $stripePaymentIntentId): static
+    {
+        $this->stripePaymentIntentId = $stripePaymentIntentId;
+
+        return $this;
+    }
+
+    public function getStripeInvoiceId(): ?string
+    {
+        return $this->stripeInvoiceId;
+    }
+
+    public function setStripeInvoiceId(?string $stripeInvoiceId): static
+    {
+        $this->stripeInvoiceId = $stripeInvoiceId;
+
+        return $this;
+    }
+
+    public function getStripeInvoiceUrl(): ?string
+    {
+        return $this->stripeInvoiceUrl;
+    }
+
+    public function setStripeInvoiceUrl(?string $stripeInvoiceUrl): static
+    {
+        $this->stripeInvoiceUrl = $stripeInvoiceUrl;
+
+        return $this;
+    }
+
+    public function getDeliveryDate(): ?\DateTimeImmutable
+    {
+        return $this->deliveryDate;
+    }
+
+    public function setDeliveryDate(?\DateTimeImmutable $deliveryDate): static
+    {
+        $this->deliveryDate = $deliveryDate?->setTime(0, 0);
+        $this->setEditedAt(new \DateTimeImmutable());
+
+        return $this;
+    }
+
+    public function getDeliveryReminderSentAt(): ?\DateTimeImmutable
+    {
+        return $this->deliveryReminderSentAt;
+    }
+
+    public function setDeliveryReminderSentAt(?\DateTimeImmutable $deliveryReminderSentAt): static
+    {
+        $this->deliveryReminderSentAt = $deliveryReminderSentAt;
+
+        return $this;
+    }
+
+    public function getTrackingNumber(): ?string
+    {
+        return $this->trackingNumber;
+    }
+
+    public function setTrackingNumber(?string $trackingNumber): static
+    {
+        $this->trackingNumber = null !== $trackingNumber ? trim($trackingNumber) : null;
+        $this->setEditedAt(new \DateTimeImmutable());
+
+        return $this;
+    }
+
+    public function getCarrierName(): ?string
+    {
+        return $this->carrierName;
+    }
+
+    public function setCarrierName(?string $carrierName): static
+    {
+        $this->carrierName = null !== $carrierName ? trim($carrierName) : null;
+        $this->setEditedAt(new \DateTimeImmutable());
+
+        return $this;
+    }
+
+    public function getCarrierTrackingUrl(): ?string
+    {
+        return $this->carrierTrackingUrl;
+    }
+
+    public function setCarrierTrackingUrl(?string $carrierTrackingUrl): static
+    {
+        $this->carrierTrackingUrl = null !== $carrierTrackingUrl ? trim($carrierTrackingUrl) : null;
+        $this->setEditedAt(new \DateTimeImmutable());
+
+        return $this;
+    }
+
+    public function getTrackingUrl(): ?string
+    {
+        if (null === $this->carrierTrackingUrl || '' === $this->carrierTrackingUrl || null === $this->trackingNumber || '' === $this->trackingNumber) {
+            return null;
+        }
+
+        return $this->carrierTrackingUrl . rawurlencode($this->trackingNumber);
+    }
+
+    public function getShippedAt(): ?\DateTimeImmutable
+    {
+        return $this->shippedAt;
+    }
+
+    public function setShippedAt(?\DateTimeImmutable $shippedAt): static
+    {
+        $this->shippedAt = $shippedAt;
+        $this->setEditedAt(new \DateTimeImmutable());
+
+        return $this;
+    }
+
+    public function getDeliveredAt(): ?\DateTimeImmutable
+    {
+        return $this->deliveredAt;
+    }
+
+    public function setDeliveredAt(?\DateTimeImmutable $deliveredAt): static
+    {
+        $this->deliveredAt = $deliveredAt;
+        $this->setEditedAt(new \DateTimeImmutable());
 
         return $this;
     }

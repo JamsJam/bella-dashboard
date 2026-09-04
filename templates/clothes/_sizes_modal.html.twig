@@ -1,0 +1,66 @@
+<div class="modal-backdrop">
+    <dialog class="modal" open aria-labelledby="clothe-sizes-modal-title">
+        <form
+            method="post"
+            action="{{ action }}"
+            {{ stimulus_controller('clothe-size-modal') }}
+            {{ stimulus_action('clothe-size-modal', 'confirmRemovedSizes', 'submit')|stimulus_action('clothe-size-modal', 'toggleStock', 'change') }}
+        >
+            <header class="modal__header">
+                <h2 id="clothe-sizes-modal-title">Modifier les tailles</h2>
+                <button type="button" class="modal__close" onclick="this.closest('.modal-backdrop').remove()" aria-label="Fermer">
+                    ×
+                </button>
+            </header>
+
+            <div class="modal__body">
+                <input type="hidden" name="_csrf_token" value="{{ csrfToken }}">
+
+                <fieldset class="size-tags">
+                    <legend>Tailles disponibles</legend>
+                    {% for size in availableSizes %}
+                        <label class="size-tag">
+                            <input
+                                type="checkbox"
+                                name="sizes[]"
+                                value="{{ size }}"
+                                {% if size in selectedSizes %}checked{% endif %}
+                                data-clothe-size-modal-target="size"
+                                data-existing="{{ size in selectedSizes ? '1' : '0' }}"
+                                data-stock="{{ stocks[size]|default(0) }}"
+                            >
+                            <span>{{ size }}</span>
+                        </label>
+                    {% endfor %}
+                </fieldset>
+
+                <div class="size-stocks" data-clothe-size-modal-target="stocksContainer">
+                    <h3>Stock par taille</h3>
+                    {% for size in selectedSizes %}
+                        <label class="size-stock" data-size="{{ size }}">
+                            <span>{{ size }}</span>
+                            <input
+                                type="number"
+                                name="stocks[{{ size }}]"
+                                min="0"
+                                step="1"
+                                value="{{ stocks[size]|default(0) }}"
+                                aria-label="Stock de la taille {{ size }}"
+                            >
+                        </label>
+                    {% endfor %}
+                </div>
+                <div data-clothe-size-modal-target="confirmContainer"></div>
+            </div>
+
+            <footer class="modal__actions">
+                <button type="button" class="clothe-show__button" onclick="this.closest('.modal-backdrop').remove()">
+                    Annuler
+                </button>
+                <button type="submit" class="clothe-show__button clothe-show__button--primary">
+                    Enregistrer
+                </button>
+            </footer>
+        </form>
+    </dialog>
+</div>

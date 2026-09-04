@@ -1,0 +1,51 @@
+{% macro productCardPrototype() %}
+    <div
+        class="product-grid-card"
+        data-product-id="__ID__"
+        role="button"
+        tabindex="0"
+        aria-pressed="false"
+        {{ stimulus_action('product_grid_search', 'onSelectProduct', 'click') }}
+        {{ stimulus_action('product_grid_search', 'onSelectProductWithKeyboard', 'keydown') }}
+    >
+        <input
+            type="checkbox"
+            class="product-grid-card__checkbox"
+            data-product-id="__ID__"
+            tabindex="-1"
+            aria-hidden="true"
+        >
+        <span class="product-grid-card__checkmark" aria-hidden="true"></span>
+
+        <div class="product-grid-card__media">
+            __IMAGE_STACK__
+            __STATUS_BADGE__
+        </div>
+
+        <h3 class="product-grid-card__title">__TITLE__</h3>
+
+        <a href="__DETAIL_URL__" class="product-grid-card__button" data-product-id="__ID__">
+            __DETAIL_LABEL__
+        </a>
+
+        <div class="product-grid-card__actions">
+            <button
+                type="button"
+                class="product-card__edit-button"
+                data-product-id="__ID__"
+                {{ stimulus_action('product_grid_search', 'onEditProduct', 'click') }}
+                >
+                Renommer
+            </button>
+
+            <button
+                type="button"
+                class="product-card__delete-button"
+                data-product-id="__ID__"
+                {{ stimulus_action('product_grid_search', 'onDeleteProduct', 'click') }}
+                >
+                Supprimer
+            </button>
+        </div>
+    </div>
+{% endmacro %}

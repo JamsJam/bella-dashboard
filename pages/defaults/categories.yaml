@@ -1,0 +1,13 @@
+seo:
+  title: 'Nos catégories'
+  description: 'Découvrez les différentes catégories de vêtements BellaGP.'
+  keywords: 'mode, vêtements, catégories, BellaGP'
+  ogTitle: 'Nos catégories — BellaGP'
+  ogDescription: 'Parcourez les catégories de vêtements proposées par BellaGP.'
+  ogUrl: 'https://www.bellagp.com/category'
+  ogImage: /images/logos/bella_logo.png
+bandeau:
+  title: null
+  cta: null
+  background: null
+last-modifyed: '2026-07-15T09:53:21+02:00'

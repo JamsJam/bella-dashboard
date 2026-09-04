@@ -1,0 +1,70 @@
+{% if file_field is not defined %}
+    {% set file_name = image_kind == 'logo' ? 'logoFile' : 'faviconFile' %}
+    {% set crop_name = image_kind == 'logo' ? 'logoCrop' : 'faviconCrop' %}
+    {% set file_field = form[file_name] %}
+{% endif %}
+{% set image_kind = image_kind|default(file_field.vars.id) %}
+{% set public_url = public_url|default('') %}
+
+<div
+    class="config-image-field"
+    data-config-image-field="{{ image_kind }}"
+    {{ stimulus_target('config-image-upload', 'imageField') }}
+>
+    <div class="config-field config-file" data-config-file-dropzone>
+        {{ form_label(file_field) }}
+
+        <div class="config-file__row">
+            <div class="config-file__zone" data-config-file-zone>
+                {{ form_widget(file_field, {
+                    attr: file_field.vars.attr|merge(stimulus_action('config-image-upload', 'preview', 'change').toArray())
+                }) }}
+
+                <div class="config-file__body">
+                    <div>
+                        <p class="config-file__title">Glissez-déposez une image ici</p>
+                        <p class="config-file__hint">ou cliquez pour sélectionner un fichier</p>
+                    </div>
+                </div>
+            </div>
+
+            <div
+                class="config-file__preview-frame"
+                data-config-file-preview-frame
+                {{ stimulus_target('config-image-upload', 'previewFrame') }}
+                {% if not public_url %} hidden{% endif %}
+            >
+                {% if public_url %}
+                    <img
+                        class="config-file__preview"
+                        src="{{ asset(public_url) }}"
+                        alt=""
+                        data-config-file-preview
+                        {{ stimulus_target('config-image-upload', 'preview') }}
+                    >
+                {% else %}
+                    <img
+                        class="config-file__preview"
+                        alt=""
+                        hidden
+                        data-config-file-preview
+                        {{ stimulus_target('config-image-upload', 'preview') }}
+                    >
+                {% endif %}
+            </div>
+        </div>
+
+        {{ form_help(file_field) }}
+        {{ form_errors(file_field) }}
+    </div>
+
+    {% if form is defined and crop_name is defined and form[crop_name] is defined %}
+        <div class="config-field">
+            {{ form_label(form[crop_name]) }}
+            {{ form_widget(form[crop_name]) }}
+            {{ form_errors(form[crop_name]) }}
+        </div>
+
+        <input type="hidden" name="_cropper_{{ image_kind }}_public_url" value="{{ public_url }}">
+    {% endif %}
+</div>

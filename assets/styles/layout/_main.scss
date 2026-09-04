@@ -1,0 +1,25 @@
+@use "../abstract/" as *;
+
+//! Conteneur unique du contenu principal.
+//! Les pages utilisent @container main pour leur responsive.
+
+.main {
+    height: calc(100dvh - 5rem);
+    width: 100%;
+    max-width: calc(1440px + 4rem);
+    padding: 2rem;
+    margin-inline: auto;
+    overflow: auto;
+
+    container-type: inline-size;
+    container-name: main;
+
+    @extend %theme-transition;
+    @extend %flex-column-start-stretch;
+
+    gap: 2rem;
+
+    @media screen and (max-width: 1068px) {
+        padding-inline: clamp(0.3rem, -0.4273rem + 3.6364vw, 2rem);
+    }
+}

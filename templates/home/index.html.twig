@@ -1,34 +1,102 @@
 {% extends 'base.html.twig' %}
 
-
- {% block title %}Dashboard {{parent()}}{% endblock %}
+{% block title %}Dashboard{% endblock %}
 
 {% block body %}
+    {% set statusLabels = {pending: 'En attente', paid: 'Payée', processing: 'En préparation', shipped: 'Expédiée'} %}
 
-    <div class="header">
-    {#?==== Titre de la page #}
-        {# <turbo-frame id="dash-title"> #}
-            <h1>{{metaData.title}}</h1>
-        {# </turbo-frame> #}
+    <article class="dashboard" aria-labelledby="dashboard-title">
+        <header class="dashboard__heading">
+            <div>
+                <p class="dashboard__eyebrow">Vue d’ensemble</p>
+                <h1 id="dashboard-title">Bonjour {{ app.user ? app.user.userIdentifier|split('@')|first|capitalize : 'Bella' }}</h1>
+                <p>Voici l’activité de votre boutique pour ce mois.</p>
+            </div>
+        </header>
 
-    {#?==== fil d'arianne #}
-        <turbo-frame id="dash-arianne">
-            {% for scrumItem in metaData.breadcrumb %}
-                
-                <a href="{{path(scrumItem.route)}}">
-                    {{scrumItem.title}} {% if not loop.last %}/{% endif %}
-                    
-                </a> 
+        <section class="dashboard__stats" aria-label="Indicateurs principaux">
+            {% set stats = [
+                {class: ' dashboard-stat--primary', icon: 'ep:money', label: 'Chiffre d’affaires', value: (summary.revenue / 100)|number_format(2, ',', ' ') ~ ' €', note: 'Depuis le début du mois'},
+                {class: '', icon: 'ep:document', label: 'Commandes', value: summary.orders, note: summary.pending ~ ' à traiter'},
+                {class: '', icon: 'ep:user', label: 'Clients', value: customersCount, note: 'Comptes enregistrés'},
+                {class: '', icon: 'ep:goods', label: 'Produits', value: productsCount, note: onlineProductsCount ~ ' actuellement en ligne'},
+                {
+                    class: ' dashboard-stat--reviews',
+                    icon: 'ep:star',
+                    label: 'Satisfaction client',
+                    value: reviewsSummary.acceptedAverage|number_format(1, ',', ' ') ~ '/5',
+                    rating: reviewsSummary.acceptedAverage,
+                    ratingLabel: 'Avis validés',
+                    secondaryValue: reviewsSummary.totalAverage|number_format(1, ',', ' ') ~ '/5',
+                    secondaryRating: reviewsSummary.totalAverage,
+                    secondaryRatingLabel: 'Tous les avis',
+                    note: reviewsSummary.accepted ~ ' validé' ~ (reviewsSummary.accepted > 1 ? 's' : '') ~ ' sur ' ~ reviewsSummary.total ~ ' avis noté' ~ (reviewsSummary.total > 1 ? 's' : '')
+                }
+            ] %}
+            {% for stat in stats %}
+                <article class="dashboard-stat{{ stat.class }}">
+                    <div class="dashboard-stat__icon">{{ ux_icon(stat.icon) }}</div>
+                    <p>{{ stat.label }}</p>
+                    {% if stat.rating is defined %}
+                        <div class="dashboard-stat__rating" aria-label="Moyenne des avis validés : {{ stat.value }}{% if stat.secondaryValue is defined %}, moyenne de tous les avis : {{ stat.secondaryValue }}{% endif %}">
+                            <div class="dashboard-stat__rating-row">
+                                <small>{{ stat.ratingLabel }}</small>
+                                <span aria-hidden="true">{% for star in 1..5 %}<i class="{{ star <= stat.rating|round ? 'is-filled' : '' }}">★</i>{% endfor %}</span>
+                                <strong>{{ stat.value }}</strong>
+                            </div>
+                            {% if stat.secondaryRating is defined %}
+                                <div class="dashboard-stat__rating-row">
+                                    <small>{{ stat.secondaryRatingLabel }}</small>
+                                    <span aria-hidden="true">{% for star in 1..5 %}<i class="{{ star <= stat.secondaryRating|round ? 'is-filled' : '' }}">★</i>{% endfor %}</span>
+                                    <strong>{{ stat.secondaryValue }}</strong>
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% else %}
+                        <strong>{{ stat.value }}</strong>
+                    {% endif %}
+                    <span>{{ stat.note }}</span>
+                </article>
             {% endfor %}
-        </turbo-frame>
-    </div>
+        </section>
 
-    {# chiffre du mois #}
-    <section>
-    </section>
+        <div class="dashboard__content-grid">
+            <section class="dashboard-panel" aria-labelledby="latest-orders-title">
+                <header class="dashboard-panel__header">
+                    <div><h2 id="latest-orders-title">Dernières commandes</h2><p>Les commandes reçues récemment</p></div>
+                    <a href="{{ path('app_orders') }}">Tout voir {{ ux_icon('ep:arrow-right') }}</a>
+                </header>
+                {% if latestOrders is not empty %}
+                    <div class="dashboard-orders">
+                        {% for order in latestOrders %}
+                            <article class="dashboard-order">
+                                <div class="dashboard-order__reference"><span>#{{ order.orderReference }}</span><small>{{ order.createdAt|date('d/m/Y à H:i') }}</small></div>
+                                <span class="dashboard-order__customer">{{ order.customer ? order.customer.email : 'Client invité' }}</span>
+                                <span class="dashboard-order__status dashboard-order__status--{{ order.status }}">{{ statusLabels[order.status] ?? order.status|capitalize }}</span>
+                                <strong>{{ (order.total / 100)|number_format(2, ',', ' ') }} €</strong>
+                            </article>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="dashboard-panel__empty">{{ ux_icon('ep:document') }}<p>Aucune commande pour le moment.</p></div>
+                {% endif %}
+            </section>
 
-    {# commentaire #}
-    <section>
-    </section>
-
+            <aside class="dashboard-panel" aria-labelledby="actions-title">
+                <header class="dashboard-panel__header"><div><h2 id="actions-title">Actions rapides</h2><p>Accédez à l’essentiel</p></div></header>
+                <nav class="dashboard-actions" aria-label="Actions rapides">
+                    {% set actions = [
+                        {route: 'app_orders', icon: 'ep:document', title: 'Gérer les commandes', note: 'Suivre les préparations et les livraisons'},
+                        {route: 'app_reviews', icon: 'ep:chat-dot-round', title: 'Gérer les avis', note: 'Consulter et modérer les avis clients'},
+                        {route: 'app_clothes', icon: 'ep:goods', title: 'Gérer le catalogue', note: lowStockCount ~ ' variante' ~ (lowStockCount > 1 ? 's' : '') ~ ' en stock faible'},
+                        {route: 'app_avatar_add', icon: 'ep:upload', title: 'Ajouter des avatars', note: 'Enrichir la bibliothèque'},
+                        {route: 'app_config_index', icon: 'ep:setting', title: 'Configuration', note: 'Paramètres de la boutique'}
+                    ] %}
+                    {% for action in actions %}
+                        <a href="{{ path(action.route) }}">{{ ux_icon(action.icon) }}<span><strong>{{ action.title }}</strong><small>{{ action.note }}</small></span>{{ ux_icon('ep:arrow-right') }}</a>
+                    {% endfor %}
+                </nav>
+            </aside>
+        </div>
+    </article>
 {% endblock %}

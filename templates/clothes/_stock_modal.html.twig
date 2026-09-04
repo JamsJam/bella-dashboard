@@ -1,0 +1,68 @@
+<turbo-frame id="clothe-modal-component">
+    <div class="modal-backdrop">
+        <dialog class="modal" open aria-labelledby="clothe-stock-modal-title">
+            <form method="post" action="{{ action }}" data-turbo="false">
+                <header class="modal__header">
+                    <h2 id="clothe-stock-modal-title">Modifier les stocks</h2>
+                    <button type="button" class="modal__close" onclick="this.closest('.modal-backdrop').remove()" aria-label="Fermer">
+                        &times;
+                    </button>
+                </header>
+
+                <div class="modal__body">
+                    <input type="hidden" name="_csrf_token" value="{{ csrfToken }}">
+
+                    <div class="clothe-show__form-row clothe-show__form-row--column">
+                        {% for variant in variants %}
+                            <fieldset class="collection-form__variant">
+                                <legend>{{ variant.displayName }}</legend>
+
+                                <label>
+                                    <span>Couleur</span>
+                                    <select name="colors[{{ variant.id }}]" required>
+                                        {% for color in colors %}
+                                            <option value="{{ color.id }}" {% if color.id == variant.color.id|default(null) %}selected{% endif %}>
+                                                {{ color.name }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </label>
+
+                                <label>
+                                    <span>Taille</span>
+                                    <select name="sizes[{{ variant.id }}]" required>
+                                        {% for size in availableSizes %}
+                                            <option value="{{ size }}" {% if size == variant.size.name|default(null) %}selected{% endif %}>
+                                                {{ size }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </label>
+
+                                <label>
+                                    <span>SKU</span>
+                                    <input type="text" value="{{ variant.sku }}" readonly>
+                                </label>
+
+                                <label>
+                                    <span>Stock</span>
+                                    <input type="number" name="stocks[{{ variant.id }}]" min="0" step="1" value="{{ variant.stock ?? 0 }}" required>
+                                </label>
+
+                            </fieldset>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <footer class="modal__actions">
+                    <button type="button" class="clothe-show__button" onclick="this.closest('.modal-backdrop').remove()">
+                        Annuler
+                    </button>
+                    <button type="submit" class="clothe-show__button clothe-show__button--primary">
+                        Enregistrer
+                    </button>
+                </footer>
+            </form>
+        </dialog>
+    </div>
+</turbo-frame>

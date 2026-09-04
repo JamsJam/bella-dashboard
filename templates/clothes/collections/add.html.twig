@@ -1,0 +1,114 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Ajouter une collection{% endblock %}
+
+{% block body %}
+    <article class="collection-add" aria-labelledby="collection-add-title">
+        <header class="admin-page__header">
+            <div>
+                <h1 id="collection-add-title" class="title">Ajouter une collection</h1>
+                <p class="admin-page__subtitle">
+                    Cree une collection hors-ligne, rattachee a une categorie existante ou nouvelle.
+                </p>
+            </div>
+        </header>
+
+        {% include 'ui/components/tabs/_tabs.html.twig' with { tabs: tabs } only %}
+
+        <form
+            method="post"
+            action="{{ action }}"
+            enctype="multipart/form-data"
+            class="collection-form"
+            data-controller="collection-form"
+        >
+            <input type="hidden" name="_token" value="{{ csrf_token('collection_create') }}">
+
+            <section class="collection-form__section">
+                <label class="collection-form__field">
+                    <span>Image de presentation</span>
+                    <input type="file" name="illustration" accept=".jpg,.jpeg,.png,image/jpeg,image/png" required>
+                </label>
+
+                <label class="collection-form__field">
+                    <span>Nom</span>
+                    <input type="text" name="name" required maxlength="50">
+                </label>
+
+                <div class="collection-form__grid">
+                    <label class="collection-form__field">
+                        <span>Categorie</span>
+                        <select
+                            name="category"
+                            data-collection-form-target="categorySelect"
+                            data-action="change->collection-form#toggleNewCategoryField"
+                        >
+                            <option value="">Selectionner une categorie</option>
+                            {% for category in categories %}
+                                <option value="{{ category.id }}">{{ category.name }}</option>
+                            {% endfor %}
+                            <option value="__new__">Ajouter une categorie</option>
+                        </select>
+                    </label>
+
+                    <label
+                        class="collection-form__field"
+                        data-collection-form-target="newCategoryField"
+                        hidden
+                    >
+                        <span>Nouvelle categorie</span>
+                        <input type="text" name="newCategory" maxlength="50" placeholder="Si absente de la liste">
+                    </label>
+                </div>
+            </section>
+
+            <section class="collection-form__section">
+                <div class="collection-form__section-header">
+                    <div>
+                        <h2>Vetements</h2>
+                        <p class="admin-page__subtitle">
+                            Tu peux creer la collection maintenant, puis ajouter les vetements ensuite.
+                        </p>
+                    </div>
+                    <button type="button" class="clothe-show__button" data-action="click->collection-form#showClotheFields">
+                        Ajouter un vetement
+                    </button>
+                </div>
+
+                <div class="collection-form__clothes-list" data-collection-form-target="clothesList"></div>
+
+                <template data-collection-form-target="clotheTemplate">
+                    <div class="modal-backdrop collection-form__clothe-modal" data-clothe-index="__INDEX__">
+                        <dialog class="modal" open aria-labelledby="collection-clothe-modal-title-__INDEX__">
+                            <header class="modal__header">
+                                <h2 id="collection-clothe-modal-title-__INDEX__">Ajouter un vetement</h2>
+                                <button type="button" class="modal__close" data-action="collection-form#removeClotheModal" aria-label="Fermer">x</button>
+                            </header>
+
+                            <div class="modal__body">
+                                <input type="hidden" name="clothes[__INDEX__][enabled]" value="1">
+                                {% include 'clothes/_clothe_form_fields.html.twig' with {
+                                    prefix: 'clothes[__INDEX__]',
+                                    imageInputName: 'clotheImages___INDEX__[]',
+                                    existingClothes: [],
+                                    colors: colors,
+                                    availableSizes: availableSizes,
+                                    useIndexedTargets: true
+                                } only %}
+                            </div>
+
+                            <footer class="modal__actions">
+                                <button type="button" class="clothe-show__button" data-action="collection-form#removeClotheModal">Annuler</button>
+                                <button type="button" class="clothe-show__action" data-action="collection-form#confirmClotheModal">Ajouter a la collection</button>
+                            </footer>
+                        </dialog>
+                    </div>
+                </template>
+            </section>
+
+            <footer class="collection-form__actions">
+                <button type="submit" class="clothe-show__action">Creer la collection</button>
+            </footer>
+        </form>
+    </article>
+{% endblock %}

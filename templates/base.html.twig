@@ -1,42 +1,58 @@
 <!DOCTYPE html>
-
-
-
-
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="robots" content="noindex">
-    <title>{% block title %} | Bellagp Dashboard{% endblock %}</title>
-    {# ? === languages === #}
-        <link rel="alternate" hreflang="fr" href="https://www.exemple.com/fr/">
-        <link rel="alternate" hreflang="en" href="https://www.exemple.com/en/">
-    {# ? === favicon === #}
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>sf</text></svg>">
-    {# ? === css global === #}
-    {% block stylesheets %}
-        {# <link rel="stylesheet" href="{{ asset('styles/admin.scss') }}"> #}
-    {% endblock %}
-    {# ? === js === #}
-    {% block javascripts %}
-        {% block importmap %}{{ importmap(['admin']) }}{% endblock %}
-    {% endblock %}
-</head>
-<body class="admin">
+	<head>
+		<meta charset="UTF-8">
+		<title>
+			{% block title %}Welcome!
+			{% endblock %}
+		</title>
+		<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>sf</text></svg>">
+		{% block stylesheets %}
+			{# <link rel="stylesheet" href="{{ asset('styles/app.scss') }}"> #}
+		{% endblock %}
 
-    {#?===== twig component adminmenu #}
-    <twig:Dashboard:Menu:Menu 
-    routeKey="{{ metaData.routeKey }}"
-    />
+		{% block javascripts %}
+			<script>
+				(() => {
+                    const theme = localStorage.getItem('theme');
+
+                    const isDark = theme === 'dark' || (! theme && window.matchMedia('(prefers-color-scheme: dark)').matches);
+
+                    document.documentElement.dataset.theme = isDark ? 'dark' : 'light';
+                })();
+			</script>
+
+			{% block importmap %}
+				{{ importmap('app') }}
+			{% endblock %}
+		{% endblock %}
+
+		{% set frankenphpHotReload = app.request.server.get('FRANKENPHP_HOT_RELOAD') %}
+		{% if frankenphpHotReload %}
+			<meta name="frankenphp-hot-reload:url" content="{{ frankenphpHotReload }}">
+			<script src="https://cdn.jsdelivr.net/npm/idiomorph"></script>
+			<script src="https://cdn.jsdelivr.net/npm/frankenphp-hot-reload/+esm" type="module"></script>
+		{% endif %}
+	</head>
+
+	<body {{ stimulus_controller('darkmode') }}>
+        {% include 'ui/components/_flash.html.twig' %}
+		<div class="layout layout--close" {{ stimulus_controller('aside_toggle') | stimulus_target('aside_toggle', 'layout') }}>
+			{% include "ui/layout/_aside.html.twig" %}
 
 
-    <turbo-frame id="admin-main">
-        <main>
-            {% block body %}
-                
-            {% endblock %}
-        </main>
-    </turbo-frame>
-</body>
+			<div class="content">
+				{% include "ui/layout/_header.html.twig" 
+                    with {
+                        breadscrumbs: breadscrumbs
+                    } only 
+                %}
+
+				<main class="main">
+					{% block body %}{% endblock %}
+				</main>
+			</div>
+		</div>
+        <div id="modal-root"></div>
+	</body>
 </html>

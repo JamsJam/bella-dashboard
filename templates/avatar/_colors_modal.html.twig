@@ -1,0 +1,65 @@
+<div class="modal-backdrop" role="presentation">
+    <dialog class="modal modal--wide" open aria-labelledby="avatar-colors-title">
+        <header class="modal__header">
+            <div>
+                <h2 id="avatar-colors-title">Gestion des couleurs</h2>
+                <p class="modal__subtitle">{{ modal.colors|length }} couleur(s) pour {{ modal.activeLabel|lower }}</p>
+            </div>
+            <button type="button" class="modal__close" onclick="this.closest('.modal-backdrop').remove()" aria-label="Fermer">×</button>
+        </header>
+
+        <nav class="avatar-color-tabs" aria-label="Types de couleurs">
+            {% for tab in modal.tabs %}
+                <a
+                    href="{{ path('app_avatar_colors_modal', { type: tab.type }) }}"
+                    class="avatar-color-tabs__item{{ tab.active ? ' is-active' : '' }}"
+                    aria-current="{{ tab.active ? 'page' : 'false' }}"
+                    data-turbo-stream
+                >
+                    {{ tab.label }}
+                </a>
+            {% endfor %}
+        </nav>
+
+        <div class="modal__body">
+            {% if modal.colors is not empty %}
+                <ul class="avatar-colors">
+                    {% for color in modal.colors %}
+                        {% set hasValidHexa = color.hexa and color.hexa matches '/^[0-9a-fA-F]{6}$/' %}
+                        <li class="avatar-colors__item">
+                            <span
+                                class="avatar-colors__swatch"
+                                style="background-color: {{ hasValidHexa ? '#' ~ color.hexa : 'transparent' }}"
+                                aria-label="Couleur {{ color.name }}"
+                            ></span>
+
+                            <span class="avatar-colors__content">
+                                <strong>{{ color.name }}</strong>
+                                <small>
+                                    {{ color.associatedCount }} élément{{ color.associatedCount > 1 ? 's' : '' }} associé{{ color.associatedCount > 1 ? 's' : '' }}
+                                </small>
+                            </span>
+
+                            <form
+                                method="post"
+                                action="{{ path('app_avatar_color_delete', { type: color.type, id: color.id }) }}"
+                                {% if color.associatedCount > 0 %}
+                                    data-turbo-confirm="Cette couleur est associée à {{ color.associatedCount }} élément(s). La suppression effacera également ces éléments. Confirmer la suppression ?"
+                                {% endif %}
+                            >
+                                <input type="hidden" name="_csrf_token" value="{{ csrf_token('avatar_color_delete_' ~ color.type ~ '_' ~ color.id) }}">
+                                <button type="submit" class="avatar-colors__delete">Supprimer</button>
+                            </form>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="modal__subtitle">Aucune couleur enregistrée dans cette catégorie.</p>
+            {% endif %}
+        </div>
+
+        <footer class="modal__actions">
+            <button type="button" class="avatar-colors__close" onclick="this.closest('.modal-backdrop').remove()">Fermer</button>
+        </footer>
+    </dialog>
+</div>

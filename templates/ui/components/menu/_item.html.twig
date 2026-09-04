@@ -1,0 +1,49 @@
+{% set currentRoute = currentRoute|default('') %}
+{% set isItemActive = item.path is not null and (currentRoute == item.path or currentRoute starts with item.path ~ '_') %}
+{% set activeChildren = item.children|filter(child => currentRoute == child.path or currentRoute starts with child.path ~ '_') %}
+{% set hasActiveChild = activeChildren|length > 0 %}
+
+	{% if item.children is empty %}
+
+
+		<a href="{{path(item.path)}}" class="menuItem {{ isItemActive ? 'active' : '' }}">
+			{{item.title}}
+		</a>
+
+	{% else %}
+		<div class="menuItem" {{ stimulus_controller("item_collabsable", { isCollapsed: true }) }}>
+			<button
+				type="button"
+				class="menuItem__header {{ hasActiveChild ? 'active' : '' }}"
+				aria-expanded="false"
+				{{ stimulus_target("item_collabsable", "header") }}
+				{{ stimulus_action("item_collabsable","handleCollapseToggle","click") }}
+			>
+				<span class="menuItem__title">
+					{{item.title}}
+				</span>
+				{{ ux_icon('ep:arrow-right') }}
+			</button>
+
+			<ul class="menuItem__children collapsed" {{ stimulus_target("item_collabsable","collapsablebox") }}>
+
+				{% for child in item.children %}
+
+					{% set isChildActive = currentRoute == child.path or currentRoute starts with child.path ~ '_' %}
+					<li class="menuItem__child {{ isChildActive ? 'active' : '' }}">
+						{% if child.icon is same as null %}
+
+							<span class="menuItem__iconPlaceholder"></span>
+						{% else %}
+
+							{{ ux_icon(child.icon) }}
+
+						{% endif %}
+						<a href="{{path(child.path)}}">{{child.label}}</a>
+					</li>
+
+				{% endfor %}
+
+			</ul>
+		</div>
+	{% endif %}

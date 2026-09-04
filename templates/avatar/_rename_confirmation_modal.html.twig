@@ -1,0 +1,20 @@
+<div class="avatar-rename__confirm-backdrop" {{ stimulus_controller('avatar-rename-confirmation') }}>
+    <dialog class="avatar-rename__confirm" open aria-modal="true">
+        <header><h2>Nom déjà utilisé</h2></header>
+        <div class="avatar-rename__confirm-body">
+            <p>Une image existe déjà avec le nom {{ name }}.</p>
+            {% if previewUrl %}<img src="{{ previewUrl }}" alt="Aperçu de l’image existante">{% endif %}
+        </div>
+        <footer class="avatar-rename__confirm-actions">
+            <button type="button" {{ stimulus_action('avatar-rename-confirmation', 'cancel') }}>Annuler</button>
+            <form method="post" action="{{ path('app_avatar_rename_validate', {id: avatar.id}) }}" {{ stimulus_action('avatar-rename-confirmation', 'accept', 'submit') }}>
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token('avatar_rename_validate_' ~ avatar.id) }}">
+                <input type="hidden" name="name" value="{{ name }}">
+                <input type="hidden" name="category" value="{{ category }}">
+                <input type="hidden" name="filters" value="{{ filters }}">
+                <input type="hidden" name="authorization" value="1">
+                <button type="submit">Accepter</button>
+            </form>
+        </footer>
+    </dialog>
+</div>

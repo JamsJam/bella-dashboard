@@ -1,0 +1,36 @@
+<div class="modal-backdrop" role="presentation">
+    <dialog class="modal" open aria-labelledby="bestseller-overflow-title">
+        <header class="modal__header">
+            <h2 id="bestseller-overflow-title">Trop de bestsellers</h2>
+            <button type="button" class="modal__close" onclick="this.closest('.modal-backdrop').remove()" aria-label="Fermer">x</button>
+        </header>
+
+        <form method="post" action="{{ action }}">
+            <div class="modal__body">
+                <p class="modal__subtitle">
+                    La liste ne peut contenir que {{ maxItems }} vetement(s). Les elements en trop seront retires avant l'enregistrement.
+                </p>
+
+                {% for id in ids %}
+                    <input type="hidden" name="ids[]" value="{{ id }}">
+                {% endfor %}
+                <input type="hidden" name="mode" value="{{ mode }}">
+                <input type="hidden" name="prune_overflow" value="1">
+                <input type="hidden" name="_csrf_token" value="{{ csrfToken }}">
+
+                {% if overflow is not empty %}
+                    <ul class="modal__subtitle">
+                        {% for clothe in overflow %}
+                            <li>{{ clothe.name }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+
+            <footer class="modal__actions">
+                <button type="button" class="clothe-show__button" onclick="this.closest('.modal-backdrop').remove()">Annuler</button>
+                <button type="submit" class="clothe-show__action">Supprimer les elements en trop</button>
+            </footer>
+        </form>
+    </dialog>
+</div>

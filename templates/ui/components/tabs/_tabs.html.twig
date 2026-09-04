@@ -1,0 +1,47 @@
+{# 
+! Tabs component
+? Awaits an array of tabs with the following structure:
+*   tabs = [
+*       TabDto { id, label, route, isActive, attributes }
+*   ]
+? importe like this:
+* {% include 'ui/components/tabs/_tabs.html.twig' with { tabs: tabs } only %}
+
+#}
+
+
+{% set tabItems = tabs.items is defined ? tabs.items : tabs %}
+{% set tabsAriaLabel = tabs.ariaLabel is defined ? tabs.ariaLabel : ariaLabel|default('Actions') %}
+
+<nav class="tabs" role="tablist" aria-label="{{ tabsAriaLabel }}">
+    {% for tab in tabItems %}
+        {% if tab.items is defined %}
+            <details class="tabs__dropdown">
+                <summary class="tab">{{ tab.label }}</summary>
+                <div class="tabs__dropdown-menu">
+                    {% for item in tab.items %}
+                        <a href="{{ item.href }}" data-turbo-stream>{{ item.label }}</a>
+                    {% endfor %}
+                </div>
+            </details>
+        {% else %}
+        <a
+            role="tab"
+            aria-selected="{{ tab.isActive ? 'true' : 'false' }}"
+            class="tab{{ tab.isActive ? ' active' : '' }}"
+            href="{{ tab.route is defined ? path(tab.route, tab.routeParameters|default({})) : tab.href }}"
+            {% if tab.attributes is defined %}
+                {% for key, attribute in tab.attributes %}
+                    {{ key }}="{{ attribute }}"
+                {% endfor %}
+            {% elseif tab.attr is defined %}
+                {% for key, attribute in tab.attr %}
+                    {{ key }}="{{ attribute }}"
+                {% endfor %}
+            {% endif %}
+        >
+            {{ tab.label }}
+        </a>
+        {% endif %}
+    {% endfor %}
+</nav>

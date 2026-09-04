@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Confirmation de votre commande</title>
+</head>
+<body style="margin:0;background:#f4f6f8;color:#20242a;font-family:Arial,Helvetica,sans-serif;">
+<div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;">Votre paiement est confirmé. Retrouvez le récapitulatif et la facture de votre commande {{ order.orderReference }}.</div>
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f4f6f8;padding:32px 12px;">
+    <tr><td align="center">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:640px;background:#ffffff;border:1px solid #e4e7eb;border-radius:16px;overflow:hidden;box-shadow:0 8px 24px rgba(32,36,42,.08);">
+            <tr><td style="background:#ffffff;border-top:5px solid #247a5a;border-bottom:1px solid #e4e7eb;padding:23px 32px 28px;">
+                <div style="font-size:24px;font-weight:800;letter-spacing:-.5px;color:#20242a;">BellaGP</div>
+                <div style="margin-top:6px;font-size:13px;color:#737b86;">Commande {{ order.orderReference }}</div>
+            </td></tr>
+            <tr><td style="padding:32px;">
+                <div style="display:inline-block;margin-bottom:12px;padding:6px 10px;border-radius:999px;background:#e9f6f0;color:#247a5a;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;">Paiement confirmé</div>
+                <h1 style="margin:0 0 12px;font-size:26px;line-height:1.25;color:#20242a;">Merci pour votre achat !</h1>
+                <p style="margin:0 0 22px;color:#626b76;font-size:15px;line-height:1.65;">Nous avons bien reçu votre paiement. Votre facture est prête et restera accessible depuis le bouton ci-dessous.</p>
+
+                {% if invoiceUrl %}
+                    <div style="margin-bottom:30px;text-align:left;">
+                        <a href="{{ invoiceUrl }}" style="display:inline-block;background:#247a5a;color:#ffffff;text-decoration:none;font-weight:700;padding:14px 24px;border-radius:9px;">Voir et télécharger ma facture</a>
+                        <div style="margin-top:9px;color:#737b86;font-size:12px;line-height:1.5;">Facture correspondant à la commande {{ order.orderReference }}</div>
+                    </div>
+                {% endif %}
+
+                <div style="margin-bottom:8px;color:#737b86;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;">Récapitulatif de la commande</div>
+
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;">
+                    {% for item in cart.items %}
+                        <tr>
+                            <td style="padding:15px 0;border-bottom:1px solid #edf0f2;">
+                                <div style="font-weight:700;color:#252a31;">{{ item.name }}</div>
+                                <div style="margin-top:5px;font-size:13px;color:#737b86;">Quantité : {{ item.quantity }} · {{ (item.unitPriceTTC / 100)|number_format(2, ',', ' ') }} {{ cart.currency|upper }}</div>
+                            </td>
+                            <td align="right" style="padding:15px 0;border-bottom:1px solid #edf0f2;font-weight:700;white-space:nowrap;color:#252a31;">
+                                {{ (item.totalTTC / 100)|number_format(2, ',', ' ') }} {{ cart.currency|upper }}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    <tr>
+                        <td style="padding:18px 0 6px;color:#626b76;">Sous-total</td>
+                        <td align="right" style="padding:18px 0 6px;">{{ (order.subtotal / 100)|number_format(2, ',', ' ') }} {{ cart.currency|upper }}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding:6px 0;color:#626b76;">Livraison</td>
+                        <td align="right" style="padding:6px 0;">{{ (order.fees / 100)|number_format(2, ',', ' ') }} {{ cart.currency|upper }}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding:14px 0 0;font-size:18px;font-weight:800;border-top:1px solid #dfe3e7;">Total</td>
+                        <td align="right" style="padding:14px 0 0;font-size:18px;font-weight:800;border-top:1px solid #dfe3e7;">{{ (order.total / 100)|number_format(2, ',', ' ') }} {{ cart.currency|upper }}</td>
+                    </tr>
+                </table>
+
+                <p style="margin:26px 0 0;color:#626b76;font-size:13px;line-height:1.6;">Nous préparons maintenant votre commande. Son suivi vous sera envoyé séparément lors de l’expédition.</p>
+            </td></tr>
+            <tr><td style="padding:20px 32px;background:#f9fafb;border-top:1px solid #e4e7eb;color:#8a929d;font-size:12px;text-align:center;">BellaGP · Cet email confirme votre paiement.</td></tr>
+        </table>
+    </td></tr>
+</table>
+</body>
+</html>

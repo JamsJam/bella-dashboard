@@ -1,0 +1,44 @@
+@use "../../abstract/" as *;
+
+.badge {
+    @extend %theme-transition;
+    display: inline-flex;
+    align-items: center;
+    inline-size: fit-content;
+    border: 1px solid currentColor;
+    border-radius: 999px;
+    padding: 0.3rem 0.6rem;
+    background: color-mix(in srgb, var(--bg-dark) 82%, transparent);
+    font-size: 0.75rem;
+    font-weight: 800;
+    line-height: 1;
+    box-shadow: $shadow;
+}
+
+.badge--online,
+.badge--success-filled {
+    border-color: var(--success);
+    background: var(--success);
+    color: var(--bg-light);
+}
+
+.badge--publishable,
+.badge--primary {
+    color: var(--primary);
+}
+
+.badge--scheduled,
+.badge--warning {
+    color: var(--warning);
+}
+
+.badge--draft,
+.badge--offline,
+.badge--default {
+    color: var(--text-muted);
+}
+
+.badge--archived,
+.badge--danger {
+    color: var(--danger);
+}

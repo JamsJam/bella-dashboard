@@ -1,0 +1,15 @@
+
+<header class="layout__header">
+    <button {{ stimulus_action("aside_toggle","handleAsideToggle","click") }} class="header__sidetoggle">
+        {{ ux_icon('akar-icons:sidebar-left') }}
+    </button>
+
+    {% include "ui/components/menu/_breadscrumbs.html.twig" with {
+        breadscrumbs: breadscrumbs
+    } only %}
+    
+    <button {{ stimulus_action("darkmode","toggle","click") }} class="header__themetoggle" id="theme-button">
+        {{ ux_icon('tdesign:mode-dark',{ class: 'icon--dark'}) }} 
+        {{ ux_icon('ic:round-light-mode',{ class: 'icon--light'}) }}
+    </button>
+</header>

@@ -1,0 +1,27 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Configuration{% endblock %}
+
+{% block body %}
+    <article class="config-hub" aria-labelledby="config-hub-title">
+        <header class="admin-page__header">
+            <div>
+                <h1 id="config-hub-title" class="title">Configuration</h1>
+                <p class="admin-page__subtitle">Centralisez les paramètres du dashboard et de la boutique.</p>
+            </div>
+        </header>
+
+        <nav class="config-hub__grid" aria-label="Sections de configuration">
+            {% for configuration in configurations %}
+                <a class="config-hub__card" href="{{ path(configuration.route) }}">
+                    <span class="config-hub__icon">{{ ux_icon(configuration.icon) }}</span>
+                    <span class="config-hub__content">
+                        <strong>{{ configuration.title }}</strong>
+                        <small>{{ configuration.description }}</small>
+                    </span>
+                    <span class="config-hub__arrow" aria-hidden="true">{{ ux_icon('ep:arrow-right') }}</span>
+                </a>
+            {% endfor %}
+        </nav>
+    </article>
+{% endblock %}

@@ -3,7 +3,10 @@
 namespace App\Entity\Orders;
 
 use App\Entity\Traits\DateFieldsTrait;
+use App\Entity\Users\Customers;
 use App\Repository\Orders\CartRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: CartRepository::class)]
@@ -16,84 +19,127 @@ class Cart
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $productReference = null;
-
-    #[ORM\Column]
-    private ?int $quantity = null;
-
-    #[ORM\Column]
-    private ?int $unitPriceHt = null;
-
-    #[ORM\Column]
-    private ?int $unitPriceTTC = null;
-
-    #[ORM\ManyToOne(inversedBy: 'cart')]
+    #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
-    private ?Orders $orders = null;
+    private ?Customers $customer = null;
+
+    /**
+     * @var Collection<int, CartItem>
+     */
+    #[ORM\OneToMany(targetEntity: CartItem::class, mappedBy: 'cart', cascade: ['persist'], orphanRemoval: true)]
+    private Collection $items;
+
+    #[ORM\OneToOne(mappedBy: 'cart', targetEntity: Orders::class)]
+    private ?Orders $order = null;
+
+    #[ORM\Column(length: 3)]
+    private string $currency = 'eur';
+
+    #[ORM\Column]
+    private int $subtotal = 0;
+
+    #[ORM\Column]
+    private int $total = 0;
+
+    public function __construct()
+    {
+        $this->items = new ArrayCollection();
+        $now = new \DateTimeImmutable();
+        $this->setCreatedAt($now);
+        $this->setEditedAt($now);
+    }
 
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getProductReference(): ?string
+    public function getCustomer(): ?Customers
     {
-        return $this->productReference;
+        return $this->customer;
     }
 
-    public function setProductReference(string $productReference): static
+    public function setCustomer(?Customers $customer): static
     {
-        $this->productReference = $productReference;
+        $this->customer = $customer;
 
         return $this;
     }
 
-    public function getQuantity(): ?int
+    /**
+     * @return Collection<int, CartItem>
+     */
+    public function getItems(): Collection
     {
-        return $this->quantity;
+        return $this->items;
     }
 
-    public function setQuantity(int $quantity): static
+    public function addItem(CartItem $item): static
     {
-        $this->quantity = $quantity;
+        if (!$this->items->contains($item)) {
+            $this->items->add($item);
+            $item->setCart($this);
+            $this->recalculateTotals();
+        }
 
         return $this;
     }
 
-    public function getUnitPriceHt(): ?int
+    public function removeItem(CartItem $item): static
     {
-        return $this->unitPriceHt;
-    }
-
-    public function setUnitPriceHt(int $unitPriceHt): static
-    {
-        $this->unitPriceHt = $unitPriceHt;
+        if ($this->items->removeElement($item)) {
+            if ($item->getCart() === $this) {
+                $item->setCart(null);
+            }
+            $this->recalculateTotals();
+        }
 
         return $this;
     }
 
-    public function getUnitPriceTTC(): ?int
+    public function getOrder(): ?Orders
     {
-        return $this->unitPriceTTC;
+        return $this->order;
     }
 
-    public function setUnitPriceTTC(int $unitPriceTTC): static
+    public function setOrder(?Orders $order): static
     {
-        $this->unitPriceTTC = $unitPriceTTC;
+        $this->order = $order;
 
         return $this;
     }
 
-    public function getOrders(): ?Orders
+    public function getCurrency(): string
     {
-        return $this->orders;
+        return $this->currency;
     }
 
-    public function setOrders(?Orders $orders): static
+    public function setCurrency(string $currency): static
     {
-        $this->orders = $orders;
+        $this->currency = strtolower($currency);
 
         return $this;
+    }
+
+    public function getSubtotal(): int
+    {
+        return $this->subtotal;
+    }
+
+    public function getTotal(): int
+    {
+        return $this->total;
+    }
+
+    public function recalculateTotals(): void
+    {
+        $total = 0;
+
+        foreach ($this->items as $item) {
+            $total += $item->getTotalTTC();
+        }
+
+        $this->subtotal = $total;
+        $this->total = $total;
     }
 }

@@ -1,0 +1,136 @@
+<?php
+
+namespace App\Application\Avatar\Resolver;
+
+use App\Application\Avatar\Mapper\AvatarRenameFilterMapper;
+use App\Application\Avatar\Model\AvatarRenameInstruction;
+use App\Entity\Clothes\Clothes;
+use App\Service\FileManagerService;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
+
+final readonly class AvatarRenameDestinationResolver
+{
+    public function __construct(
+        private EntityManagerInterface $entityManager,
+        private AvatarRenameFilterMapper $avatarRenameFilterMapper,
+        private FileManagerService $fileManager,
+        #[Autowire('%kernel.project_dir%')]
+        private string $projectDir,
+    ) {
+    }
+
+    public function resolveWebDirectory(AvatarRenameInstruction $message): string
+    {
+        $categoryDirectory = $message->category;
+        if ('face' === $message->category) {
+            $categoryDirectory = $this->hasFaceAccessory($message) ? 'accessoire' : 'visage';
+        }
+
+        $segments = [
+            'images',
+            'upload',
+            'avatar',
+            $this->normalizeToken($categoryDirectory),
+        ];
+
+        foreach ($this->avatarRenameFilterMapper->getStoragePathFilters($message->category) as $filterId) {
+            $value = $message->filters[$filterId] ?? null;
+            $filterName = $this->extractFilterName($value);
+
+            if (null === $value || '' === $filterName) {
+                continue;
+            }
+
+            $folderName = $this->resolveFilterFolderName($message->category, $filterId, $filterName);
+            if ('' !== $folderName) {
+                $segments[] = $folderName;
+            }
+        }
+
+        return '/' . implode('/', $segments);
+    }
+
+    private function hasFaceAccessory(AvatarRenameInstruction $message): bool
+    {
+        $accessory = $this->extractFilterName($message->filters['accessory'] ?? null);
+
+        return '' !== $accessory && '-none-' !== $accessory;
+    }
+
+    public function resolveAbsoluteDirectory(string $webDirectory): string
+    {
+        return $this->projectDir . '/public' . $webDirectory;
+    }
+
+    public function assertDestinationPathIsAllowed(string $path): void
+    {
+        $allowedRoot = $this->projectDir . '/public/images/upload/avatar';
+        $directory = dirname($path);
+
+        if (!$this->fileManager->isPathWithin($directory, $allowedRoot)) {
+            throw new \RuntimeException('Path is outside the allowed avatar directory.');
+        }
+    }
+
+    private function resolveFilterFolderName(string $part, string $filterId, string $value): string
+    {
+        $sourceClass = $this->avatarRenameFilterMapper->getFilterSourceClass($part, $filterId);
+        if (null === $sourceClass) {
+            return '';
+        }
+
+        if ('morphologie' !== $filterId && ctype_digit($value)) {
+            $entity = $this->entityManager->find($sourceClass, (int) $value);
+            if (!is_object($entity)) {
+                throw new \InvalidArgumentException('Unknown avatar filter id.');
+            }
+
+            if ('clothes' === $filterId && $entity instanceof Clothes && null !== $entity->getSlug()) {
+                return $this->normalizeToken($entity->getSlug());
+            }
+
+            return $this->normalizeToken($this->resolveEntityLabel($entity));
+        }
+
+        return $this->normalizeToken($value);
+    }
+
+    private function extractFilterName(mixed $value): string
+    {
+        if (is_array($value)) {
+            $value = $value['name'] ?? '';
+        }
+
+        return trim((string) $value);
+    }
+
+    private function resolveEntityLabel(object $entity): string
+    {
+        if (method_exists($entity, 'getName') && is_string($entity->getName()) && '' !== $entity->getName()) {
+            return $entity->getName();
+        }
+
+        if (
+            method_exists($entity, 'getSize')
+            && is_object($entity->getSize())
+            && method_exists($entity->getSize(), 'getName')
+            && is_string($entity->getSize()->getName())
+        ) {
+            return $entity->getSize()->getName();
+        }
+
+        throw new \InvalidArgumentException(sprintf('Unable to resolve avatar filter label for "%s".', $entity::class));
+    }
+
+    private function normalizeToken(string $value): string
+    {
+        $value = strtolower(trim($value));
+        $value = iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $value) ?: $value;
+        $value = preg_replace('/\s+/', '--', $value) ?? '';
+        $value = preg_replace('/[^a-z0-9_-]+/', '', $value) ?? '';
+        $value = preg_replace('/_+/', '_', $value) ?? '';
+
+        return trim($value, '_');
+    }
+}

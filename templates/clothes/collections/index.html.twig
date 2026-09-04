@@ -1,0 +1,22 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Collections{% endblock %}
+
+{% block body %}
+    <article class="admin-page" aria-labelledby="collections-title">
+        <header class="admin-page__header">
+            <div>
+                <h1 id="collections-title" class="title">Collections</h1>
+                <p class="admin-page__subtitle">
+                    Gere les collections et leur rattachement aux categories de vetements.
+                </p>
+            </div>
+        </header>
+
+        {% include 'ui/components/tabs/_tabs.html.twig' with { tabs: tabs } only %}
+
+        {% include 'ui/components/data-table/_data_table.html.twig' with table only %}
+    </article>
+
+    <div id="modal-root"></div>
+{% endblock %}

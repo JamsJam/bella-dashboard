@@ -1,0 +1,73 @@
+<section
+    class="delivery-calendar"
+    aria-labelledby="delivery-calendar-title"
+    data-minimum-date="{{ minimumDate|date('Y-m-d') }}"
+    data-current-month="{{ calendar.days|filter(day => day.currentMonth)|first.date }}"
+    {{ stimulus_target('delivery-calendar', 'calendar') }}
+>
+    <header class="delivery-calendar__header">
+        <button
+            type="button"
+            aria-label="Mois précédent"
+            disabled
+            {{ stimulus_target('delivery-calendar', 'previous') }}
+            {{ stimulus_action('delivery-calendar', 'previousMonth', 'click') }}
+        >
+            {{ ux_icon('lucide:chevron-left') }}
+        </button>
+        <h3 id="delivery-calendar-title" {{ stimulus_target('delivery-calendar', 'monthLabel') }}>
+            {{ calendar.label|capitalize }}
+        </h3>
+        <button
+            type="button"
+            aria-label="Mois suivant"
+            {{ stimulus_action('delivery-calendar', 'nextMonth', 'click') }}
+        >
+            {{ ux_icon('lucide:chevron-right') }}
+        </button>
+    </header>
+
+    <p class="delivery-calendar__selection" {{ stimulus_target('delivery-calendar', 'selection') }}>
+        Aucune date sélectionnée
+    </p>
+
+    <div class="delivery-calendar__weekdays" aria-hidden="true">
+        {% for weekday in calendar.weekdays %}
+            <span>{{ weekday }}</span>
+        {% endfor %}
+    </div>
+
+    <div
+        class="delivery-calendar__days"
+        role="grid"
+        aria-label="{{ calendar.label }}"
+        {{ stimulus_target('delivery-calendar', 'grid') }}
+    >
+        {% for item in calendar.days %}
+            <button
+                type="button"
+                class="delivery-calendar__day{{ not item.currentMonth ? ' delivery-calendar__day--outside' : '' }}"
+                data-date="{{ item.date }}"
+                aria-label="{{ item.date|date('d/m/Y') }}"
+                {% if not item.available %}
+                    disabled
+                    aria-disabled="true"
+                {% endif %}
+                {% if item.available %}
+                    {{ stimulus_target('delivery-calendar', 'day') }}
+                    {{ stimulus_action('delivery-calendar', 'select', 'click') }}
+                {% endif %}
+            >
+                {{ item.day }}
+            </button>
+        {% endfor %}
+    </div>
+
+    <input
+        type="hidden"
+        name="delivery_date"
+        required
+        {{ stimulus_target('delivery-calendar', 'input') }}
+    >
+    <small>La première date disponible est le {{ minimumDate|date('d/m/Y') }}.</small>
+</section>

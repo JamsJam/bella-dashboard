@@ -1,0 +1,161 @@
+@use "../../abstract/" as *;
+
+.product-grid-card{
+    @extend %theme-transition;
+    @extend %flex-column-center-stretch;
+    position: relative;
+    gap: 0.5rem;
+    border: 2px solid var(--border-muted);
+    border-radius: 8px;
+    background-color: var(--bg-dark);
+    padding: 0.5rem;
+    cursor: pointer;
+    outline: none;
+
+    &__checkbox{
+        position: absolute;
+        inline-size: 1px;
+        block-size: 1px;
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    &__checkmark{
+        @extend %flex-row-center-center;
+        position: absolute;
+        inset-block-start: 0.6rem;
+        inset-inline-end: 0.6rem;
+        inline-size: 1.6rem;
+        block-size: 1.6rem;
+        border: 2px solid var(--border);
+        border-radius: 999px;
+        background: var(--bg);
+        color: white;
+        box-shadow: $shadow;
+        z-index: 1;
+
+        &::after{
+            content: "";
+            inline-size: 0.45rem;
+            block-size: 0.75rem;
+            border: solid currentColor;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg) scale(0);
+            transform-origin: center;
+            transition: transform 0.18s ease-out;
+        }
+    }
+
+
+    &__title{
+        width: 100%;
+        text-align: center;
+        color: var(--text);
+        font-size: 0.9rem;
+        line-height: 1.2;
+        font-weight: 600;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    &__media{
+        position: relative;
+        @extend %flex-row-center-center;
+        height: 150px;
+        width: 100%;
+
+
+        & img{
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            object-position: center;
+
+        }
+    }
+
+    &__status-list {
+        position: absolute;
+        inset-block-start: 0.5rem;
+        inset-inline-start: 0.5rem;
+        z-index: 1;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.3rem;
+        max-inline-size: calc(100% - 1rem);
+    }
+
+    &__placeholder{
+        @extend %flex-row-center-center;
+        width: 100%;
+        height: 100%;
+        color: var(--text-muted);
+        font-size: 0.85rem;
+        text-align: center;
+    }
+
+    &__button{
+        @extend %flex-row-center-center;
+        padding-block: 0.5rem;
+
+        background-color: var(--bg);
+        border: 2px solid var(--border-muted);
+        border-radius: 0.5rem;
+
+        color: var(--text-muted);
+        font-weight: 400;
+
+        @extend %theme-transition;
+
+        &:hover {
+            background-color: var(--bg);
+            border-color: var(--primary);
+            color: var(--text);
+        }
+
+
+
+    }
+
+    &__actions{
+        display: none;
+    }
+
+
+    &__notFounded{
+        p {
+            color: var(--text);
+            font-weight: 600;
+        }
+    }
+
+
+
+    &:hover,
+    &:focus-visible {
+        background-color: var(--bg-light);
+        border-color: var(--border);
+        color: var(--text);
+
+    }
+
+    &.is-selected{
+        background-color: color-mix(in srgb, var(--primary) 12%, var(--bg-light));
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 22%, transparent);
+
+        .product-grid-card__checkmark{
+            border-color: var(--primary);
+            background: var(--primary);
+            color: var(--bg-dark);
+
+            &::after{
+                transform: rotate(45deg) scale(1);
+            }
+        }
+    }
+
+}

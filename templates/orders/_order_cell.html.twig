@@ -1,0 +1,8 @@
+<div class="order-cell">
+    <a
+        href="{{ path('app_orders_show', {id: order.id}) }}"
+        title="{{ order.orderReference }}"
+    >
+        {{ order.orderReference ? order.orderReference|split('-')|last : '#' ~ order.id }}
+    </a>
+</div>

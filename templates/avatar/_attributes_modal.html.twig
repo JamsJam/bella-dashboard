@@ -1,0 +1,36 @@
+<div class="modal-backdrop" role="presentation">
+    <dialog class="modal modal--wide" open aria-labelledby="avatar-attributes-title">
+        <header class="modal__header">
+            <div>
+                <h2 id="avatar-attributes-title">Gestion des {{ modal.group == 'sizes' ? 'tailles' : 'formes' }}</h2>
+                <p class="modal__subtitle">{{ modal.items|length }} valeur(s) pour {{ modal.label|lower }}</p>
+            </div>
+            <button type="button" class="modal__close" onclick="this.closest('.modal-backdrop').remove()" aria-label="Fermer">×</button>
+        </header>
+        <nav class="avatar-color-tabs" aria-label="Types de valeurs">
+            {% for tab in modal.tabs %}
+                <a href="{{ path('app_avatar_attributes_modal', { group: modal.group, type: tab.type }) }}"
+                   class="avatar-color-tabs__item{{ tab.type == modal.type ? ' is-active' : '' }}" data-turbo-stream>
+                    {{ tab.label }}
+                </a>
+            {% endfor %}
+        </nav>
+        <div class="modal__body">
+            <ul class="avatar-colors">
+                {% for item in modal.items %}
+                    <li class="avatar-colors__item">
+                        <span class="avatar-colors__content"><strong>{{ item.name }}</strong><small>{{ item.associatedCount }} élément(s) associé(s)</small></span>
+                        <form method="post" action="{{ path('app_avatar_attribute_delete', { group: modal.group, type: modal.type, id: item.id }) }}"
+                              {% if item.associatedCount > 0 %}data-turbo-confirm="Cette valeur est utilisée. Les éléments associés seront également supprimés. Confirmer ?"{% endif %}>
+                            <input type="hidden" name="_csrf_token" value="{{ csrf_token('avatar_attribute_delete_' ~ modal.group ~ '_' ~ modal.type ~ '_' ~ item.id) }}">
+                            <button type="submit" class="avatar-colors__delete">Supprimer</button>
+                        </form>
+                    </li>
+                {% else %}
+                    <li class="modal__subtitle">Aucune valeur enregistrée.</li>
+                {% endfor %}
+            </ul>
+        </div>
+        <footer class="modal__actions"><button type="button" class="avatar-colors__close" onclick="this.closest('.modal-backdrop').remove()">Fermer</button></footer>
+    </dialog>
+</div>

@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>BellaGP a répondu à votre avis</title>
+</head>
+<body style="margin:0;background:#f4f6f8;color:#20242a;font-family:Arial,Helvetica,sans-serif;">
+<div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;">Découvrez la réponse de BellaGP à votre avis sur {{ review.product.name }}.</div>
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f4f6f8;padding:32px 12px;">
+    <tr><td align="center">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:640px;background:#ffffff;border:1px solid #e4e7eb;border-radius:16px;overflow:hidden;box-shadow:0 8px 24px rgba(32,36,42,.08);">
+            <tr><td style="padding:23px 32px 28px;border-top:5px solid #005066;border-bottom:1px solid #e4e7eb;">
+                <div style="font-size:24px;font-weight:800;letter-spacing:-.5px;color:#20242a;">BellaGP</div>
+                <div style="margin-top:6px;font-size:13px;color:#737b86;">Votre avis sur {{ review.product.name }}</div>
+            </td></tr>
+            <tr><td style="padding:32px;">
+                <div style="display:inline-block;margin-bottom:12px;padding:6px 10px;border-radius:999px;background:#e8f3f5;color:#005066;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;">Réponse de BellaGP</div>
+                <h1 style="margin:0 0 12px;font-size:26px;line-height:1.25;">Nous avons répondu à votre avis</h1>
+                <p style="margin:0 0 22px;color:#626b76;font-size:15px;line-height:1.65;">Notre équipe a répondu à votre commentaire concernant <strong style="color:#20242a;">{{ review.product.name }}</strong>.</p>
+
+                <div style="padding:20px;border-left:4px solid #005066;border-radius:4px 10px 10px 4px;background:#f5fafb;">
+                    <div style="margin-bottom:7px;color:#737b86;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;">Notre réponse</div>
+                    <div style="color:#343a42;font-size:15px;line-height:1.65;">{{ review.reply }}</div>
+                </div>
+
+                <div style="margin-top:22px;padding:18px;border:1px solid #e4e7eb;border-radius:10px;background:#f9fafb;">
+                    <div style="color:#737b86;font-size:12px;">Votre avis</div>
+                    <div style="margin-top:8px;color:#d69e00;font-size:18px;letter-spacing:2px;" aria-label="{{ review.rating }} étoiles sur 5">{% for star in 1..5 %}{{ star <= review.rating ? '★' : '☆' }}{% endfor %}</div>
+                    <p style="margin:10px 0 0;color:#4f5863;font-size:14px;font-style:italic;line-height:1.6;">« {{ review.comment }} »</p>
+                </div>
+            </td></tr>
+            <tr><td style="padding:20px 32px;background:#f9fafb;border-top:1px solid #e4e7eb;color:#8a929d;font-size:12px;text-align:center;">BellaGP · Merci pour votre retour.</td></tr>
+        </table>
+    </td></tr>
+</table>
+</body>
+</html>

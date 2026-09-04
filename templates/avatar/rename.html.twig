@@ -1,0 +1,180 @@
+{% extends 'base.html.twig' %}
+
+{% set tabs = [
+    { id: 'add', label: 'Ajouter', href: path("app_avatar_add"), isActive: false },
+    { id: 'rename', label: 'Renommer', href: path("app_avatar_rename"), isActive: true },
+    { id: 'library', label: 'Bibliothèque', href: path('app_avatar'), isActive: false }
+] %}
+
+{% block title %}Renommer les avatars{% endblock %}
+
+{% block body %}
+    <article class="avatar-page avatar-page--rename" aria-labelledby="avatar-rename-title">
+        <header class="avatar-page__header">
+            <h1 id="avatar-rename-title" class="title">Renommer les avatars</h1>
+            <p class="avatar-page__subtitle">
+                Selectionne les caracteristiques, valide les noms, puis lance le traitement final.
+            </p>
+        </header>
+
+        {% include 'ui/components/tabs/_tabs.html.twig' with { tabs: tabs } only %}
+
+        <form
+            method="post"
+            action="{{ path('app_avatar_rename') }}"
+            class="avatar-rename"
+            {{ stimulus_controller('avatar-rename', {
+                filterUrl: filter_url,
+                deleteCsrfToken: csrf_token('avatar_temp_delete')
+            }) }}
+        >
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token('avatar_rename') }}">
+            <input type="hidden" name="renames" value="[]" {{ stimulus_target('avatar-rename', 'renamesInput') }}>
+
+            <section class="avatar-rename__queue" aria-labelledby="avatar-rename-pending-title">
+                <h2 id="avatar-rename-pending-title" class="avatar-rename__title">Images a traiter</h2>
+                <ul class="avatar-rename__grid" {{ stimulus_target('avatar-rename', 'pendingList') }}>
+                    {% for avatar in avatars|filter(avatar => avatar.status == 'uploaded') %}
+                        <li class="avatar-rename__card" data-avatar-rename-target="card" data-avatar-id="{{ avatar.id }}" data-avatar-status="{{ avatar.status }}">
+                            <button
+                                type="button"
+                                class="avatar-rename__card-button"
+                                data-avatar-id="{{ avatar.id }}"
+                                data-avatar-name="{{ avatar.originalName }}"
+                                data-avatar-preview="{{ path('app_avatar_rename_preview', { id: avatar.id }) }}"
+                                data-avatar-delete-url="{{ path('app_avatar_rename_delete', { id: avatar.id }) }}"
+                                data-avatar-validate-url="{{ path('app_avatar_rename_validate', { id: avatar.id }) }}"
+                                data-avatar-validate-csrf-token="{{ csrf_token('avatar_rename_validate_' ~ avatar.id) }}"
+                                {{ stimulus_action('avatar-rename', 'selectAvatar', 'click') }}
+                            >
+                                <img class="avatar-rename__thumb" src="{{ path('app_avatar_rename_preview', { id: avatar.id }) }}" alt="">
+                                <span>{{ avatar.originalName }}</span>
+                            </button>
+                            <button
+                                type="button"
+                                class="avatar-rename__delete"
+                                data-avatar-id="{{ avatar.id }}"
+                                data-avatar-delete-url="{{ path('app_avatar_rename_delete', { id: avatar.id }) }}"
+                                data-avatar-cancel-validation-url="{{ path('app_avatar_rename_cancel_validation', { id: avatar.id }) }}"
+                                data-avatar-cancel-validation-csrf-token="{{ csrf_token('avatar_rename_cancel_validation_' ~ avatar.id) }}"
+                                {{ stimulus_action('avatar-rename', 'deleteAvatar', 'click') }}
+                            >
+                                Supprimer
+                            </button>
+                        </li>
+                    {% else %}
+                        <li class="avatar-rename__empty">Aucune image en attente.</li>
+                    {% endfor %}
+                </ul>
+            </section>
+
+            <aside class="avatar-rename__panel" {{ stimulus_target('avatar-rename', 'panel') }} aria-hidden="true">
+                <header class="avatar-rename__panel-header">
+                    <div>
+                        <span class="avatar-rename__panel-kicker">Édition</span>
+                        <h2>Renommer l’image</h2>
+                    </div>
+                    <button
+                        type="button"
+                        class="avatar-rename__panel-close"
+                        aria-label="Fermer le panneau"
+                        {{ stimulus_action('avatar-rename', 'closePanel', 'click') }}
+                    >
+                        ×
+                    </button>
+                </header>
+
+                <div class="avatar-rename__panel-content">
+                    <figure class="avatar-rename__panel-media">
+                        <img class="avatar-rename__preview" alt="" {{ stimulus_target('avatar-rename', 'preview') }}>
+                        <figcaption class="avatar-rename__current" {{ stimulus_target('avatar-rename', 'currentName') }}></figcaption>
+                    </figure>
+
+                    <div class="avatar-rename__panel-form">
+                        <label class="avatar-rename__field">
+                            <span>Partie</span>
+                            <select {{ stimulus_target('avatar-rename', 'category') }} {{ stimulus_action('avatar-rename', 'onCategoryChange', 'change') }}>
+                                {% for value, label in partLabels %}
+                                    <option value="{{ value }}">{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </label>
+
+                        <div class="avatar-rename__filters" {{ stimulus_target('avatar-rename', 'filtersContainer') }}></div>
+
+                        <div class="avatar-rename__result">
+                            <span>Nouveau nom</span>
+                            <p class="avatar-rename__generated" {{ stimulus_target('avatar-rename', 'generatedName') }}></p>
+                        </div>
+                    </div>
+                </div>
+
+                <footer class="avatar-rename__panel-footer">
+                    <button type="button" class="avatar-rename__button" {{ stimulus_action('avatar-rename', 'validateCurrent', 'click') }}>
+                        Valider le renommage
+                    </button>
+                </footer>
+            </aside>
+
+            <section class="avatar-rename__validated" aria-labelledby="avatar-rename-validated-title">
+                <h2 id="avatar-rename-validated-title" class="avatar-rename__title">Images validees</h2>
+                <ul class="avatar-rename__grid" {{ stimulus_target('avatar-rename', 'validatedList') }}>
+                    {% for avatar in avatars|filter(avatar => avatar.status == 'validated') %}
+                        <li class="avatar-rename__card is-validated" data-avatar-rename-target="card" data-avatar-id="{{ avatar.id }}" data-avatar-status="validated">
+                            <button type="button" class="avatar-rename__card-button" data-avatar-id="{{ avatar.id }}" data-avatar-name="{{ avatar.originalName }}" data-avatar-preview="{{ path('app_avatar_rename_preview', { id: avatar.id }) }}" disabled>
+                                <img class="avatar-rename__thumb" src="{{ path('app_avatar_rename_preview', { id: avatar.id }) }}" alt="">
+                                <span>{{ avatar.finalName }}</span>
+                            </button>
+                            <button
+                                type="button"
+                                class="avatar-rename__delete"
+                                data-avatar-id="{{ avatar.id }}"
+                                data-avatar-cancel-validation-url="{{ path('app_avatar_rename_cancel_validation', { id: avatar.id }) }}"
+                                data-avatar-cancel-validation-csrf-token="{{ csrf_token('avatar_rename_cancel_validation_' ~ avatar.id) }}"
+                                {{ stimulus_action('avatar-rename', 'deleteAvatar', 'click') }}
+                            >Supprimer</button>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </section>
+
+            {% set rejectedAvatars = avatars|filter(avatar => avatar.status == 'error') %}
+            {% if rejectedAvatars is not empty %}
+                <section class="avatar-rename__rejected" aria-labelledby="avatar-rename-rejected-title">
+                    <header class="avatar-rename__rejected-header">
+                        <h2 id="avatar-rename-rejected-title" class="avatar-rename__title">Images rejetées</h2>
+                        <p>Le worker n’a pas pu terminer ces renommages. Tu peux les reprendre ou les supprimer définitivement.</p>
+                    </header>
+                    <ul class="avatar-rename__rejected-list">
+                        {% for avatar in rejectedAvatars %}
+                            <li class="avatar-rename__error">
+                                <img class="avatar-rename__error-thumb" src="{{ path('app_avatar_rename_preview', { id: avatar.id }) }}" alt="">
+                                <span class="avatar-rename__error-content">
+                                    <strong>{{ avatar.originalName }}</strong>
+                                    <small>Rejeté après l’échec du traitement</small>
+                                </span>
+                                <span class="avatar-rename__error-actions">
+                                    <button class="avatar-rename__retry" type="submit" form="avatar-rename-retry-{{ avatar.id }}">Réessayer</button>
+                                    <button class="avatar-rename__remove" type="submit" form="avatar-rename-delete-error-{{ avatar.id }}">Supprimer</button>
+                                </span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </section>
+            {% endif %}
+
+            <button type="submit" class="avatar-rename__finish" hidden {{ stimulus_target('avatar-rename', 'finishButton') }}>
+                Termine
+            </button>
+        </form>
+
+        {% for avatar in avatars|filter(avatar => avatar.status == 'error') %}
+            <form id="avatar-rename-retry-{{ avatar.id }}" method="post" action="{{ path('app_avatar_rename_retry', { id: avatar.id }) }}" hidden>
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token('avatar_rename_retry_' ~ avatar.id) }}">
+            </form>
+            <form id="avatar-rename-delete-error-{{ avatar.id }}" method="post" action="{{ path('app_avatar_rename_delete', { id: avatar.id }) }}" hidden>
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token('avatar_temp_delete') }}">
+            </form>
+        {% endfor %}
+    </article>
+{% endblock %}

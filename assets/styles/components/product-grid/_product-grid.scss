@@ -1,0 +1,64 @@
+@use "../../abstract" as *;
+
+.product-grid {
+    width: 100%;
+
+    @extend %flex-column-start-stretch;
+    gap: 1rem;
+
+    &__header {
+        @extend %flex-column-start-stretch;
+        gap: 0.75rem;
+    }
+
+    &__title {
+        text-align: center;
+        color: var(--text);
+        font-size: 1.25rem;
+    }
+
+    &__selection-actions {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+        padding: 0.75rem;
+        border: 1px solid var(--border-muted);
+        border-radius: 0.5rem;
+        background: var(--bg-light);
+    }
+
+    &__selection-actions[hidden] {
+        display: none;
+    }
+
+    &__selection-count {
+        color: var(--text-muted);
+        font-size: 0.9rem;
+        margin-inline-end: auto;
+    }
+
+    &__action {
+        border: 1px solid var(--border);
+        border-radius: 0.4rem;
+        padding: 0.5rem 0.8rem;
+        background: var(--bg);
+        color: var(--text);
+        cursor: pointer;
+
+        @extend %theme-transition;
+    }
+
+    &__action:hover,
+    &__action:focus-visible {
+        border-color: var(--primary);
+        outline: none;
+    }
+
+    &__action--delete:hover,
+    &__action--delete:focus-visible {
+        border-color: #b42318;
+        color: #b42318;
+    }
+}

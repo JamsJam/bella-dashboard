@@ -1,0 +1,126 @@
+framework:
+    workflows:
+        clothe_publication:
+            type: state_machine
+            audit_trail:
+                enabled: true
+            marking_store:
+                type: method
+                property: publicationStatus
+            supports:
+                - App\Entity\Clothes\ClothesVariant
+            initial_marking: !php/enum App\Enum\ClotheStatus::Draft
+            places: !php/enum App\Enum\ClotheStatus
+            transitions:
+                rendre_publiable:
+                    from: !php/enum App\Enum\ClotheStatus::Draft
+                    to: !php/enum App\Enum\ClotheStatus::Publishable
+                repasser_en_brouillon:
+                    from: !php/enum App\Enum\ClotheStatus::Publishable
+                    to: !php/enum App\Enum\ClotheStatus::Draft
+                programmer_publication:
+                    from: !php/enum App\Enum\ClotheStatus::Publishable
+                    to: !php/enum App\Enum\ClotheStatus::Scheduled
+                annuler_programmation:
+                    from: !php/enum App\Enum\ClotheStatus::Scheduled
+                    to: !php/enum App\Enum\ClotheStatus::Publishable
+                invalider_programmation:
+                    from: !php/enum App\Enum\ClotheStatus::Scheduled
+                    to: !php/enum App\Enum\ClotheStatus::Draft
+                publier:
+                    from: !php/enum App\Enum\ClotheStatus::Publishable
+                    to: !php/enum App\Enum\ClotheStatus::Online
+                publier_automatiquement:
+                    from: !php/enum App\Enum\ClotheStatus::Scheduled
+                    to: !php/enum App\Enum\ClotheStatus::Online
+                depublier:
+                    from: !php/enum App\Enum\ClotheStatus::Online
+                    to: !php/enum App\Enum\ClotheStatus::Offline
+                remettre_en_ligne:
+                    from: !php/enum App\Enum\ClotheStatus::Offline
+                    to: !php/enum App\Enum\ClotheStatus::Online
+                modifier_hors_ligne:
+                    from: !php/enum App\Enum\ClotheStatus::Offline
+                    to: !php/enum App\Enum\ClotheStatus::Draft
+                archiver_brouillon:
+                    from: !php/enum App\Enum\ClotheStatus::Draft
+                    to: !php/enum App\Enum\ClotheStatus::Archived
+                archiver_publiable:
+                    from: !php/enum App\Enum\ClotheStatus::Publishable
+                    to: !php/enum App\Enum\ClotheStatus::Archived
+                archiver_planifie:
+                    from: !php/enum App\Enum\ClotheStatus::Scheduled
+                    to: !php/enum App\Enum\ClotheStatus::Archived
+                archiver_en_ligne:
+                    from: !php/enum App\Enum\ClotheStatus::Online
+                    to: !php/enum App\Enum\ClotheStatus::Archived
+                archiver_hors_ligne:
+                    from: !php/enum App\Enum\ClotheStatus::Offline
+                    to: !php/enum App\Enum\ClotheStatus::Archived
+                restaurer:
+                    from: !php/enum App\Enum\ClotheStatus::Archived
+                    to: !php/enum App\Enum\ClotheStatus::Draft
+        avatar_rename:
+            type: state_machine
+            audit_trail:
+                enabled: true
+            marking_store:
+                type: method
+                property: status
+            supports:
+                - App\Entity\AvatarTemp
+            initial_marking: uploaded
+            places:
+                - uploaded
+                - validated
+                - renaming
+                - renamed
+                - error
+            transitions:
+                validate:
+                    from: uploaded
+                    to: validated
+                start_renaming:
+                    from: validated
+                    to: renaming
+                cancel_validation:
+                    from: validated
+                    to: uploaded
+                mark_renamed:
+                    from: renaming
+                    to: renamed
+                fail:
+                    from: renaming
+                    to: error
+                retry:
+                    from: error
+                    to: uploaded
+        order:
+            type: state_machine
+            audit_trail:
+                enabled: true
+            marking_store:
+                type: method
+                property: orderStatus
+            supports:
+                - App\Entity\Orders\Orders
+            initial_marking: !php/enum App\Enum\OrderStatus::Created
+            places: !php/enum App\Enum\OrderStatus
+            transitions:
+                process:
+                    from: !php/enum App\Enum\OrderStatus::Created
+                    to: !php/enum App\Enum\OrderStatus::Processing
+                cancel:
+                    from: !php/enum App\Enum\OrderStatus::Created
+                    to: !php/enum App\Enum\OrderStatus::Cancelled
+                schedule_delivery:
+                    from: !php/enum App\Enum\OrderStatus::Processing
+                    to: !php/enum App\Enum\OrderStatus::AwaitingDelivery
+                ship:
+                    from: !php/enum App\Enum\OrderStatus::Processing
+                    to: !php/enum App\Enum\OrderStatus::Shipped
+                mark_delivered:
+                    from:
+                        - !php/enum App\Enum\OrderStatus::AwaitingDelivery
+                        - !php/enum App\Enum\OrderStatus::Shipped
+                    to: !php/enum App\Enum\OrderStatus::Delivered

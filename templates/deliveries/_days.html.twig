@@ -1,0 +1,56 @@
+{% for day in days %}
+    <section
+        class="delivery-day{{ day.isToday ? ' delivery-day--today' : '' }}"
+        data-date="{{ day.date|date('Y-m-d') }}"
+        {% if day.isToday %}data-today{% endif %}
+    >
+        <header class="delivery-day__header">
+            <div>
+                <span>{{ day.isToday ? 'Aujourd’hui' : day.label|capitalize }}</span>
+                <strong>{{ day.date|date('d/m/Y') }}</strong>
+            </div>
+            <span class="delivery-day__count">{{ day.orders|length }}</span>
+        </header>
+
+        <div class="delivery-day__orders">
+            {% for order in day.orders %}
+                {% set shipping = order.shippinfo %}
+                {% set isAwaiting = order.orderStatus.value == 'awaiting_delivery' %}
+                {% if isAwaiting %}
+                    <a
+                        class="delivery-order delivery-order--awaiting"
+                        href="{{ path('app_orders_deliveries_delivered_modal', {id: order.id}) }}"
+                        data-turbo-stream
+                    >
+                {% else %}
+                    <article class="delivery-order delivery-order--delivered">
+                {% endif %}
+                    <header>
+                        <strong class="delivery-order__reference">#{{ order.orderReference|split('-')|last }}</strong>
+                        <strong>{{ (order.total / 100)|number_format(2, ',', ' ') }} €</strong>
+                    </header>
+                    <span class="delivery-order__status">
+                        {{ isAwaiting ? 'En attente de livraison' : 'Livrée' }}
+                    </span>
+                    <p>{{ shipping.firstName|default('') }} {{ shipping.lastName|default('Client non renseigné') }}</p>
+                    <address>
+                        {{ shipping.address|default('Adresse non renseignée') }}<br>
+                        {{ shipping.postcode|default('') }} {{ shipping.city|default('') }}
+                    </address>
+                    {% if shipping.phone|default('') %}
+                        <span class="delivery-order__phone">{{ shipping.phone }}</span>
+                    {% endif %}
+                {% if isAwaiting %}
+                    </a>
+                {% else %}
+                    </article>
+                {% endif %}
+            {% else %}
+                <div class="delivery-day__empty">
+                    {{ ux_icon('lucide:calendar-x') }}
+                    <span>Aucune livraison prévue</span>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+{% endfor %}

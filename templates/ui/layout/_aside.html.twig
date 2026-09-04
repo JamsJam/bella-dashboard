@@ -1,0 +1,160 @@
+{% set menu = [
+    {
+        title: 'Vêtements',
+        path: null,
+        children: [
+            {
+                label: 'Liste des vêtements',
+                icon: 'ep:goods',
+                path: 'app_clothes'
+            },
+            {
+                label: 'Catégories',
+                icon: 'ep:menu',
+                path: 'app_clothes_categories'
+            },
+            {
+                label: 'Collections',
+                icon: 'ep:folder',
+                path: 'app_clothe_collection'
+            },
+            {
+                label: 'Ajouter un produit',
+                icon: null,
+                path: 'app_clothe_add'
+            }
+        ]
+    },
+    {
+        title: 'Avatars',
+        path: null,
+        children: [
+            {
+                label: 'Bibliothèque',
+                icon: 'ep:picture',
+                path: 'app_avatar'
+            },
+            {
+                label: 'Ajouter des avatars',
+                icon: 'ep:upload',
+                path: 'app_avatar_add'
+            },
+            {
+                label: 'Renommer les avatars',
+                icon: 'ep:edit',
+                path: 'app_avatar_rename'
+            },
+            {
+                label: 'Déformer une image',
+                icon: 'ep:picture',
+                path: 'app_avatar_deformation'
+            }
+        ]
+    },
+    {
+        title: 'Clients',
+        path: null,
+        children: [
+            {
+                label: 'Liste des clients',
+                icon: 'ep:user',
+                path: 'app_customers'
+            }
+        ]
+    },
+    {
+        title: 'Commandes',
+        path: null,
+        children: [
+            {
+                label: 'Toutes les commandes',
+                icon: 'ep:document',
+                path: 'app_orders'
+            },
+            {
+                label: 'Livraisons',
+                icon: 'lucide:truck',
+                path: 'app_orders_deliveries'
+            }
+        ]
+    },
+    {
+        title: 'Avis',
+        path: null,
+        children: [
+            {
+                label: 'Tous les avis',
+                icon: 'ep:chat-dot-round',
+                path: 'app_reviews'
+            }
+        ]
+    },
+    {
+        title: 'Configuration',
+        path: null,
+        children: [
+            {
+                label: 'Vue d’ensemble',
+                icon: 'ep:menu',
+                path: 'app_config_index'
+            },
+            {
+                label: 'Général',
+                icon: 'ep:setting',
+                path: 'app_config_general'
+            },
+            {
+                label: 'Shop',
+                icon: 'ep:shop',
+                path: 'app_config_pages'
+            },
+            {
+                label: 'Commandes',
+                icon: 'ep:document',
+                path: 'app_config_orders'
+            },
+            {
+                label: 'Vêtements',
+                icon: 'ep:goods',
+                path: 'app_config_clothes'
+            },
+            {
+                label: 'Contact',
+                icon: 'ep:user',
+                path: 'app_config_contact'
+            }
+        ]
+    },
+    {
+        title: 'Déconnexion',
+        path: 'app_logout',
+        children: []
+    }
+] %}
+
+
+<div class="aside aside--close" {{ stimulus_target('aside_toggle', 'aside') }}>
+	<div class="aside__header">
+    
+        <a class="itemContainer" href="{{path('app_dashboard')}}">
+            {{ ux_icon('material-symbols-light:dashboard-rounded') }}
+            <span> 
+                Dashboard 
+            </span>
+        </a>
+
+    </div>
+
+    <div class="aside__menu" >
+		{% for item in menu %}
+			{% include "ui/components/menu/_item.html.twig" with {
+                item: item,
+                currentRoute: app.request.attributes.get('_route')
+            } only %}
+		{% endfor %}
+	</div>
+
+
+
+</div>
+<div class="overlay overlay--close" {{ stimulus_target('aside_toggle', 'overlay') | stimulus_action("aside_toggle","handleAsideToggle","click") }}></div>

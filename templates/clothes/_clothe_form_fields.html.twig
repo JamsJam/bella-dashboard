@@ -1,0 +1,117 @@
+<div class="collection-form__grid">
+    <label class="collection-form__field">
+        <span>Nom du vetement</span>
+        <select
+            name="{{ prefix }}[name]"
+            required
+            data-collection-form-clothe-name-input
+            data-action="change->collection-form#toggleNewClotheNameField"
+        >
+            <option value="">Selectionner un nom</option>
+            {% for existingClothe in existingClothes|default([]) %}
+                <option value="existing:{{ existingClothe.id }}" data-collection-id="{{ existingClothe.collection.id }}">
+                    {{ existingClothe.name|capitalize }}
+                </option>
+            {% endfor %}
+            <option value="__new__">Créer un nouveau nom</option>
+        </select>
+    </label>
+
+    <label class="collection-form__field">
+        <span>Prix TTC en centimes</span>
+        <input type="number" name="{{ prefix }}[price]" min="1" step="1">
+    </label>
+</div>
+
+<label class="collection-form__field" data-collection-form-new-clothe-name hidden>
+    <span>Nouveau nom</span>
+    <input type="text" name="{{ prefix }}[newName]" maxlength="70">
+</label>
+
+<label class="collection-form__field">
+    <span>Description</span>
+    <textarea name="{{ prefix }}[description]" rows="5"></textarea>
+</label>
+
+<label class="collection-form__field">
+    <span>Images du vetement</span>
+    <input
+        type="file"
+        name="{{ imageInputName }}"
+        accept=".jpg,.jpeg,.png,image/jpeg,image/png"
+        multiple
+        data-collection-form-images-input
+        data-action="change->collection-form#renderImageOrder"
+    >
+</label>
+
+<div class="collection-form__image-order" data-collection-form-image-order></div>
+
+<section class="collection-form__variants" data-collection-form-target="variantsList">
+    <div class="collection-form__section-header">
+        <h3>Variantes</h3>
+        <button type="button" class="clothe-show__button" data-action="collection-form#addVariant">
+            Ajouter une variante
+        </button>
+    </div>
+
+    <template data-collection-form-target="variantTemplate" data-collection-form-variant-template>
+        <article class="collection-form__variant" data-collection-form-variant>
+            <div class="collection-form__grid">
+                <label class="collection-form__field">
+                    <span>Couleur</span>
+                    <select
+                        name="{{ prefix }}[variants][__VARIANT_INDEX__][color]"
+                        data-action="change->collection-form#toggleNewColorField"
+                        required
+                    >
+                        <option value="">Selectionner une couleur</option>
+                        {% for color in colors %}
+                            <option value="{{ color.id }}">{{ color.name }}</option>
+                        {% endfor %}
+                        <option value="__new__">Ajouter une couleur</option>
+                    </select>
+                </label>
+
+                <fieldset class="collection-form__field">
+                    <legend>Tailles</legend>
+                    <div class="collection-form__size-options">
+                        {% for size in availableSizes %}
+                            <label>
+                                <input type="checkbox" name="{{ prefix }}[variants][__VARIANT_INDEX__][sizes][]" value="{{ size }}">
+                                <span>{{ size }}</span>
+                            </label>
+                        {% endfor %}
+                    </div>
+                </fieldset>
+
+                <label class="collection-form__field">
+                    <span>Stock</span>
+                    <input type="number" name="{{ prefix }}[variants][__VARIANT_INDEX__][stock]" min="0" step="1" value="0" required>
+                </label>
+
+            </div>
+
+            <label class="collection-form__field">
+                <span>Meta description</span>
+                <textarea name="{{ prefix }}[variants][__VARIANT_INDEX__][metadescription]" rows="3" maxlength="200"></textarea>
+            </label>
+
+            <div class="collection-form__grid">
+                <label class="collection-form__field" data-collection-form-new-color-name hidden>
+                    <span>Nouvelle couleur</span>
+                    <input type="text" name="{{ prefix }}[variants][__VARIANT_INDEX__][newColorName]" maxlength="50">
+                </label>
+
+                <label class="collection-form__field" data-collection-form-new-color-hex hidden>
+                    <span>Code couleur</span>
+                    <input type="color" name="{{ prefix }}[variants][__VARIANT_INDEX__][newColorHex]" value="#000000">
+                </label>
+            </div>
+
+            <button type="button" class="clothe-show__button" data-action="collection-form#removeVariant">
+                Supprimer la variante
+            </button>
+        </article>
+    </template>
+</section>

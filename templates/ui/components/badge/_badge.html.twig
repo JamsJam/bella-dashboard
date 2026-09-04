@@ -1,0 +1,8 @@
+{# ? Badge UI réutilisable. #}
+{# * Paramètres : label, variant facultatif et wrapperClass facultatif. #}
+
+{% set variant = variant|default('default') %}
+
+{% if wrapperClass|default('') %}<span class="{{ wrapperClass }}">{% endif %}
+    <span class="badge badge--{{ variant }}">{{ label }}</span>
+{% if wrapperClass|default('') %}</span>{% endif %}

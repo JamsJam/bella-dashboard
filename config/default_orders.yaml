@@ -1,0 +1,28 @@
+vat: 20.0
+carriers:
+    -
+        name: La Poste
+        tracking_url: 'https://www.laposte.fr/outils/suivre-vos-envois?code='
+    -
+        name: Colissimo
+        tracking_url: 'https://www.laposte.fr/outils/suivre-vos-envois?code='
+    -
+        name: DPD
+        tracking_url: 'https://trace.dpd.fr/fr/trace/'
+shipping_fees:
+    -
+        destination: Guadeloupe
+        flag: /images/checkout/flags/guadeloupe_flag.png
+        price_cents: 450
+    -
+        destination: Martinique
+        flag: /images/checkout/flags/martinique_flag.png
+        price_cents: 500
+    -
+        destination: Saint-Martin
+        flag: /images/checkout/flags/france_flag.png
+        price_cents: 600
+    -
+        destination: France
+        flag: /images/checkout/flags/france_flag.png
+        price_cents: 850

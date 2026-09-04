@@ -3,23 +3,23 @@
 namespace App\Entity\Users;
 
 use ApiPlatform\Metadata\ApiResource;
-use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
 use App\Entity\Orders\Orders;
 use App\Entity\Traits\DateFieldsTrait;
 use App\Entity\Traits\UserFieldsTrait;
 use App\Repository\Users\CustomersRepository;
+use App\State\Users\CustomerPasswordHasherProcessor;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ApiResource(
     operations: [
-        new Post(),         // inscription
-        new Get(),          // accès à son profil
+        new Post(processor: CustomerPasswordHasherProcessor::class),         // inscription
         new Put(),          // modification de son profil
     ],
     normalizationContext: ['groups' => ['customer:read']],
@@ -35,6 +35,7 @@ class Customers implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['customer:read'])]
     private ?int $id = null;
 
     /**
@@ -42,6 +43,15 @@ class Customers implements UserInterface, PasswordAuthenticatedUserInterface
      */
     #[ORM\OneToMany(targetEntity: Orders::class, mappedBy: 'customer')]
     private Collection $orders;
+
+    #[ORM\Column]
+    private bool $isSignupConfirmed = true;
+
+    #[ORM\Column(length: 6, nullable: true)]
+    private ?string $signupVerificationCode = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $signupVerificationExpiresAt = null;
 
     public function __construct()
     {
@@ -74,6 +84,42 @@ class Customers implements UserInterface, PasswordAuthenticatedUserInterface
                 $order->setCustomer(null);
             }
         }
+
+        return $this;
+    }
+
+    public function isSignupConfirmed(): bool
+    {
+        return $this->isSignupConfirmed;
+    }
+
+    public function setIsSignupConfirmed(bool $isSignupConfirmed): static
+    {
+        $this->isSignupConfirmed = $isSignupConfirmed;
+
+        return $this;
+    }
+
+    public function getSignupVerificationCode(): ?string
+    {
+        return $this->signupVerificationCode;
+    }
+
+    public function setSignupVerificationCode(?string $signupVerificationCode): static
+    {
+        $this->signupVerificationCode = $signupVerificationCode;
+
+        return $this;
+    }
+
+    public function getSignupVerificationExpiresAt(): ?\DateTimeImmutable
+    {
+        return $this->signupVerificationExpiresAt;
+    }
+
+    public function setSignupVerificationExpiresAt(?\DateTimeImmutable $signupVerificationExpiresAt): static
+    {
+        $this->signupVerificationExpiresAt = $signupVerificationExpiresAt;
 
         return $this;
     }

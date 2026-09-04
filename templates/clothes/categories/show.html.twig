@@ -1,0 +1,84 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ category.name }}{% endblock %}
+
+{% block body %}
+    <article
+        class="category-show"
+        aria-labelledby="category-show-title"
+        {{ stimulus_controller('category-online') }}
+        {{ stimulus_action('category-online', 'change', 'toggle:change') }}
+    >
+        <header class="category-show__header">
+            <div>
+                <h1 id="category-show-title" class="title">{{ category.name }}</h1>
+            </div>
+
+            {% include 'ui/components/tabs/_tabs.html.twig' with { tabs: tabs } only %}
+        </header>
+
+        <section class="category-show__summary">
+            <section class="category-show__image-section">
+                <div class="category-show__image">
+                    {% if category.image %}
+                        <img src="{{ category.image }}" alt="{{ category.name }}">
+                    {% else %}
+                        <span>Aucune image</span>
+                    {% endif %}
+                </div>
+
+                <form class="category-show__upload" method="post" action="{{ imageUploadAction }}" enctype="multipart/form-data">
+                    <input type="hidden" name="_csrf_token" value="{{ imageUploadToken }}">
+                    <label>
+                        <span>Choisir une image PNG, JPEG ou SVG</span>
+                        <input type="file" name="illustration" accept=".png,.jpg,.jpeg,.svg,image/png,image/jpeg,image/svg+xml" required>
+                    </label>
+                    <button type="submit" class="category-show__button">Mettre a jour l'image</button>
+                </form>
+            </section>
+
+            <div class="category-show__content">
+                <dl class="category-show__meta">
+                    <div>
+                        <dt>Statut</dt>
+                        <dd>{{ onlineToggle|raw }}</dd>
+                    </div>
+                </dl>
+
+                <section class="category-show__section category-publication" aria-labelledby="category-publication-title">
+                    <header class="category-publication__header">
+                        <div>
+                            <h2 id="category-publication-title" class="category-show__section-title">Conditions de mise en ligne</h2>
+                            <p>Vérifie les éléments nécessaires avant de publier cette catégorie.</p>
+                        </div>
+                        <span class="category-publication__summary category-publication__summary--{{ canPublish ? 'valid' : 'invalid' }}">
+                            {{ canPublish ? 'Prête à publier' : 'Configuration incomplète' }}
+                        </span>
+                    </header>
+
+                    <ul class="category-publication__list">
+                        {% for requirement in publicationRequirements %}
+                            <li class="category-publication__item category-publication__item--{{ requirement.isValid ? 'valid' : 'invalid' }}">
+                                <span class="category-publication__indicator" aria-hidden="true">{{ requirement.isValid ? '✓' : '×' }}</span>
+                                <div>
+                                    <strong>{{ requirement.label }}</strong>
+                                    <span>{{ requirement.isValid ? 'Condition remplie' : requirement.error }}</span>
+                                </div>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </section>
+
+                <section class="category-show__section" aria-labelledby="category-collections-title">
+                    <h2 id="category-collections-title" class="category-show__section-title">Collections de la categorie</h2>
+                    {% include 'clothes/categories/_collections_list.html.twig' with {
+                        category: category,
+                        collectionPublicationStates: collectionPublicationStates
+                    } only %}
+                </section>
+            </div>
+        </section>
+    </article>
+
+    <div id="modal-root"></div>
+{% endblock %}

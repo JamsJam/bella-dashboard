@@ -1,0 +1,20 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Bibliotheque de vetements{% endblock %}
+
+{% block body %}
+    <article class="avatar-page" aria-labelledby="clothes-page-title">
+        <header class="avatar-page__header">
+            <h1 id="clothes-page-title" class="title">Vetements</h1>
+            <p class="avatar-page__subtitle">
+                Gere la bibliotheque des vetements avec une seule carte par nom, meme quand plusieurs tailles existent.
+            </p>
+        </header>
+
+        {% include 'ui/components/tabs/_tabs.html.twig' with { tabs: tabs } only %}
+
+        <section>
+            {% include 'ui/components/product-grid/_product-grid.html.twig' with { gridData: gridData } only %}
+        </section>
+    </article>
+{% endblock %}

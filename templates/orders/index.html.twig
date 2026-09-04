@@ -1,0 +1,63 @@
+{% extends 'base.html.twig' %}
+
+{% set actionTabs = [
+    {
+        id: 'back',
+        label: 'Retour',
+        href: path('app_dashboard'),
+        isActive: false
+    },
+    {
+        id: 'deliveries',
+        label: 'Livraisons',
+        href: path('app_orders_deliveries'),
+        isActive: false
+    }
+] %}
+
+{% block title %}Commandes{% endblock %}
+
+{% block body %}
+    <article class="admin-page" aria-labelledby="orders-title">
+        <header class="admin-page__header orders-header">
+            <div>
+                <p class="orders-header__eyebrow">Pilotage des ventes</p>
+                <h1 id="orders-title" class="title">Commandes</h1>
+                <p class="admin-page__subtitle">Suivez les paiements, la préparation et les livraisons depuis un seul écran.</p>
+            </div>
+        </header>
+
+        {% include 'ui/components/tabs/_tabs.html.twig' with {
+            tabs: actionTabs,
+            ariaLabel: 'Actions des commandes'
+        } only %}
+
+        <section class="orders-summary" aria-label="Résumé des commandes">
+            <article class="orders-summary__card orders-summary__card--primary">
+                <span>Total des commandes</span>
+                <strong>{{ summary.total }}</strong>
+                <small>{{ (summary.revenue / 100)|number_format(2, ',', ' ') }} € encaissés</small>
+            </article>
+            {% for status in statuses %}
+                <article class="orders-summary__card orders-summary__card--{{ status.value }}">
+                    <span>{{ status.label }}</span>
+                    <strong>{{ summary.statuses[status.value] }}</strong>
+                    <small>{{ status.value == 'processing' ? 'À préparer' : (status.value == 'awaiting_delivery' ? 'Livraison programmée' : 'Commandes') }}</small>
+                </article>
+            {% endfor %}
+        </section>
+
+        <section class="orders-list" aria-labelledby="orders-list-title">
+            <header class="orders-list__header">
+                <div>
+                    <h2 id="orders-list-title">Suivi opérationnel</h2>
+                    <p>Toutes les commandes, paginées selon vos filtres.</p>
+                </div>
+            </header>
+
+            {% include 'ui/components/data-table/_data_table.html.twig' with table only %}
+        </section>
+
+        <div id="modal-root"></div>
+    </article>
+{% endblock %}

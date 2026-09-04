@@ -1,0 +1,56 @@
+<div class="modal-backdrop">
+    <dialog class="modal order-delivery-modal" open aria-labelledby="order-delivery-modal-title">
+        <form
+            method="post"
+            action="{{ path('app_orders_delivery_date', {id: order.id}) }}"
+            data-turbo="false"
+            {{ stimulus_controller('delivery-calendar') }}
+        >
+            <header class="modal__header">
+                <div>
+                    <h2 id="order-delivery-modal-title">Programmer la livraison</h2>
+                    <p class="modal__subtitle">Commande {{ order.orderReference }}</p>
+                </div>
+                <button type="button" class="modal__close" onclick="this.closest('.modal-backdrop').remove()" aria-label="Fermer">
+                    &times;
+                </button>
+            </header>
+
+            <div class="modal__body">
+                <section class="order-delivery-modal__address" aria-labelledby="delivery-address-title">
+                    <h3 id="delivery-address-title">Adresse de livraison</h3>
+                    <address>
+                        {{ order.shippinfo.address|default('Adresse non renseignée') }}<br>
+                        {{ order.shippinfo.postcode|default('') }} {{ order.shippinfo.city|default('') }}<br>
+                        {{ order.shippinfo.destination|default('Guadeloupe') }}
+                    </address>
+                </section>
+
+                {% include 'orders/_delivery_calendar.html.twig' with {
+                    calendar: calendar,
+                    minimumDate: minimumDate
+                } only %}
+
+                <input
+                    type="hidden"
+                    name="_csrf_token"
+                    value="{{ csrf_token('order_delivery_date_' ~ order.id) }}"
+                >
+            </div>
+
+            <footer class="modal__actions">
+                <button type="button" class="orders-table-action" onclick="this.closest('.modal-backdrop').remove()">
+                    Annuler
+                </button>
+                <button
+                    type="submit"
+                    class="orders-table-action orders-table-action--primary"
+                    disabled
+                    {{ stimulus_target('delivery-calendar', 'submit') }}
+                >
+                    Confirmer la date
+                </button>
+            </footer>
+        </form>
+    </dialog>
+</div>

@@ -1,0 +1,87 @@
+<section
+    class="data-table"
+    {{ stimulus_controller('data-table', {
+        url: url,
+        sort: sort,
+        direction: direction,
+        page: pagination.page|default(1)
+    }) }}
+>
+    <div class="data-table__toolbar">
+        <label class="data-table__search">
+            <span>Recherche</span>
+            <span class="data-table__search-control">
+                {{ ux_icon('lucide:search', {class: 'data-table__search-icon', 'aria-hidden': 'true'}) }}
+                <input
+                    type="search"
+                    value="{{ search }}"
+                    placeholder="{{ searchPlaceholder|default('Rechercher') }}"
+                    {{ stimulus_target('data-table', 'search') }}
+                    {{ stimulus_action('data-table', 'search', 'input') }}
+                >
+            </span>
+        </label>
+
+        {% if filters|default([]) is not empty %}
+            <div class="data-table__filters" aria-label="Filtres">
+                {% for filter in filters %}
+                    <label class="data-table__filter">
+                        <span>{{ filter.label }}</span>
+                        <select
+                            name="{{ filter.name }}"
+                            {{ stimulus_target('data-table', 'filter') }}
+                            {{ stimulus_action('data-table', 'filter', 'change') }}
+                        >
+                            {% for option in filter.options %}
+                                <option value="{{ option.value }}" {{ option.value == filter.value ? 'selected' : '' }}>
+                                    {{ option.label }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </label>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="data-table__viewport">
+        <table class="data-table__table">
+            <thead>
+                <tr>
+                    {% for column in columns %}
+                        <th scope="col">
+                            {% if column.sortable %}
+                                <button
+                                    type="button"
+                                    class="data-table__sort"
+                                    data-sort="{{ column.key }}"
+                                    {{ stimulus_action('data-table', 'sort', 'click') }}
+                                >
+                                    <span>{{ column.label }}</span>
+                                    <span class="data-table__sort-indicator" aria-hidden="true">
+                                        {% if sort == column.key %}
+                                            {{ direction == 'asc' ? '↑' : '↓' }}
+                                        {% else %}
+                                            ↕
+                                        {% endif %}
+                                    </span>
+                                </button>
+                            {% else %}
+                                {{ column.label }}
+                            {% endif %}
+                        </th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody {{ stimulus_target('data-table', 'body') }}>
+                {% include 'ui/components/data-table/_rows.html.twig' with { columns: columns, rows: rows } only %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if pagination is defined %}
+        <div {{ stimulus_target('data-table', 'pagination') }}>
+            {% include 'ui/components/data-table/_pagination.html.twig' with {pagination: pagination} only %}
+        </div>
+    {% endif %}
+</section>

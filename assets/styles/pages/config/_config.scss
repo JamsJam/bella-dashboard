@@ -1,0 +1,921 @@
+@use "../../abstract/" as *;
+
+.config-hub {
+    @extend %flex-column-start-stretch;
+    @extend %theme-transition;
+    gap: 1.5rem;
+    color: var(--text);
+}
+
+.config-hub__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+    gap: 1rem;
+}
+
+.config-hub__card {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 1rem;
+    min-block-size: 8rem;
+    padding: 1.25rem;
+    border: 1px solid var(--border-muted);
+    border-radius: 0.85rem;
+    background: var(--bg-light);
+    color: var(--text);
+    box-shadow: $shadow;
+    transition: transform 150ms ease, border-color 150ms ease, background 150ms ease;
+}
+
+.config-hub__card:hover,
+.config-hub__card:focus-visible {
+    border-color: var(--primary);
+    outline: 0;
+    background: var(--bg);
+    transform: translateY(-2px);
+}
+
+.config-hub__icon {
+    display: grid;
+    place-items: center;
+    inline-size: 3rem;
+    block-size: 3rem;
+    border-radius: 0.75rem;
+    background: color-mix(in srgb, var(--primary) 14%, var(--bg));
+    color: var(--primary);
+}
+
+.config-hub__icon svg,
+.config-hub__arrow svg {
+    inline-size: 1.4rem;
+    block-size: 1.4rem;
+}
+
+.config-hub__content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.config-hub__content strong {
+    font-size: 1.05rem;
+}
+
+.config-hub__content small {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    line-height: 1.45;
+}
+
+.config-hub__arrow {
+    color: var(--text-muted);
+}
+
+.config-page {
+    @extend %flex-column-start-stretch;
+    @extend %theme-transition;
+    gap: 1.5rem;
+    color: var(--text);
+}
+
+:root[data-theme="dark"] .config-page {
+    color-scheme: dark;
+}
+
+:root[data-theme="light"] .config-page {
+    color-scheme: light;
+}
+
+.config-page h1,
+.config-page h2,
+.config-page h3,
+.config-page legend,
+.config-page strong,
+.config-page label {
+    color: var(--text);
+}
+
+.config-page p,
+.config-page small,
+.config-page .form-text,
+.config-page .help-text {
+    color: var(--text-muted);
+}
+
+.config-page__content {
+    inline-size: 100%;
+    max-inline-size: 52rem;
+    margin-inline: auto;
+}
+
+.config-page__back {
+    margin-block-start: 0.75rem;
+}
+
+.config-page:has(.config-card--homepage) .config-page__content {
+    inline-size: 100%;
+    max-inline-size: 76rem;
+}
+
+.config-card {
+    @extend %flex-column-start-stretch;
+    @extend %theme-transition;
+    gap: 1rem;
+    padding: 1rem;
+    border: 1px solid var(--border);
+    border-radius: 0.5rem;
+    background: var(--bg-light);
+}
+
+.config-card__header h2 {
+    color: var(--text);
+    font-size: 1.1rem;
+}
+
+.config-field {
+    @extend %flex-column-start-stretch;
+    gap: 0.4rem;
+    color: var(--text);
+}
+
+.config-field[hidden],
+.config-collection[hidden],
+.config-image-field[hidden],
+.config-file__preview-frame[hidden],
+.config-file__preview[hidden] {
+    display: none !important;
+}
+
+.config-field span,
+.config-checkbox span {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    font-weight: 700;
+}
+
+.config-field input,
+.config-field textarea,
+.config-field select,
+.config-collection input {
+    @extend %theme-transition;
+    inline-size: 100%;
+    border: 1px solid var(--border);
+    border-radius: 0.35rem;
+    padding: 0.65rem 0.75rem;
+    background: var(--bg);
+    color: var(--text);
+    font: inherit;
+}
+
+.config-field input::placeholder,
+.config-field textarea::placeholder,
+.config-collection input::placeholder {
+    color: var(--text-muted);
+    opacity: 0.72;
+}
+
+.config-field select option {
+    background: var(--bg);
+    color: var(--text);
+}
+
+.config-field input:hover,
+.config-field textarea:hover,
+.config-field select:hover,
+.config-collection input:hover {
+    border-color: var(--border-muted);
+}
+
+.config-field input:focus-visible,
+.config-field textarea:focus-visible,
+.config-field select:focus-visible,
+.config-collection input:focus-visible {
+    border-color: var(--primary);
+    outline: 0;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 20%, transparent);
+}
+
+.config-field input:disabled,
+.config-field textarea:disabled,
+.config-field select:disabled,
+.config-collection input:disabled {
+    background: var(--bg-dark);
+    color: var(--text-muted);
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.config-field input[type="checkbox"],
+.config-field input[type="radio"],
+.config-checkbox input {
+    inline-size: 1.1rem;
+    block-size: 1.1rem;
+    accent-color: var(--primary);
+}
+
+.config-card > ul,
+.config-field ul,
+.config-collection > ul,
+.config-page .invalid-feedback {
+    color: var(--danger);
+    font-size: 0.82rem;
+    line-height: 1.45;
+}
+
+.config-field textarea {
+    resize: vertical;
+}
+
+.config-checkbox {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+}
+
+.config-card__actions {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.orders-config-tabs {
+    @extend %theme-transition;
+    display: grid;
+    gap: 1.25rem;
+    color: var(--text);
+}
+
+.orders-config-tabs__nav {
+    @extend %theme-transition;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.5rem;
+    padding: 0.4rem;
+    border: 1px solid var(--border-muted);
+    border-radius: 0.75rem;
+    background: var(--bg);
+}
+
+.orders-config-tabs__tab {
+    @extend %theme-transition;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.2rem;
+    min-inline-size: 0;
+    padding: 0.7rem 0.85rem;
+    border: 1px solid transparent;
+    border-radius: 0.55rem;
+    background: transparent;
+    color: var(--text-muted);
+    text-align: start;
+    cursor: pointer;
+    transition: border-color 150ms ease, background 150ms ease, color 150ms ease, box-shadow 150ms ease;
+}
+
+.orders-config-tabs__tab span {
+    font-size: 0.84rem;
+    font-weight: 700;
+}
+
+.orders-config-tabs__tab small {
+    overflow: hidden;
+    inline-size: 100%;
+    font-size: 0.7rem;
+    font-weight: 400;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.orders-config-tabs__tab:hover {
+    background: var(--bg-light);
+    color: var(--text);
+}
+
+.orders-config-tabs__tab[aria-selected="true"] {
+    border-color: color-mix(in srgb, var(--primary) 30%, var(--border-muted));
+    background: color-mix(in srgb, var(--primary) 10%, var(--bg-light));
+    color: var(--primary);
+}
+
+.orders-config-tabs__tab:focus-visible {
+    outline: 0;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 18%, transparent);
+}
+
+.orders-config-tabs__panel {
+    @extend %theme-transition;
+    display: grid;
+    gap: 1rem;
+    min-inline-size: 0;
+    padding: 1.15rem;
+    border: 1px solid var(--border-muted);
+    border-radius: 0.75rem;
+    background: var(--bg);
+}
+
+.orders-config-tabs__panel[hidden] {
+    display: none;
+}
+
+.orders-config-tabs__header {
+    padding-block-end: 0.85rem;
+    border-block-end: 1px solid var(--border-muted);
+}
+
+.orders-config-tabs__header h2 {
+    margin: 0;
+    color: var(--text);
+    font-size: 1rem;
+}
+
+.orders-config-tabs__header p {
+    margin: 0.25rem 0 0;
+    color: var(--text-muted);
+    font-size: 0.78rem;
+    line-height: 1.5;
+}
+
+@media (max-width: 38rem) {
+    .orders-config-tabs__nav {
+        grid-template-columns: 1fr;
+    }
+
+    .orders-config-tabs__tab {
+        flex-direction: row;
+        align-items: baseline;
+        justify-content: space-between;
+    }
+
+    .orders-config-tabs__tab small {
+        inline-size: auto;
+    }
+
+    .orders-config-tabs__panel {
+        padding: 0.85rem;
+    }
+}
+
+.config-card--homepage {
+    gap: 1.5rem;
+    padding: clamp(1rem, 2.5vw, 2rem);
+    border-color: var(--border-muted);
+    border-radius: 1rem;
+    box-shadow: $shadow;
+}
+
+.homepage-form__nav {
+    position: sticky;
+    z-index: 2;
+    top: 0.75rem;
+    display: flex;
+    gap: 0.45rem;
+    overflow-x: auto;
+    padding: 0.6rem;
+    border: 1px solid var(--border-muted);
+    border-radius: 0.75rem;
+    background: var(--bg-light);
+    box-shadow: $shadow;
+    scrollbar-width: thin;
+}
+
+.homepage-form__nav a {
+    flex: 0 0 auto;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    padding: 0.5rem 0.8rem;
+    color: var(--text-muted);
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-decoration: none;
+    transition: 150ms ease;
+}
+
+.homepage-form__nav a:hover,
+.homepage-form__nav a:focus-visible {
+    border-color: var(--border);
+    background: var(--bg);
+    color: var(--text);
+}
+
+.homepage-form__sections {
+    display: grid;
+    gap: 1.5rem;
+}
+
+.homepage-section {
+    min-inline-size: 0;
+    margin: 0;
+    padding: 0;
+    border: 1px solid var(--border-muted);
+    border-radius: 0.85rem;
+    background: var(--bg);
+    overflow: hidden;
+    scroll-margin-top: 5rem;
+}
+
+.homepage-section__legend {
+    display: flex;
+    flex-direction: column;
+    inline-size: 100%;
+    padding: 1.15rem 1.25rem;
+    border-block-end: 1px solid var(--border-muted);
+    background: var(--bg);
+    border-radius: 1rem 1rem 0 0;
+}
+
+.homepage-section__eyebrow {
+    color: var(--primary);
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.homepage-section__title {
+    margin-block-start: 0.2rem;
+    color: var(--text);
+    font-size: 1.2rem;
+    font-weight: 800;
+}
+
+.homepage-section__legend small {
+    margin-block-start: 0.25rem;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    font-weight: 400;
+}
+
+.homepage-section__fields {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    padding: 1.25rem;
+}
+
+.homepage-section__fields > .config-field--text,
+.homepage-section__fields > .config-field--description,
+.homepage-section__fields > .config-field--ogDescription,
+.homepage-section__fields > .config-field--jsonLd,
+.homepage-section__fields > .homepage-collection {
+    grid-column: 1 / -1;
+}
+
+.homepage-section__fields .config-field label {
+    color: var(--text-muted);
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.035em;
+    text-transform: uppercase;
+}
+
+.homepage-section__fields .config-field input,
+.homepage-section__fields .config-field textarea {
+    border-color: var(--border-muted);
+    border-radius: 0.5rem;
+    background: var(--bg-light);
+    transition: border-color 150ms ease, box-shadow 150ms ease, background 150ms ease;
+}
+
+.homepage-section__fields .config-field input:focus,
+.homepage-section__fields .config-field textarea:focus {
+    border-color: var(--primary);
+    outline: 0;
+    background: var(--bg);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 18%, transparent);
+}
+
+.homepage-checkbox {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 0.85rem 1rem;
+    border: 1px solid var(--border-muted);
+    border-radius: 0.6rem;
+    background: var(--bg-light);
+}
+
+.homepage-checkbox input {
+    inline-size: 1.2rem;
+    block-size: 1.2rem;
+    accent-color: var(--primary);
+}
+
+.homepage-checkbox div {
+    display: flex;
+    flex-direction: column;
+}
+
+.homepage-checkbox label {
+    color: var(--text);
+    font-weight: 800;
+}
+
+.homepage-checkbox small {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+}
+
+.homepage-image-upload {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(14rem, 0.65fr);
+    align-items: stretch;
+    gap: 1rem;
+}
+
+.homepage-image-upload__field {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.4rem;
+}
+
+.homepage-image-upload__preview {
+    display: grid;
+    grid-template-columns: 5rem minmax(0, 1fr);
+    align-items: center;
+    gap: 0.8rem;
+    min-inline-size: 0;
+    margin: 0;
+    padding: 0.65rem;
+    border: 1px solid var(--border-muted);
+    border-radius: 0.65rem;
+    background: var(--bg-light);
+}
+
+.homepage-image-upload__preview[hidden] {
+    display: none;
+}
+
+.homepage-image-upload__preview img {
+    inline-size: 5rem;
+    block-size: 5rem;
+    border-radius: 0.5rem;
+    object-fit: cover;
+}
+
+.homepage-image-upload__preview figcaption {
+    display: flex;
+    flex-direction: column;
+    min-inline-size: 0;
+    gap: 0.2rem;
+}
+
+.homepage-image-upload__preview span {
+    color: var(--text-muted);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.homepage-image-upload__preview strong {
+    overflow: hidden;
+    color: var(--text);
+    font-size: 0.85rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.homepage-collection__fields .homepage-image-upload {
+    grid-template-columns: 1fr;
+}
+
+.homepage-collection {
+    min-inline-size: 0;
+}
+
+.homepage-collection__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-block-end: 0.75rem;
+    color: var(--text);
+    font-weight: 800;
+}
+
+.homepage-collection__header small {
+    border-radius: 999px;
+    padding: 0.3rem 0.55rem;
+    background: var(--bg-light);
+    color: var(--text-muted);
+    font-size: 0.72rem;
+}
+
+.homepage-collection__grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.85rem;
+}
+
+.homepage-collection__card {
+    min-inline-size: 0;
+    border: 1px solid var(--border-muted);
+    border-radius: 0.7rem;
+    background: var(--bg-light);
+    overflow: hidden;
+}
+
+.homepage-collection__card > header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.65rem 0.8rem;
+    border-block-end: 1px solid var(--border-muted);
+    color: var(--text-muted);
+    font-size: 0.76rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.homepage-collection__card > header strong {
+    color: var(--primary);
+    font-size: 0.85rem;
+}
+
+.homepage-collection__fields {
+    display: grid;
+    grid-template-columns: 5rem minmax(0, 1fr);
+    gap: 0.75rem;
+    padding: 0.85rem;
+}
+
+.homepage-collection__fields .config-field--slug,
+.homepage-collection__fields .config-field--name,
+.homepage-collection__fields .config-field--images,
+.homepage-collection__fields .config-field--text,
+.homepage-collection__fields .config-field--image,
+.homepage-collection__fields .config-field--title,
+.homepage-collection__fields .config-field--icon {
+    grid-column: 1 / -1;
+}
+
+.config-card--homepage .config-card__actions {
+    position: sticky;
+    z-index: 2;
+    bottom: 0.75rem;
+    padding: 0.8rem;
+    border: 1px solid var(--border-muted);
+    border-radius: 0.75rem;
+    background: color-mix(in srgb, var(--bg-light) 92%, transparent);
+    box-shadow: $shadow;
+    backdrop-filter: blur(10px);
+}
+
+.config-group {
+    @extend %flex-column-start-stretch;
+    gap: 1rem;
+    margin: 0;
+    padding: 1rem;
+    border: 1px solid var(--border);
+    border-radius: 0.5rem;
+}
+
+.config-group legend {
+    padding-inline: 0.4rem;
+    color: var(--text);
+    font-weight: 700;
+}
+
+.config-group__description {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    line-height: 1.5;
+}
+
+.config-page-list {
+    display: grid;
+    gap: 0.75rem;
+    margin: 1rem 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.config-page-list__item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem;
+    border: 1px solid var(--border);
+    border-radius: 0.5rem;
+    background: var(--bg-light);
+    color: var(--text);
+}
+
+.config-page-list__item div {
+    @extend %flex-column-start-stretch;
+    gap: 0.25rem;
+}
+
+.config-page-list__item span {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.config-collection {
+    @extend %flex-column-start-stretch;
+    gap: 0.75rem;
+}
+
+.config-collection__header {
+    @extend %flex-row-space-between-center;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    font-weight: 700;
+}
+
+.config-collection__items {
+    @extend %flex-column-start-stretch;
+    gap: 0.75rem;
+}
+
+.config-collection__item {
+    @extend %flex-column-start-stretch;
+    @extend %theme-transition;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 0.5rem;
+    background: var(--bg-light);
+    color: var(--text);
+}
+
+.config-collection__item > div {
+    @extend %flex-column-start-stretch;
+    gap: 0.75rem;
+}
+
+.config-collection__add,
+.config-collection__remove {
+    @extend %theme-transition;
+    border: 1px solid var(--border);
+    border-radius: 0.35rem;
+    padding: 0.45rem 0.65rem;
+    background: var(--bg);
+    color: var(--text);
+    cursor: pointer;
+}
+
+.config-collection__add:hover,
+.config-collection__add:focus-visible {
+    border-color: var(--primary);
+    outline: 0;
+    background: color-mix(in srgb, var(--primary) 12%, var(--bg));
+    color: var(--primary);
+}
+
+.config-collection__remove {
+    align-self: flex-end;
+    color: var(--danger);
+}
+
+.config-collection__impact {
+    margin: 0;
+    color: var(--danger);
+    font-size: 0.8rem;
+    line-height: 1.45;
+}
+
+.config-collection__remove:hover,
+.config-collection__remove:focus-visible {
+    border-color: var(--danger);
+    outline: 0;
+    background: color-mix(in srgb, var(--danger) 10%, var(--bg));
+}
+
+.config-file__row {
+    display: flex;
+    flex-direction: row-reverse;
+    align-items: stretch;
+    justify-content: space-around;
+    gap: 1rem;
+}
+
+.config-file__zone {
+    @extend %theme-transition;
+    position: relative;
+    flex: 1 1 24rem;
+    border: 1px dashed var(--border);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    background: var(--bg);
+    cursor: pointer;
+}
+
+.config-image-field {
+    @extend %flex-column-start-stretch;
+    gap: 1rem;
+}
+
+.config-file__zone.is-drag-over {
+    border-color: var(--primary);
+    background: color-mix(in srgb, var(--primary) 8%, var(--bg-light));
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 18%, transparent);
+}
+
+.config-file__zone:hover,
+.config-file__zone:focus-within {
+    border-color: var(--primary);
+    background: color-mix(in srgb, var(--primary) 5%, var(--bg));
+}
+
+.config-file__input {
+    position: absolute;
+    inset: 0;
+    inline-size: 100%;
+    block-size: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.config-file__body {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    min-block-size: 6rem;
+    color: var(--text);
+}
+
+.config-file__preview-frame {
+    display: grid;
+    place-items: center;
+    flex: 0 0 8rem;
+    min-block-size: 8rem;
+    border: 1px solid var(--border);
+    border-radius: 0.5rem;
+    background: var(--bg);
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    text-align: center;
+}
+
+.config-file__preview {
+    inline-size: 7rem;
+    block-size: 7rem;
+    object-fit: contain;
+    border-radius: 0.4rem;
+}
+
+.config-file__preview-empty {
+    padding: 0.75rem;
+}
+
+.config-file__title,
+.config-file__hint {
+    margin: 0;
+}
+
+.config-file__title {
+    font-weight: 700;
+}
+
+.config-file__hint {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.config-cropper {
+    @extend %flex-column-start-stretch;
+    gap: 0.75rem;
+}
+
+.config-cropper .cropperjs-image {
+    max-inline-size: 100%;
+}
+
+@media (max-width: 40rem) {
+    .config-page:has(.config-card--homepage) .config-page__content {
+        inline-size: auto;
+    }
+
+    .config-card--homepage {
+        padding: 0.75rem;
+    }
+
+    .homepage-section__fields,
+    .homepage-collection__grid {
+        grid-template-columns: 1fr;
+    }
+
+    .homepage-image-upload {
+        grid-template-columns: 1fr;
+    }
+
+    .homepage-section__fields > *,
+    .homepage-collection__fields > * {
+        grid-column: 1 / -1;
+    }
+
+    .config-file__row {
+        flex-direction: column;
+    }
+
+    .config-file__preview-frame {
+        flex-basis: auto;
+    }
+}

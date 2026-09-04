@@ -1,0 +1,73 @@
+<turbo-frame id="clothe-modal-component">
+    <div class="modal-backdrop">
+        <dialog class="modal" open aria-labelledby="clothe-edit-modal-title">
+            <form
+                method="post"
+                action="{{ action }}"
+                data-turbo-frame="_top"
+            >
+                <header class="modal__header">
+                    <div>
+                        <h2 id="clothe-edit-modal-title">Modifier les informations du vêtement</h2>
+                        <p class="modal__subtitle">Ces informations appartiennent au vêtement et sont communes à ses variants.</p>
+                    </div>
+                    <button type="button" class="modal__close" onclick="this.closest('.modal-backdrop').remove()" aria-label="Fermer">
+                        &times;
+                    </button>
+                </header>
+
+                <div class="modal__body">
+                    <input type="hidden" name="_csrf_token" value="{{ csrf_token('clothe_edit_' ~ slug) }}">
+
+                    <label class="category-form__field">
+                        <span>Nom du vêtement</span>
+                        <input
+                            type="text"
+                            name="name"
+                            value="{{ clothe.name }}"
+                            required
+                            maxlength="70"
+                            autocomplete="off"
+                        >
+                    </label>
+
+                    <label class="category-form__field">
+                        <span>Collection</span>
+                        <select name="collection" required>
+                            {% for collection in collections %}
+                                <option
+                                    value="{{ collection.id }}"
+                                    {% if collection.id == clothe.collection.id|default(null) %}selected{% endif %}
+                                >
+                                    {{ collection.category.name }} — {{ collection.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </label>
+
+                    <label class="category-form__field">
+                        <span>Prix TTC en centimes</span>
+                        <input
+                            type="number"
+                            name="price"
+                            min="1"
+                            step="1"
+                            value="{{ clothe.price }}"
+                            inputmode="numeric"
+                            required
+                        >
+                    </label>
+                </div>
+
+                <footer class="modal__actions">
+                    <button type="button" class="clothe-show__button" onclick="this.closest('.modal-backdrop').remove()">
+                        Annuler
+                    </button>
+                    <button type="submit" class="clothe-show__button clothe-show__button--primary">
+                        Enregistrer
+                    </button>
+                </footer>
+            </form>
+        </dialog>
+    </div>
+</turbo-frame>

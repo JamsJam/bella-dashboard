@@ -1,0 +1,44 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Clients{% endblock %}
+
+{% block body %}
+    <article class="admin-page" aria-labelledby="customers-title">
+        <header class="admin-page__header customers-header">
+            <div>
+                <p class="customers-header__eyebrow">Relation client</p>
+                <h1 id="customers-title" class="title">Clients</h1>
+                <p class="admin-page__subtitle">Consultez les comptes, leur confirmation et leur historique de commandes.</p>
+            </div>
+        </header>
+
+        <section class="customers-summary" aria-label="Résumé des clients">
+            <article class="customers-summary__card customers-summary__card--primary">
+                <span>Total des clients</span>
+                <strong>{{ summary.total }}</strong>
+                <small>Comptes enregistrés</small>
+            </article>
+            <article class="customers-summary__card customers-summary__card--confirmed">
+                <span>Comptes confirmés</span>
+                <strong>{{ summary.confirmed }}</strong>
+                <small>Accès validé</small>
+            </article>
+            <article class="customers-summary__card customers-summary__card--pending">
+                <span>En attente</span>
+                <strong>{{ summary.pending }}</strong>
+                <small>Confirmation nécessaire</small>
+            </article>
+        </section>
+
+        <section class="customers-list" aria-labelledby="customers-list-title">
+            <header class="customers-list__header">
+                <div>
+                    <h2 id="customers-list-title">Répertoire des clients</h2>
+                    <p>Tous les comptes, avec recherche, filtre et pagination.</p>
+                </div>
+            </header>
+
+            {% include 'ui/components/data-table/_data_table.html.twig' with table only %}
+        </section>
+    </article>
+{% endblock %}

@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Votre panier vous attend</title>
+</head>
+<body style="margin:0;background:#f4f6f8;color:#20242a;font-family:Arial,Helvetica,sans-serif;">
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f4f6f8;padding:32px 12px;">
+    <tr><td align="center">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:640px;background:#ffffff;border:1px solid #e4e7eb;border-radius:16px;overflow:hidden;box-shadow:0 8px 24px rgba(32,36,42,.08);">
+            <tr><td style="padding:28px 32px;border-bottom:1px solid #e4e7eb;font-size:24px;font-weight:800;">BellaGP</td></tr>
+            <tr><td style="padding:32px;">
+                <h1 style="margin:0 0 12px;font-size:26px;line-height:1.25;">Reprenez vos achats</h1>
+                <p style="margin:0 0 24px;color:#626b76;font-size:15px;line-height:1.65;">Votre session de paiement a expiré avant la validation de la commande. Les articles ci-dessous vous attendaient dans votre panier.</p>
+
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;">
+                    {% for item in cart.items %}
+                        <tr>
+                            <td style="padding:14px 0;border-bottom:1px solid #edf0f2;font-weight:700;">{{ item.name }}</td>
+                            <td align="right" style="padding:14px 0;border-bottom:1px solid #edf0f2;color:#626b76;">{{ item.quantity }} × {{ (item.unitPriceTTC / 100)|number_format(2, ',', ' ') }} {{ cart.currency|upper }}</td>
+                        </tr>
+                    {% endfor %}
+                </table>
+
+                <p style="margin:22px 0;color:#626b76;font-size:14px;line-height:1.6;">Le stock a été libéré : la disponibilité et les prix seront vérifiés à nouveau lorsque vous reprendrez votre commande.</p>
+                <div style="text-align:center;padding-top:8px;">
+                    <a href="{{ cartUrl }}" style="display:inline-block;background:#20242a;color:#ffffff;text-decoration:none;font-weight:700;padding:14px 24px;border-radius:9px;">Reprendre mes achats</a>
+                </div>
+            </td></tr>
+            <tr><td style="padding:20px 32px;background:#f9fafb;border-top:1px solid #e4e7eb;color:#8a929d;font-size:12px;text-align:center;">BellaGP · Votre panier peut être recomposé depuis la boutique.</td></tr>
+        </table>
+    </td></tr>
+</table>
+</body>
+</html>

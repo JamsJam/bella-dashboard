@@ -1,0 +1,54 @@
+<div class="modal-backdrop" role="presentation">
+    <dialog class="modal modal--wide" open aria-labelledby="clothes-colors-title">
+        <header class="modal__header">
+            <div>
+                <h2 id="clothes-colors-title">Gestion des couleurs des vêtements</h2>
+                <p class="modal__subtitle">{{ modal.colors|length }} couleur{{ modal.colors|length > 1 ? 's' : '' }} enregistrée{{ modal.colors|length > 1 ? 's' : '' }}</p>
+            </div>
+            <button type="button" class="modal__close" onclick="this.closest('.modal-backdrop').remove()" aria-label="Fermer">×</button>
+        </header>
+
+        <div class="modal__body">
+            {% if modal.colors is not empty %}
+                <ul class="avatar-colors">
+                    {% for color in modal.colors %}
+                        {% set hasValidHexa = color.hexa and color.hexa matches '/^[0-9a-fA-F]{6}$/' %}
+                        <li
+                            class="avatar-colors__item"
+                            data-color-id="{{ color.id }}"
+                        >
+                            <span
+                                class="avatar-colors__swatch"
+                                style="background-color: {{ hasValidHexa ? '#' ~ color.hexa : 'transparent' }}"
+                                aria-label="Couleur {{ color.name }}"
+                            ></span>
+
+                            <span class="avatar-colors__content">
+                                <strong>{{ color.name }}</strong>
+                                <small>
+                                    {{ color.clothesCount }} vêtement{{ color.clothesCount > 1 ? 's' : '' }} relié{{ color.clothesCount > 1 ? 's' : '' }}
+                                    · {{ color.variantsCount }} variant{{ color.variantsCount > 1 ? 's' : '' }}
+                                </small>
+                            </span>
+
+                            <form
+                                method="post"
+                                action="{{ path('app_clothes_color_delete', { id: color.id }) }}"
+                                data-turbo-confirm="Supprimer « {{ color.name }} » supprimera également {{ color.variantsCount }} variant(s), leurs images et les vêtements devenus vides. Confirmer la suppression ?"
+                            >
+                                <input type="hidden" name="_csrf_token" value="{{ csrf_token('clothes_color_delete_' ~ color.id) }}">
+                                <button type="submit" class="avatar-colors__delete">Supprimer</button>
+                            </form>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="modal__subtitle">Aucune couleur de vêtement enregistrée.</p>
+            {% endif %}
+        </div>
+
+        <footer class="modal__actions">
+            <button type="button" class="avatar-colors__close" onclick="this.closest('.modal-backdrop').remove()">Fermer</button>
+        </footer>
+    </dialog>
+</div>

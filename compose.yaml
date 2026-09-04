@@ -1,25 +1,70 @@
 
 services:
-###> doctrine/doctrine-bundle ###
   database:
-    image: postgres:${POSTGRES_VERSION:-16}-alpine
+    image: mysql:${MYSQL_VERSION:-8.0.32}
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-app}
-      # You should definitely change the password in production
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-!ChangeMe!}
-      POSTGRES_USER: ${POSTGRES_USER:-app}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-bellagp}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-ChangeMe}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+      MYSQL_USER: ${MYSQL_USER:-app}
     healthcheck:
-      test: ["CMD", "pg_isready", "-d", "${POSTGRES_DB:-app}", "-U", "${POSTGRES_USER:-app}"]
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 2s
       timeout: 5s
-      retries: 5
-      start_period: 60s
+      retries: 20
+      start_period: 20s
     volumes:
-      - database_data:/var/lib/postgresql/data:rw
-      # You may use a bind-mounted host directory instead, so that it is harder to accidentally remove the volume and lose all your data!
-      # - ./docker/db/data:/var/lib/postgresql/data:rw
-###< doctrine/doctrine-bundle ###
+      - database_data:/var/lib/mysql:rw
+
+  test-app:
+    profiles: ["test"]
+    build:
+      context: .
+      dockerfile: docker/test/Dockerfile
+    environment: &test-environment
+      APP_ENV: test
+      APP_SECRET: docker-test-secret
+      DATABASE_URL: mysql://root:root@database:3306/bellagp?serverVersion=8.0.32&charset=utf8mb4
+      TEST_DATABASE_URL: mysql://root:root@database:3306/bellagp?serverVersion=8.0.32&charset=utf8mb4
+      PANTHER_APP_ENV: test
+    command: php -S 0.0.0.0:9080 -t public public/index.php
+    depends_on:
+      database:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "php -r '$$socket = @fsockopen(\"127.0.0.1\", 9080); if (!$$socket) { exit(1); } fclose($$socket);'"]
+      interval: 2s
+      timeout: 5s
+      retries: 20
+      start_period: 5s
+
+  test-browser:
+    profiles: ["test"]
+    image: selenium/standalone-chromium:latest
+    shm_size: 2gb
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail --silent http://127.0.0.1:4444/status > /dev/null"]
+      interval: 2s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+
+  test-runner:
+    profiles: ["test"]
+    build:
+      context: .
+      dockerfile: docker/test/Dockerfile
+    environment:
+      <<: *test-environment
+      PANTHER_EXTERNAL_BASE_URI: http://test-app:9080
+      PANTHER_SELENIUM_HOST: http://test-browser:4444/wd/hub
+    depends_on:
+      database:
+        condition: service_healthy
+      test-app:
+        condition: service_healthy
+      test-browser:
+        condition: service_healthy
 
 volumes:
-###> doctrine/doctrine-bundle ###
   database_data:
-###< doctrine/doctrine-bundle ###

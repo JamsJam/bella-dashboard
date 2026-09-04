@@ -1,0 +1,93 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ collection.name }}{% endblock %}
+
+{% block body %}
+    <article
+        class="collection-show"
+        aria-labelledby="collection-show-title"
+        {{ stimulus_controller('collection-online') }}
+        {{ stimulus_action('collection-online', 'change', 'toggle:change') }}
+    >
+        <header class="collection-show__header">
+            <div>
+                <h1 id="collection-show-title" class="title">{{ collection.name }}</h1>
+                <p class="collection-show__subtitle">{{ collection.category ? collection.category.name : 'Categorie non renseignee' }}</p>
+            </div>
+
+            {% include 'ui/components/tabs/_tabs.html.twig' with { tabs: tabs } only %}
+        </header>
+
+        <section class="collection-show__summary">
+            <section class="collection-show__image-section">
+                <div class="collection-show__image">
+                    {% if collection.image %}
+                        <img src="{{ collection.image }}" alt="{{ collection.name }}">
+                    {% else %}
+                        <span>Aucune image</span>
+                    {% endif %}
+                </div>
+            </section>
+
+            <div class="collection-show__content">
+                <dl class="collection-show__meta">
+                    <div>
+                        <dt>Statut</dt>
+                        <dd>{{ onlineToggle|raw }}</dd>
+                    </div>
+                    <div>
+                        <dt>Categorie</dt>
+                        <dd>
+                            {% if collection.category %}
+                                <a href="{{ path('app_clothe_category_show', { id: collection.category.id }) }}">
+                                    {{ collection.category.name }}
+                                </a>
+                            {% else %}
+                                Non renseignee
+                            {% endif %}
+                        </dd>
+                    </div>
+                </dl>
+
+                <section class="collection-show__section category-publication" aria-labelledby="collection-publication-title">
+                    <header class="category-publication__header">
+                        <div>
+                            <h2 id="collection-publication-title" class="collection-show__section-title">Conditions de mise en ligne</h2>
+                            <p>Éléments nécessaires pour publier cette collection.</p>
+                        </div>
+                        <span class="category-publication__summary category-publication__summary--{{ canPublish ? 'valid' : 'invalid' }}">
+                            {{ canPublish ? 'Prête à publier' : 'Configuration incomplète' }}
+                        </span>
+                    </header>
+
+                    {% if canPublish %}
+                        <div class="category-publication__item category-publication__item--valid">
+                            <span class="category-publication__indicator" aria-hidden="true">✓</span>
+                            <div>
+                                <strong>Toutes les conditions sont remplies</strong>
+                                <span>Cette collection peut être mise en ligne.</span>
+                            </div>
+                        </div>
+                    {% else %}
+                        <ul class="category-publication__list">
+                            {% for error in publicationErrors %}
+                                <li class="category-publication__item category-publication__item--invalid">
+                                    <span class="category-publication__indicator" aria-hidden="true">×</span>
+                                    <div>
+                                        <strong>Élément manquant</strong>
+                                        <span>{{ error }}</span>
+                                    </div>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </section>
+
+                <section class="collection-show__section" aria-labelledby="collection-clothes-title">
+                    <h2 id="collection-clothes-title" class="collection-show__section-title">Vetements de la collection</h2>
+                    {% include 'clothes/collections/_clothes_list.html.twig' with { clothes: clothes } only %}
+                </section>
+            </div>
+        </section>
+    </article>
+{% endblock %}

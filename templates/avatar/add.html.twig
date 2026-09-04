@@ -1,0 +1,43 @@
+{% extends 'base.html.twig' %}
+
+{% set tabs = [
+    { id: 'rename', label: 'Renommer', href: path("app_avatar_rename"), isActive: false },
+    { id: 'back', label: 'Retour', href: path("app_avatar"), isActive: false }
+] %}
+
+{% set dz_data = {
+    uploadUrl: path('app_avatar_add'),
+    token : csrf_token,
+    redirectUrl: path('app_avatar_rename')
+}
+
+ %}
+
+{% block title %}Ajouter des avatars{% endblock %}
+
+{% block body %}
+    <article class="avatar-page" aria-labelledby="avatar-page-title">
+        <header class="avatar-page__header">
+            <h1 id="avatar-page-title" class="title">Ajouter des avatars</h1>
+            <p class="avatar-page__subtitle">
+                Téléchargez des fichiers PNG pour ajouter de nouveaux avatars.
+            </p>
+        </header>
+
+        {% include 'ui/components/tabs/_tabs.html.twig'
+            with { tabs: tabs } only
+        %}
+
+        <section
+            class="avatar-upload"
+            
+        >
+            {%  include "ui/components/dropzone/_dropzone.html.twig" 
+                with { 
+                    dropzone : dz_data
+                } only
+            %}
+
+        </section>
+    </article>
+{% endblock %}

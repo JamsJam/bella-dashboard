@@ -1,0 +1,110 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ customer.email }}{% endblock %}
+
+{% block body %}
+    <article class="customer-show" aria-labelledby="customer-show-title">
+        <header class="customer-show__header">
+            <div>
+                <a class="customer-show__back" href="{{ path('app_customers') }}">← Retour aux clients</a>
+                <h1 id="customer-show-title" class="title">{{ customer.email }}</h1>
+                <p class="customer-show__subtitle">Client #{{ customer.id }}</p>
+            </div>
+            <span class="customer-show__status customer-show__status--{{ customer.signupConfirmed ? 'confirmed' : 'pending' }}">
+                {{ customer.signupConfirmed ? 'Compte confirmé' : 'Confirmation en attente' }}
+            </span>
+        </header>
+
+        <div class="customer-show__grid">
+            <section class="customer-show__card" aria-labelledby="customer-information-title">
+                <h2 id="customer-information-title">Informations du compte</h2>
+                <dl class="customer-show__meta">
+                    <div><dt>Identifiant</dt><dd>#{{ customer.id }}</dd></div>
+                    <div><dt>E-mail</dt><dd>{{ customer.email }}</dd></div>
+                    <div><dt>Commandes</dt><dd>{{ orders|length }}</dd></div>
+                    {% if not customer.signupConfirmed %}
+                        <div><dt>Code de confirmation</dt><dd>{{ customer.signupVerificationCode ?: 'Non généré' }}</dd></div>
+                        <div><dt>Expiration du code</dt><dd>{{ customer.signupVerificationExpiresAt ? customer.signupVerificationExpiresAt|date('d/m/Y à H:i') : 'Non renseignée' }}</dd></div>
+                    {% endif %}
+                </dl>
+            </section>
+
+            <section class="customer-show__card" aria-labelledby="customer-management-title">
+                <h2 id="customer-management-title">Gestion du client</h2>
+                <form class="customer-show__form" method="post" action="{{ path('app_customers_update', { id: customer.id }) }}">
+                    <input type="hidden" name="_csrf_token" value="{{ csrf_token('customer_update_' ~ customer.id) }}">
+                    <label>
+                        <span>Adresse e-mail</span>
+                        <input type="email" name="email" value="{{ customer.email }}" required autocomplete="off">
+                    </label>
+                    <label class="customer-show__checkbox">
+                        <input type="checkbox" name="isSignupConfirmed" value="1" {% if customer.signupConfirmed %}checked{% endif %}>
+                        <span>Compte confirmé</span>
+                    </label>
+                    <button class="customer-show__button" type="submit">Enregistrer les modifications</button>
+                </form>
+
+                <div class="customer-show__danger-zone">
+                    <h3>Suppression</h3>
+                    {% if orders is empty %}
+                        <p>La suppression du compte est définitive.</p>
+                        <form method="post" action="{{ path('app_customers_delete', { id: customer.id }) }}" onsubmit="return confirm('Supprimer définitivement ce client ?');">
+                            <input type="hidden" name="_csrf_token" value="{{ csrf_token('customer_delete_' ~ customer.id) }}">
+                            <button class="customer-show__button customer-show__button--danger" type="submit">Supprimer le client</button>
+                        </form>
+                    {% else %}
+                        <p>Suppression impossible : l’historique de {{ orders|length }} commande{{ orders|length > 1 ? 's' : '' }} doit être conservé.</p>
+                    {% endif %}
+                </div>
+            </section>
+        </div>
+
+        <section class="customer-show__card" aria-labelledby="customer-orders-title">
+            <header class="customer-show__section-header">
+                <div>
+                    <h2 id="customer-orders-title">Historique des commandes</h2>
+                    <p>{{ orders|length }} commande{{ orders|length > 1 ? 's' : '' }}</p>
+                </div>
+            </header>
+
+            <div class="customer-show__orders">
+                {% for order in orders %}
+                    <details class="customer-show__order" {% if loop.first %}open{% endif %}>
+                        <summary>
+                            <a href="{{ path('app_orders_show', {id: order.id}) }}">{{ order.orderReference ?: '#' ~ order.id }}</a>
+                            <span>{{ (order.total / 100)|number_format(2, ',', ' ') }} €</span>
+                            <span class="customer-show__order-status customer-show__order-status--{{ order.orderStatus.value }}">{{ order.orderStatus.label }}</span>
+                            <span>{{ order.createdAt ? order.createdAt|date('d/m/Y à H:i') : '' }}</span>
+                        </summary>
+                        <dl class="customer-show__meta customer-show__meta--order">
+                            <div><dt>Sous-total</dt><dd>{{ (order.subtotal / 100)|number_format(2, ',', ' ') }} €</dd></div>
+                            <div><dt>Frais</dt><dd>{{ (order.fees / 100)|number_format(2, ',', ' ') }} €</dd></div>
+                            {% set includedVat = vatRate > 0 ? (order.subtotal * vatRate / (100 + vatRate))|round : 0 %}
+                            <div><dt>Dont TVA ({{ vatRate|number_format(1, ',', ' ') }} %)</dt><dd>{{ (includedVat / 100)|number_format(2, ',', ' ') }} €</dd></div>
+                            <div><dt>Total</dt><dd>{{ (order.total / 100)|number_format(2, ',', ' ') }} €</dd></div>
+                            <div><dt>Facture Stripe</dt><dd>{% if order.stripeInvoiceUrl %}<a href="{{ order.stripeInvoiceUrl }}" target="_blank" rel="noopener noreferrer">Ouvrir la facture</a>{% else %}Non disponible{% endif %}</dd></div>
+                            <div class="customer-show__shipping">
+                                <dt>Livraison</dt>
+                                <dd>
+                                    <address>
+                                        {{ order.shippinfo.firstName|default('') }} {{ order.shippinfo.lastName|default('') }}<br>
+                                        {{ order.shippinfo.address|default('Adresse non renseignée') }}<br>
+                                        {{ order.shippinfo.postcode|default('') }} {{ order.shippinfo.city|default('') }}<br>
+                                        {{ order.shippinfo.destination|default('Destination non renseignée') }}
+                                    </address>
+                                    {% if order.trackingNumber %}
+                                        <small>Expédition : {{ order.trackingNumber }}</small>
+                                    {% elseif order.deliveryDate %}
+                                        <small>Livraison prévue le {{ order.deliveryDate|date('d/m/Y') }}</small>
+                                    {% endif %}
+                                </dd>
+                            </div>
+                        </dl>
+                    </details>
+                {% else %}
+                    <p class="customer-show__empty">Ce client n’a encore passé aucune commande.</p>
+                {% endfor %}
+            </div>
+        </section>
+    </article>
+{% endblock %}

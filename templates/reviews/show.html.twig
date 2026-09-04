@@ -1,0 +1,62 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Avis #{{ review.id }}{% endblock %}
+
+{% block body %}
+    <article class="review-show" aria-labelledby="review-title">
+        <header class="review-show__header">
+            <div>
+                <a class="review-show__back" href="{{ path('app_reviews') }}">← Retour aux avis</a>
+                <h1 id="review-title" class="title">Avis #{{ review.id }}</h1>
+                <p class="review-show__subtitle">Commande {{ review.order.orderReference }}</p>
+            </div>
+            {% include 'reviews/_status_badge.html.twig' with {review} only %}
+        </header>
+
+        <div class="review-show__grid">
+            <section class="review-show__card">
+                <h2>Avis du client</h2>
+                {% include 'reviews/_rating.html.twig' with {review} only %}
+                <blockquote>{{ review.comment ?: 'Le client n’a pas encore envoyé son avis.' }}</blockquote>
+                <dl class="review-show__meta">
+                    <div><dt>Client</dt><dd><a href="{{ path('app_customers_show', {id: review.customer.id}) }}">{{ review.customer.email }}</a></dd></div>
+                    <div><dt>Produit</dt><dd>{{ review.product.name }}</dd></div>
+                    <div><dt>Commande</dt><dd><a href="{{ path('app_orders_show', {id: review.order.id}) }}">{{ review.order.orderReference }}</a></dd></div>
+                    <div><dt>Demandé le</dt><dd>{{ review.requestedAt|date('d/m/Y à H:i') }}</dd></div>
+                    <div><dt>Dernière activité</dt><dd>{{ review.updatedAt|date('d/m/Y à H:i') }}</dd></div>
+                    <div><dt>UUID public</dt><dd><code>{{ review.reviewUuid }}</code></dd></div>
+                </dl>
+            </section>
+
+            <section class="review-show__card">
+                <h2>Modération</h2>
+                {% if review.status.value != 'requested' %}
+                    <form class="review-show__form" method="post" action="{{ path('app_review_moderate', {id: review.id}) }}">
+                        <input type="hidden" name="_csrf_token" value="{{ csrf_token('review_action_' ~ review.id) }}">
+                        {% if review.status.value != 'pending' %}
+                            <p class="review-show__decision">Décision actuelle : <strong>{{ review.status.label }}</strong></p>
+                        {% endif %}
+                        <div class="review-show__actions">
+                            <button type="submit" name="decision" value="accepted" class="review-show__button review-show__button--accept">{{ review.status.value == 'accepted' ? 'Confirmer l’acceptation' : 'Accepter l’avis' }}</button>
+                            <button type="submit" name="decision" value="rejected" class="review-show__button review-show__button--reject">{{ review.status.value == 'rejected' ? 'Confirmer le refus' : 'Refuser l’avis' }}</button>
+                        </div>
+                    </form>
+                    {% if review.status.value in ['accepted', 'rejected'] %}
+                        <form class="review-show__form" method="post" action="{{ path('app_review_reply', {id: review.id}) }}">
+                            <input type="hidden" name="_csrf_token" value="{{ csrf_token('review_action_' ~ review.id) }}">
+                            <label><span>Réponse de BellaGP</span><textarea name="reply" maxlength="200" rows="5" required placeholder="Votre réponse…">{{ review.reply }}</textarea></label>
+                            {% if review.replyAt %}
+                                <p class="review-show__decision">Dernière réponse envoyée le {{ review.replyAt|date('d/m/Y à H:i') }}.</p>
+                            {% endif %}
+                            <div class="review-show__actions">
+                                <button type="submit" class="review-show__button review-show__button--reply">{{ review.reply ? 'Modifier et renvoyer la réponse' : 'Envoyer la réponse' }}</button>
+                            </div>
+                        </form>
+                    {% endif %}
+                {% else %}
+                    <p class="review-show__muted">Le client n’a pas encore répondu à la demande d’avis.</p>
+                {% endif %}
+            </section>
+        </div>
+    </article>
+{% endblock %}

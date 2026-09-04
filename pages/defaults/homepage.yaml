@@ -1,0 +1,56 @@
+sections:
+  landing:
+    isFullscreen: true
+    title: 'Shop like Bella'
+    subtitle: 'Un personnage à ton image'
+    text: 'Adepte du shopping en ligne ? Viens découvrir notre tout nouveau concept.<br>Un concept qui te permet de choisir tes vêtements et les essayer sur ton personnage.'
+    image: /image/front/default-avatar-bella-28e24cdd987b.png
+  about:
+    title: Bella
+    text: "Nous proposons des vêtements pour diverses occasions. Une sortie entre copine, un brunch de dernière minute, une journée plage ou encore un dîner romantique, une de nos pièces pourrait certainement faire l'affaire.<br><br>Alors vis l'expérience Bella en créant un personnage à ton image pour voir le rendu de tes différents outfits. En fonction de ton mood du moment, sélectionne ce qui te plait et crée ton style."
+  manual:
+    title: null
+    list:
+      -
+        title: 'Étape 1'
+        text: 'Sélectionnez vos vêtements'
+        image: 'https://picsum.photos/200/200?random=9'
+      -
+        title: 'Étape 2'
+        text: 'Ajoutez au panier'
+        image: 'https://picsum.photos/200/200?random=10'
+      -
+        title: 'Étape 3'
+        text: 'Procédez au paiement'
+        image: 'https://picsum.photos/200/200?random=11'
+      -
+        title: 'Étape 4'
+        text: 'Confirmez votre commande'
+        image: 'https://picsum.photos/200/200?random=12'
+      -
+        title: 'Étape 5'
+        text: 'Finalise ta commande et reçois tes articles'
+        image: 'https://picsum.photos/200/200?random=12'
+  return:
+    steps:
+      -
+        title: 'Retours faciles'
+        icon: 'https://picsum.photos/64/64?random=13'
+      -
+        title: 'Service client 24/7'
+        icon: 'https://picsum.photos/64/64?random=14'
+      -
+        title: 'Livraison gratuite'
+        icon: 'https://picsum.photos/64/64?random=15'
+      -
+        title: 'Paiement sécurisé'
+        icon: 'https://picsum.photos/64/64?random=16'
+seo:
+  title: 'BellaGP — Mode italienne exclusive'
+  description: 'Découvrez la collection BellaGP : vêtements chics et modernes pour un style unique.'
+  keywords: 'mode, vêtements, BellaGP, robe, tenue, livraison, retour, shopping'
+  ogTitle: 'BellaGP | Collection italienne exclusive'
+  ogDescription: 'Explore les dernières pièces BellaGP et crée ton look avec style.'
+  ogUrl: 'https://www.bellagp.com'
+  ogImage: 'https://picsum.photos/1200/630?grayscale'
+last-modifyed: '2026-07-15T09:53:21+02:00'

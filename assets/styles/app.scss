@@ -1,4 +1,6 @@
+// add your SASS styles in this file
+
 @use 'base' as *;
-@forward 'layout/header';
-@forward 'layout/footer';
-@forward 'layout/navigation';
+@use 'components' as *;
+@use 'layout' as *;
+@use 'pages' as *;

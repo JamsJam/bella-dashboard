@@ -2,82 +2,285 @@ name: deploymain
 
 on:
   push:
-    branches: ["main"]
-    # types:
-    #   - completed
+    branches:
+      - main
+
+permissions:
+  contents: read
 
 jobs:
-  build:
-    name: Build
+  quality:
+    name: Tests et lint
     runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
 
-      - name: executing remote ssh commands using password
-        uses: appleboy/ssh-action@v1.0.3
+    steps:
+      - name: Recuperer le depot
+        uses: actions/checkout@v6
+
+      - name: Construire l'environnement de test
+        run: make docker-test-up
+
+      - name: Diagnostiquer le runner de test
+        run: |
+          docker compose --profile test ps
+          docker compose --profile test run \
+            --rm \
+            --no-deps \
+            test-runner \
+            php -v
+
+      - name: Preparer la base de test
+        timeout-minutes: 2
+        run: make docker-test-prepare
+
+      - name: Executer les tests par niveau
+        run: docker compose --profile test run --rm --no-deps test-runner make test
+
+      - name: Executer les linters Symfony
+        run: docker compose --profile test run --rm --no-deps test-runner make lint
+
+      - name: Afficher les diagnostics Docker
+        if: failure()
+        run: |
+          docker compose --profile test ps -a
+          docker compose --profile test logs --tail=200 database
+          docker compose --profile test logs --tail=200 test-app
+          docker compose --profile test logs --tail=200 test-browser
+
+      - name: Arreter l'environnement de test
+        if: always()
+        run: make docker-test-down
+
+  deploy:
+    needs: quality
+    name: Deployer en production
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Recuperer le depot
+        uses: actions/checkout@v6
+
+        
+      - name: Deployer sur le serveur
+        uses: appleboy/ssh-action@v1.2.5
+        env:
+          APP_DOMAIN: ${{ secrets.APP_DOMAIN }}
+          JWT_PASSPHRASE_SOURCE: ${{ secrets.JWT_PASSPHRASE }}
+          JWT_SECRET_KEY_SOURCE: ${{ secrets.JWT_SECRET_KEY }}
+          JWT_PUBLIC_KEY_SOURCE: ${{ secrets.JWT_PUBLIC_KEY }}
+          APP_SECRET_SOURCE: ${{ secrets.APP_MAIN_SECRET }}
+          DATABASE_URL_SOURCE: ${{ secrets.DATABASE_MAIN_URL }}
+          MESSENGER_TRANSPORT_DSN_SOURCE: ${{ secrets.MESSENGER_MAIN_TRANSPORT_DSN }}
+          CORS_ALLOW_ORIGIN_SOURCE: ${{ secrets.CORS_ALLOW_ORIGIN_MAIN }}
+          STRIPE_SECRET_KEY_SOURCE: ${{ secrets.STRIPE_MAIN_SECRET_KEY }}
+          STRIPE_WEBHOOK_SECRET_SOURCE: ${{ secrets.STRIPE_WEBHOOK_SECRET_MAIN }}
+          FRONT_APP_URL_SOURCE: ${{ secrets.FRONT_MAIN_APP_URL }}
+          MAILER_TRANSPORT_SOURCE: ${{ secrets.MAILER_MAIN_TRANSPORT }}
+          MAILER_USERNAME_SOURCE: ${{ secrets.MAILER_MAIN_USERNAME }}
+          MAILER_PASSWORD_SOURCE: ${{ secrets.MAILER_MAIN_PASSWORD }}
+          MAILER_HOST_SOURCE: ${{ secrets.MAILER_MAIN_HOST }}
+          MAILER_PORT_SOURCE: ${{ secrets.MAILER_MAIN_PORT }}
+          MAILER_ENCRYPTION_SOURCE: ${{ secrets.MAILER_MAIN_ENCRYPTION }}
+
         with:
           host: ${{ secrets.APP_SERVER }}
           username: ${{ secrets.APP_USER }}
           password: ${{ secrets.APP_PASS }}
           port: ${{ secrets.APP_PORT }}
+          envs: >- 
+            APP_TOKEN,
+            APP_DOMAIN,
+            DATABASE_URL_SOURCE,
+            APP_SECRET_SOURCE,
+            MAILER_DSN_SOURCE,
+            MESSENGER_TRANSPORT_DSN_SOURCE,
+            CORS_ALLOW_ORIGIN_SOURCE,
+            JWT_PRIVATE_KEY_BASE64_SOURCE,
+            JWT_PUBLIC_KEY_BASE64_SOURCE,
+            JWT_PASSPHRASE_SOURCE,
+            STRIPE_SECRET_KEY_SOURCE,
+            STRIPE_WEBHOOK_SECRET_SOURCE,
+            FRONT_APP_URL_SOURCE
+          
           script: |
-            echo
-            echo "============================"
-            echo "[ Ouverture du dossier ]"
-            echo "============================"
-            echo
-            cd /var/www/${{ secrets.APP_USER }}/${{ secrets.APP_DOMAIN }}
-            echo
-            echo "============================"
-            echo "[ mise a jour du dossier ]"
-            echo "============================"
-            echo
-            git remote set-url origin https://x-access-token:${{ secrets.APP_TOKEN }}@github.com/${{ github.repository }}
-            git stash || true
-            git pull origin main
-            echo
-            echo "============================"
-            echo "[ creation du .env ]"
-            echo "============================"
-            echo
-            cat <<EOF > .env.local
+            set -e
+
+            PROJECT_DIR="/var/www/${{ secrets.APP_USER }}/${{ secrets.APP_DOMAIN }}"
+
+            echo "==========[1/11] Verification des variables requises=========="
+
+            REQUIRED_VARIABLES=(
+              APP_DOMAIN
+              APP_SECRET_SOURCE
+              DATABASE_URL_SOURCE
+
+              MESSENGER_TRANSPORT_DSN_SOURCE
+              CORS_ALLOW_ORIGIN_SOURCE
+
+              STRIPE_SECRET_KEY_SOURCE
+              STRIPE_WEBHOOK_SECRET_SOURCE
+              FRONT_APP_URL_SOURCE
+
+              MAILER_TRANSPORT_SOURCE
+              MAILER_USERNAME_SOURCE
+              MAILER_PASSWORD_SOURCE
+              MAILER_HOST_SOURCE
+              MAILER_PORT_SOURCE
+              MAILER_ENCRYPTION_SOURCE
+
+              JWT_SECRET_KEY_SOURCE
+              JWT_PUBLIC_KEY_SOURCE
+              JWT_PASSPHRASE_SOURCE
+            )
+
+            INDEX=0
+            for VARIABLE_NAME in "${REQUIRED_VARIABLES[@]}"; do
+              INDEX=$((INDEX + 1))
+              if [ -z "${!VARIABLE_NAME:-}" ]; then
+                echo "Erreur : la variable ${VARIABLE_NAME} est absente ou vide." >&2
+                exit 1
+              else
+                echo "Variable ${VARIABLE_NAME} : OK"
+                echo "${INDEX} sur ${#REQUIRED_VARIABLES[@]} variables verifiees"
+              fi
+            done
+
+            echo "==========[2/11] Acces au dossier du projet=========="
+
+            if [ ! -d "$PROJECT_DIR" ]; then
+              echo "Erreur : le dossier ${PROJECT_DIR} n'existe pas." >&2
+              exit 1
+            fi
+
+            cd "$PROJECT_DIR"
+            pwd
+
+            echo "==========[3/11] Recuperation du dernier code de develop=========="
+
+            git fetch origin develop
+            git checkout develop
+            git reset --hard origin/develop
+
+            echo "==========[4/11] Mise a jour de la configuration de test=========="
+
+            dotenv_quote() {
+            php -r '
+            echo json_encode(
+              $argv[1],
+              JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+            );
+            ' "$1"
+            }
+
+            DEFAULT_URI_VALUE="$(dotenv_quote "https://test-${APP_DOMAIN}")"
+            DATABASE_URL_VALUE="$(dotenv_quote "$DATABASE_URL_SOURCE")"
+            APP_SECRET_VALUE="$(dotenv_quote "$APP_SECRET_SOURCE")"
+
+            MAILER_TRANSPORT_VALUE="$(dotenv_quote "$MAILER_TRANSPORT_SOURCE")"
+            MAILER_USERNAME_VALUE="$(dotenv_quote "$MAILER_USERNAME_SOURCE")"
+            MAILER_PASSWORD_VALUE="$(dotenv_quote "$MAILER_PASSWORD_SOURCE")"
+            MAILER_HOST_VALUE="$(dotenv_quote "$MAILER_HOST_SOURCE")"
+            MAILER_PORT_VALUE="$(dotenv_quote "$MAILER_PORT_SOURCE")"
+            MAILER_ENCRYPTION_VALUE="$(dotenv_quote "$MAILER_ENCRYPTION_SOURCE")"
+
+            MESSENGER_TRANSPORT_DSN_VALUE="$(dotenv_quote "$MESSENGER_TRANSPORT_DSN_SOURCE")"
+            CORS_ALLOW_ORIGIN_VALUE="$(dotenv_quote "$CORS_ALLOW_ORIGIN_SOURCE")"
+
+            JWT_SECRET_KEY_VALUE="$(dotenv_quote "$JWT_SECRET_KEY_SOURCE")"
+            JWT_PUBLIC_KEY_VALUE="$(dotenv_quote "$JWT_PUBLIC_KEY_SOURCE")"
+            JWT_PASSPHRASE_VALUE="$(dotenv_quote "$JWT_PASSPHRASE_SOURCE")"
+
+            STRIPE_SECRET_KEY_VALUE="$(dotenv_quote "$STRIPE_SECRET_KEY_SOURCE")"
+            STRIPE_WEBHOOK_SECRET_VALUE="$(dotenv_quote "$STRIPE_WEBHOOK_SECRET_SOURCE")"
+
+            FRONT_APP_URL_VALUE="$(dotenv_quote "$FRONT_APP_URL_SOURCE")"
+
+            cat > .env.local <<EOF
             APP_ENV=prod
             APP_DEBUG=0
-            DATABASE_URL=${{ secrets.DATABASE_MAIN_URL }}
-            APP_SECRET=${{ secrets.APP_MAIN_SECRET }}
-            MAILER_DSN=${{ secrets.MAILER_MAIN_DSN }}
-            MESSENGER_TRANSPORT_DSN=${{ secrets.MESSENGER_MAIN_TRANSPORT_DSN }}
-            CORS_ALLOW_ORIGIN=${{ secrets.CORS_ALLOW_ORIGIN_MAIN }}
+
+            # Configuration de l'application
+            DEFAULT_URI=${DEFAULT_URI_VALUE}
+            DATABASE_URL=${DATABASE_URL_VALUE}
+            APP_SECRET=${APP_SECRET_VALUE}
+
+            # Configuration du mailer
+            MAILER_TRANSPORT=${MAILER_TRANSPORT_VALUE}
+            MAILER_USERNAME=${MAILER_USERNAME_VALUE}
+            MAILER_PASSWORD=${MAILER_PASSWORD_VALUE}
+            MAILER_HOST=${MAILER_HOST_VALUE}
+            MAILER_PORT=${MAILER_PORT_VALUE}
+            MAILER_ENCRYPTION=${MAILER_ENCRYPTION_VALUE}
+
+            # Configuration Messenger
+            MESSENGER_TRANSPORT_DSN=${MESSENGER_TRANSPORT_DSN_VALUE}
+
+            # Configuration CORS
+            CORS_ALLOW_ORIGIN=${CORS_ALLOW_ORIGIN_VALUE}
+
+            # Configuration JWT
+            JWT_SECRET_KEY=${JWT_SECRET_KEY_VALUE}
+            JWT_PUBLIC_KEY=${JWT_PUBLIC_KEY_VALUE}
+            JWT_PASSPHRASE=${JWT_PASSPHRASE_VALUE}
+
+            # Configuration Stripe
+            STRIPE_SECRET_KEY_PROD=${STRIPE_SECRET_KEY_VALUE}
+            STRIPE_WEBHOOK_SECRET_PROD=${STRIPE_WEBHOOK_SECRET_VALUE}
+            STRIPE_SUCCES=/confirm
+
+            # Configuration du front-end
+            FRONT_APP_URL=${FRONT_APP_URL_VALUE}
             EOF
-            echo
-            echo "============================"
-            echo "[ Generation du .env.local.php ]"
-            echo "============================"
-            echo
+
+
+            chmod 600 .env.local
+
+            echo "==========[5/11] Validation de la configuration Composer=========="
+
+            composer validate --no-check-publish
+
+            echo "==========[6/11] Installation des dependances Composer=========="
+
+            composer install \
+              --no-dev \
+              --optimize-autoloader \
+              --no-interaction
+
+
+            echo "==========[7/11] Optimisation des variables d'environnement Symfony=========="
+
             composer dump-env prod
-            php bin/console cache:clear
-            echo
-            echo "============================"
-            echo "[ mise a jour des packages ]"
-            echo "============================"
-            echo
-            composer install --no-dev --optimize-autoloader -n
-            php bin/console cache:clear
-            echo
-            echo "============================"
-            echo "[ mise a jour de la BBD ]"
-            echo "============================"
-            echo
-            php bin/console d:m:m -n
-            echo
-            echo "============================"
-            echo "[ Build du style ]"
-            echo "============================"
-            echo
-            php bin/console sass:build
-            php bin/console asset-map:compile
 
+            echo "==========[8/11] Nettoyage du cache et execution des migrations=========="
 
+            APP_ENV=prod APP_DEBUG=0 php bin/console cache:clear --no-warmup
+            APP_ENV=prod APP_DEBUG=0 php bin/console doctrine:migrations:migrate --no-interaction
 
+            echo "==========[9/11] Compilation des assets Sass et AssetMapper=========="
 
+            APP_ENV=prod APP_DEBUG=0 php bin/console sass:build
+            APP_ENV=prod APP_DEBUG=0 php bin/console asset-map:compile
+
+            echo "==========[10/11] Rechauffement du cache Symfony=========="
+
+            APP_ENV=prod APP_DEBUG=0 php bin/console cache:warmup
+            
+            echo "==========[11/11] Redemarrage des workers Messenger=========="
+            
+            APP_ENV=prod APP_DEBUG=0 php bin/console messenger:stop-workers
+            supervisorctl reread
+            supervisorctl update
+            supervisorctl start 'messenger-consume:*' \
+              || supervisorctl restart 'messenger-consume:*'
+            supervisorctl start 'avatar-rename-consume:*' \
+              || supervisorctl restart 'avatar-rename-consume:*'
+            supervisorctl start 'scheduler-consume:*' \
+              || supervisorctl restart 'scheduler-consume:*'
+            supervisorctl start 'scheduler-clothes-consume:*' \
+              || supervisorctl restart 'scheduler-clothes-consume:*'
+            supervisorctl start 'scheduler-clothes-consume:*' \
+              || supervisorctl restart 'scheduler-clothes-consume:*'
+            supervisorctl start 'image-deformation-cleanup-consume:*' \
+              || supervisorctl restart 'image-deformation-cleanup-consume:*'
+
+            echo "Deploiement sur le serveur de test termine avec succes."

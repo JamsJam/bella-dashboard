@@ -1,0 +1,41 @@
+<div class="modal-backdrop">
+    <dialog class="modal" open aria-labelledby="clothe-variant-seo-modal-title">
+        <form method="post" action="{{ action }}">
+            <header class="modal__header">
+                <div>
+                    <h2 id="clothe-variant-seo-modal-title">Modifier le SEO</h2>
+                    <p class="modal__subtitle">
+                        Ces descriptions sont communes à toutes les tailles de la couleur {{ variant.color.name }}.
+                    </p>
+                </div>
+                <button type="button" class="modal__close" onclick="this.closest('.modal-backdrop').remove()" aria-label="Fermer">
+                    &times;
+                </button>
+            </header>
+
+            <div class="modal__body">
+                <input type="hidden" name="_csrf_token" value="{{ csrfToken }}">
+
+                <label class="collection-form__field">
+                    <span>Description</span>
+                    <textarea name="description" rows="6">{{ variant.description }}</textarea>
+                </label>
+
+                <label class="collection-form__field">
+                    <span>Description SEO</span>
+                    <textarea name="metadescription" rows="5" maxlength="200">{{ variant.metadescription }}</textarea>
+                    <small>200 caractères maximum.</small>
+                </label>
+            </div>
+
+            <footer class="modal__actions">
+                <button type="button" class="clothe-show__button" onclick="this.closest('.modal-backdrop').remove()">
+                    Annuler
+                </button>
+                <button type="submit" class="clothe-show__button clothe-show__button--primary">
+                    Enregistrer
+                </button>
+            </footer>
+        </form>
+    </dialog>
+</div>

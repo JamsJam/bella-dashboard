@@ -1,0 +1,42 @@
+<div class="modal-backdrop">
+    <dialog class="modal" open aria-labelledby="category-create-modal-title">
+        <form method="post" action="{{ path('app_clothes_categories_create') }}" enctype="multipart/form-data" data-turbo="false">
+            <header class="modal__header">
+                <h2 id="category-create-modal-title">Creer une categorie</h2>
+                <button type="button" class="modal__close" onclick="this.closest('.modal-backdrop').remove()" aria-label="Fermer">
+                    ×
+                </button>
+            </header>
+
+            <div class="modal__body">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token('category_create') }}">
+
+                <label class="category-form__field">
+                    <span>Nom</span>
+                    <input type="text" name="name" required maxlength="50">
+                </label>
+
+                <label class="category-form__field">
+                    <span>Description courte</span>
+                    <textarea name="metaDescription" maxlength="120" rows="3"></textarea>
+                </label>
+
+                <label class="category-form__field">
+                    <span>Image d'illustration PNG, JPEG ou SVG</span>
+                    <input type="file" name="illustration" accept=".png,.jpg,.jpeg,.svg,image/png,image/jpeg,image/svg+xml">
+                </label>
+
+                <p class="modal__subtitle">La categorie sera creee hors-ligne par defaut.</p>
+            </div>
+
+            <footer class="modal__actions">
+                <button type="button" class="category-show__button" onclick="this.closest('.modal-backdrop').remove()">
+                    Annuler
+                </button>
+                <button type="submit" class="category-show__button">
+                    Creer
+                </button>
+            </footer>
+        </form>
+    </dialog>
+</div>

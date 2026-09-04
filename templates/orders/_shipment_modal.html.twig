@@ -1,0 +1,40 @@
+<div class="modal-backdrop">
+    <dialog class="modal order-shipment-modal" open aria-labelledby="order-shipment-modal-title">
+        {{ form_start(form, {attr: {'data-turbo': 'false'}}) }}
+            <header class="modal__header">
+                <div>
+                    <h2 id="order-shipment-modal-title">Expédier la commande</h2>
+                    <p class="modal__subtitle">Commande {{ order.orderReference }}</p>
+                </div>
+                <button type="button" class="modal__close" onclick="this.closest('.modal-backdrop').remove()" aria-label="Fermer">
+                    &times;
+                </button>
+            </header>
+
+            <div class="modal__body">
+                <div class="order-shipment-modal__tracking">
+                    <div class="order-shipment-modal__field">
+                        {{ form_label(form.carrier) }}
+                        {{ form_widget(form.carrier) }}
+                        {{ form_errors(form.carrier) }}
+                    </div>
+                    <div class="order-shipment-modal__field">
+                        {{ form_label(form.trackingNumber) }}
+                        {{ form_widget(form.trackingNumber) }}
+                        {{ form_help(form.trackingNumber) }}
+                        {{ form_errors(form.trackingNumber) }}
+                    </div>
+                </div>
+            </div>
+
+            <footer class="modal__actions">
+                <button type="button" class="orders-table-action" onclick="this.closest('.modal-backdrop').remove()">
+                    Annuler
+                </button>
+                <button type="submit" class="orders-table-action orders-table-action--primary">
+                    Confirmer l’expédition
+                </button>
+            </footer>
+        {{ form_end(form) }}
+    </dialog>
+</div>

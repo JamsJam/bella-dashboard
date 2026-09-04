@@ -33,6 +33,9 @@ class Faces
     #[ORM\JoinColumn(nullable: false)]
     private ?Faceshape $shape = null;
 
+    #[ORM\ManyToOne(inversedBy: 'faces')]
+    private ?FaceAccessory $accessory = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -94,6 +97,18 @@ class Faces
     public function setShape(?Faceshape $shape): static
     {
         $this->shape = $shape;
+
+        return $this;
+    }
+
+    public function getAccessory(): ?FaceAccessory
+    {
+        return $this->accessory;
+    }
+
+    public function setAccessory(?FaceAccessory $accessory): static
+    {
+        $this->accessory = $accessory;
 
         return $this;
     }

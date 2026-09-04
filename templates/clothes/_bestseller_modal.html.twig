@@ -1,0 +1,52 @@
+<div class="modal-backdrop" role="presentation">
+    <dialog class="modal" open aria-labelledby="bestseller-modal-title">
+        <header class="modal__header">
+            <div>
+                <h2 id="bestseller-modal-title">Bestsellers</h2>
+                <p class="modal__subtitle">{{ modal.bestsellers|length }}/{{ modal.maxItems }} vetement(s)</p>
+            </div>
+            <button type="button" class="modal__close" onclick="this.closest('.modal-backdrop').remove()" aria-label="Fermer">x</button>
+        </header>
+
+        <form method="post" action="{{ path('app_clothes_bestsellers_update') }}">
+            <div class="modal__body">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token('clothe_bestseller') }}">
+                <input type="hidden" name="mode" value="replace">
+
+                {% if modal.errorMessage %}
+                    <p class="modal__error">{{ modal.errorMessage }}</p>
+                {% endif %}
+
+                {% if modal.bestsellers is not empty %}
+                    <fieldset class="clothe-bestseller-list">
+                        <legend class="modal__subtitle">Decoche les vetements a retirer de la liste.</legend>
+
+                        {% for clothe in modal.bestsellers %}
+                            <label class="clothe-bestseller-list__item">
+                                <input type="checkbox" name="ids[]" value="{{ clothe.id }}" checked>
+                                <span class="clothe-bestseller-list__preview">
+                                    {% if clothe.imageUrl %}
+                                        <img src="{{ clothe.imageUrl }}" alt="{{ clothe.name }}">
+                                    {% else %}
+                                        <span>Aucune image</span>
+                                    {% endif %}
+                                </span>
+                                <span class="clothe-bestseller-list__content">
+                                    <strong>{{ clothe.name }}</strong>
+                                    <small>{{ clothe.attributes.collection ?: 'Collection inconnue' }}</small>
+                                </span>
+                            </label>
+                        {% endfor %}
+                    </fieldset>
+                {% else %}
+                    <p class="modal__subtitle">Aucun vetement n'est encore marque comme bestseller.</p>
+                {% endif %}
+            </div>
+
+            <footer class="modal__actions">
+                <button type="button" class="clothe-show__button" onclick="this.closest('.modal-backdrop').remove()">Annuler</button>
+                <button type="submit" class="clothe-show__action">Enregistrer</button>
+            </footer>
+        </form>
+    </dialog>
+</div>

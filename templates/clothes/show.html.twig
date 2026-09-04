@@ -1,0 +1,537 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ clothe.name }}{% endblock %}
+
+{% block body %}
+    <article
+        class="clothe-show"
+        aria-labelledby="clothe-show-title"
+        {{ stimulus_controller('clothe-bestseller') }}
+        {{ stimulus_action('clothe-bestseller', 'change', 'toggle:change')|stimulus_action('clothe-bestseller', 'change', 'clothe-featured:change') }}
+    >
+        {% set currentGroup = clothe.variantGroups|first %}
+
+        <header class="clothe-show__header">
+            <div>
+                <h1 id="clothe-show-title" class="title">{{ clothe.name }}</h1>
+                {% if clothe.publicationStatus %}
+                    <div class="clothe-show__header-status">
+                        {% include 'ui/components/badge/_badge.html.twig' with {
+                            label: clothe.publicationStatus.label,
+                            variant: clothe.publicationStatus.value
+                        } only %}
+                    </div>
+                {% endif %}
+                <p class="clothe-show__subtitle">
+                    {{ clothe.collection }} · {{ clothe.category }} · {{ clothe.color }}
+                </p>
+            </div>
+
+            {% include 'ui/components/tabs/_tabs.html.twig' with { tabs: tabs } only %}
+        </header>
+
+        <div class="clothe-show-tabs" {{ stimulus_controller('config-tabs', {storageKey: 'clothe-show'}) }}>
+            <div class="clothe-show-tabs__nav" role="tablist" aria-label="Sections du vêtement">
+                {% for tab in [
+                    {id: 'information', label: 'Informations'},
+                    {id: 'variants', label: 'Variantes'},
+                    {id: 'publication', label: 'Publication'},
+                    {id: 'highlight', label: 'Mise en avant'},
+                    {id: 'size-guide', label: 'Guide des tailles'}
+                ] %}
+                    <button
+                        type="button"
+                        id="clothe-tab-{{ tab.id }}"
+                        class="clothe-show-tabs__tab"
+                        role="tab"
+                        aria-selected="{{ loop.first ? 'true' : 'false' }}"
+                        aria-controls="clothe-panel-{{ tab.id }}"
+                        tabindex="{{ loop.first ? '0' : '-1' }}"
+                        data-config-tabs-target="tab"
+                        data-action="click->config-tabs#select keydown->config-tabs#keydown"
+                    >{{ tab.label }}</button>
+                {% endfor %}
+            </div>
+
+        <div id="clothe-panel-information" class="clothe-show-tabs__panel" role="tabpanel" aria-labelledby="clothe-tab-information" data-config-tabs-target="panel">
+        <section class="clothe-show__presentation" aria-labelledby="clothe-show-presentation-title">
+            <div class="clothe-show__section-header">
+                <h2 id="clothe-show-presentation-title">Presentation</h2>
+                {% if currentGroup %}
+                    <a
+                        href="{{ path('app_clothes_images_modal', {
+                            slug: currentGroup.slug,
+                            color: currentGroup.colorId
+                        }) }}"
+                        class="clothe-show__button"
+                        data-turbo-stream
+                    >
+                        Gerer la galerie
+                    </a>
+                {% endif %}
+            </div>
+
+            <div class="clothe-show__presentation-grid">
+                <div class="clothe-show__gallery">
+                    {% for image in clothe.images %}
+                        <figure class="clothe-show__image">
+                            <img src="{{ image }}" alt="{{ clothe.name }} {{ clothe.color }} image {{ loop.index }}">
+                        </figure>
+                    {% else %}
+                        <div class="clothe-show__placeholder">Aucune image</div>
+                    {% endfor %}
+                </div>
+
+                <div class="clothe-show__information">
+                    <dl class="clothe-show__meta">
+                        <div>
+                            <dt>Categorie</dt>
+                            <dd>
+                                {% if clothe.categoryId %}
+                                    <a href="{{ path('app_clothe_category_show', { id: clothe.categoryId }) }}">{{ clothe.category }}</a>
+                                {% else %}
+                                    Non renseignee
+                                {% endif %}
+                            </dd>
+                        </div>
+                        <div>
+                            <dt>Collection</dt>
+                            <dd>
+                                {% if clothe.collectionId %}
+                                    <a href="{{ path('app_clothes_collection', { id: clothe.collectionId }) }}">{{ clothe.collection }}</a>
+                                {% else %}
+                                    Non renseignee
+                                {% endif %}
+                            </dd>
+                        </div>
+                        <div>
+                            <dt>Couleur</dt>
+                            <dd>
+                                {{ clothe.color ?: 'Non renseignee' }}
+                                {% if currentGroup %}
+                                    <a
+                                        href="{{ currentGroup.colorId
+                                            ? path('app_clothes_variant_group_edit_modal', {
+                                                slug: currentGroup.slug,
+                                                color: currentGroup.colorId
+                                            })
+                                            : path('app_clothes_variant_edit_modal', {
+                                                id: currentGroup.sizes|first.id
+                                            })
+                                        }}"
+                                        class="clothe-show__button"
+                                        data-turbo-stream
+                                    >
+                                        Modifier la couleur
+                                    </a>
+                                {% endif %}
+                            </dd>
+                        </div>
+                        <div>
+                            <dt>Prix</dt>
+                            <dd>{{ clothe.price ? (clothe.price / 100)|number_format(2, ',', ' ') ~ ' €' : 'Non renseigne' }}</dd>
+                        </div>
+                        <div>
+                            <dt>Stock total</dt>
+                            <dd>{{ clothe.totalStock }}</dd>
+                        </div>
+                        <div>
+                            <dt>Slug</dt>
+                            <dd>{{ clothe.slug }}</dd>
+                        </div>
+                    </dl>
+
+                    <div class="clothe-show__description">
+                        <h3>Information</h3>
+                        <p>{{ clothe.description ?: 'Non renseignee' }}</p>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <section class="clothe-show__section" aria-labelledby="clothe-show-seo-title">
+            <div class="clothe-show__section-header">
+                <h2 id="clothe-show-seo-title">SEO</h2>
+                {% if currentGroup and currentGroup.colorId %}
+                    <a
+                        href="{{ path('app_clothes_variant_group_seo_modal', {
+                            slug: currentGroup.slug,
+                            color: currentGroup.colorId
+                        }) }}"
+                        class="clothe-show__button"
+                        data-turbo-stream
+                    >Modifier</a>
+                {% endif %}
+            </div>
+            <dl class="clothe-show__seo">
+                <div><dt>Titre</dt><dd>{{ clothe.name }}</dd></div>
+                <div><dt>Slug</dt><dd>{{ clothe.slug }}</dd></div>
+                <div><dt>Meta description</dt><dd>{{ clothe.metadescription ?: 'Non renseignee' }}</dd></div>
+                <div><dt>Description</dt><dd>{{ clothe.description ?: 'Non renseignee' }}</dd></div>
+            </dl>
+        </section>
+        </div>
+
+        <div id="clothe-panel-publication" class="clothe-show-tabs__panel" role="tabpanel" aria-labelledby="clothe-tab-publication" data-config-tabs-target="panel" hidden>
+        {% set transitionLabels = {
+            rendre_publiable: 'Rendre publiable',
+            repasser_en_brouillon: 'Repasser en brouillon',
+            programmer_publication: 'Programmer',
+            annuler_programmation: 'Annuler la programmation',
+            invalider_programmation: 'Repasser en brouillon',
+            publier: 'Publier maintenant',
+            publier_automatiquement: 'Publier maintenant',
+            depublier: 'Mettre hors ligne',
+            remettre_en_ligne: 'Remettre en ligne',
+            modifier_hors_ligne: 'Modifier en brouillon',
+            archiver_brouillon: 'Archiver',
+            archiver_publiable: 'Archiver',
+            archiver_planifie: 'Archiver',
+            archiver_en_ligne: 'Archiver',
+            archiver_hors_ligne: 'Archiver',
+            restaurer: 'Restaurer en brouillon'
+        } %}
+        <section class="clothe-publication" aria-labelledby="clothe-publication-title">
+            <header class="clothe-publication__header">
+                <div>
+                    <h2 id="clothe-publication-title">Publication</h2>
+                    <p>Gérez séparément la visibilité de chaque taille.</p>
+                </div>
+                <span class="clothe-publication__summary clothe-publication__summary--{{ canPublish ? 'valid' : 'invalid' }}">
+                    {{ canPublish ? 'Informations complètes' : 'Informations incomplètes' }}
+                </span>
+            </header>
+
+            {% if not canPublish %}
+                <aside class="clothe-publication__warning" aria-label="Informations à compléter">
+                    <strong>Publication impossible pour le moment</strong>
+                    <ul>
+                    {% for error in publicationErrors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                    </ul>
+                </aside>
+            {% endif %}
+
+            <div class="clothe-publication__table-wrap">
+                <table class="clothe-publication__table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Vêtement</th>
+                            <th scope="col">Statut</th>
+                            <th scope="col">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in variantWorkflows %}
+                            <tr>
+                                <td data-label="Vêtement">
+                                    <strong>{{ item.variant.name }}</strong>
+                                    <span>Taille {{ item.variant.size.name|default('non renseignée') }}</span>
+                                </td>
+                                <td data-label="Statut">
+                                    {% include 'ui/components/badge/_badge.html.twig' with {
+                                        label: item.variant.publicationStatus.label,
+                                        variant: item.variant.publicationStatus.value
+                                    } only %}
+                                    {% if item.variant.scheduledPublicationAt %}
+                                        <small>Prévue le {{ item.variant.scheduledPublicationAt|date('d/m/Y à H:i', siteTimezone) }}</small>
+                                    {% endif %}
+                                </td>
+                                <td data-label="Actions">
+                                    <div class="clothe-publication__actions">
+                                        {% for transition in item.transitions %}
+                                            {% if transition.name != 'programmer_publication' %}
+                                                <form
+                                                    method="post"
+                                                    action="{{ path('app_clothes_workflow_transition', {id: item.variant.id, transition: transition.name}) }}"
+                                                    class="clothe-publication__action-form"
+                                                >
+                                                    <input
+                                                        type="hidden"
+                                                        name="_token"
+                                                        value="{{ csrf_token('clothe_variant_workflow_' ~ item.variant.id) }}"
+                                                    >
+                                                    <button
+                                                        type="submit"
+                                                        class="clothe-publication__action{% if transition.name in ['publier', 'publier_automatiquement', 'remettre_en_ligne', 'rendre_publiable'] %} clothe-publication__action--primary{% elseif transition.name starts with 'archiver_' %} clothe-publication__action--danger{% endif %}"
+                                                        data-turbo-submits-with="Mise à jour…"
+                                                    >
+                                                        {{ transitionLabels[transition.name]|default(transition.name|replace({'_': ' '})|capitalize) }}
+                                                    </button>
+                                                </form>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="3">Aucune variante.</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+        </div>
+
+        <div id="clothe-panel-highlight" class="clothe-show-tabs__panel" role="tabpanel" aria-labelledby="clothe-tab-highlight" data-config-tabs-target="panel" hidden>
+        <section class="clothe-show__section" aria-labelledby="clothe-show-highlight-images-title">
+            <div class="clothe-show__section-header">
+                <h2 id="clothe-show-highlight-images-title">Images mises en avant</h2>
+            </div>
+            <div class="clothe-show__highlight-images">
+                <form
+                    class="clothe-show__highlight-card"
+                    method="post"
+                    action="{{ path('app_clothes_highlight_image_update', {
+                        slug: clothe.slug,
+                        slot: 'carousel'
+                    }) }}"
+                    enctype="multipart/form-data"
+                    {{ stimulus_controller('clothe-highlight-dropzone') }}
+                >
+                    <input
+                        type="hidden"
+                        name="_csrf_token"
+                        value="{{ csrf_token('clothe_highlight_image_' ~ clothe.slug ~ '_carousel') }}"
+                    >
+                    <header class="clothe-show__highlight-card-header">
+                        <h3>Mise en avant</h3>
+                        {% if currentGroup %}
+                            {% include 'ui/components/toggle/_toggle.html.twig' with {
+                                toggle: {
+                                    id: 'clothe-featured-' ~ clothe.id ~ currentGroup.toggleIdSuffix,
+                                    label: 'Mise en avant',
+                                    checked: currentGroup.isInCarousel,
+                                    name: 'featured',
+                                    eventName: 'clothe-featured:change',
+                                    payload: {
+                                        on: {
+                                            url: path('app_clothes_featured_update'),
+                                            method: 'POST',
+                                            csrfToken: csrf_token('clothe_featured'),
+                                            label: 'Mise en avant',
+                                            ids: currentGroup.variantIds,
+                                            mode: 'add'
+                                        },
+                                        off: {
+                                            url: path('app_clothes_featured_update'),
+                                            method: 'POST',
+                                            csrfToken: csrf_token('clothe_featured'),
+                                            label: 'Mise en avant',
+                                            ids: [],
+                                            mode: 'remove',
+                                            slug: currentGroup.slug
+                                        }
+                                    }
+                                }
+                            } only %}
+                        {% endif %}
+                    </header>
+                    <div class="clothe-show__highlight-media">
+                        <label
+                            class="clothe-show__highlight-dropzone"
+                            tabindex="0"
+                            data-clothe-highlight-dropzone-target="zone"
+                            data-action="keydown.enter->clothe-highlight-dropzone#open keydown.space->clothe-highlight-dropzone#open dragover->clothe-highlight-dropzone#dragOver dragleave->clothe-highlight-dropzone#dragLeave drop->clothe-highlight-dropzone#drop"
+                        >
+                            <input
+                                type="file"
+                                name="uploaded_image"
+                                accept=".jpg,.jpeg,.png,image/jpeg,image/png"
+                                data-clothe-highlight-dropzone-target="input"
+                                data-action="change->clothe-highlight-dropzone#select"
+                            >
+                            <span>Glissez une image ici</span>
+                            <small>ou cliquez pour la sélectionner</small>
+                        </label>
+                        <div class="clothe-show__highlight-preview">
+                            <img
+                                src="{{ clothe.highlightImage|default('') }}"
+                                alt="{{ clothe.name }} mise en avant"
+                                data-clothe-highlight-dropzone-target="preview"
+                                {% if not clothe.highlightImage|default(null) %}hidden{% endif %}
+                            >
+                            <span data-clothe-highlight-dropzone-target="placeholder" {% if clothe.highlightImage|default(null) %}hidden{% endif %}>
+                                Aucune image sélectionnée
+                            </span>
+                        </div>
+                    </div>
+                </form>
+                <form
+                    class="clothe-show__highlight-card"
+                    method="post"
+                    action="{{ path('app_clothes_highlight_image_update', {
+                        slug: clothe.slug,
+                        slot: 'bestseller'
+                    }) }}"
+                    enctype="multipart/form-data"
+                    {{ stimulus_controller('clothe-highlight-dropzone') }}
+                >
+                    <input
+                        type="hidden"
+                        name="_csrf_token"
+                        value="{{ csrf_token('clothe_highlight_image_' ~ clothe.slug ~ '_bestseller') }}"
+                    >
+                    <header class="clothe-show__highlight-card-header">
+                        <h3>Bestseller</h3>
+                        {% if currentGroup %}
+                            {% include 'ui/components/toggle/_toggle.html.twig' with {
+                                toggle: {
+                                    id: 'clothe-bestseller-' ~ clothe.id ~ currentGroup.toggleIdSuffix,
+                                    label: 'Bestseller',
+                                    checked: currentGroup.isBestseller,
+                                    name: 'bestseller',
+                                    payload: {
+                                        on: {
+                                            url: path('app_clothes_bestsellers_update'),
+                                            method: 'POST',
+                                            csrfToken: csrf_token('clothe_bestseller'),
+                                            label: 'Bestseller',
+                                            ids: currentGroup.variantIds,
+                                            mode: 'add'
+                                        },
+                                        off: {
+                                            url: path('app_clothes_bestsellers_update'),
+                                            method: 'POST',
+                                            csrfToken: csrf_token('clothe_bestseller'),
+                                            label: 'Bestseller',
+                                            ids: [],
+                                            mode: 'remove',
+                                            slug: currentGroup.slug
+                                        }
+                                    }
+                                }
+                            } only %}
+                        {% endif %}
+                    </header>
+                    <div class="clothe-show__highlight-media">
+                        <label
+                            class="clothe-show__highlight-dropzone"
+                            tabindex="0"
+                            data-clothe-highlight-dropzone-target="zone"
+                            data-action="keydown.enter->clothe-highlight-dropzone#open keydown.space->clothe-highlight-dropzone#open dragover->clothe-highlight-dropzone#dragOver dragleave->clothe-highlight-dropzone#dragLeave drop->clothe-highlight-dropzone#drop"
+                        >
+                            <input
+                                type="file"
+                                name="uploaded_image"
+                                accept=".jpg,.jpeg,.png,image/jpeg,image/png"
+                                data-clothe-highlight-dropzone-target="input"
+                                data-action="change->clothe-highlight-dropzone#select"
+                            >
+                            <span>Glissez une image ici</span>
+                            <small>ou cliquez pour la sélectionner</small>
+                        </label>
+                        <div class="clothe-show__highlight-preview">
+                            <img
+                                src="{{ clothe.bestsellerImage|default('') }}"
+                                alt="{{ clothe.name }} bestseller"
+                                data-clothe-highlight-dropzone-target="preview"
+                                {% if not clothe.bestsellerImage|default(null) %}hidden{% endif %}
+                            >
+                            <span data-clothe-highlight-dropzone-target="placeholder" {% if clothe.bestsellerImage|default(null) %}hidden{% endif %}>
+                                Aucune image sélectionnée
+                            </span>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </section>
+        </div>
+
+        <div id="clothe-panel-variants" class="clothe-show-tabs__panel" role="tabpanel" aria-labelledby="clothe-tab-variants" data-config-tabs-target="panel" hidden>
+        <section class="clothe-show__section" aria-labelledby="clothe-show-stock-title">
+            <div class="clothe-show__section-header">
+                <h2 id="clothe-show-stock-title">Tailles</h2>
+                <a
+                    href="{{ path('app_clothes_sizes_modal', {slug: clothe.slug}) }}"
+                    class="clothe-show__button"
+                    data-turbo-stream
+                >
+                    Gerer les tailles
+                </a>
+            </div>
+            <div class="clothe-show__stock-list">
+                {% for size in clothe.sizes %}
+                    <article class="clothe-show__variant-card">
+                        <div class="clothe-show__stock-main">
+                            <span class="clothe-show__card-label">Taille</span>
+                            <strong>{{ size.name }}</strong>
+                            <span>{{ size.sku ?: 'SKU non renseigne' }}</span>
+                        </div>
+                        <div class="clothe-show__stock-availability">
+                            <span class="clothe-show__card-label">Statut</span>
+                            {% if size.isAvailable %}
+                                <span class="clothe-show__status clothe-show__status--available">Disponible</span>
+                            {% else %}
+                                <span class="clothe-show__status">Indisponible</span>
+                            {% endif %}
+                        </div>
+                        <div class="clothe-show__stock-value">
+                            <span class="clothe-show__card-label">Stock</span>
+                            <strong>{{ size.stock }}</strong>
+                            <span>en stock</span>
+                        </div>
+                    </article>
+                {% else %}
+                    <p class="clothe-show__empty">Aucune taille.</p>
+                {% endfor %}
+            </div>
+        </section>
+        </div>
+
+        <div id="clothe-panel-size-guide" class="clothe-show-tabs__panel" role="tabpanel" aria-labelledby="clothe-tab-size-guide" data-config-tabs-target="panel" hidden>
+        <section class="clothe-show__section" aria-labelledby="clothe-show-size-guide-title">
+            <h2 id="clothe-show-size-guide-title">Guide des tailles</h2>
+            <form
+                method="post"
+                action="{{ path('app_clothes_size_guide_update', {slug: clothe.slug}) }}"
+                class="clothe-show__size-guide-form"
+                {{ stimulus_controller('clothe-size-guide', {
+                    previewUrl: path('app_clothes_size_guide_preview', {
+                        slug: clothe.slug
+                    })
+                }) }}
+            >
+                <input
+                    type="hidden"
+                    name="_csrf_token"
+                    value="{{ csrf_token('clothe_size_guide_' ~ clothe.slug) }}"
+                >
+
+                <p class="clothe-show__empty">Unite : {{ clothe.sizeGuide.unit }}</p>
+
+                <fieldset class="clothe-show__measurement-types">
+                    <legend>Colonnes du guide</legend>
+                    <div class="clothe-show__measurement-type-list">
+                        {% for type in clothe.sizeGuide.availableTypes %}
+                            <label class="clothe-show__measurement-type">
+                                <input
+                                    type="checkbox"
+                                    name="measurement_types[]"
+                                    value="{{ type.uuid }}"
+                                    {% if type.selected %}checked{% endif %}
+                                    {{ stimulus_action('clothe-size-guide', 'preview', 'change') }}
+                                >
+                                <span>{{ type.label }}</span>
+                            </label>
+                        {% endfor %}
+                    </div>
+                </fieldset>
+
+                {% include 'clothes/_size_guide_table.html.twig' with {
+                    sizeGuide: clothe.sizeGuide
+                } only %}
+                <button type="submit" class="clothe-show__action">Enregistrer le guide</button>
+            </form>
+        </section>
+
+        </div>
+        </div>
+    </article>
+
+    <turbo-frame id="clothe-modal-component"></turbo-frame>
+{% endblock %}

@@ -1,0 +1,20 @@
+{% macro itemPrototype() %}
+
+    <li class="avatar-upload__item" {{ stimulus_target('dropzone', 'itemPrototype') }}>
+        <img class="avatar-upload__preview" src="__FILE_PREVIEW__" alt="" loading="lazy">
+        <div class="avatar-upload__file">
+            <span class="avatar-upload__file-name">__FILE_NAME__</span>
+            <span class="avatar-upload__file-meta">__FILE_META__</span>
+            <span class="avatar-upload__file-error" data-error hidden>__FILE_ERROR__</span>
+        </div>
+        <button
+            type="button"
+            class="avatar-upload__remove"
+            data-file-id="__FILE_ID__"
+            {{ stimulus_action('dropzone', 'removeFile') }}
+            __DISABLED__
+        >
+            Supprimer
+        </button>
+    </li>
+{% endmacro %}

@@ -2,72 +2,47 @@
 
 namespace App\Entity\Clothes;
 
+use ApiPlatform\Metadata\ApiResource;
 use App\Entity\Avatar\Body\Body;
 use App\Entity\Collections\Collections;
+use App\Entity\SizeGuide;
+use App\Entity\Traits\DateFieldsTrait;
 use App\Repository\Clothes\ClothesRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ClothesRepository::class)]
+#[ORM\UniqueConstraint(name: 'UNIQ_CLOTHES_NAME', columns: ['name'])]
+#[ApiResource()]
 class Clothes
 {
+    use DateFieldsTrait;
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 50)]
+    #[ORM\Column(length: 70)]
     private ?string $name = null;
-
-    #[ORM\Column(type: Types::TEXT, nullable: true)]
-    private ?string $description = null;
 
     #[ORM\Column(nullable: true)]
     private ?int $price = null;
 
-    #[ORM\Column(nullable: true)]
-    private ?int $stock = null;
-
-    #[ORM\Column(nullable: true)]
-    private ?array $images = null;
-
     #[ORM\ManyToOne(inversedBy: 'clothes')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?Collections $Collection = null;
-
-    #[ORM\ManyToOne(inversedBy: 'clothes')]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?Clothescolor $color = null;
-
-    #[ORM\Column(type: Types::TEXT, nullable: true)]
-    private ?string $metadescription = null;
-
-    #[ORM\ManyToOne(inversedBy: 'clothes')]
-    private ?Clothessize $size = null;
-
-    #[ORM\Column(length: 100)]
-    private ?string $sku = null;
-
-    #[ORM\Column(length: 70)]
-    private ?string $slug = null;
-
-    #[ORM\Column(length: 40)]
-    private ?string $status = null;
-
-    #[ORM\Column]
-    private ?bool $isOnline = null;
+    private ?Collections $collection = null;
 
     /**
-     * @var Collection<int, Body>
+     * @var Collection<int, ClothesVariant>
      */
-    #[ORM\OneToMany(targetEntity: Body::class, mappedBy: 'clothe')]
-    private Collection $bodies;
+    #[ORM\OneToMany(targetEntity: ClothesVariant::class, mappedBy: 'clothes', cascade: ['persist'], orphanRemoval: true)]
+    private Collection $variants;
 
     public function __construct()
     {
-        $this->bodies = new ArrayCollection();
+        $this->variants = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -89,12 +64,14 @@ class Clothes
 
     public function getDescription(): ?string
     {
-        return $this->description;
+        return $this->getFirstVariant()?->getDescription();
     }
 
     public function setDescription(?string $description): static
     {
-        $this->description = $description;
+        foreach ($this->variants as $variant) {
+            $variant->setDescription($description);
+        }
 
         return $this;
     }
@@ -111,124 +88,119 @@ class Clothes
         return $this;
     }
 
-    public function getStock(): ?int
-    {
-        return $this->stock;
-    }
-
-    public function setStock(?int $stock): static
-    {
-        $this->stock = $stock;
-
-        return $this;
-    }
-
     public function getImages(): ?array
     {
-        return $this->images;
+        return $this->getFirstVariant()?->getImages();
     }
 
     public function setImages(?array $images): static
     {
-        $this->images = $images;
+        foreach ($this->variants as $variant) {
+            $variant->setImages($images);
+        }
 
         return $this;
     }
 
     public function getCollection(): ?Collections
     {
-        return $this->Collection;
+        return $this->collection;
     }
 
-    public function setCollection(?Collections $Collection): static
+    public function setCollection(?Collections $collection): static
     {
-        $this->Collection = $Collection;
+        $this->collection = $collection;
 
         return $this;
     }
 
     public function getColor(): ?Clothescolor
     {
-        return $this->color;
+        return $this->getFirstVariant()?->getColor();
     }
 
     public function setColor(?Clothescolor $color): static
     {
-        $this->color = $color;
+        if ($color instanceof Clothescolor) {
+            $this->ensureFirstVariant()->setColor($color);
+        }
 
         return $this;
     }
 
     public function getMetadescription(): ?string
     {
-        return $this->metadescription;
+        return $this->getFirstVariant()?->getMetadescription();
     }
 
     public function setMetadescription(?string $metadescription): static
     {
-        $this->metadescription = $metadescription;
+        foreach ($this->variants as $variant) {
+            $variant->setMetadescription($metadescription);
+        }
 
         return $this;
     }
 
     public function getSize(): ?Clothessize
     {
-        return $this->size;
+        return $this->getFirstVariant()?->getSize();
     }
 
     public function setSize(?Clothessize $size): static
     {
-        $this->size = $size;
+        if ($size instanceof Clothessize) {
+            $this->ensureFirstVariant()->setSize($size);
+        }
 
         return $this;
     }
 
     public function getSku(): ?string
     {
-        return $this->sku;
+        return $this->getFirstVariant()?->getSku();
     }
 
     public function setSku(string $sku): static
     {
-        $this->sku = $sku;
+        $this->ensureFirstVariant()->setSku($sku);
+
+        return $this;
+    }
+
+    public function getStock(): ?int
+    {
+        return $this->getFirstVariant()?->getStock();
+    }
+
+    public function setStock(?int $stock): static
+    {
+        $this->ensureFirstVariant()->setStock((int) $stock);
 
         return $this;
     }
 
     public function getSlug(): ?string
     {
-        return $this->slug;
+        return $this->getFirstVariant()?->getSlug();
     }
 
     public function setSlug(string $slug): static
     {
-        $this->slug = $slug;
+        $this->ensureFirstVariant()->setSlug($slug);
 
         return $this;
     }
 
-    public function getStatus(): ?string
+    public function hasOnlineVariant(): bool
     {
-        return $this->status;
-    }
+        foreach ($this->variants as $variant) {
+            if (\App\Enum\ClotheStatus::Online === $variant->getPublicationStatus()) {
+                return true;
+            }
+        }
 
-    public function setStatus(string $status): static
-    {
-        $this->status = $status;
-
-        return $this;
-    }
-
-    public function isOnline(): ?bool
-    {
-        return $this->isOnline;
-    }
-
-    public function setIsOnline(bool $isOnline): static
-    {
-        $this->isOnline = $isOnline;
-
-        return $this;
+        return false;
     }
 
     /**
@@ -236,14 +208,26 @@ class Clothes
      */
     public function getBodies(): Collection
     {
-        return $this->bodies;
+        $bodies = [];
+
+        foreach ($this->variants as $variant) {
+            foreach ($variant->getBodies() as $body) {
+                if (null !== $body->getId()) {
+                    $bodies[$body->getId()] = $body;
+                    continue;
+                }
+
+                $bodies[] = $body;
+            }
+        }
+
+        return new ArrayCollection(array_values($bodies));
     }
 
     public function addBody(Body $body): static
     {
-        if (!$this->bodies->contains($body)) {
-            $this->bodies->add($body);
-            $body->setClothe($this);
+        foreach ($this->variants as $variant) {
+            $variant->addBody($body);
         }
 
         return $this;
@@ -251,13 +235,132 @@ class Clothes
 
     public function removeBody(Body $body): static
     {
-        if ($this->bodies->removeElement($body)) {
-            // set the owning side to null (unless already changed)
-            if ($body->getClothe() === $this) {
-                $body->setClothe(null);
-            }
+        foreach ($this->variants as $variant) {
+            $variant->removeBody($body);
         }
 
         return $this;
+    }
+
+    public function isBestseller(): ?bool
+    {
+        foreach ($this->variants as $variant) {
+            if ($variant->isBestseller()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function setIsBestseller(bool $isBestseller): static
+    {
+        foreach ($this->variants as $variant) {
+            $variant->setIsBestseller($isBestseller);
+        }
+
+        return $this;
+    }
+
+    public function isInCarousel(): ?bool
+    {
+        foreach ($this->variants as $variant) {
+            if ($variant->isInCarousel()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function setIsInCarousel(bool $isInCarousel): static
+    {
+        foreach ($this->variants as $variant) {
+            $variant->setIsInCarousel($isInCarousel);
+        }
+
+        return $this;
+    }
+
+    public function getSizeGuide(): ?SizeGuide
+    {
+        return $this->getFirstVariant()?->getSizeGuide();
+    }
+
+    public function setSizeGuide(?SizeGuide $sizeGuide): static
+    {
+        foreach ($this->variants as $variant) {
+            $variant->setSizeGuide($sizeGuide);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, ClothesVariant>
+     */
+    public function getVariants(): Collection
+    {
+        return $this->variants;
+    }
+
+    public function addVariant(ClothesVariant $variant): static
+    {
+        if (!$this->variants->contains($variant)) {
+            $this->variants->add($variant);
+            $variant->setClothes($this);
+        }
+
+        return $this;
+    }
+
+    public function removeVariant(ClothesVariant $variant): static
+    {
+        if ($this->variants->removeElement($variant) && $variant->getClothes() === $this) {
+            $variant->setClothes(null);
+        }
+
+        return $this;
+    }
+
+    public function getTotalStock(): int
+    {
+        $total = 0;
+
+        foreach ($this->variants as $variant) {
+            $total += max(0, (int) $variant->getStock());
+        }
+
+        return $total;
+    }
+
+    public function hasAvailableVariant(): bool
+    {
+        foreach ($this->variants as $variant) {
+            if ($variant->isAvailable()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function getFirstVariant(): ?ClothesVariant
+    {
+        $variant = $this->variants->first();
+
+        return $variant instanceof ClothesVariant ? $variant : null;
+    }
+
+    private function ensureFirstVariant(): ClothesVariant
+    {
+        $variant = $this->getFirstVariant();
+
+        if (!$variant instanceof ClothesVariant) {
+            $variant = new ClothesVariant();
+            $this->addVariant($variant);
+        }
+
+        return $variant;
     }
 }

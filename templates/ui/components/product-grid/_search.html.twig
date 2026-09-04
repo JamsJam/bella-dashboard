@@ -1,0 +1,23 @@
+
+{# 
+    This template is responsible for rendering the search form in the avatar library. 
+    It includes an input field where users can type their search query to find specific avatars in the library.
+
+ #}
+
+<div class="library__search-section">
+    <form class="library__search" id="avatar-search-form" aria-label="Rechercher un avatar">
+        <input 
+            class="library__search-input" 
+            {{ 
+                stimulus_target('product_grid_search', 'searchInput') | 
+                stimulus_action('product_grid_search', 'onSearchInput', 'input') 
+            }}
+            type="search" 
+            name="search" 
+            id="avatar-search" 
+            placeholder="{{ placeholder|default('Rechercher...') }}" 
+            aria-label="Champ de recherche"
+        >
+    </form>
+</div>

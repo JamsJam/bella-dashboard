@@ -1,0 +1,66 @@
+@use "../../abstract/" as *;
+
+
+.tabs {
+    @extend %flex-row-start-center;
+    @extend %theme-transition;
+
+    align-self: flex-end;
+    flex-wrap: wrap;
+    gap: 1rem;
+    background-color: var(--bg-dark);
+    // border: 2px solid var(--border);
+    padding-inline: 1rem; 
+    padding-block: 1rem;
+    border-radius: 1rem;
+
+
+    .tab {
+        @extend %flex-row-center-center;
+        @extend %theme-transition;
+        
+        padding: 0.5rem 1rem;
+        border-radius: 1rem;
+        
+        border: 1px solid var(--border-muted);
+        background-color: var(--bg);
+        color: var(--text-muted);
+        
+        font-weight: 600;
+        
+
+        &:hover {
+            color: var(--text);
+            border-color: var(--border);
+            background-color: var(--bg-light);
+        }
+        &.active {
+            color: var(--text);
+            border-color: var(--border);
+            background-color: var(--bg-light);
+        }
+    }
+}
+
+.tabs__dropdown {
+    position: relative;
+
+    summary { cursor: pointer; list-style: none; }
+    summary::-webkit-details-marker { display: none; }
+}
+
+.tabs__dropdown-menu {
+    position: absolute;
+    z-index: 20;
+    top: calc(100% + 0.5rem);
+    right: 0;
+    min-width: 13rem;
+    padding: 0.5rem;
+    border: 1px solid var(--border-muted);
+    border-radius: 0.75rem;
+    background: var(--bg);
+    box-shadow: 0 0.75rem 2rem rgb(0 0 0 / 18%);
+
+    a { display: block; padding: 0.65rem 0.75rem; border-radius: 0.5rem; color: var(--text); }
+    a:hover { background: var(--bg-light); }
+}

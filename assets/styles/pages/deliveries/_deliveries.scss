@@ -1,0 +1,42 @@
+@use "../../abstract/" as *;
+
+.deliveries-page { display: flex; flex-direction: column; gap: 1rem; min-inline-size: 0; }
+.deliveries-page__header { display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; }
+.deliveries-page__header h1 { margin: 0; color: var(--text); }
+.deliveries-page__header p { margin: .35rem 0 0; color: var(--text-muted); }
+.deliveries-page__eyebrow { color: var(--primary) !important; font-size: .72rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+
+.delivery-timeline { inline-size: 100%; block-size: 100dvh; overflow-y: auto; overscroll-behavior-block: contain; scrollbar-color: var(--primary) var(--border-muted); scroll-snap-type: y proximity; }
+.delivery-timeline__days { display: flex; flex-direction: column; gap: .8rem; padding: .25rem .75rem 1rem .15rem; }
+.delivery-day { display: flex; flex-direction: column; inline-size: 100%; min-block-size: 12rem; border: 1px solid var(--border-muted); border-radius: .75rem; background: var(--bg-light); box-shadow: $shadow; scroll-snap-align: center; }
+.delivery-day--today { border: 2px solid var(--primary); background: color-mix(in srgb, var(--primary) 5%, var(--bg-light)); }
+.delivery-day__header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .9rem; border-bottom: 1px solid var(--border-muted); }
+.delivery-day__header div { display: flex; flex-direction: column; gap: .2rem; }
+.delivery-day__header span { color: var(--text); font-size: .78rem; font-weight: 800; }
+.delivery-day__header strong { color: var(--text-muted); font-size: .68rem; }
+.delivery-day__count { display: grid; place-items: center; min-inline-size: 1.8rem; block-size: 1.8rem; border-radius: 99px; background: color-mix(in srgb, var(--primary) 14%, var(--bg-light)); color: var(--primary) !important; }
+.delivery-day__orders { display: grid; flex: 1; grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr)); gap: .65rem; padding: .75rem; }
+.delivery-order { display: block; padding: .75rem; border: 1px solid var(--border-muted); border-inline-start-width: 4px; border-radius: .55rem; background: var(--bg); color: var(--text); text-decoration: none; transition: border-color 150ms ease, box-shadow 150ms ease, transform 150ms ease; }
+.delivery-order--awaiting { border-inline-start-color: var(--warning); cursor: pointer; }
+.delivery-order--awaiting:hover { border-color: var(--warning); box-shadow: $shadow; transform: translateY(-1px); }
+.delivery-order--delivered { border-inline-start-color: var(--success); background: color-mix(in srgb, var(--success) 5%, var(--bg)); }
+.delivery-order header { display: flex; justify-content: space-between; gap: 1rem; }
+.delivery-order__reference { color: var(--primary) !important; font-size: .78rem !important; font-weight: 800; }
+.delivery-order header strong { color: var(--text); font-size: .75rem; }
+.delivery-order__status { display: inline-flex; margin-top: .55rem; padding: .25rem .45rem; border-radius: 99px; font-size: .62rem; font-weight: 800; }
+.delivery-order--awaiting .delivery-order__status { background: color-mix(in srgb, var(--warning) 14%, transparent); color: var(--warning); }
+.delivery-order--delivered .delivery-order__status { background: color-mix(in srgb, var(--success) 14%, transparent); color: var(--success); }
+.delivery-order p { margin: .65rem 0 .25rem; color: var(--text); font-size: .75rem; font-weight: 700; }
+.delivery-order address { color: var(--text-muted); font-size: .7rem; font-style: normal; line-height: 1.5; }
+.delivery-order__phone { display: inline-block; margin-top: .45rem; color: var(--primary); font-size: .7rem; }
+.delivery-confirmation-modal__customer { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .7rem; margin: 0; }
+.delivery-confirmation-modal__customer div { padding: .75rem; border: 1px solid var(--border-muted); border-radius: .5rem; background: var(--bg-light); }
+.delivery-confirmation-modal__customer dt { color: var(--text-muted); font-size: .68rem; font-weight: 700; }
+.delivery-confirmation-modal__customer dd { margin: .25rem 0 0; color: var(--text); font-size: .8rem; font-weight: 800; }
+.delivery-day__empty { display: grid; grid-column: 1 / -1; min-block-size: 6rem; place-items: center; align-content: center; gap: .6rem; color: var(--text-muted); font-size: .75rem; text-align: center; }
+.delivery-day__empty svg { inline-size: 1.6rem; block-size: 1.6rem; }
+.delivery-timeline__loading { margin: 0; color: var(--text-muted); font-size: .72rem; text-align: center; }
+
+@container main (max-width: 640px) {
+    .deliveries-page__header { align-items: flex-start; flex-direction: column; }
+}

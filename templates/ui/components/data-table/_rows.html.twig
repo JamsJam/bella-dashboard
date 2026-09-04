@@ -1,0 +1,17 @@
+{% for row in rows %}
+    <tr{% if row._rowId is defined %} id="{{ row._rowId }}"{% endif %}>
+        {% for column in columns %}
+            <td data-label="{{ column.label }}">
+                {% if column.raw|default(false) %}
+                    {{ row[column.key]|default('')|raw }}
+                {% else %}
+                    {{ row[column.key]|default('') }}
+                {% endif %}
+            </td>
+        {% endfor %}
+    </tr>
+{% else %}
+    <tr>
+        <td colspan="{{ columns|length }}" class="data-table__empty">Aucun resultat.</td>
+    </tr>
+{% endfor %}

@@ -26,18 +26,18 @@ class Collections
     #[ORM\Column]
     private ?bool $isOnline = null;
 
-    #[ORM\ManyToOne(inversedBy: 'Collections')]
+    #[ORM\ManyToOne(inversedBy: 'collections')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Category $category = null;
-
-    #[ORM\Column(nullable: true)]
-    private ?array $sizeguid = null;
 
     /**
      * @var Collection<int, Clothes>
      */
-    #[ORM\OneToMany(targetEntity: Clothes::class, mappedBy: 'Collection', orphanRemoval: true)]
+    #[ORM\OneToMany(targetEntity: Clothes::class, mappedBy: 'collection', cascade: ['persist'], orphanRemoval: true)]
     private Collection $clothes;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $image = null;
 
     public function __construct()
     {
@@ -85,18 +85,6 @@ class Collections
         return $this;
     }
 
-    public function getSizeguid(): ?array
-    {
-        return $this->sizeguid;
-    }
-
-    public function setSizeguid(?array $sizeguid): static
-    {
-        $this->sizeguid = $sizeguid;
-
-        return $this;
-    }
-
     /**
      * @return Collection<int, Clothes>
      */
@@ -123,6 +111,18 @@ class Collections
                 $clothes->setCollection(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getImage(): ?string
+    {
+        return $this->image;
+    }
+
+    public function setImage(?string $image): static
+    {
+        $this->image = $image;
 
         return $this;
     }

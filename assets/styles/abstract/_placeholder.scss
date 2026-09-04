@@ -4,7 +4,7 @@
 
 @each $direction in row, column {
   @each $justify in start, center, end, space-between, space-around, space-evenly {
-    @each $align in start, center, stretch {
+    @each $align in start, center, stretch, end {
       %flex-#{$direction}-#{$justify}-#{$align} {
         display: -webkit-flex;
         flex-direction: -webkit-#{$direction};
@@ -24,3 +24,15 @@
 //* %flex-row-space-around-stretch
 //* %flex-column-flex-end-flex-start
 //* %flex-column-space-between-center
+
+
+//* =====================
+//?     theme transition
+//* =====================
+
+%theme-transition{
+  transition: 
+    color 0.25s ease-out,
+    background-color 0.25s ease-out,
+    border 200ms ease-out;
+}

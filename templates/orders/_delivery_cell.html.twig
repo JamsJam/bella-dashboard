@@ -1,0 +1,40 @@
+{% if order.deliveryDate %}
+    <div class="order-delivery">
+        <strong>{{ order.deliveryDate|date('d/m/Y') }}</strong>
+    </div>
+{% elseif order.orderStatus.value == 'processing' and order.shippingToGuadeloupe %}
+    <a
+        class="orders-table-action orders-table-action--primary"
+        href="{{ path('app_orders_delivery_date_modal', {id: order.id}) }}"
+        data-turbo-stream
+    >
+        Programmer
+    </a>
+{% elseif order.orderStatus.value == 'processing' and order.shippingOutsideGuadeloupe %}
+    <a
+        class="orders-table-action orders-table-action--primary"
+        href="{{ path('app_orders_shipment_modal', {id: order.id}) }}"
+        data-turbo-stream
+    >
+        Expédier
+    </a>
+{% elseif order.orderStatus.value == 'shipped' %}
+    <div class="order-shipment">
+        <strong>{{ order.carrierName ? order.carrierName ~ ' · ' : '' }}{{ order.trackingNumber }}</strong>
+        {% if order.trackingUrl %}<a href="{{ order.trackingUrl }}" target="_blank" rel="noopener noreferrer">Suivre le colis</a>{% endif %}
+        <a
+            href="{{ path('app_orders_deliveries_delivered_modal', {id: order.id}) }}"
+            data-turbo-stream
+        >
+            Marquer livrée
+        </a>
+    </div>
+{% elseif order.orderStatus.value == 'delivered' and order.trackingNumber %}
+    <div class="order-shipment">
+        <strong>{{ order.carrierName ? order.carrierName ~ ' · ' : '' }}{{ order.trackingNumber }}</strong>
+        {% if order.trackingUrl %}<a href="{{ order.trackingUrl }}" target="_blank" rel="noopener noreferrer">Suivre le colis</a>{% endif %}
+        <small>Livrée</small>
+    </div>
+{% else %}
+    <span class="order-delivery__empty" aria-label="Livraison non applicable">—</span>
+{% endif %}

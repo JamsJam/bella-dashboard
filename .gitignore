@@ -19,11 +19,34 @@
 /assets/vendor/
 ###< symfony/asset-mapper ###
 
+.vscode/
+.DS_Store/
+
+
+###> symfonycasts/sass-bundle ###
+/public/assets/
+###< symfonycasts/sass-bundle ###
+
+###> uploads ###
+public/images/*
+/public/image/front/
+###< uploads ###
+
+###> user-managed page configuration ###
+/pages/api/
+###< user-managed page configuration ###
+
+###> lexik/jwt-authentication-bundle ###
+/config/jwt/*.pem
+###< lexik/jwt-authentication-bundle ###
+
 ###> friendsofphp/php-cs-fixer ###
 /.php-cs-fixer.php
 /.php-cs-fixer.cache
 ###< friendsofphp/php-cs-fixer ###
 
-###> phpstan/phpstan ###
-phpstan.neon
-###< phpstan/phpstan ###
+###> symfony/panther ###
+/drivers/
+###< symfony/panther ###
+
+.DS_Store

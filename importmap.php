@@ -16,14 +16,6 @@ return [
         'path' => './assets/app.js',
         'entrypoint' => true,
     ],
-    'home' => [
-        'path' => './assets/entrypoints/home.js',
-        'entrypoint' => true,
-    ],
-    'admin' => [
-        'path' => './assets/admin.js',
-        'entrypoint' => true,
-    ],
     '@hotwired/stimulus' => [
         'version' => '3.2.2',
     ],
@@ -33,33 +25,24 @@ return [
     '@hotwired/turbo' => [
         'version' => '7.3.0',
     ],
-    'suneditor' => [
-        'version' => '2.47.5',
+    'dropzone' => [
+        'version' => '6.0.0-beta.2',
     ],
-    'suneditor/dist/css/suneditor.min.css' => [
-        'version' => '2.47.5',
+    'just-extend' => [
+        'version' => '5.1.1',
+    ],
+    '@symfony/ux-cropperjs' => [
+        'path' => './vendor/symfony/ux-cropperjs/assets/dist/controller.js',
+    ],
+    '@symfony/ux-cropperjs/dist/style.min.css' => [
+        'path' => './vendor/symfony/ux-cropperjs/assets/dist/style.min.css',
         'type' => 'css',
     ],
-    'suneditor/src/plugins' => [
-        'version' => '2.47.5',
+    'cropperjs' => [
+        'version' => '1.6.2',
     ],
-    'suneditor/src/lang' => [
-        'version' => '2.47.5',
-    ],
-    'suneditor/src/lang/fr' => [
-        'version' => '2.47.5',
-    ],
-    'tom-select' => [
-        'version' => '2.4.3',
-    ],
-    '@orchidjs/sifter' => [
-        'version' => '1.1.0',
-    ],
-    '@orchidjs/unicode-variants' => [
-        'version' => '1.1.2',
-    ],
-    'tom-select/dist/css/tom-select.default.min.css' => [
-        'version' => '2.4.3',
+    'cropperjs/dist/cropper.min.css' => [
+        'version' => '1.6.2',
         'type' => 'css',
     ],
 ];

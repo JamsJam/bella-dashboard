@@ -1,0 +1,113 @@
+{% set sections = {
+    landing: {
+        title: 'Landing',
+        eyebrow: 'Accueil',
+        description: "Le premier écran visible à l’arrivée sur la boutique."
+    },
+    about: {
+        title: 'À propos',
+        eyebrow: 'Présentation',
+        description: "Le texte qui présente Bella et l’expérience proposée."
+    },
+    manual: {
+        title: "Mode d'emploi",
+        eyebrow: 'Parcours',
+        description: 'Les étapes qui expliquent le fonctionnement de la boutique.'
+    },
+    return: {
+        title: 'Retours et services',
+        eyebrow: 'Réassurance',
+        description: 'Les engagements de service affichés en bas de page.'
+    },
+    seo: {
+        title: 'Référencement',
+        eyebrow: 'SEO',
+        description: 'Les métadonnées utilisées par les moteurs et les réseaux sociaux.'
+    }
+} %}
+
+<nav class="homepage-form__nav" aria-label="Sections de la page">
+    {% for name, section in sections %}
+        <a href="#homepage-section-{{ name }}">{{ section.title }}</a>
+    {% endfor %}
+</nav>
+
+<div class="homepage-form__sections">
+    {% for name, section in sections %}
+        <fieldset id="homepage-section-{{ name }}" class="homepage-section homepage-section--{{ name }}">
+            <legend class="homepage-section__legend">
+                <span class="homepage-section__eyebrow">{{ section.eyebrow }}</span>
+                <span class="homepage-section__title">{{ section.title }}</span>
+                <small>{{ section.description }}</small>
+            </legend>
+
+            <div class="homepage-section__fields">
+                {% for field in attribute(form, name) %}
+                    {% if 'collection' in field.vars.block_prefixes %}
+                        <section class="homepage-collection">
+                            <header class="homepage-collection__header">
+                                <span>{{ field.vars.label }}</span>
+                                <small>{{ field|length }} élément{{ field|length > 1 ? 's' : '' }}</small>
+                            </header>
+
+                            <div class="homepage-collection__grid">
+                                {% for entry in field %}
+                                    <article class="homepage-collection__card">
+                                        <header>
+                                            <span>{{ field.vars.name in ['products'] ? 'Produit' : 'Élément' }}</span>
+                                            <strong>{{ '%02d'|format(loop.index) }}</strong>
+                                        </header>
+                                        <div class="homepage-collection__fields">
+                                            {% for entryField in entry %}
+                                                {% if entryField.vars.name in ['imageFile', 'iconFile'] %}
+                                                    {% include 'config/_homepage_image_upload.html.twig' with {
+                                                        field: entryField,
+                                                        currentImage: entryField.vars.name == 'iconFile'
+                                                            ? entry.vars.data.icon|default('')
+                                                            : entry.vars.data.image|default('')
+                                                    } only %}
+                                                {% else %}
+                                                    <div class="config-field config-field--{{ entryField.vars.name }}">
+                                                        {{ form_label(entryField) }}
+                                                        {{ form_widget(entryField) }}
+                                                        {{ form_help(entryField) }}
+                                                        {{ form_errors(entryField) }}
+                                                    </div>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                    </article>
+                                {% endfor %}
+                            </div>
+                        </section>
+                    {% elseif field.vars.name in ['imageFile', 'ogImageFile'] %}
+                        {% set currentImage = field.vars.name == 'ogImageFile'
+                            ? attribute(form, name).vars.data.ogImage|default('')
+                            : attribute(form, name).vars.data.image|default('')
+                        %}
+                        {% include 'config/_homepage_image_upload.html.twig' with {
+                            field: field,
+                            currentImage: currentImage
+                        } only %}
+                    {% elseif 'checkbox' in field.vars.block_prefixes %}
+                        <div class="homepage-checkbox">
+                            {{ form_widget(field) }}
+                            <div>
+                                {{ form_label(field) }}
+                                <small>La section occupe toute la hauteur de l’écran.</small>
+                            </div>
+                            {{ form_errors(field) }}
+                        </div>
+                    {% else %}
+                        <div class="config-field config-field--{{ field.vars.name }}">
+                            {{ form_label(field) }}
+                            {{ form_widget(field) }}
+                            {{ form_help(field) }}
+                            {{ form_errors(field) }}
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </fieldset>
+    {% endfor %}
+</div>

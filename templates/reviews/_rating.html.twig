@@ -1,0 +1,3 @@
+<span class="review-rating" aria-label="{{ review.rating ? review.rating ~ ' étoiles sur 5' : 'Pas encore noté' }}">
+    {% if review.rating %}<strong>{{ review.rating }}/5</strong> <span aria-hidden="true">{% for star in 1..5 %}{{ star <= review.rating ? '★' : '☆' }}{% endfor %}</span>{% else %}<span class="review-rating--empty">Non noté</span>{% endif %}
+</span>

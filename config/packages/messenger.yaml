@@ -6,9 +6,20 @@ framework:
             # https://symfony.com/doc/current/messenger.html#transport-configuration
             async:
                 dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
+                retry_strategy:
+                    max_retries: 3
+                    multiplier: 2
+            avatar_rename:
+                dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
                 options:
-                    use_notify: true
-                    check_delayed_interval: 60000
+                    queue_name: avatar_rename
+                retry_strategy:
+                    max_retries: 3
+                    multiplier: 2
+            image_deformation:
+                dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
+                options:
+                    queue_name: image_deformation
                 retry_strategy:
                     max_retries: 3
                     multiplier: 2
@@ -24,6 +35,20 @@ framework:
             Symfony\Component\Mailer\Messenger\SendEmailMessage: async
             Symfony\Component\Notifier\Message\ChatMessage: async
             Symfony\Component\Notifier\Message\SmsMessage: async
+            App\Message\Avatar\RenameAvatarMessage: avatar_rename
+            App\Message\ImageDeformation\DeformImageMessage: image_deformation
+            App\Payment\Stripe\Webhook\Message\StripeCheckoutSessionMessage: async
+            App\Application\Orders\Delivery\DeliveryReminderMessage: async
+            App\Application\Orders\Delivery\AutoDeliverShippedOrderMessage: async
 
             # Route your messages to the transports
             # 'App\Message\YourMessage': async
+
+when@test:
+    framework:
+        messenger:
+            transports:
+                async: 'in-memory://'
+                avatar_rename: 'in-memory://'
+                image_deformation: 'in-memory://'
+                failed: 'in-memory://'
