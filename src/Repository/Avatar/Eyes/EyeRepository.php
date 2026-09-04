@@ -17,6 +17,7 @@ class EyeRepository extends ServiceEntityRepository implements AvatarPartModelIn
         parent::__construct($registry, Eye::class);
     }
 
+<<<<<<< HEAD
     /**
      * @return Eye[] Returns an array of Eye objects
      */
@@ -53,6 +54,8 @@ class EyeRepository extends ServiceEntityRepository implements AvatarPartModelIn
         return $this->findAll();
     }
 
+=======
+>>>>>>> main
     //    /**
     //     * @return Eye[] Returns an array of Eye objects
     //     */

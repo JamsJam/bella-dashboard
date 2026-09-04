@@ -17,6 +17,7 @@ class EyebrowsRepository extends ServiceEntityRepository implements AvatarPartMo
         parent::__construct($registry, Eyebrows::class);
     }
 
+<<<<<<< HEAD
     /**
      * @return Eyebrows[] Returns an array of Eyebrows objects
      */
@@ -54,6 +55,8 @@ class EyebrowsRepository extends ServiceEntityRepository implements AvatarPartMo
         return $this->findAll();
     }
 
+=======
+>>>>>>> main
     //    /**
     //     * @return eyebrows[] Returns an array of eyebrows objects
     //     */

@@ -1,0 +1,23 @@
+@use "./../abstract/" as *;
+
+body.admin main{
+
+    height: 100dvh;
+    background-color: hsl(0, 0%, 30%);
+    padding: 4rem;
+    display: grid;
+    grid-template-rows: min-content 1fr;
+    row-gap: 2rem;
+    
+
+    .header{
+        @extend %flex-column-center-start;
+        gap:2rem;
+        // background-color: tan;
+
+        h1{
+            font-size: 4rem;
+        }
+
+    }
+}

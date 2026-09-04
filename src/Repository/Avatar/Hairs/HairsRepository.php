@@ -17,6 +17,7 @@ class HairsRepository extends ServiceEntityRepository implements AvatarPartModel
         parent::__construct($registry, Hairs::class);
     }
 
+<<<<<<< HEAD
     /**
      * @return Hairs[] Returns an array of Hairs objects
      */
@@ -54,6 +55,8 @@ class HairsRepository extends ServiceEntityRepository implements AvatarPartModel
         return $this->findAll();
     }
 
+=======
+>>>>>>> main
     //    /**
     //     * @return Hairs[] Returns an array of Hairs objects
     //     */

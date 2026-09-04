@@ -17,6 +17,7 @@ class FacesRepository extends ServiceEntityRepository implements AvatarPartModel
         parent::__construct($registry, Faces::class);
     }
 
+<<<<<<< HEAD
     /**
      * @return Faces[] Returns an array of Faces objects
      */
@@ -97,6 +98,8 @@ class FacesRepository extends ServiceEntityRepository implements AvatarPartModel
         return $this->findAll();
     }
 
+=======
+>>>>>>> main
     //    /**
     //     * @return Faces[] Returns an array of Faces objects
     //     */
