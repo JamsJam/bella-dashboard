@@ -88,12 +88,16 @@ jobs:
           password: ${{ secrets.APP_PASS }}
           port: ${{ secrets.APP_PORT }}
           envs: >- 
-            APP_TOKEN,
             APP_DOMAIN,
             DATABASE_URL_SOURCE,
             APP_SECRET_SOURCE,
             MAILER_DSN_SOURCE,
-            MESSENGER_TRANSPORT_DSN_SOURCE,
+            MAILER_TRANSPORT_SOURCE,
+            MAILER_USERNAME_SOURCE,
+            MAILER_PASSWORD_SOURCE,
+            MAILER_HOST_SOURCE,
+            MAILER_PORT_SOURCE,
+            MAILER_ENCRYPTION_SOURCE,
             CORS_ALLOW_ORIGIN_SOURCE,
             JWT_SECRET_KEY_SOURCE,
             JWT_PUBLIC_KEY_SOURCE,
@@ -103,7 +107,7 @@ jobs:
             FRONT_APP_URL_SOURCE
           
           script: |
-            set -e
+            set -Eeuo pipefail
 
             PROJECT_DIR="/var/www/${{ secrets.APP_USER }}/${{ secrets.APP_DOMAIN }}"
 
