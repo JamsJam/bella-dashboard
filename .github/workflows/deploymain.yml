@@ -248,17 +248,18 @@ jobs:
 
             composer validate --no-check-publish
 
-            echo "==========[6/11] Installation des dependances Composer=========="
-
+            echo "==========[6/11] Optimisation des variables d'environnement Symfony=========="
+            
+            composer dump-env prod
+            
+            echo "==========[7/11] Installation des dependances Composer=========="
+            
             composer install \
               --no-dev \
               --optimize-autoloader \
               --no-interaction
 
 
-            echo "==========[7/11] Optimisation des variables d'environnement Symfony=========="
-
-            composer dump-env prod
 
             echo "==========[8/11] Nettoyage du cache et execution des migrations=========="
 
