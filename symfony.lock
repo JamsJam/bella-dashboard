@@ -365,7 +365,6 @@
             "templates/base.html.twig"
         ]
     },
-<<<<<<< HEAD
     "symfony/uid": {
         "version": "7.4",
         "recipe": {
@@ -391,8 +390,6 @@
             "config/packages/ux_icons.yaml"
         ]
     },
-=======
->>>>>>> main
     "symfony/ux-turbo": {
         "version": "2.35",
         "recipe": {

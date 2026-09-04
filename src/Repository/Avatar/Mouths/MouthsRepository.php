@@ -17,7 +17,6 @@ class MouthsRepository extends ServiceEntityRepository implements AvatarPartMode
         parent::__construct($registry, Mouths::class);
     }
 
-<<<<<<< HEAD
     /**
      * @return Mouths[] Returns an array of Mouths objects
      */
@@ -55,8 +54,6 @@ class MouthsRepository extends ServiceEntityRepository implements AvatarPartMode
         return $this->findAll();
     }
 
-=======
->>>>>>> main
     //    /**
     //     * @return Mouths[] Returns an array of Mouths objects
     //     */

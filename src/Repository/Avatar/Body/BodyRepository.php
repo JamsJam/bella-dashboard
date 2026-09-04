@@ -151,7 +151,6 @@ class BodyRepository extends ServiceEntityRepository implements AvatarPartModelI
     //        ;
     //    }
 
-<<<<<<< HEAD
     /**
      * @return Body[] Returns an array of Body objects
      */
@@ -247,8 +246,6 @@ class BodyRepository extends ServiceEntityRepository implements AvatarPartModelI
         return $this->findAll();
     }
 
-=======
->>>>>>> main
     //    public function findOneBySomeField($value): ?Body
     //    {
     //        return $this->createQueryBuilder('b')

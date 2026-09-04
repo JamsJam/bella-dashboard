@@ -29,12 +29,4 @@ services:
         decorates: 'api_platform.openapi.factory'
         decoration_priority: -100
         arguments:
-<<<<<<< HEAD
             $decorated: '@App\OpenApi\ThematicOpenApiFactory.inner'
-=======
-            $menuPath: '%menu.yaml.path%'
-
-    App\Builder\PageMeta\PageMetaBuilder:
-        arguments:
-            $pageMetaPath: '%page_meta.yaml.path%'
->>>>>>> main

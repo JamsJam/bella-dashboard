@@ -26,18 +26,14 @@ class Collections
     #[ORM\Column]
     private ?bool $isOnline = null;
 
-    #[ORM\ManyToOne(inversedBy: 'Collections')]
+    #[ORM\ManyToOne(inversedBy: 'collections')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Category $category = null;
 
     /**
      * @var Collection<int, Clothes>
      */
-<<<<<<< HEAD
     #[ORM\OneToMany(targetEntity: Clothes::class, mappedBy: 'collection', cascade: ['persist'], orphanRemoval: true)]
-=======
-    #[ORM\OneToMany(targetEntity: Clothes::class, mappedBy: 'Collection', orphanRemoval: true)]
->>>>>>> main
     private Collection $clothes;
 
     #[ORM\Column(length: 255, nullable: true)]

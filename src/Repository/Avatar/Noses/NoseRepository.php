@@ -17,7 +17,6 @@ class NoseRepository extends ServiceEntityRepository implements AvatarPartModelI
         parent::__construct($registry, Nose::class);
     }
 
-<<<<<<< HEAD
     /**
      * @return Nose[] Returns an array of Nose objects
      */
@@ -55,8 +54,6 @@ class NoseRepository extends ServiceEntityRepository implements AvatarPartModelI
         return $this->findAll();
     }
 
-=======
->>>>>>> main
     //    /**
     //     * @return Nose[] Returns an array of Nose objects
     //     */
