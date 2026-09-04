@@ -90,19 +90,24 @@ jobs:
           port: ${{ secrets.APP_PORT }}
           envs: >-
             APP_DOMAIN,
-            APP_SECRET_SOURCE,
             DATABASE_URL_SOURCE,
+            APP_SECRET_SOURCE,
+
             MESSENGER_TRANSPORT_DSN_SOURCE,
             CORS_ALLOW_ORIGIN_SOURCE,
+
             STRIPE_SECRET_KEY_SOURCE,
             STRIPE_WEBHOOK_SECRET_SOURCE,
+
             FRONT_APP_URL_SOURCE,
+
             MAILER_TRANSPORT_SOURCE,
             MAILER_USERNAME_SOURCE,
             MAILER_PASSWORD_SOURCE,
             MAILER_HOST_SOURCE,
             MAILER_PORT_SOURCE,
             MAILER_ENCRYPTION_SOURCE,
+
             JWT_SECRET_KEY_SOURCE,
             JWT_PUBLIC_KEY_SOURCE,
             JWT_PASSPHRASE_SOURCE
